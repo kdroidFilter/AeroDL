@@ -1,30 +1,27 @@
-package com.example.ytdlpgui.ytdlp
+package io.github.kdroidfilter.ytdlp
 
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * Minimal JVM wrapper around the yt-dlp CLI.
- *
- * This wrapper assumes yt-dlp binary is available on PATH.
- * It provides:
- * - availability check
- * - synchronous download execution with progress parsing via callbacks
- * - ability to cancel an in-flight download
+ * JVM wrapper around yt-dlp CLI, with configurable binary paths.
  */
 object YtDlp {
+    /** Configuration for paths */
+    var ytDlpPath: String = "yt-dlp"
+    var ffmpegPath: String? = null
+    var downloadDir: File? = null
+
     data class Options(
-        val format: String? = null, // e.g. "bestvideo+bestaudio/best"
-        val outputTemplate: String? = null, // e.g. "%(title)s.%(ext)s"
-        val extraArgs: List<String> = emptyList() // pass-through arguments
+        val format: String? = null,            // e.g. "bestvideo+bestaudio/best"
+        val outputTemplate: String? = null,    // e.g. "%(title)s.%(ext)s"
+        val noCheckCertificate: Boolean = false,
+        val extraArgs: List<String> = emptyList()
     )
 
     sealed class Event {
-        data class Progress(
-            val percent: Double?, // null if not parsed
-            val rawLine: String
-        ) : Event()
+        data class Progress(val percent: Double?, val rawLine: String) : Event()
         data class Log(val line: String) : Event()
         data class Completed(val exitCode: Int) : Event()
         data class Error(val message: String, val cause: Throwable? = null) : Event()
@@ -32,7 +29,6 @@ object YtDlp {
         data object Cancelled : Event()
     }
 
-    /** Simple handle that allows cancelling the running yt-dlp process. */
     class Handle internal constructor(private val process: Process, private val cancelledFlag: AtomicBoolean) {
         fun cancel() {
             cancelledFlag.set(true)
@@ -41,9 +37,9 @@ object YtDlp {
         val isCancelled: Boolean get() = cancelledFlag.get()
     }
 
-    /** Returns true if yt-dlp is available and returns a version string, or null otherwise. */
+    /** Returns yt-dlp version or null if unavailable */
     fun version(): String? = try {
-        val proc = ProcessBuilder(listOf("yt-dlp", "--version"))
+        val proc = ProcessBuilder(listOf(ytDlpPath, "--version"))
             .redirectErrorStream(true)
             .start()
         val out = proc.inputStream.bufferedReader().readText().trim()
@@ -56,13 +52,8 @@ object YtDlp {
     fun isAvailable(): Boolean = version() != null
 
     /**
-     * Runs yt-dlp for the given url.
-     * This call is blocking until completion or cancellation. Use from a background thread if needed.
-     *
-     * @param url The media URL to download.
-     * @param options CLI options mapping.
-     * @param onEvent Callback for log/progress/completion events.
-     * @return a Handle to allow cancellation.
+     * Run yt-dlp with the given url and options.
+     * Blocking until finished/cancelled. Run from a background thread.
      */
     fun download(
         url: String,
@@ -72,6 +63,10 @@ object YtDlp {
         val cmd = buildCommand(url, options)
         val pb = ProcessBuilder(cmd)
             .redirectErrorStream(true)
+
+        // configure working directory if provided
+        downloadDir?.let { pb.directory(it) }
+
         val process = pb.start()
         val cancelled = AtomicBoolean(false)
         onEvent(Event.Started)
@@ -81,33 +76,33 @@ object YtDlp {
             var line: String?
             while (reader.readLine().also { line = it } != null) {
                 val l = line!!
-                // Parse a very basic progress pattern from yt-dlp --newline output
                 val progress = parseProgress(l)
-                if (progress != null) {
-                    onEvent(progress)
-                } else {
-                    onEvent(Event.Log(l))
-                }
+                if (progress != null) onEvent(progress) else onEvent(Event.Log(l))
             }
         } catch (t: Throwable) {
-            if (!cancelled.get()) {
-                onEvent(Event.Error("I/O error while reading yt-dlp output", t))
-            }
+            if (!cancelled.get()) onEvent(Event.Error("I/O error while reading yt-dlp output", t))
         } finally {
             reader.close()
         }
 
         val exit = try { process.waitFor() } catch (e: InterruptedException) { -1 }
-        if (cancelled.get()) {
-            onEvent(Event.Cancelled)
-        } else {
-            onEvent(Event.Completed(exit))
-        }
+        if (cancelled.get()) onEvent(Event.Cancelled) else onEvent(Event.Completed(exit))
         return Handle(process, cancelled)
     }
 
     private fun buildCommand(url: String, options: Options): List<String> {
-        val cmd = mutableListOf("yt-dlp", "--newline")
+        val cmd = mutableListOf(ytDlpPath, "--newline")
+
+        // ffmpeg override
+        if (!ffmpegPath.isNullOrBlank()) {
+            cmd.addAll(listOf("--ffmpeg-location", ffmpegPath!!))
+        }
+
+        // no-check-certificate
+        if (options.noCheckCertificate) {
+            cmd.add("--no-check-certificate")
+        }
+
         if (!options.format.isNullOrBlank()) {
             cmd.addAll(listOf("-f", options.format))
         }
@@ -121,11 +116,7 @@ object YtDlp {
         return cmd
     }
 
-    // Very permissive parser: extracts leading percent number like 3.1% from typical lines
     private fun parseProgress(line: String): Event.Progress? {
-        // Common patterns from yt-dlp --newline:
-        // [download]   3.1% of 10.00MiB at 1.23MiB/s ETA 00:10
-        // [download] 100% of 10.00MiB in 00:08
         val percentRegex = Regex("(\\d{1,3}(?:[.,]\\d+)?)%")
         val match = percentRegex.find(line)
         val pct = match?.groupValues?.getOrNull(1)?.replace(',', '.')?.toDoubleOrNull()
