@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
+    id("dev.zacsweers.metro") version "0.6.6"
 }
 
 kotlin {
@@ -20,13 +21,17 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation("io.github.compose-fluent:fluent:v0.1.0")
+            implementation("io.github.compose-fluent:fluent-icons-extended:v0.1.0")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
         jvmMain.dependencies {
+            implementation("io.github.kdroidfilter:composenativetray:0.9.3")
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
+            implementation(project(":ytdlp"))
         }
     }
 }
@@ -34,11 +39,11 @@ kotlin {
 
 compose.desktop {
     application {
-        mainClass = "com.example.ytdlpgui.MainKt"
+        mainClass = "io.github.kdroidfilter.ytdlpgui.Mainkt"
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "com.example.ytdlpgui"
+            packageName = "io.github.kdroidfilter.ytdlpgui"
             packageVersion = "1.0.0"
         }
     }
