@@ -8,6 +8,9 @@ kotlinx-coroutines = "1.10.2"
 fluent = "v0.1.0"
 composenativetray = "0.9.3"
 metro = "0.6.6"
+composemediaplayer = "0.8.4"
+ktor = "3.3.0"
+platformtools = "0.7.1"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -19,6 +22,15 @@ kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-s
 compose-fluent = { module = "io.github.compose-fluent:fluent", version.ref = "fluent" }
 compose-fluent-icons-extended = { module = "io.github.compose-fluent:fluent-icons-extended", version.ref = "fluent" }
 composenativetray = { module = "io.github.kdroidfilter:composenativetray", version.ref = "composenativetray" }
+composemediaplayer = { module = "io.github.kdroidfilter:composemediaplayer", version.ref = "composemediaplayer" }
+platformtools-darkmodedetector = { module = "io.github.kdroidfilter:platformtools.darkmodedetector", version.ref = "platformtools" }
+platformtools-clipboardmanager = { module = "io.github.kdroidfilter:platformtools.clipboardmanager", version.ref = "platformtools" }
+platformtools-releasefetcher = { module = "io.github.kdroidfilter:platformtools.releasefetcher", version.ref = "platformtools" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-client-serialization = { module = "io.ktor:ktor-client-serialization", version.ref = "ktor" }
+ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
 
 [plugins]
 composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }

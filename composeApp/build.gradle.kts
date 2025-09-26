@@ -22,6 +22,10 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.compose.fluent)
             implementation(libs.compose.fluent.icons.extended)
+            implementation(libs.composemediaplayer)
+            implementation(libs.platformtools.darkmodedetector)
+            implementation(libs.platformtools.clipboardmanager)
+
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
