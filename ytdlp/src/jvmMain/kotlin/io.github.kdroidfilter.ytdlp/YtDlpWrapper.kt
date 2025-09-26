@@ -7,7 +7,6 @@ import io.github.kdroidfilter.platformtools.releasefetcher.github.GitHubReleaseF
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
-import java.net.URI.create
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.nio.file.attribute.PosixFilePermission
@@ -20,84 +19,35 @@ class YtDlpWrapper(
     private val fetcher: GitHubReleaseFetcher
 ) {
     /** Configuration for paths */
-    var ytDlpPath: String = "yt-dlp"
+    var ytDlpPath: String = getDefaultBinaryPath()
     var ffmpegPath: String? = null
     var downloadDir: File? = null
 
-    data class Options(
-        val format: String? = null,            // e.g. "bestvideo+bestaudio/best"
-        val outputTemplate: String? = null,    // e.g. "%(title)s.%(ext)s"
-        val noCheckCertificate: Boolean = false,
-        val extraArgs: List<String> = emptyList()
-    )
-
-    sealed class Event {
-        data class Progress(val percent: Double?, val rawLine: String) : Event()
-        data class Log(val line: String) : Event()
-        data class Completed(val exitCode: Int) : Event()
-        data class Error(val message: String, val cause: Throwable? = null) : Event()
-        data object Started : Event()
-        data object Cancelled : Event()
-    }
-
-    class Handle internal constructor(private val process: Process, private val cancelledFlag: AtomicBoolean) {
-        fun cancel() {
-            cancelledFlag.set(true)
-            process.destroy()
-        }
-        val isCancelled: Boolean get() = cancelledFlag.get()
-    }
-
-    /** Returns yt-dlp version or null if unavailable */
-    fun version(): String? = try {
-        val proc = ProcessBuilder(listOf(ytDlpPath, "--version"))
-            .redirectErrorStream(true)
-            .start()
-        val out = proc.inputStream.bufferedReader().readText().trim()
-        val code = proc.waitFor()
-        if (code == 0 && out.isNotBlank()) out else null
-    } catch (_: Exception) {
-        null
-    }
-
-    fun isAvailable(): Boolean = version() != null
-
-    /**
-     * Check if an update is available
-     * @return true if current version is different from latest release
-     */
-    suspend fun hasUpdate(): Boolean {
-        val currentVersion = version() ?: return true  // Si pas de version, mise à jour nécessaire
-        val latestVersion = fetcher.getLatestRelease()?.tag_name ?: return false
-
-        // Nettoyer les versions (enlever 'v' prefix si présent)
-        val current = currentVersion.removePrefix("v").trim()
-        val latest = latestVersion.removePrefix("v").trim()
-
-        return current != latest
-    }
-
-    /**
-     * Downloads the appropriate yt-dlp binary for the current OS and architecture.
-     * @return true if download successful, false otherwise
-     */
-    suspend fun downloadBinary(): Boolean {
-        return try {
+    companion object {
+        /**
+         * Obtient le chemin par défaut pour le binaire yt-dlp dans le cache
+         */
+        fun getDefaultBinaryPath(): String {
             val dir = getCacheDir()
             val os = getOperatingSystem()
+            val binaryName = when (os) {
+                OperatingSystem.WINDOWS -> "yt-dlp.exe"
+                else -> "yt-dlp"
+            }
+            return File(dir, binaryName).absolutePath
+        }
 
-            // Déterminer l'architecture du système
+        /**
+         * Obtient le nom du fichier binaire approprié pour le système actuel
+         */
+        fun getAssetNameForSystem(): String {
+            val os = getOperatingSystem()
             val arch = System.getProperty("os.arch")?.lowercase() ?: ""
             val isArm = arch.contains("arm") || arch.contains("aarch")
             val is64Bit = arch.contains("64")
             val isX86 = arch.contains("x86") && !is64Bit
 
-            // Obtenir la dernière release
-            val release = fetcher.getLatestRelease() ?: return false
-            val assets = release.assets
-
-            // Trouver le bon asset selon l'OS et l'architecture
-            val assetName = when (os) {
+            return when (os) {
                 OperatingSystem.WINDOWS -> when {
                     isArm -> "yt-dlp_arm64.exe"
                     isX86 -> "yt-dlp_x86.exe"
@@ -125,19 +75,168 @@ class YtDlpWrapper(
                     }
                 }
 
-                else -> return false  // OS non supporté
+                else -> "yt-dlp"  // Fallback
             }
+        }
+    }
+
+    data class Options(
+        val format: String? = null,            // e.g. "bestvideo+bestaudio/best"
+        val outputTemplate: String? = null,    // e.g. "%(title)s.%(ext)s"
+        val noCheckCertificate: Boolean = false,
+        val extraArgs: List<String> = emptyList()
+    )
+
+    sealed class Event {
+        data class Progress(val percent: Double?, val rawLine: String) : Event()
+        data class Log(val line: String) : Event()
+        data class Completed(val exitCode: Int) : Event()
+        data class Error(val message: String, val cause: Throwable? = null) : Event()
+        data object Started : Event()
+        data object Cancelled : Event()
+    }
+
+    class Handle internal constructor(private val process: Process, private val cancelledFlag: AtomicBoolean) {
+        fun cancel() {
+            cancelledFlag.set(true)
+            process.destroy()
+        }
+        val isCancelled: Boolean get() = cancelledFlag.get()
+    }
+
+    init {
+        // Vérifier d'abord si le binaire existe déjà dans le cache
+        val binaryFile = File(ytDlpPath)
+        if (!binaryFile.exists()) {
+            // Si le binaire n'existe pas dans le cache, essayer de le trouver dans le PATH système
+            val systemPath = findInSystemPath()
+            if (systemPath != null) {
+                ytDlpPath = systemPath
+                println("yt-dlp found in system PATH: $ytDlpPath")
+            } else {
+                println("yt-dlp not found at path: $ytDlpPath")
+                println("Call downloadBinary() to download it automatically")
+            }
+        } else {
+            // Le binaire existe dans le cache
+            println("Using cached yt-dlp binary: $ytDlpPath")
+        }
+    }
+
+    /**
+     * Cherche yt-dlp dans le PATH système
+     */
+    private fun findInSystemPath(): String? {
+        val os = getOperatingSystem()
+        val command = when (os) {
+            OperatingSystem.WINDOWS -> listOf("where", "yt-dlp")
+            else -> listOf("which", "yt-dlp")
+        }
+
+        return try {
+            val process = ProcessBuilder(command)
+                .redirectErrorStream(true)
+                .start()
+            val output = process.inputStream.bufferedReader().readText().trim()
+            val exitCode = process.waitFor()
+
+            if (exitCode == 0 && output.isNotBlank()) {
+                output.lines().firstOrNull()?.trim()
+            } else null
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    /** Returns yt-dlp version or null if unavailable */
+    fun version(): String? = try {
+        val proc = ProcessBuilder(listOf(ytDlpPath, "--version"))
+            .redirectErrorStream(true)
+            .start()
+        val out = proc.inputStream.bufferedReader().readText().trim()
+        val code = proc.waitFor()
+        if (code == 0 && out.isNotBlank()) out else null
+    } catch (_: Exception) {
+        null
+    }
+
+    fun isAvailable(): Boolean {
+        // Vérifier si le fichier existe et est exécutable
+        val file = File(ytDlpPath)
+        return file.exists() && file.canExecute() && version() != null
+    }
+
+    /**
+     * Check if an update is available
+     * @return true if current version is different from latest release
+     */
+    suspend fun hasUpdate(): Boolean {
+        val currentVersion = version() ?: return true  // Si pas de version, mise à jour nécessaire
+        val latestVersion = fetcher.getLatestRelease()?.tag_name ?: return false
+
+        // Nettoyer les versions (enlever 'v' prefix si présent)
+        val current = currentVersion.removePrefix("v").trim()
+        val latest = latestVersion.removePrefix("v").trim()
+
+        return current != latest
+    }
+
+    /**
+     * Check if binary needs to be downloaded (doesn't exist or is corrupt)
+     */
+    fun needsDownload(): Boolean {
+        val file = File(ytDlpPath)
+
+        // Si le fichier n'existe pas
+        if (!file.exists()) {
+            return true
+        }
+
+        // Si le fichier existe mais n'est pas exécutable
+        if (!file.canExecute()) {
+            return true
+        }
+
+        // Si le fichier existe mais ne répond pas correctement
+        return version() == null
+    }
+
+    /**
+     * Downloads the appropriate yt-dlp binary for the current OS and architecture.
+     * @param forceDownload Force download even if binary already exists
+     * @return true if download successful, false otherwise
+     */
+    suspend fun downloadBinary(forceDownload: Boolean = false): Boolean {
+        return try {
+            val destFile = File(ytDlpPath)
+
+            // Si le binaire existe déjà et qu'on ne force pas le téléchargement
+            if (destFile.exists() && !forceDownload) {
+                println("Binary already exists at: ${destFile.absolutePath}")
+
+                // Vérifier que le binaire fonctionne
+                if (isAvailable()) {
+                    println("Binary is functional, skipping download")
+                    return true
+                } else {
+                    println("Binary exists but is not functional, re-downloading...")
+                }
+            }
+
+            // Créer le répertoire si nécessaire
+            destFile.parentFile?.mkdirs()
+
+            val os = getOperatingSystem()
+            val assetName = getAssetNameForSystem()
+
+            // Obtenir la dernière release
+            val release = fetcher.getLatestRelease() ?: return false
+            val assets = release.assets
 
             // Trouver l'asset correspondant
             val asset = assets.find { it.name == assetName } ?: return false
 
-            // Déterminer le nom du fichier de destination
-            val destFileName = when (os) {
-                OperatingSystem.WINDOWS -> "yt-dlp.exe"
-                else -> "yt-dlp"
-            }
-
-            val destFile = File(dir, destFileName)
+            println("Downloading $assetName from ${release.tag_name}...")
 
             // Télécharger le fichier
             downloadFile(asset.browser_download_url, destFile)
@@ -147,11 +246,15 @@ class YtDlpWrapper(
                 makeExecutable(destFile)
             }
 
-            // Mettre à jour le chemin dans la configuration
-            ytDlpPath = destFile.absolutePath
-
             // Vérifier que le téléchargement a réussi
-            isAvailable()
+            if (isAvailable()) {
+                println("Successfully downloaded yt-dlp to: ${destFile.absolutePath}")
+                true
+            } else {
+                println("Download completed but binary is not functional")
+                destFile.delete()
+                false
+            }
 
         } catch (e: Exception) {
             e.printStackTrace()
@@ -163,7 +266,7 @@ class YtDlpWrapper(
      * Download a file from URL to destination
      */
     private fun downloadFile(url: String, destFile: File) {
-        create(url).toURL().openStream().use { input ->
+        java.net.URI.create(url).toURL().openStream().use { input ->
             Files.copy(input, destFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
         }
     }
@@ -187,16 +290,6 @@ class YtDlpWrapper(
             } catch (ignored: Exception) {
                 // Si chmod n'existe pas, on ignore (peut-être sur Windows WSL)
             }
-        }
-    }
-
-    init {
-        // Si yt-dlp n'est pas disponible, essayer de le télécharger automatiquement
-        if (!isAvailable()) {
-            // Note: init ne peut pas être suspend, donc on lance dans un thread séparé
-            // ou on laisse l'appelant gérer le téléchargement
-            println("yt-dlp not found at path: $ytDlpPath")
-            println("Call downloadBinary() to download it automatically")
         }
     }
 
