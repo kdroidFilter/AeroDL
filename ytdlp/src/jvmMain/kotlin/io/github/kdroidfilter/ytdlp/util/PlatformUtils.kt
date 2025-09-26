@@ -53,10 +53,27 @@ object PlatformUtils {
         }
     }
 
-    fun downloadFile(url: String, dest: File) {
+    fun downloadFile(url: String, dest: File, onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null) {
         dest.parentFile?.mkdirs()
-        java.net.URI.create(url).toURL().openStream().use { input ->
-            Files.copy(input, dest.toPath(), StandardCopyOption.REPLACE_EXISTING)
+        val uri = java.net.URI.create(url)
+        val conn = uri.toURL().openConnection()
+        val total = conn.getHeaderFieldLong("Content-Length", -1L).takeIf { it > 0 }
+        conn.getInputStream().use { input ->
+            java.nio.channels.Channels.newChannel(input).use { rch ->
+                java.io.FileOutputStream(dest).use { fos ->
+                    val buffer = java.nio.ByteBuffer.allocateDirect(1024 * 64)
+                    var readTotal = 0L
+                    while (true) {
+                        buffer.clear()
+                        val n = rch.read(buffer)
+                        if (n <= 0) break
+                        buffer.flip()
+                        fos.channel.write(buffer)
+                        readTotal += n
+                        onProgress?.invoke(readTotal, total)
+                    }
+                }
+            }
         }
     }
 
@@ -115,7 +132,7 @@ object PlatformUtils {
     /**
      * Download & install FFmpeg. Returns installed binary path or null on failure.
      */
-    suspend fun downloadAndInstallFfmpeg(assetName: String, forceDownload: Boolean): String? {
+    fun downloadAndInstallFfmpeg(assetName: String, forceDownload: Boolean, onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null): String? {
         val baseDir = File(getCacheDir(), "ffmpeg")
         val binDir = File(baseDir, "bin")
         val targetExe = File(binDir, if (getOperatingSystem() == OperatingSystem.WINDOWS) "ffmpeg.exe" else "ffmpeg")
@@ -129,9 +146,8 @@ object PlatformUtils {
         val archive = File(baseDir, assetName)
 
         return try {
-            java.net.URI.create(url).toURL().openStream().use { ins ->
-                Files.copy(ins, archive.toPath(), StandardCopyOption.REPLACE_EXISTING)
-            }
+            // Download archive with progress
+            downloadFile(url, archive, onProgress)
             if (assetName.endsWith(".zip")) NetAndArchive.extractZip(archive, baseDir)
             else if (assetName.endsWith(".tar.xz")) NetAndArchive.extractTarXzWithSystemTar(archive, baseDir)
             else error("Unsupported FFmpeg archive: $assetName")

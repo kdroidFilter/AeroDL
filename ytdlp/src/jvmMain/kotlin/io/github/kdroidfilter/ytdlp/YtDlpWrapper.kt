@@ -49,6 +49,8 @@ class YtDlpWrapper {
         data object DownloadingYtDlp : InitEvent
         data object UpdatingYtDlp : InitEvent
         data object EnsuringFfmpeg : InitEvent
+        data class YtDlpProgress(val bytesRead: Long, val totalBytes: Long?, val percent: Double?) : InitEvent
+        data class FfmpegProgress(val bytesRead: Long, val totalBytes: Long?, val percent: Double?) : InitEvent
         data class Completed(val success: Boolean) : InitEvent
         data class Error(val message: String, val cause: Throwable? = null) : InitEvent
     }
@@ -66,12 +68,13 @@ class YtDlpWrapper {
      * Emits progress through onEvent.
      */
     suspend fun initialize(onEvent: (InitEvent) -> Unit = {}): Boolean {
+        fun pct(read: Long, total: Long?): Double? = total?.takeIf { it > 0 }?.let { read.toDouble() * 100.0 / it.toDouble() }
         try {
             onEvent(InitEvent.CheckingYtDlp)
             val available = isAvailable()
             if (!available) {
                 onEvent(InitEvent.DownloadingYtDlp)
-                if (!downloadOrUpdate()) {
+                if (!downloadOrUpdate { r, t -> onEvent(InitEvent.YtDlpProgress(r, t, pct(r, t))) }) {
                     onEvent(InitEvent.Error("Impossible de télécharger yt-dlp"))
                     onEvent(InitEvent.Completed(false))
                     return false
@@ -81,7 +84,7 @@ class YtDlpWrapper {
                 try {
                     if (hasUpdate()) {
                         onEvent(InitEvent.UpdatingYtDlp)
-                        downloadOrUpdate()
+                        downloadOrUpdate { r, t -> onEvent(InitEvent.YtDlpProgress(r, t, pct(r, t))) }
                     }
                 } catch (t: Throwable) {
                     // ignore update failures, but notify as non-fatal error event
@@ -90,7 +93,9 @@ class YtDlpWrapper {
             }
 
             onEvent(InitEvent.EnsuringFfmpeg)
-            val ffOk = try { ensureFfmpegAvailable() } catch (t: Throwable) { onEvent(InitEvent.Error("FFmpeg indisponible", t)); false }
+            val ffOk = try {
+                ensureFfmpegAvailable(false) { r, t -> onEvent(InitEvent.FfmpegProgress(r, t, pct(r, t))) }
+            } catch (t: Throwable) { onEvent(InitEvent.Error("FFmpeg indisponible", t)); false }
             val success = ffOk && isAvailable()
             onEvent(InitEvent.Completed(success))
             return success
@@ -118,16 +123,20 @@ class YtDlpWrapper {
 
     suspend fun hasUpdate(): Boolean = engine.hasUpdate()
 
-    suspend fun downloadOrUpdate(): Boolean = engine.downloadOrUpdate()
+    suspend fun downloadOrUpdate(onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null): Boolean = engine.downloadOrUpdate(onProgress)
 
     // === FFmpeg ===
     fun getDefaultFfmpegPath(): String = PlatformUtils.getDefaultFfmpegPath()
 
-    suspend fun ensureFfmpegAvailable(forceDownload: Boolean = false): Boolean =
-        engine.ensureFfmpegAvailable(forceDownload)
+    suspend fun ensureFfmpegAvailable(
+        forceDownload: Boolean = false,
+        onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null
+    ): Boolean = engine.ensureFfmpegAvailable(forceDownload, onProgress)
 
-    suspend fun downloadFfmpeg(forceDownload: Boolean = false): Boolean =
-        engine.downloadFfmpeg(forceDownload)
+    suspend fun downloadFfmpeg(
+        forceDownload: Boolean = false,
+        onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null
+    ): Boolean = engine.downloadFfmpeg(forceDownload, onProgress)
 
     // === Network preflight (kept) ===
     fun checkNetwork(targetUrl: String, connectTimeoutMs: Int = 5000, readTimeoutMs: Int = 5000)

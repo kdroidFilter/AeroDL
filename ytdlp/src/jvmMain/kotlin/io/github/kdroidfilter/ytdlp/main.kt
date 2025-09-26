@@ -19,11 +19,19 @@ fun main() = runBlocking {
             is InitEvent.DownloadingYtDlp -> println("⬇️ Téléchargement de yt-dlp…")
             is InitEvent.UpdatingYtDlp -> println("⬆️ Mise à jour de yt-dlp…")
             is InitEvent.EnsuringFfmpeg -> println("🎬 Vérification de FFmpeg…")
+            is InitEvent.YtDlpProgress -> {
+                val pct = ev.percent?.let { String.format("%.1f", it) } ?: "?"
+                print("\r⬇️ yt-dlp: $pct%")
+            }
+            is InitEvent.FfmpegProgress -> {
+                val pct = ev.percent?.let { String.format("%.1f", it) } ?: "?"
+                print("\r🎬 FFmpeg: $pct%")
+            }
             is InitEvent.Error -> {
-                println("⚠️ Init: ${ev.message}")
+                println("\n⚠️ Init: ${ev.message}")
                 ev.cause?.let { println("   ↳ ${it::class.simpleName}: ${it.message}") }
             }
-            is InitEvent.Completed -> println(if (ev.success) "✅ Init ok" else "❌ Init échouée")
+            is InitEvent.Completed -> println(if (ev.success) "\n✅ Init ok" else "\n❌ Init échouée")
         }
     }
     if (!initOk) {

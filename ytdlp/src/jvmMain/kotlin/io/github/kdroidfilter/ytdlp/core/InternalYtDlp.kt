@@ -44,7 +44,7 @@ internal class InternalYtDlp(
         return current != latest
     }
 
-    suspend fun downloadOrUpdate(): Boolean {
+    suspend fun downloadOrUpdate(onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null): Boolean {
         val assetName = PlatformUtils.getYtDlpAssetNameForSystem()
         val destFile = java.io.File(PlatformUtils.getDefaultBinaryPath())
         destFile.parentFile?.mkdirs()
@@ -54,7 +54,7 @@ internal class InternalYtDlp(
             val asset = release.assets.find { it.name == assetName } ?: return false
 
             println("Downloading yt-dlp: ${asset.name} (${release.tag_name})")
-            PlatformUtils.downloadFile(asset.browser_download_url, destFile)
+            PlatformUtils.downloadFile(asset.browser_download_url, destFile, onProgress)
 
             if (getOperatingSystem() != OperatingSystem.WINDOWS) PlatformUtils.makeExecutable(destFile)
 
@@ -74,19 +74,19 @@ internal class InternalYtDlp(
     }
 
     // -------- FFmpeg ----------
-    suspend fun ensureFfmpegAvailable(forceDownload: Boolean): Boolean {
+    suspend fun ensureFfmpegAvailable(forceDownload: Boolean, onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null): Boolean {
         ffmpegPathProvider()?.let { if (PlatformUtils.ffmpegVersion(it) != null && !forceDownload) return true }
         PlatformUtils.findFfmpegInSystemPath()?.let { ffmpegPathSetter(it); return true }
         return when (getOperatingSystem()) {
-            OperatingSystem.WINDOWS, OperatingSystem.LINUX -> downloadFfmpeg(forceDownload)
+            OperatingSystem.WINDOWS, OperatingSystem.LINUX -> downloadFfmpeg(forceDownload, onProgress)
             OperatingSystem.MACOS -> false
             else -> false
         }
     }
 
-    suspend fun downloadFfmpeg(forceDownload: Boolean): Boolean {
+    suspend fun downloadFfmpeg(forceDownload: Boolean, onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null): Boolean {
         val asset = PlatformUtils.getFfmpegAssetNameForSystem() ?: return false
-        val result = PlatformUtils.downloadAndInstallFfmpeg(asset, forceDownload)
+        val result = PlatformUtils.downloadAndInstallFfmpeg(asset, forceDownload, onProgress)
         if (result != null) ffmpegPathSetter(result)
         return result != null
     }
@@ -156,7 +156,7 @@ internal class InternalYtDlp(
         noCheckCertificate: Boolean,
         timeoutSec: Long = 20
     ): Result<String> {
-        val selector = io.github.kdroidfilter.ytdlp.util.NetAndArchive.progressiveMediumSelectorMp4(maxHeight)
+        val selector = NetAndArchive.progressiveMediumSelectorMp4(maxHeight)
         return getDirectUrlForFormat(url, selector, noCheckCertificate, timeoutSec)
     }
 
@@ -337,8 +337,8 @@ internal class InternalYtDlp(
         outputTemplate: String?,
         extraArgs: List<String>,
         timeout: java.time.Duration?,
-        onEvent: (io.github.kdroidfilter.ytdlp.core.Event) -> Unit
-    ): io.github.kdroidfilter.ytdlp.core.Handle {
+        onEvent: (Event) -> Unit
+    ): Handle {
         val format = NetAndArchive.selectorDownloadExact(height, preferredExts)
         val opts = Options(
             format = format,
@@ -358,9 +358,9 @@ internal class InternalYtDlp(
         extraArgs: List<String>,
         timeout: java.time.Duration?,
         recodeIfNeeded: Boolean,
-        onEvent: (io.github.kdroidfilter.ytdlp.core.Event) -> Unit
-    ): io.github.kdroidfilter.ytdlp.core.Handle {
-        val format = io.github.kdroidfilter.ytdlp.util.NetAndArchive.selectorDownloadExactMp4(height)
+        onEvent: (Event) -> Unit
+    ): Handle {
+        val format = NetAndArchive.selectorDownloadExactMp4(height)
         val opts = Options(
             format = format,
             outputTemplate = outputTemplate,
