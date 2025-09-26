@@ -8,7 +8,9 @@ import io.github.kdroidfilter.ytdlp.util.PlatformUtils
 import java.io.File
 import java.time.Duration
 import java.time.Duration.ofMinutes
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 /**
  * A wrapper class for utilizing the yt-dlp tool functionality.
@@ -38,27 +40,64 @@ class YtDlpWrapper {
         if (downloadDir == null) {
             downloadDir = File(System.getProperty("user.home"), "Downloads/yt-dlp")
         }
-        // Ensure tools are present and up-to-date on creation
-        runBlocking {
-            try {
-                if (!isAvailable()) {
-                    // Download yt-dlp if missing
-                    downloadOrUpdate()
-                } else {
-                    // Best-effort background update check
-                    try {
-                        if (hasUpdate()) {
-                            downloadOrUpdate()
-                        }
-                    } catch (_: Exception) {
-                        // Non-fatal: ignore update check failures
-                    }
+        // No blocking initialization here: call initialize()/initializeIn() from UI if needed.
+    }
+
+    // === Initialization events for UI ===
+    sealed interface InitEvent {
+        data object CheckingYtDlp : InitEvent
+        data object DownloadingYtDlp : InitEvent
+        data object UpdatingYtDlp : InitEvent
+        data object EnsuringFfmpeg : InitEvent
+        data class Completed(val success: Boolean) : InitEvent
+        data class Error(val message: String, val cause: Throwable? = null) : InitEvent
+    }
+
+    /**
+     * Non-blocking helper: launch initialization in a provided CoroutineScope.
+     * Returns a Job; use onEvent to observe progress in your UI.
+     */
+    fun initializeIn(scope: CoroutineScope, onEvent: (InitEvent) -> Unit = {}): Job =
+        scope.launch { initialize(onEvent) }
+
+    /**
+     * Perform on-demand initialization without blocking the calling thread.
+     * Suspends while checking/downloading yt-dlp and ensuring FFmpeg.
+     * Emits progress through onEvent.
+     */
+    suspend fun initialize(onEvent: (InitEvent) -> Unit = {}): Boolean {
+        try {
+            onEvent(InitEvent.CheckingYtDlp)
+            val available = isAvailable()
+            if (!available) {
+                onEvent(InitEvent.DownloadingYtDlp)
+                if (!downloadOrUpdate()) {
+                    onEvent(InitEvent.Error("Impossible de télécharger yt-dlp"))
+                    onEvent(InitEvent.Completed(false))
+                    return false
                 }
-                // Ensure FFmpeg availability (platform-dependent behavior inside engine)
-                ensureFfmpegAvailable()
-            } catch (_: Exception) {
-                // Non-fatal: initialization should not crash client code
+            } else {
+                // Best-effort update check
+                try {
+                    if (hasUpdate()) {
+                        onEvent(InitEvent.UpdatingYtDlp)
+                        downloadOrUpdate()
+                    }
+                } catch (t: Throwable) {
+                    // ignore update failures, but notify as non-fatal error event
+                    onEvent(InitEvent.Error("Échec de la vérification de mise à jour", t))
+                }
             }
+
+            onEvent(InitEvent.EnsuringFfmpeg)
+            val ffOk = try { ensureFfmpegAvailable() } catch (t: Throwable) { onEvent(InitEvent.Error("FFmpeg indisponible", t)); false }
+            val success = ffOk && isAvailable()
+            onEvent(InitEvent.Completed(success))
+            return success
+        } catch (t: Throwable) {
+            onEvent(InitEvent.Error(t.message ?: "Erreur d'initialisation", t))
+            onEvent(InitEvent.Completed(false))
+            return false
         }
     }
 

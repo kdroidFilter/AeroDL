@@ -1,4 +1,5 @@
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
+import io.github.kdroidfilter.ytdlp.YtDlpWrapper.InitEvent
 import io.github.kdroidfilter.ytdlp.core.Event
 import kotlinx.coroutines.runBlocking
 import java.io.File
@@ -6,34 +7,32 @@ import java.time.Duration
 
 fun main() = runBlocking {
     val wrapper = YtDlpWrapper().apply {
-        // Optional: where to place the downloads
+        // Dossier de téléchargement par défaut (modifiable)
         downloadDir = File(System.getProperty("user.home"), "Downloads/yt-dlp")
     }
 
-    // Ensure yt-dlp is present
-    if (!wrapper.isAvailable()) {
-        println("yt-dlp introuvable, téléchargement en cours…")
-        if (!wrapper.downloadOrUpdate()) {
-            println("❌ Impossible de préparer yt-dlp (vérifie les permissions et l’accès réseau).")
-            return@runBlocking
-        }
-    } else {
-        println("✅ yt-dlp version: ${wrapper.version()}")
-        // Optional: background update check
-        try {
-            if (wrapper.hasUpdate()) {
-                println("⬆️ Mise à jour disponible, téléchargement…")
-                wrapper.downloadOrUpdate()
+    // Nouvelle API d'initialisation non bloquante avec événements pour l'UI
+    println("🔧 Initialisation de yt-dlp/ffmpeg…")
+    val initOk = wrapper.initialize { ev ->
+        when (ev) {
+            is InitEvent.CheckingYtDlp -> println("🔍 Vérification de yt-dlp…")
+            is InitEvent.DownloadingYtDlp -> println("⬇️ Téléchargement de yt-dlp…")
+            is InitEvent.UpdatingYtDlp -> println("⬆️ Mise à jour de yt-dlp…")
+            is InitEvent.EnsuringFfmpeg -> println("🎬 Vérification de FFmpeg…")
+            is InitEvent.Error -> {
+                println("⚠️ Init: ${ev.message}")
+                ev.cause?.let { println("   ↳ ${it::class.simpleName}: ${it.message}") }
             }
-        } catch (_: Exception) { /* non-fatal */ }
+            is InitEvent.Completed -> println(if (ev.success) "✅ Init ok" else "❌ Init échouée")
+        }
+    }
+    if (!initOk) {
+        println("Arrêt car initialisation impossible.")
+        return@runBlocking
     }
 
-    // Ensure ffmpeg
-    if (!wrapper.ensureFfmpegAvailable()) {
-        println("⚠️ FFmpeg indisponible (macOS doit être installé via PATH).")
-    } else {
-        println("✅ FFmpeg prêt: ${wrapper.ffmpegPath}")
-    }
+    println("✅ yt-dlp version: ${wrapper.version() ?: "inconnue"}")
+    println("✅ FFmpeg: ${wrapper.ffmpegPath ?: "(via PATH ou gestion interne)"}")
 
     // Download
     val url = "https://www.youtube.com/watch?v=UoywDs3YXOM"
@@ -49,33 +48,22 @@ fun main() = runBlocking {
         )
     ) { event ->
         when (event) {
-            is Event.Started -> {
-                println("▶️  Téléchargement démarré…")
-            }
+            is Event.Started -> println("▶️  Téléchargement démarré…")
             is Event.Progress -> {
                 val pct = event.percent?.let { String.format("%.1f", it) } ?: "?"
                 print("\rProgression: $pct%")
             }
-            is Event.Log -> {
-                // Optionnel: décommente pour debug verbeux
-                // println("\nLOG: ${event.line}")
-            }
-            is Event.NetworkProblem -> {
-                println("\n🌐 Problème réseau détecté: ${event.detail}")
-            }
+            is Event.Log -> { /* println("\nLOG: ${event.line}") */ }
+            is Event.NetworkProblem -> println("\n🌐 Problème réseau détecté: ${event.detail}")
             is Event.Error -> {
                 println("\n❌ Erreur: ${event.message}")
                 event.cause?.let { println("   ↳ Cause: ${it::class.simpleName}: ${it.message}") }
             }
             is Event.Completed -> {
                 println("\n${if (event.success) "✅" else "❌"} Téléchargement terminé (exit code ${event.exitCode})")
-                if (!event.success) {
-                    println("   Astuces: vérifie la connexion, les certificats, ou ajoute --no-check-certificate / un proxy si besoin.")
-                }
+                if (!event.success) println("   Astuces: vérifie la connexion, les certificats, ou ajoute --no-check-certificate / un proxy si besoin.")
             }
-            is Event.Cancelled -> {
-                println("\n⏹️  Téléchargement annulé.")
-            }
+            is Event.Cancelled -> println("\n⏹️  Téléchargement annulé.")
         }
     }
 
