@@ -1,13 +1,17 @@
 package io.github.kdroidfilter.ytdlp
 
+import io.github.kdroidfilter.platformtools.releasefetcher.github.GitHubReleaseFetcher
 import java.io.BufferedReader
+import java.io.File
 import java.io.InputStreamReader
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * JVM wrapper around yt-dlp CLI, with configurable binary paths.
  */
-object YtDlp {
+class YtDlpWrapper(
+   private val fetcher : GitHubReleaseFetcher
+) {
     /** Configuration for paths */
     var ytDlpPath: String = "yt-dlp"
     var ffmpegPath: String? = null

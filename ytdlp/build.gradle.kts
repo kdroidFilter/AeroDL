@@ -6,7 +6,9 @@ kotlin {
     jvm()
 
     sourceSets {
-        commonMain.dependencies {
+        jvmMain.dependencies {
+            // Coroutines
+            implementation(libs.kotlinx.coroutinesSwing)
             // Platform tools
             implementation(libs.platformtools.releasefetcher)
 
@@ -16,15 +18,6 @@ kotlin {
             implementation(libs.ktor.client.serialization)
             implementation(libs.ktor.client.logging)
             implementation(libs.ktor.client.cio)
-        }
-
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
-        }
-
-        jvmMain.dependencies {
-            // Coroutines
-            implementation(libs.kotlinx.coroutinesSwing)
         }
     }
 }
