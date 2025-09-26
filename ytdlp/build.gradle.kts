@@ -11,6 +11,7 @@ kotlin {
             implementation(libs.kotlinx.coroutinesSwing)
             // Platform tools
             implementation(libs.platformtools.releasefetcher)
+            implementation(libs.platformtools.core)
 
             // Ktor client
             implementation(libs.ktor.client.core)

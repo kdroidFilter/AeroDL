@@ -46,6 +46,7 @@ composemediaplayer = { module = "io.github.kdroidfilter:composemediaplayer", ver
 composenativetray = { module = "io.github.kdroidfilter:composenativetray", version.ref = "composenativetray" }
 
 # Platform Tools
+platformtools-core = { module = "io.github.kdroidfilter:platformtools.core", version.ref = "platformtools" }
 platformtools-darkmodedetector = { module = "io.github.kdroidfilter:platformtools.darkmodedetector", version.ref = "platformtools" }
 platformtools-clipboardmanager = { module = "io.github.kdroidfilter:platformtools.clipboardmanager", version.ref = "platformtools" }
 platformtools-releasefetcher = { module = "io.github.kdroidfilter:platformtools.releasefetcher", version.ref = "platformtools" }
