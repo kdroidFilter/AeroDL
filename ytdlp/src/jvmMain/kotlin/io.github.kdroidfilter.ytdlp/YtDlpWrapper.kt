@@ -498,6 +498,113 @@ class YtDlpWrapper {
         return Handle(process, cancelled)
     }
 
+    // === Direct URL (no download) helpers =======================================
+
+    /**
+     * Build a format selector that favors single-file (progressive) muxed formats
+     * (i.e., both audio and video in one container) up to [maxHeight].
+     *
+     * We avoid separate video/audio (which would trigger merging) by requiring
+     * both acodec and vcodec to be present. We also bias to mp4, then webm.
+     *
+     * Example output:
+     *  best[acodec!=none][vcodec!=none][ext=mp4][height<=480]/
+     *  best[acodec!=none][vcodec!=none][ext=webm][height<=480]/
+     *  best[acodec!=none][vcodec!=none][height<=480]
+     */
+    private fun progressiveMediumSelector(
+        maxHeight: Int = 480,
+        preferredExts: List<String> = listOf("mp4", "webm")
+    ): String {
+        val common = "best[acodec!=none][vcodec!=none][height<=$maxHeight]"
+        val biased = preferredExts.joinToString(separator = "/") { ext ->
+            "$common[ext=$ext]"
+        }
+        // Try preferred extensions first, then any progressive ≤ maxHeight
+        return "$biased/$common"
+    }
+
+    /**
+     * Returns the direct media URL for a given format selector, without downloading.
+     * Uses: yt-dlp -f "<selector>" -g --no-playlist URL
+     *
+     * @return Result.success(url) if a single progressive URL is found, otherwise failure with reason.
+     */
+    fun getDirectUrlForFormat(
+        url: String,
+        formatSelector: String,
+        noCheckCertificate: Boolean = false,
+        timeoutSec: Long = 20
+    ): Result<String> {
+        require(isAvailable()) { "yt-dlp is not available. Call downloadOrUpdate() first or set ytDlpPath." }
+
+        // Fast network preflight
+        val net = checkNetwork(url)
+        if (net.isFailure) return Result.failure(IllegalStateException("Network preflight failed: ${net.exceptionOrNull()?.message}"))
+
+        val cmd = buildList {
+            add(ytDlpPath)
+            addAll(listOf("-f", formatSelector, "-g", "--no-playlist", "--newline"))
+            if (noCheckCertificate) add("--no-check-certificate")
+            // Respect explicit ffmpeg location if set (won't be used here unless ytdlp needs it for probes)
+            ffmpegPath?.takeIf { it.isNotBlank() }?.let { addAll(listOf("--ffmpeg-location", it)) }
+            add(url)
+        }
+
+        val pb = ProcessBuilder(cmd).redirectErrorStream(true)
+        val process = try {
+            pb.start()
+        } catch (t: Throwable) {
+            return Result.failure(IllegalStateException("Failed to start yt-dlp process", t))
+        }
+
+        // Guard against hanging
+        val finished = process.waitFor(timeoutSec, java.util.concurrent.TimeUnit.SECONDS)
+        if (!finished) {
+            process.destroy()
+            return Result.failure(IllegalStateException("yt-dlp -g timed out after ${timeoutSec}s"))
+        }
+
+        val out = process.inputStream.bufferedReader(Charsets.UTF_8).readLines().map { it.trim() }.filter { it.isNotBlank() }
+        val exit = process.exitValue()
+        if (exit != 0) {
+            val errPreview = out.takeLast(10).joinToString("\n")
+            return Result.failure(IllegalStateException("yt-dlp -g failed (exit $exit)\n$errPreview"))
+        }
+
+        // For progressive formats, yt-dlp -g should output a single URL.
+        // If multiple lines appear, it's likely a split A/V selection — reject to prevent merges.
+        return when (out.size) {
+            0 -> Result.failure(IllegalStateException("No URL returned by yt-dlp for selector: $formatSelector"))
+            1 -> Result.success(out.first())
+            else -> Result.failure(IllegalStateException("Multiple URLs returned (likely split A/V). Refusing to avoid merging.\n${
+                out.joinToString("\n")
+            }"))
+        }
+    }
+
+    /**
+     * Convenience: Get a "medium" quality (<= 480p by default) progressive (audio+video) direct URL.
+     * No download, no conversion.
+     *
+     * @param maxHeight Upper bound for height (default 480 for "medium").
+     * @param preferredExts Extension preference order (default mp4, then webm).
+     */
+    fun getMediumQualityUrl(
+        url: String,
+        maxHeight: Int = 480,
+        preferredExts: List<String> = listOf("mp4", "webm"),
+        noCheckCertificate: Boolean = false
+    ): Result<String> {
+        val selector = progressiveMediumSelector(maxHeight, preferredExts)
+        return getDirectUrlForFormat(
+            url = url,
+            formatSelector = selector,
+            noCheckCertificate = noCheckCertificate
+        )
+    }
+
+
     // ====== Command construction & parsing ======
 
     private fun buildCommand(url: String, options: Options): List<String> {
