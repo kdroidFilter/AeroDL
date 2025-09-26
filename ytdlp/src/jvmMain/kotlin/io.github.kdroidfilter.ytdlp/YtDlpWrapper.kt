@@ -7,6 +7,7 @@ import io.github.kdroidfilter.platformtools.releasefetcher.github.GitHubReleaseF
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
+import java.net.URI.create
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.nio.file.attribute.PosixFilePermission
@@ -162,7 +163,7 @@ class YtDlpWrapper(
      * Download a file from URL to destination
      */
     private fun downloadFile(url: String, destFile: File) {
-        java.net.URI.create(url).toURL().openStream().use { input ->
+        create(url).toURL().openStream().use { input ->
             Files.copy(input, destFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
         }
     }
