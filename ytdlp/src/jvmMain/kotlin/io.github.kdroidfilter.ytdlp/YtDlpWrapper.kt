@@ -7,26 +7,44 @@ import io.github.kdroidfilter.platformtools.releasefetcher.github.GitHubReleaseF
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
+import java.net.*
+import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.nio.file.attribute.PosixFilePermission
+import java.time.Duration
+import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.zip.ZipInputStream
+import kotlin.math.min
 
 /**
- * JVM wrapper around yt-dlp CLI, with configurable binary paths.
+ * Thin Kotlin wrapper around yt-dlp with:
+ * - Self-update/download of yt-dlp from GitHub releases
+ * - Optional auto-download of FFmpeg (Windows/Linux) from yt-dlp/FFmpeg-Builds latest assets
+ * - macOS uses PATH-only FFmpeg (no official macOS build in that repo)
+ * - Configurable download directory and extra arguments
+ * - Streaming of progress lines via callbacks
+ * - Strong error reporting (network checks, exit-code summary, tail buffer of logs)
+ *
+ * NOTE: All code comments are in English per user preference.
  */
-class YtDlpWrapper(
-    private val fetcher: GitHubReleaseFetcher
-) {
-    /** Configuration for paths */
+class YtDlpWrapper {
+
+    // ===== GitHub fetcher for yt-dlp proper =====
+    private val ytdlpFetcher = GitHubReleaseFetcher(
+        owner = "yt-dlp",
+        repo = "yt-dlp"
+    )
+
+    // ===== User configuration (can be overridden externally) =====
     var ytDlpPath: String = getDefaultBinaryPath()
     var ffmpegPath: String? = null
     var downloadDir: File? = null
 
     companion object {
-        /**
-         * Obtient le chemin par défaut pour le binaire yt-dlp dans le cache
-         */
+        /** Default cache path for yt-dlp binary (inside app cache dir). */
         fun getDefaultBinaryPath(): String {
             val dir = getCacheDir()
             val os = getOperatingSystem()
@@ -37,118 +55,64 @@ class YtDlpWrapper(
             return File(dir, binaryName).absolutePath
         }
 
-        /**
-         * Obtient le nom du fichier binaire approprié pour le système actuel
-         */
+        /** Asset name for yt-dlp matching host OS/arch/musl. */
         fun getAssetNameForSystem(): String {
             val os = getOperatingSystem()
-            val arch = System.getProperty("os.arch")?.lowercase() ?: ""
-            val isArm = arch.contains("arm") || arch.contains("aarch")
-            val is64Bit = arch.contains("64")
-            val isX86 = arch.contains("x86") && !is64Bit
+            val arch = (System.getProperty("os.arch") ?: "").lowercase()
 
             return when (os) {
                 OperatingSystem.WINDOWS -> when {
-                    isArm -> "yt-dlp_arm64.exe"
-                    isX86 -> "yt-dlp_x86.exe"
-                    else -> "yt-dlp.exe"  // x64 par défaut
+                    arch.contains("aarch64") || arch.contains("arm64") -> "yt-dlp_win_arm64.exe"
+                    arch.contains("32") || (arch.contains("x86") && !arch.contains("64")) -> "yt-dlp_x86.exe"
+                    else -> "yt-dlp.exe"
                 }
-
-                OperatingSystem.MACOS -> "yt-dlp_macos"
-
+                OperatingSystem.MACOS -> when {
+                    arch.contains("aarch64") || arch.contains("arm64") -> "yt-dlp_macos_arm64"
+                    else -> "yt-dlp_macos"
+                }
                 OperatingSystem.LINUX -> {
-                    // Déterminer si c'est un système musl (Alpine, etc.)
                     val isMusl = try {
-                        val process = Runtime.getRuntime().exec(arrayOf("ldd", "--version"))
-                        val output = process.inputStream.bufferedReader().readText()
-                        output.contains("musl")
-                    } catch (e: Exception) {
-                        false
-                    }
+                        val p = Runtime.getRuntime().exec(arrayOf("ldd", "--version"))
+                        val out = p.inputStream.bufferedReader().readText()
+                        out.contains("musl")
+                    } catch (_: Exception) { false }
 
                     when {
-                        isMusl && arch.contains("aarch64") -> "yt-dlp_musllinux_aarch64"
+                        isMusl && (arch.contains("aarch64") || arch.contains("arm64")) -> "yt-dlp_musllinux_aarch64"
                         isMusl -> "yt-dlp_musllinux"
-                        arch.contains("aarch64") -> "yt-dlp_linux_aarch64"
+                        arch.contains("aarch64") || arch.contains("arm64") -> "yt-dlp_linux_aarch64"
                         arch.contains("armv7") -> "yt-dlp_linux_armv7l"
                         else -> "yt-dlp_linux"
                     }
                 }
-
-                else -> "yt-dlp"  // Fallback
+                else -> "yt-dlp"
             }
         }
     }
 
+    // ===== Public options for a single download =====
     data class Options(
-        val format: String? = null,            // e.g. "bestvideo+bestaudio/best"
-        val outputTemplate: String? = null,    // e.g. "%(title)s.%(ext)s"
+        val format: String? = null,            // e.g., "bestvideo+bestaudio/best"
+        val outputTemplate: String? = null,    // e.g., "%(title)s.%(ext)s"
         val noCheckCertificate: Boolean = false,
-        val extraArgs: List<String> = emptyList()
+        val extraArgs: List<String> = emptyList(),
+        val timeout: Duration? = Duration.ofMinutes(30) // max wall time for the process
     )
 
+    // ===== Streaming events =====
     sealed class Event {
         data class Progress(val percent: Double?, val rawLine: String) : Event()
         data class Log(val line: String) : Event()
-        data class Completed(val exitCode: Int) : Event()
         data class Error(val message: String, val cause: Throwable? = null) : Event()
-        data object Started : Event()
+        data class Completed(val exitCode: Int, val success: Boolean) : Event()
         data object Cancelled : Event()
+        data object Started : Event()
+        data class NetworkProblem(val detail: String) : Event()
     }
 
-    class Handle internal constructor(private val process: Process, private val cancelledFlag: AtomicBoolean) {
-        fun cancel() {
-            cancelledFlag.set(true)
-            process.destroy()
-        }
-        val isCancelled: Boolean get() = cancelledFlag.get()
-    }
+    // ====== yt-dlp availability/version/update ======
 
-    init {
-        // Vérifier d'abord si le binaire existe déjà dans le cache
-        val binaryFile = File(ytDlpPath)
-        if (!binaryFile.exists()) {
-            // Si le binaire n'existe pas dans le cache, essayer de le trouver dans le PATH système
-            val systemPath = findInSystemPath()
-            if (systemPath != null) {
-                ytDlpPath = systemPath
-                println("yt-dlp found in system PATH: $ytDlpPath")
-            } else {
-                println("yt-dlp not found at path: $ytDlpPath")
-                println("Call downloadBinary() to download it automatically")
-            }
-        } else {
-            // Le binaire existe dans le cache
-            println("Using cached yt-dlp binary: $ytDlpPath")
-        }
-    }
-
-    /**
-     * Cherche yt-dlp dans le PATH système
-     */
-    private fun findInSystemPath(): String? {
-        val os = getOperatingSystem()
-        val command = when (os) {
-            OperatingSystem.WINDOWS -> listOf("where", "yt-dlp")
-            else -> listOf("which", "yt-dlp")
-        }
-
-        return try {
-            val process = ProcessBuilder(command)
-                .redirectErrorStream(true)
-                .start()
-            val output = process.inputStream.bufferedReader().readText().trim()
-            val exitCode = process.waitFor()
-
-            if (exitCode == 0 && output.isNotBlank()) {
-                output.lines().firstOrNull()?.trim()
-            } else null
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    /** Returns yt-dlp version or null if unavailable */
+    /** Returns yt-dlp version or null if unavailable. */
     fun version(): String? = try {
         val proc = ProcessBuilder(listOf(ytDlpPath, "--version"))
             .redirectErrorStream(true)
@@ -160,208 +124,464 @@ class YtDlpWrapper(
         null
     }
 
+    /** True if yt-dlp binary exists, is executable, and returns a version. */
     fun isAvailable(): Boolean {
-        // Vérifier si le fichier existe et est exécutable
         val file = File(ytDlpPath)
         return file.exists() && file.canExecute() && version() != null
     }
 
-    /**
-     * Check if an update is available
-     * @return true if current version is different from latest release
-     */
+    /** True if remote latest version differs from local version (or yt-dlp is missing). */
     suspend fun hasUpdate(): Boolean {
-        val currentVersion = version() ?: return true  // Si pas de version, mise à jour nécessaire
-        val latestVersion = fetcher.getLatestRelease()?.tag_name ?: return false
-
-        // Nettoyer les versions (enlever 'v' prefix si présent)
+        val currentVersion = version() ?: return true
+        val latestVersion = ytdlpFetcher.getLatestRelease()?.tag_name ?: return false
         val current = currentVersion.removePrefix("v").trim()
         val latest = latestVersion.removePrefix("v").trim()
-
         return current != latest
     }
 
     /**
-     * Check if binary needs to be downloaded (doesn't exist or is corrupt)
+     * Download (or update) yt-dlp to the cache directory.
+     * @return true if available afterwards.
      */
-    fun needsDownload(): Boolean {
-        val file = File(ytDlpPath)
+    suspend fun downloadOrUpdate(): Boolean {
+        val os = getOperatingSystem()
+        val assetName = getAssetNameForSystem()
+        val destFile = File(getDefaultBinaryPath())
+        if (destFile.parentFile?.exists() != true) destFile.parentFile?.mkdirs()
 
-        // Si le fichier n'existe pas
-        if (!file.exists()) {
-            return true
-        }
-
-        // Si le fichier existe mais n'est pas exécutable
-        if (!file.canExecute()) {
-            return true
-        }
-
-        // Si le fichier existe mais ne répond pas correctement
-        return version() == null
-    }
-
-    /**
-     * Downloads the appropriate yt-dlp binary for the current OS and architecture.
-     * @param forceDownload Force download even if binary already exists
-     * @return true if download successful, false otherwise
-     */
-    suspend fun downloadBinary(forceDownload: Boolean = false): Boolean {
         return try {
-            val destFile = File(ytDlpPath)
+            val release = ytdlpFetcher.getLatestRelease() ?: return false
+            val asset = release.assets.find { it.name == assetName } ?: return false
 
-            // Si le binaire existe déjà et qu'on ne force pas le téléchargement
-            if (destFile.exists() && !forceDownload) {
-                println("Binary already exists at: ${destFile.absolutePath}")
-
-                // Vérifier que le binaire fonctionne
-                if (isAvailable()) {
-                    println("Binary is functional, skipping download")
-                    return true
-                } else {
-                    println("Binary exists but is not functional, re-downloading...")
-                }
-            }
-
-            // Créer le répertoire si nécessaire
-            destFile.parentFile?.mkdirs()
-
-            val os = getOperatingSystem()
-            val assetName = getAssetNameForSystem()
-
-            // Obtenir la dernière release
-            val release = fetcher.getLatestRelease() ?: return false
-            val assets = release.assets
-
-            // Trouver l'asset correspondant
-            val asset = assets.find { it.name == assetName } ?: return false
-
-            println("Downloading $assetName from ${release.tag_name}...")
-
-            // Télécharger le fichier
+            println("Downloading yt-dlp: ${asset.name} (${release.tag_name})")
             downloadFile(asset.browser_download_url, destFile)
 
-            // Rendre exécutable sur Unix-like systems
-            if (os != OperatingSystem.WINDOWS) {
-                makeExecutable(destFile)
-            }
+            if (os != OperatingSystem.WINDOWS) makeExecutable(destFile)
 
-            // Vérifier que le téléchargement a réussi
             if (isAvailable()) {
-                println("Successfully downloaded yt-dlp to: ${destFile.absolutePath}")
+                println("yt-dlp ready at ${destFile.absolutePath}")
+                ytDlpPath = destFile.absolutePath
                 true
             } else {
-                println("Download completed but binary is not functional")
+                println("Downloaded yt-dlp but it did not run")
                 destFile.delete()
                 false
             }
-
         } catch (e: Exception) {
             e.printStackTrace()
             false
         }
     }
 
-    /**
-     * Download a file from URL to destination
-     */
-    private fun downloadFile(url: String, destFile: File) {
-        java.net.URI.create(url).toURL().openStream().use { input ->
-            Files.copy(input, destFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
+    // ====== FFmpeg auto-download (Windows/Linux) ======
+
+    /** Default FFmpeg path (inside cache/ffmpeg/bin/). */
+    fun getDefaultFfmpegPath(): String {
+        val dir = File(getCacheDir(), "ffmpeg/bin")
+        val exe = if (getOperatingSystem() == OperatingSystem.WINDOWS) "ffmpeg.exe" else "ffmpeg"
+        return File(dir, exe).absolutePath
+    }
+
+    /** Try to locate ffmpeg in PATH using platform native command. */
+    private fun findFfmpegInSystemPath(): String? {
+        val cmd = if (getOperatingSystem() == OperatingSystem.WINDOWS)
+            listOf("where", "ffmpeg") else listOf("which", "ffmpeg")
+        return try {
+            val p = ProcessBuilder(cmd).redirectErrorStream(true).start()
+            val out = p.inputStream.bufferedReader().readText().trim()
+            if (p.waitFor() == 0 && out.isNotBlank()) out.lineSequence().firstOrNull()?.trim() else null
+        } catch (_: Exception) { null }
+    }
+
+    /** Returns "ffmpeg -version" first line, or null if not runnable. */
+    private fun ffmpegVersion(path: String): String? = try {
+        val p = ProcessBuilder(listOf(path, "-version")).redirectErrorStream(true).start()
+        val out = p.inputStream.bufferedReader().readText().trim()
+        if (p.waitFor() == 0 && out.isNotBlank()) out.lineSequence().firstOrNull() else null
+    } catch (_: Exception) { null }
+
+    /** Map expected FFmpeg asset name for current OS/arch (yt-dlp/FFmpeg-Builds 'gpl' static builds). */
+    private fun getFfmpegAssetNameForSystem(): String? {
+        val os = getOperatingSystem()
+        val arch = (System.getProperty("os.arch") ?: "").lowercase()
+        val isArm64 = arch.contains("aarch64") || arch.contains("arm64")
+        return when (os) {
+            OperatingSystem.WINDOWS -> when {
+                isArm64 -> "ffmpeg-master-latest-winarm64-gpl.zip"
+                arch.contains("32") || (arch.contains("x86") && !arch.contains("64")) -> "ffmpeg-master-latest-win32-gpl.zip"
+                else -> "ffmpeg-master-latest-win64-gpl.zip"
+            }
+            OperatingSystem.LINUX -> if (isArm64) "ffmpeg-master-latest-linuxarm64-gpl.tar.xz"
+            else "ffmpeg-master-latest-linux64-gpl.tar.xz"
+            OperatingSystem.MACOS -> null // no official macOS build in that repo
+            else -> null
         }
     }
 
     /**
-     * Make file executable on Unix-like systems
+     * Ensure a working FFmpeg is available.
+     * - If ffmpegPath is already set and runnable -> OK
+     * - Else try PATH
+     * - Else (Windows/Linux) auto-download from yt-dlp/FFmpeg-Builds 'latest'
+     * - macOS: PATH only (repo doesn't ship macOS builds)
      */
-    private fun makeExecutable(file: File) {
-        try {
-            // Méthode 1 : Utiliser les permissions POSIX si disponibles
-            val path = file.toPath()
-            val perms = Files.getPosixFilePermissions(path)
-            perms.add(PosixFilePermission.OWNER_EXECUTE)
-            perms.add(PosixFilePermission.GROUP_EXECUTE)
-            perms.add(PosixFilePermission.OTHERS_EXECUTE)
-            Files.setPosixFilePermissions(path, perms)
-        } catch (e: UnsupportedOperationException) {
-            // Méthode 2 : Fallback avec Runtime.exec pour les systèmes non-POSIX
-            try {
-                Runtime.getRuntime().exec(arrayOf("chmod", "+x", file.absolutePath)).waitFor()
-            } catch (ignored: Exception) {
-                // Si chmod n'existe pas, on ignore (peut-être sur Windows WSL)
+    suspend fun ensureFfmpegAvailable(forceDownload: Boolean = false): Boolean {
+        ffmpegPath?.let { if (ffmpegVersion(it) != null && !forceDownload) return true }
+        findFfmpegInSystemPath()?.let { ffmpegPath = it; return true }
+        return when (getOperatingSystem()) {
+            OperatingSystem.WINDOWS, OperatingSystem.LINUX -> downloadFfmpeg(forceDownload)
+            OperatingSystem.MACOS -> false
+            else -> false
+        }
+    }
+
+    /** Download & extract FFmpeg into cache/ffmpeg/bin/, set ffmpegPath. */
+    suspend fun downloadFfmpeg(forceDownload: Boolean = false): Boolean {
+        val asset = getFfmpegAssetNameForSystem() ?: return false
+        val baseDir = File(getCacheDir(), "ffmpeg")
+        val binDir = File(baseDir, "bin")
+        val targetExe = File(binDir, if (getOperatingSystem() == OperatingSystem.WINDOWS) "ffmpeg.exe" else "ffmpeg")
+
+        if (targetExe.exists() && ffmpegVersion(targetExe.absolutePath) != null && !forceDownload) {
+            ffmpegPath = targetExe.absolutePath
+            return true
+        }
+
+        baseDir.mkdirs(); binDir.mkdirs()
+        val url = "https://github.com/yt-dlp/FFmpeg-Builds/releases/latest/download/$asset"
+        val archive = File(baseDir, asset)
+
+        return try {
+            java.net.URI.create(url).toURL().openStream().use { ins ->
+                Files.copy(ins, archive.toPath(), StandardCopyOption.REPLACE_EXISTING)
+            }
+            if (asset.endsWith(".zip")) extractZip(archive, baseDir)
+            else if (asset.endsWith(".tar.xz")) extractTarXzWithSystemTar(archive, baseDir)
+            else error("Unsupported FFmpeg archive: $asset")
+
+            val found = baseDir.walkTopDown()
+                .firstOrNull { it.isFile && it.name.startsWith("ffmpeg") && it.canRead() }
+                ?: error("FFmpeg binary not found after extraction")
+
+            found.copyTo(targetExe, overwrite = true)
+
+            if (getOperatingSystem() != OperatingSystem.WINDOWS) {
+                try {
+                    val perms = Files.getPosixFilePermissions(targetExe.toPath()).toMutableSet()
+                    perms.add(PosixFilePermission.OWNER_EXECUTE)
+                    perms.add(PosixFilePermission.GROUP_EXECUTE)
+                    perms.add(PosixFilePermission.OTHERS_EXECUTE)
+                    Files.setPosixFilePermissions(targetExe.toPath(), perms)
+                } catch (_: UnsupportedOperationException) {
+                    Runtime.getRuntime().exec(arrayOf("chmod", "+x", targetExe.absolutePath)).waitFor()
+                }
+            }
+
+            ffmpegVersion(targetExe.absolutePath) ?: error("FFmpeg not runnable")
+            ffmpegPath = targetExe.absolutePath
+            true
+        } catch (t: Throwable) {
+            t.printStackTrace()
+            false
+        }
+    }
+
+    /** Pure-Java ZIP extraction. */
+    private fun extractZip(zipFile: File, destDir: File) {
+        ZipInputStream(zipFile.inputStream().buffered()).use { zis ->
+            var entry = zis.nextEntry
+            while (entry != null) {
+                val out = File(destDir, entry.name)
+                if (entry.isDirectory) out.mkdirs()
+                else { out.parentFile?.mkdirs(); out.outputStream().use { os -> zis.copyTo(os) } }
+                zis.closeEntry()
+                entry = zis.nextEntry
             }
         }
     }
 
+    /** Extract TAR.XZ via system `tar` (present on most Linux distros). */
+    private fun extractTarXzWithSystemTar(archive: File, destDir: File) {
+        val p = ProcessBuilder("tar", "-xJf", archive.absolutePath, "-C", destDir.absolutePath)
+            .redirectErrorStream(true).start()
+        val out = p.inputStream.bufferedReader().readText()
+        val code = p.waitFor()
+        if (code != 0) error("tar failed ($code): $out")
+    }
+
+    // ===== Network preflight =====
+
     /**
-     * Run yt-dlp with the given url and options.
-     * Blocking until finished/cancelled. Run from a background thread.
+     * Quick network check before spawning yt-dlp to fail fast on no-connection cases.
+     * - Tries to reach the target host with a HEAD request.
+     * - Fallback to a lightweight known host if URL host cannot be resolved yet.
+     */
+    fun checkNetwork(targetUrl: String, connectTimeoutMs: Int = 5000, readTimeoutMs: Int = 5000): Result<Unit> {
+        return try {
+            val url = URL(targetUrl)
+            // DNS check
+            try { InetAddress.getByName(url.host) } catch (e: UnknownHostException) {
+                return Result.failure(IllegalStateException("DNS resolution failed for ${url.host}", e))
+            }
+
+            // HEAD request to target (may be blocked; that's okay—we just test reachability)
+            (url.openConnection() as URLConnection).apply {
+                if (this is HttpURLConnection) {
+                    requestMethod = "HEAD"
+                    instanceFollowRedirects = true
+                    connectTimeout = connectTimeoutMs
+                    readTimeout = readTimeoutMs
+                    setRequestProperty("User-Agent", "Mozilla/5.0 (YtDlpWrapper)")
+                    connect()
+                    // Accept any 2xx/3xx as “network OK”
+                    if (responseCode in 200..399) {
+                        disconnect()
+                        return Result.success(Unit)
+                    }
+                }
+            }
+
+            // If we couldn't confirm, try a well-known fallback
+            val fallback = URL("https://www.gstatic.com/generate_204")
+            (fallback.openConnection() as HttpURLConnection).apply {
+                requestMethod = "GET"
+                connectTimeout = connectTimeoutMs
+                readTimeout = readTimeoutMs
+                connect()
+                disconnect()
+            }
+            Result.success(Unit)
+        } catch (e: SocketTimeoutException) {
+            Result.failure(IllegalStateException("Network timeout", e))
+        } catch (e: ConnectException) {
+            Result.failure(IllegalStateException("No route to host / connection refused", e))
+        } catch (e: UnknownHostException) {
+            Result.failure(IllegalStateException("DNS resolution failed", e))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // ====== Download execution =====
+
+    data class Handle(
+        val process: Process,
+        /** Set to true to request cancellation (process will be destroyed). */
+        val cancelled: AtomicBoolean
+    ) {
+        fun cancel() {
+            cancelled.set(true)
+            process.destroy()
+        }
+    }
+
+    /**
+     * Starts a yt-dlp download and streams the output lines to [onEvent].
+     * Emits:
+     *  - Started, Progress/Log lines, Completed(success=false) if exit!=0 with a summary Error,
+     *  - Error early if process cannot start,
+     *  - Cancelled if you call Handle.cancel().
      */
     fun download(
         url: String,
         options: Options = Options(),
-        onEvent: (Event) -> Unit = {}
+        onEvent: (Event) -> Unit
     ): Handle {
-        val cmd = buildCommand(url, options)
-        val pb = ProcessBuilder(cmd)
-            .redirectErrorStream(true)
+        require(isAvailable()) { "yt-dlp is not available. Call downloadOrUpdate() first or set ytDlpPath." }
 
-        // configure working directory if provided
-        downloadDir?.let { pb.directory(it) }
-
-        val process = pb.start()
-        val cancelled = AtomicBoolean(false)
-        onEvent(Event.Started)
-
-        val reader = BufferedReader(InputStreamReader(process.inputStream))
-        try {
-            var line: String?
-            while (reader.readLine().also { line = it } != null) {
-                val l = line!!
-                val progress = parseProgress(l)
-                if (progress != null) onEvent(progress) else onEvent(Event.Log(l))
-            }
-        } catch (t: Throwable) {
-            if (!cancelled.get()) onEvent(Event.Error("I/O error while reading yt-dlp output", t))
-        } finally {
-            reader.close()
+        // Fast network preflight
+        val net = checkNetwork(url)
+        if (net.isFailure) {
+            onEvent(Event.NetworkProblem(net.exceptionOrNull()?.message ?: "Network not available"))
+            onEvent(Event.Error("Network preflight failed."))
+            // Create a fake handle that does nothing
+            val proc = ProcessBuilder(listOf("true")).start()
+            return Handle(proc, AtomicBoolean(true))
         }
 
-        val exit = try { process.waitFor() } catch (e: InterruptedException) { -1 }
-        if (cancelled.get()) onEvent(Event.Cancelled) else onEvent(Event.Completed(exit))
+        val cmd = buildCommand(url, options)
+        val pb = ProcessBuilder(cmd)
+        if (downloadDir != null) pb.directory(downloadDir)
+        pb.redirectErrorStream(true)
+
+        val process = try {
+            pb.start()
+        } catch (t: Throwable) {
+            onEvent(Event.Error("Failed to start yt-dlp process (permissions or path issue).", t))
+            // Fake handle
+            val fake = ProcessBuilder(listOf("true")).start()
+            return Handle(fake, AtomicBoolean(true))
+        }
+
+        val cancelled = AtomicBoolean(false)
+        val reader = BufferedReader(InputStreamReader(process.inputStream, StandardCharsets.UTF_8))
+
+        // Keep a tail buffer of last N lines to help diagnose errors on non-zero exit.
+        val tailCapacity = 120
+        val tail = ArrayBlockingQueue<String>(tailCapacity)
+
+        fun offerTail(line: String) {
+            if (!tail.offer(line)) {
+                tail.poll()
+                tail.offer(line)
+            }
+        }
+
+        onEvent(Event.Started)
+
+        // Reader thread
+        Thread {
+            try {
+                var line: String?
+                while (reader.readLine().also { line = it } != null) {
+                    val l = line!!
+                    offerTail(l)
+                    val progress = parseProgress(l)
+                    if (progress != null) onEvent(progress) else onEvent(Event.Log(l))
+                }
+            } catch (t: Throwable) {
+                if (!cancelled.get()) onEvent(Event.Error("I/O error while reading yt-dlp output", t))
+            } finally {
+                try { reader.close() } catch (_: Exception) { }
+            }
+        }.apply {
+            name = "yt-dlp-reader"
+            isDaemon = true
+        }.start()
+
+        // Watchdog thread for timeout
+        options.timeout?.let { limit ->
+            Thread {
+                val deadlineNs = System.nanoTime() + limit.toNanos()
+                while (!cancelled.get()) {
+                    if (System.nanoTime() > deadlineNs) {
+                        cancelled.set(true)
+                        process.destroy()
+                        onEvent(Event.Error("Download timed out after ${limit.toMinutes()} minutes."))
+                        break
+                    }
+                    try { Thread.sleep(300) } catch (_: InterruptedException) { break }
+                }
+            }.apply {
+                name = "yt-dlp-timeout"
+                isDaemon = true
+            }.start()
+        }
+
+        // Completion watcher
+        Thread {
+            val exit = try { process.waitFor() } catch (_: InterruptedException) { -1 }
+            val ok = (exit == 0)
+            if (cancelled.get()) {
+                onEvent(Event.Cancelled)
+            } else if (!ok) {
+                // Build a concise failure summary from tail lines.
+                val lines = mutableListOf<String>()
+                tail.drainTo(lines)
+                val diagnostic = diagnose(lines)
+                val tailPreview = if (lines.isEmpty()) "(no output captured)"
+                else lines.takeLast(min(15, lines.size)).joinToString("\n")
+
+                onEvent(
+                    Event.Error(
+                        "yt-dlp failed (exit $exit). ${diagnostic ?: ""}".trim()
+                                + "\n--- Last output ---\n$tailPreview"
+                    )
+                )
+            }
+            onEvent(Event.Completed(exit, ok))
+        }.apply {
+            name = "yt-dlp-completion"
+            isDaemon = true
+        }.start()
+
         return Handle(process, cancelled)
     }
+
+    // ====== Command construction & parsing ======
 
     private fun buildCommand(url: String, options: Options): List<String> {
         val cmd = mutableListOf(ytDlpPath, "--newline")
 
-        // ffmpeg override
-        if (!ffmpegPath.isNullOrBlank()) {
-            cmd.addAll(listOf("--ffmpeg-location", ffmpegPath!!))
-        }
+        // Explicit FFmpeg override if available
+        ffmpegPath?.takeIf { it.isNotBlank() }?.let { cmd.addAll(listOf("--ffmpeg-location", it)) }
 
         // no-check-certificate
-        if (options.noCheckCertificate) {
-            cmd.add("--no-check-certificate")
+        if (options.noCheckCertificate) cmd.add("--no-check-certificate")
+
+        // output directory / template
+        downloadDir?.let { dir ->
+            if (!dir.exists()) dir.mkdirs()
+            val tpl = options.outputTemplate ?: "%(title)s.%(ext)s"
+            cmd.addAll(listOf("-o", File(dir, tpl).absolutePath))
+        } ?: run {
+            options.outputTemplate?.let { tpl -> cmd.addAll(listOf("-o", tpl)) }
         }
 
-        if (!options.format.isNullOrBlank()) {
-            cmd.addAll(listOf("-f", options.format))
-        }
-        if (!options.outputTemplate.isNullOrBlank()) {
-            cmd.addAll(listOf("-o", options.outputTemplate))
-        }
-        if (options.extraArgs.isNotEmpty()) {
-            cmd.addAll(options.extraArgs)
-        }
+        // format selection
+        options.format?.let { cmd.addAll(listOf("-f", it)) }
+
+        // user extra args at the end
+        if (options.extraArgs.isNotEmpty()) cmd.addAll(options.extraArgs)
+
         cmd.add(url)
         return cmd
     }
 
     private fun parseProgress(line: String): Event.Progress? {
+        // Typical progress lines: "[download]  12.3% of ...", "[Merger] Merging formats: ...", etc.
         val percentRegex = Regex("(\\d{1,3}(?:[.,]\\d+)?)%")
         val match = percentRegex.find(line)
         val pct = match?.groupValues?.getOrNull(1)?.replace(',', '.')?.toDoubleOrNull()
         return if (pct != null) Event.Progress(pct, line) else null
+    }
+
+    // ====== Failure diagnosis ======
+
+    /** Try to spot a common cause based on output lines. */
+    private fun diagnose(lines: List<String>): String? {
+        val joined = lines.joinToString("\n").lowercase()
+
+        fun has(vararg needles: String) = needles.any { joined.contains(it.lowercase()) }
+
+        return when {
+            has("connection refused", "no route to host", "network is unreachable") ->
+                "Connection problem to remote host."
+            has("timed out", "timeout", "operation timed out", "read timed out") ->
+                "Network timeout."
+            has("unknown host", "name or service not known", "temporary failure in name resolution") ->
+                "DNS resolution failed."
+            has("ssl: certificate verify failed", "self signed certificate", "certificate has expired") ->
+                "TLS/Certificate problem (try --no-check-certificate if appropriate)."
+            has("http error 403") -> "HTTP 403 Forbidden (access denied)."
+            has("http error 429", "too many requests", "rate limited") -> "Rate limited (HTTP 429)."
+            has("copyright", "unavailable", "this video is not available") ->
+                "Content not available or restricted."
+            has("proxy", "socks", "http proxy") ->
+                "Proxy/network configuration error."
+            else -> null
+        }
+    }
+
+    // ====== small utils ======
+
+    private fun downloadFile(url: String, dest: File) {
+        dest.parentFile?.mkdirs()
+        java.net.URI.create(url).toURL().openStream().use { input ->
+            Files.copy(input, dest.toPath(), StandardCopyOption.REPLACE_EXISTING)
+        }
+    }
+
+    private fun makeExecutable(file: File) {
+        try {
+            val path = file.toPath()
+            val perms = Files.getPosixFilePermissions(path).toMutableSet()
+            perms.add(PosixFilePermission.OWNER_EXECUTE)
+            perms.add(PosixFilePermission.GROUP_EXECUTE)
+            perms.add(PosixFilePermission.OTHERS_EXECUTE)
+            Files.setPosixFilePermissions(path, perms)
+        } catch (_: UnsupportedOperationException) {
+            Runtime.getRuntime().exec(arrayOf("chmod", "+x", file.absolutePath)).waitFor()
+        }
     }
 }
