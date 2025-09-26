@@ -4,9 +4,6 @@ import io.github.kdroidfilter.ytdlp.core.Options
 import java.io.BufferedInputStream
 import java.io.File
 import java.net.*
-import java.nio.charset.StandardCharsets
-import java.nio.file.Files
-import java.nio.file.StandardCopyOption
 import java.util.zip.ZipInputStream
 
 object NetAndArchive {
@@ -97,6 +94,25 @@ object NetAndArchive {
         }
 
         options.format?.let { cmd.addAll(listOf("-f", it)) }
+
+        // Post-processing to enforce container if requested
+        options.targetContainer?.let { container ->
+            if (container.equals("mp4", ignoreCase = true)) {
+                if (options.allowRecode) {
+                    // Slow but guaranteed: re-encode to MP4 if remux is impossible
+                    cmd.addAll(listOf("--recode-video", "mp4"))
+                } else {
+                    // Fast: remux only (no quality loss). Will fail if codecs are incompatible with mp4.
+                    // yt-dlp accepts both --remux-video and --merge-output-format mp4; prefer remux.
+                    cmd.addAll(listOf("--remux-video", "mp4"))
+                }
+            } else {
+                // In case you want to support other containers later
+                if (options.allowRecode) cmd.addAll(listOf("--recode-video", container))
+                else cmd.addAll(listOf("--remux-video", container))
+            }
+        }
+
         if (options.extraArgs.isNotEmpty()) cmd.addAll(options.extraArgs)
         cmd.add(url)
         return cmd
@@ -154,4 +170,55 @@ object NetAndArchive {
         val biased = preferredExts.joinToString("/") { ext -> "$common[ext=$ext]" }
         return "$biased/$common"
     }
+
+    // ===== Resolution helpers =====
+
+    /** Exact progressive selector (single A+V URL only). Falls back to progressive at same height if ext differs. */
+    fun selectorProgressiveExact(height: Int, preferredExts: List<String> = listOf("mp4","webm")): String {
+        val common = "best[height=$height][acodec!=none][vcodec!=none][protocol!=m3u8]"
+        val biased = preferredExts.joinToString("/") { ext -> "$common[ext=$ext]" }
+        return "$biased/$common"
+    }
+
+    /** Download selector: prefers split A/V at exact height (yt-dlp will merge), falls back to progressive exact. */
+    fun selectorDownloadExact(height: Int, preferredExts: List<String> = listOf("mp4","webm")): String {
+        val split = "bestvideo[height=$height][vcodec!=none]+bestaudio/bestvideo[height=$height]+bestaudio"
+        val progressive = selectorProgressiveExact(height, preferredExts)
+        return "$split/$progressive"
+    }
+
+    /** Very small, robust `-F` parser to detect available heights (progressive vs video-only). */
+    fun probeAvailableHeights(formatListOutput: List<String>): Pair<Set<Int>, Set<Int>> {
+        val heightRegex = Regex("""\b(\d{3,4})p\b""")
+        val progressive = mutableSetOf<Int>()
+        val videoOnly = mutableSetOf<Int>()
+        for (line in formatListOutput) {
+            val h = heightRegex.find(line)?.groupValues?.getOrNull(1)?.toIntOrNull() ?: continue
+            val lower = line.lowercase()
+            when {
+                "audio only" in lower -> {} // ignore
+                "video only" in lower -> videoOnly += h
+                else -> progressive += h
+            }
+        }
+        return progressive to videoOnly
+    }
+
+    // Prefer MP4/M4A at exact height (falls back if not available)
+    fun selectorDownloadExactMp4(height: Int): String {
+        val splitPreferMp4 = "bestvideo[height=$height][ext=mp4]+bestaudio[ext=m4a]/" +
+                "bestvideo[height=$height]+bestaudio"
+        val progressiveMp4 = "best[height=$height][ext=mp4][acodec!=none][vcodec!=none][protocol!=m3u8]/" +
+                "best[height=$height][acodec!=none][vcodec!=none][protocol!=m3u8]"
+        return "$splitPreferMp4/$progressiveMp4"
+    }
+
+    /** Best progressive MP4 at or below maxHeight */
+    fun progressiveMediumSelectorMp4(maxHeight: Int): String {
+        val mp4 = "best[height<=${maxHeight}][ext=mp4][acodec!=none][vcodec!=none][protocol!=m3u8]"
+        val any = "best[height<=${maxHeight}][acodec!=none][vcodec!=none][protocol!=m3u8]"
+        return "$mp4/$any"
+    }
+
+
 }

@@ -150,6 +150,16 @@ internal class InternalYtDlp(
         return getDirectUrlForFormat(url, selector, noCheckCertificate, timeoutSec = 20)
     }
 
+    fun getProgressiveUrlMp4AtOrBelow(
+        url: String,
+        maxHeight: Int,
+        noCheckCertificate: Boolean,
+        timeoutSec: Long = 20
+    ): Result<String> {
+        val selector = io.github.kdroidfilter.ytdlp.util.NetAndArchive.progressiveMediumSelectorMp4(maxHeight)
+        return getDirectUrlForFormat(url, selector, noCheckCertificate, timeoutSec)
+    }
+
     // -------- Download with streaming events ----------
     fun download(
         url: String,
@@ -250,4 +260,117 @@ internal class InternalYtDlp(
 
         return Handle(process, cancelled)
     }
+
+    // ===== Formats / availability =====
+
+    /** Run `yt-dlp -F` and return raw lines (stdout merged). */
+    fun listFormatsRaw(
+        url: String,
+        noCheckCertificate: Boolean
+    ): Result<List<String>> {
+        require(isAvailable()) { "yt-dlp is not available. Call downloadOrUpdate() first or set ytDlpPath." }
+
+        val net = checkNetwork(url, 5000, 5000)
+        if (net.isFailure) return Result.failure(IllegalStateException("Network preflight failed: ${net.exceptionOrNull()?.message}"))
+
+        val cmd = buildList {
+            add(ytDlpPathProvider())
+            addAll(listOf("-F", "--no-playlist"))
+            if (noCheckCertificate) add("--no-check-certificate")
+            add(url)
+        }
+
+        val pb = ProcessBuilder(cmd).redirectErrorStream(true)
+        val process = try { pb.start() } catch (t: Throwable) {
+            return Result.failure(IllegalStateException("Failed to start yt-dlp process", t))
+        }
+
+        val outLines = process.inputStream.bufferedReader(Charsets.UTF_8).readLines()
+        val exit = process.waitFor()
+        if (exit != 0) return Result.failure(IllegalStateException("yt-dlp -F failed (exit $exit)"))
+        return Result.success(outLines)
+    }
+
+    data class ResolutionAvailability(
+        val height: Int,
+        /** single progressive A+V stream exists at this exact height */
+        val progressive: Boolean,
+        /** at least a video-only stream exists (yt-dlp can merge with audio on download) */
+        val downloadable: Boolean
+    )
+
+    /** Check availability using `-F` (progressive vs video-only) at exact height. */
+    fun resolutionAvailability(
+        url: String,
+        height: Int,
+        noCheckCertificate: Boolean
+    ): Result<ResolutionAvailability> {
+        val list = listFormatsRaw(url, noCheckCertificate).getOrElse { return Result.failure(it) }
+        val (progressiveHeights, videoOnlyHeights) = NetAndArchive.probeAvailableHeights(list)
+        return Result.success(
+            ResolutionAvailability(
+                height = height,
+                progressive = height in progressiveHeights,
+                downloadable = (height in progressiveHeights) || (height in videoOnlyHeights)
+            )
+        )
+    }
+
+    /** Direct progressive URL (exact height). Returns failure if only split A/V exists. */
+    fun getProgressiveUrlForHeight(
+        url: String,
+        height: Int,
+        preferredExts: List<String>,
+        noCheckCertificate: Boolean,
+        timeoutSec: Long = 20
+    ): Result<String> {
+        val selector = NetAndArchive.selectorProgressiveExact(height, preferredExts)
+        return getDirectUrlForFormat(url, selector, noCheckCertificate, timeoutSec)
+    }
+
+    /** Download at exact height (split A/V merge if needed; falls back to progressive exact). */
+    fun downloadAtHeight(
+        url: String,
+        height: Int,
+        preferredExts: List<String>,
+        noCheckCertificate: Boolean,
+        outputTemplate: String?,
+        extraArgs: List<String>,
+        timeout: java.time.Duration?,
+        onEvent: (io.github.kdroidfilter.ytdlp.core.Event) -> Unit
+    ): io.github.kdroidfilter.ytdlp.core.Handle {
+        val format = NetAndArchive.selectorDownloadExact(height, preferredExts)
+        val opts = Options(
+            format = format,
+            outputTemplate = outputTemplate,
+            noCheckCertificate = noCheckCertificate,
+            extraArgs = extraArgs,
+            timeout = timeout
+        )
+        return download(url, opts, onEvent)
+    }
+
+    fun downloadAtHeightMp4(
+        url: String,
+        height: Int,
+        noCheckCertificate: Boolean,
+        outputTemplate: String?,
+        extraArgs: List<String>,
+        timeout: java.time.Duration?,
+        recodeIfNeeded: Boolean,
+        onEvent: (io.github.kdroidfilter.ytdlp.core.Event) -> Unit
+    ): io.github.kdroidfilter.ytdlp.core.Handle {
+        val format = io.github.kdroidfilter.ytdlp.util.NetAndArchive.selectorDownloadExactMp4(height)
+        val opts = Options(
+            format = format,
+            outputTemplate = outputTemplate,
+            noCheckCertificate = noCheckCertificate,
+            extraArgs = extraArgs,
+            timeout = timeout,
+            targetContainer = "mp4",
+            allowRecode = recodeIfNeeded
+        )
+        return download(url, opts, onEvent)
+    }
+
 }

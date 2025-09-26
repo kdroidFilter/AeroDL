@@ -1,11 +1,13 @@
 package io.github.kdroidfilter.ytdlp
 
 import io.github.kdroidfilter.ytdlp.core.Event
+import io.github.kdroidfilter.ytdlp.core.Handle
 import io.github.kdroidfilter.ytdlp.core.InternalYtDlp
 import io.github.kdroidfilter.ytdlp.core.Options
 import io.github.kdroidfilter.ytdlp.util.PlatformUtils
 import java.io.File
 import java.time.Duration
+import java.time.Duration.ofMinutes
 
 /**
  * A wrapper class for utilizing the yt-dlp tool functionality.
@@ -36,7 +38,7 @@ class YtDlpWrapper {
         val outputTemplate: String? = null,
         val noCheckCertificate: Boolean = false,
         val extraArgs: List<String> = emptyList(),
-        val timeout: Duration? = Duration.ofMinutes(30)
+        val timeout: Duration? = ofMinutes(30)
     )
 
 
@@ -82,7 +84,112 @@ class YtDlpWrapper {
         url: String,
         options: Options = Options(),
         onEvent: (Event) -> Unit
-    ): io.github.kdroidfilter.ytdlp.core.Handle = engine.download(url, options.toCore(), onEvent.toCore())
+    ): Handle = engine.download(url, options.toCore(), onEvent.toCore())
+
+    // === Simple resolution presets ===
+    enum class Preset(val height: Int) {
+        P360(360), P480(480), P720(720), P1080(1080), P1440(1440), P2160(2160); // 2K=1440p, 4K=2160p
+    }
+
+    data class ResolutionAvailability(
+        val preset: Preset,
+        val progressive: Boolean,
+        val downloadable: Boolean
+    )
+
+    /** Check availability for one preset (progressive vs downloadable via merge). */
+    fun isAvailable(
+        url: String,
+        preset: Preset,
+        noCheckCertificate: Boolean = false
+    ): Result<ResolutionAvailability> {
+        val r = engine.resolutionAvailability(url, preset.height, noCheckCertificate)
+            .map { ResolutionAvailability(preset, it.progressive, it.downloadable) }
+        return r
+    }
+
+    /** Bulk check (all presets). */
+    fun probeAvailability(
+        url: String,
+        presets: Array<Preset> = Preset.values(),
+        noCheckCertificate: Boolean = false
+    ): Map<Preset, ResolutionAvailability> {
+        // Run one -F and reuse it for all heights to avoid repeated network calls
+        val lines = engine.listFormatsRaw(url, noCheckCertificate).getOrElse { return emptyMap() }
+        val (progressiveHeights, videoOnlyHeights) = io.github.kdroidfilter.ytdlp.util.NetAndArchive.probeAvailableHeights(lines)
+        return presets.associateWith { p ->
+            ResolutionAvailability(
+                preset = p,
+                progressive = p.height in progressiveHeights,
+                downloadable = (p.height in progressiveHeights) || (p.height in videoOnlyHeights)
+            )
+        }
+    }
+
+    /** Get a direct progressive URL at exact preset height (fails if only split A/V exists). */
+    fun getProgressiveUrl(
+        url: String,
+        preset: Preset,
+        preferredExts: List<String> = listOf("mp4", "webm"),
+        noCheckCertificate: Boolean = false,
+        timeoutSec: Long = 20
+    ): Result<String> =
+        engine.getProgressiveUrlForHeight(url, preset.height, preferredExts, noCheckCertificate, timeoutSec)
+
+    /** Download at exact preset height. If only split A/V exists, yt-dlp will merge using FFmpeg. */
+    fun downloadAt(
+        url: String,
+        preset: Preset,
+        outputTemplate: String? = null,
+        preferredExts: List<String> = listOf("mp4", "webm"),
+        noCheckCertificate: Boolean = false,
+        extraArgs: List<String> = emptyList(),
+        timeout: Duration? = ofMinutes(30),
+        onEvent: (Event) -> Unit
+    ): Handle =
+        engine.downloadAtHeight(
+            url = url,
+            height = preset.height,
+            preferredExts = preferredExts,
+            noCheckCertificate = noCheckCertificate,
+            outputTemplate = outputTemplate,
+            extraArgs = extraArgs,
+            timeout = timeout,
+            onEvent = onEvent
+        )
+
+    /** Get a direct progressive MP4 URL at or below the given height (fails if only split A/V exists). */
+    fun getProgressiveUrlMp4(
+        url: String,
+        maxHeight: Int,
+        noCheckCertificate: Boolean = false,
+        timeoutSec: Long = 20
+    ): Result<String> = engine.getProgressiveUrlMp4AtOrBelow(url, maxHeight, noCheckCertificate, timeoutSec)
+
+    /** Download exactly at preset.height into an MP4 file.
+     *  If remux is impossible (e.g., incompatible codecs), set recodeIfNeeded=true to force recode. */
+    fun downloadMp4At(
+        url: String,
+        preset: Preset,
+        outputTemplate: String? = "%(title)s.%(ext)s",
+        noCheckCertificate: Boolean = false,
+        extraArgs: List<String> = emptyList(),
+        timeout: Duration? = ofMinutes(30),
+        recodeIfNeeded: Boolean = false,
+        onEvent: (Event) -> Unit
+    ): Handle =
+        engine.downloadAtHeightMp4(
+            url = url,
+            height = preset.height,
+            noCheckCertificate = noCheckCertificate,
+            outputTemplate = outputTemplate,
+            extraArgs = extraArgs,
+            timeout = timeout,
+            recodeIfNeeded = recodeIfNeeded,
+            onEvent = onEvent
+        )
+
+
 }
 
 // ---- Mapping to core types (no behavior changes) ----
