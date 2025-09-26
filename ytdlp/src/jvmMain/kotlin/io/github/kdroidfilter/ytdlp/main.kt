@@ -1,4 +1,5 @@
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
+import io.github.kdroidfilter.ytdlp.core.Event
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.time.Duration
@@ -48,31 +49,31 @@ fun main() = runBlocking {
         )
     ) { event ->
         when (event) {
-            is YtDlpWrapper.Event.Started -> {
+            is Event.Started -> {
                 println("▶️  Téléchargement démarré…")
             }
-            is YtDlpWrapper.Event.Progress -> {
+            is Event.Progress -> {
                 val pct = event.percent?.let { String.format("%.1f", it) } ?: "?"
                 print("\rProgression: $pct%")
             }
-            is YtDlpWrapper.Event.Log -> {
+            is Event.Log -> {
                 // Optionnel: décommente pour debug verbeux
                 // println("\nLOG: ${event.line}")
             }
-            is YtDlpWrapper.Event.NetworkProblem -> {
+            is Event.NetworkProblem -> {
                 println("\n🌐 Problème réseau détecté: ${event.detail}")
             }
-            is YtDlpWrapper.Event.Error -> {
+            is Event.Error -> {
                 println("\n❌ Erreur: ${event.message}")
                 event.cause?.let { println("   ↳ Cause: ${it::class.simpleName}: ${it.message}") }
             }
-            is YtDlpWrapper.Event.Completed -> {
+            is Event.Completed -> {
                 println("\n${if (event.success) "✅" else "❌"} Téléchargement terminé (exit code ${event.exitCode})")
                 if (!event.success) {
                     println("   Astuces: vérifie la connexion, les certificats, ou ajoute --no-check-certificate / un proxy si besoin.")
                 }
             }
-            is YtDlpWrapper.Event.Cancelled -> {
+            is Event.Cancelled -> {
                 println("\n⏹️  Téléchargement annulé.")
             }
         }
