@@ -17,8 +17,11 @@ import io.github.composefluent.FluentTheme
 import io.github.composefluent.background.Mica
 import io.github.composefluent.component.Button
 import io.github.composefluent.component.Text
+import io.github.composefluent.darkColors
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.Window
+import io.github.composefluent.lightColors
+import io.github.kdroidfilter.platformtools.darkmodedetector.isSystemInDarkMode
 import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.greeting
@@ -31,8 +34,12 @@ fun main() = application {
         tooltip = "YTDLP GUI",
         windowSize = DpSize(300.dp, 500.dp),
     ) {
-        FluentTheme {
-            Mica(Modifier.fillMaxSize().clip(RoundedCornerShape(8.dp))) {
+        FluentTheme(colors = if (isSystemInDarkMode()) darkColors() else lightColors()) {
+            Mica(
+                Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(8.dp))
+            ) {
                 Box(Modifier.fillMaxSize().padding(16.dp)) {
                     Column {
                         Text(stringResource(Res.string.greeting))
