@@ -8,6 +8,7 @@ import io.github.kdroidfilter.ytdlp.util.PlatformUtils
 import java.io.File
 import java.time.Duration
 import java.time.Duration.ofMinutes
+import kotlinx.coroutines.runBlocking
 
 /**
  * A wrapper class for utilizing the yt-dlp tool functionality.
@@ -30,6 +31,35 @@ class YtDlpWrapper {
             ffmpegPathSetter  = { ffmpegPath = it },
             downloadDirProvider = { downloadDir }
         )
+    }
+
+    init {
+        // Set a sensible default download directory if not provided
+        if (downloadDir == null) {
+            downloadDir = File(System.getProperty("user.home"), "Downloads/yt-dlp")
+        }
+        // Ensure tools are present and up-to-date on creation
+        runBlocking {
+            try {
+                if (!isAvailable()) {
+                    // Download yt-dlp if missing
+                    downloadOrUpdate()
+                } else {
+                    // Best-effort background update check
+                    try {
+                        if (hasUpdate()) {
+                            downloadOrUpdate()
+                        }
+                    } catch (_: Exception) {
+                        // Non-fatal: ignore update check failures
+                    }
+                }
+                // Ensure FFmpeg availability (platform-dependent behavior inside engine)
+                ensureFfmpegAvailable()
+            } catch (_: Exception) {
+                // Non-fatal: initialization should not crash client code
+            }
+        }
     }
 
     // === Public options (kept identical) ===

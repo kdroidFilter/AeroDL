@@ -4,12 +4,7 @@ import io.github.kdroidfilter.ytdlp.core.Event
 import java.util.concurrent.CountDownLatch
 
 fun main() {
-    val ytdlp = YtDlpWrapper().apply {
-        // Optionnels :
-        // ytDlpPath = "/chemin/vers/yt-dlp"
-        // ffmpegPath = "/chemin/vers/ffmpeg" // sinon PATH
-        // downloadDir = java.io.File(System.getProperty("user.dir"))
-    }
+    val ytdlp = YtDlpWrapper()
 
     val url = "https://www.youtube.com/watch?v=UoywDs3YXOM"
 
