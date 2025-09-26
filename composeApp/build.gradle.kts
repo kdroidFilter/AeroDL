@@ -15,30 +15,42 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            // Compose
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
+
+            // Androidx
             implementation(libs.androidx.navigation.compose)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+
+            // UI libraries
             implementation(libs.compose.fluent)
             implementation(libs.compose.fluent.icons.extended)
             implementation(libs.composemediaplayer)
+
+            // Platform tools
             implementation(libs.platformtools.darkmodedetector)
             implementation(libs.platformtools.clipboardmanager)
+
+            // Serialization
             implementation(libs.kotlinx.serialization.json)
-
-
         }
+
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
+
         jvmMain.dependencies {
-            implementation(libs.composenativetray)
+            // Desktop specific
             implementation(compose.desktop.currentOs)
+            implementation(libs.composenativetray)
             implementation(libs.kotlinx.coroutinesSwing)
+
+            // Project dependencies
             implementation(project(":ytdlp"))
         }
     }
