@@ -19,6 +19,10 @@ import io.github.composefluent.component.Button
 import io.github.composefluent.component.Text
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.Window
+import org.jetbrains.compose.resources.stringResource
+import ytdlpgui.composeapp.generated.resources.Res
+import ytdlpgui.composeapp.generated.resources.greeting
+import ytdlpgui.composeapp.generated.resources.quit
 
 @OptIn(ExperimentalTrayAppApi::class)
 fun main() = application {
@@ -31,12 +35,12 @@ fun main() = application {
             Mica(Modifier.fillMaxSize().clip(RoundedCornerShape(8.dp))) {
                 Box(Modifier.fillMaxSize().padding(16.dp)) {
                     Column {
-                        Text("Bonjour ! Ceci est une fenêtre d'exemple.")
+                        Text(stringResource(Res.string.greeting))
                         Button(
                             onClick = { exitApplication() },
                             modifier = Modifier.padding(top = 16.dp)
                         ) {
-                            Text("Quitter")
+                            Text(stringResource(Res.string.quit))
                         }
                     }
                 }

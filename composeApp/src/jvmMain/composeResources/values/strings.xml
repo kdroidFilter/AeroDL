@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_tooltip">YTDLP GUI</string>
+    <string name="greeting">Bonjour ! Ceci est une fenêtre d'exemple.</string>
+    <string name="quit">Quitter</string>
+</resources>
