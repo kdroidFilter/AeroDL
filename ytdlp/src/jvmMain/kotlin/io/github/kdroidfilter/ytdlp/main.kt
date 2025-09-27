@@ -99,7 +99,7 @@ fun main() = runBlocking {
         // Pour une chaîne, on récupère une liste de vidéos
         wrapper.getVideoInfoList(
             channelUrl,
-            maxEntries = 30,
+            maxEntries = 10,
             extractFlat = true,  // Plus rapide
             noCheckCertificate = true,
             timeoutSec = 90
