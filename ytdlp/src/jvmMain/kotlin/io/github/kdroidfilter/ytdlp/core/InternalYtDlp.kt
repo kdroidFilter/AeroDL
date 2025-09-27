@@ -169,9 +169,10 @@ class InternalYtDlp(
 
         val result = executeCommand(args, timeoutSec).getOrElse { return Result.failure(it) }
 
+        // CORRECTION ICI : Utiliser result.stderr pour le message d'erreur
         if (result.exitCode != 0) {
-            val errPreview = result.stdout.takeLast(10).joinToString("\n")
-            return Result.failure(IllegalStateException("yt-dlp -g failed (exit ${result.exitCode})\n$errPreview"))
+            val errorDetails = if (result.stderr.isNotBlank()) result.stderr else result.stdout.joinToString("\n")
+            return Result.failure(IllegalStateException("yt-dlp -g failed (exit ${result.exitCode})\n$errorDetails"))
         }
 
         val out = result.stdout.map { it.trim() }.filter { it.isNotBlank() }
@@ -181,6 +182,7 @@ class InternalYtDlp(
             else -> Result.failure(IllegalStateException("Multiple URLs returned (likely split A/V). Refusing to avoid merging.\n${out.joinToString("\n")}"))
         }
     }
+
 
     fun getMediumQualityUrl(url: String, maxHeight: Int, preferredExts: List<String>, noCheckCertificate: Boolean): Result<String> {
         val selector = NetAndArchive.progressiveMediumSelector(maxHeight, preferredExts)
@@ -276,8 +278,13 @@ class InternalYtDlp(
         }
 
         val result = executeCommand(args, 60).getOrElse { return Result.failure(it) }
-        return if (result.exitCode == 0) Result.success(result.stdout)
-        else Result.failure(IllegalStateException("yt-dlp -F failed (exit ${result.exitCode})"))
+
+        // CORRECTION ICI : Inclure le message d'erreur de stderr en cas d'échec
+        return if (result.exitCode == 0) {
+            Result.success(result.stdout)
+        } else {
+            Result.failure(IllegalStateException("yt-dlp -F failed (exit ${result.exitCode})\n${result.stderr}"))
+        }
     }
 
     data class ResolutionAvailability(val height: Int, val progressive: Boolean, val downloadable: Boolean)
