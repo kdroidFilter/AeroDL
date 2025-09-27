@@ -32,6 +32,11 @@ kotlin {
             implementation(libs.compose.fluent.icons.extended)
             implementation(libs.composemediaplayer)
 
+            // DI
+            implementation(libs.koin.core)
+            implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
+
             // Platform tools
             implementation(libs.platformtools.darkmodedetector)
             implementation(libs.platformtools.clipboardmanager)
