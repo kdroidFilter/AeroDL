@@ -267,6 +267,192 @@ class YtDlpWrapper {
             onEvent = onEvent
         )
 
+    // Ajoutez cette fonction dans la classe YtDlpWrapper après les autres fonctions de téléchargement
+
+    /**
+     * Download audio from a URL and convert it to MP3 format.
+     *
+     * @param url The URL of the video/audio to download
+     * @param outputTemplate Optional output filename template (default: "%(title)s.%(ext)s")
+     * @param audioQuality Audio quality (0-10, where 0 is best and 10 is worst, default: 0)
+     * @param noCheckCertificate Bypass SSL certificate verification if true
+     * @param extraArgs Additional command-line arguments to pass to yt-dlp
+     * @param timeout Download timeout duration
+     * @param onEvent Callback for download events (progress, errors, completion)
+     * @return Handle to control the download process
+     */
+    fun downloadAudioMp3(
+        url: String,
+        outputTemplate: String? = "%(title)s.%(ext)s",
+        audioQuality: Int = 0,
+        noCheckCertificate: Boolean = false,
+        extraArgs: List<String> = emptyList(),
+        timeout: Duration? = ofMinutes(30),
+        onEvent: (Event) -> Unit
+    ): Handle {
+        // Préparer les arguments pour l'extraction audio
+        val audioArgs = mutableListOf<String>().apply {
+            // Extraire l'audio
+            add("--extract-audio")
+            // Format de sortie MP3
+            add("--audio-format")
+            add("mp3")
+            // Qualité audio (0 = meilleure, 10 = pire)
+            add("--audio-quality")
+            add(audioQuality.coerceIn(0, 10).toString())
+            // Ajouter les métadonnées si possible
+            add("--add-metadata")
+            add("--embed-thumbnail")
+            // Format selector pour obtenir le meilleur audio
+            // Préférer les formats avec un bon codec audio
+            add("-f")
+            add("bestaudio/best")
+        }
+
+        // Combiner avec les arguments supplémentaires
+        val combinedExtraArgs = audioArgs + extraArgs
+
+        val options = Options(
+            format = null, // Le format est déjà spécifié dans audioArgs
+            outputTemplate = outputTemplate,
+            noCheckCertificate = noCheckCertificate,
+            extraArgs = combinedExtraArgs,
+            timeout = timeout
+        )
+
+        return engine.download(url, options.toCore(), onEvent.toCore())
+    }
+
+    /**
+     * Get a direct URL to the best audio stream (without downloading).
+     * Note: This returns the original audio stream URL, not converted to MP3.
+     * To get MP3, you need to download and convert.
+     *
+     * @param url The URL of the video/audio
+     * @param preferredCodecs Preferred audio codecs in order of preference
+     * @param noCheckCertificate Bypass SSL certificate verification if true
+     * @param timeoutSec Timeout in seconds for the operation
+     * @return Result containing the direct audio URL or error
+     */
+    fun getAudioStreamUrl(
+        url: String,
+        preferredCodecs: List<String> = listOf("opus", "m4a", "mp3", "aac", "vorbis"),
+        noCheckCertificate: Boolean = false,
+        timeoutSec: Long = 20
+    ): Result<String> {
+        // Construire le sélecteur de format pour l'audio
+        val codecSelectors = preferredCodecs.joinToString("/") { codec ->
+            "bestaudio[acodec=$codec]"
+        }
+        val formatSelector = "$codecSelectors/bestaudio/best"
+
+        return engine.getDirectUrlForFormat(url, formatSelector, noCheckCertificate, timeoutSec)
+    }
+
+    /**
+     * Download audio with custom bitrate settings.
+     *
+     * @param url The URL of the video/audio to download
+     * @param bitrate Target bitrate for MP3 (e.g., "128k", "192k", "256k", "320k")
+     * @param outputTemplate Optional output filename template
+     * @param vbr Use Variable Bit Rate encoding if true (better quality/size ratio)
+     * @param noCheckCertificate Bypass SSL certificate verification if true
+     * @param extraArgs Additional command-line arguments
+     * @param timeout Download timeout duration
+     * @param onEvent Callback for download events
+     * @return Handle to control the download process
+     */
+    fun downloadAudioMp3WithBitrate(
+        url: String,
+        bitrate: String = "192k",
+        outputTemplate: String? = "%(title)s.%(ext)s",
+        vbr: Boolean = true,
+        noCheckCertificate: Boolean = false,
+        extraArgs: List<String> = emptyList(),
+        timeout: Duration? = ofMinutes(30),
+        onEvent: (Event) -> Unit
+    ): Handle {
+        val audioArgs = mutableListOf<String>().apply {
+            // Extraire l'audio
+            add("--extract-audio")
+            // Format MP3
+            add("--audio-format")
+            add("mp3")
+            // Ajouter les métadonnées
+            add("--add-metadata")
+            add("--embed-thumbnail")
+            // Format selector
+            add("-f")
+            add("bestaudio/best")
+
+            // Options de postprocessing pour FFmpeg
+            if (vbr) {
+                // VBR (Variable Bit Rate) - meilleure qualité/taille
+                add("--postprocessor-args")
+                add("ffmpeg:-q:a 2") // Qualité VBR (0-9, où 0 est la meilleure)
+            } else {
+                // CBR (Constant Bit Rate)
+                add("--postprocessor-args")
+                add("ffmpeg:-b:a $bitrate")
+            }
+        }
+
+        val combinedExtraArgs = audioArgs + extraArgs
+
+        val options = Options(
+            format = null,
+            outputTemplate = outputTemplate,
+            noCheckCertificate = noCheckCertificate,
+            extraArgs = combinedExtraArgs,
+            timeout = timeout
+        )
+
+        return engine.download(url, options.toCore(), onEvent.toCore())
+    }
+
+    /**
+     * Preset audio quality levels for MP3 downloads.
+     */
+    enum class AudioQualityPreset(val bitrate: String, val quality: Int, val description: String) {
+        LOW("96k", 8, "Économie d'espace - Qualité acceptable pour la parole"),
+        MEDIUM("128k", 5, "Qualité standard - Bon pour la musique casual"),
+        HIGH("192k", 2, "Haute qualité - Recommandé pour la musique"),
+        VERY_HIGH("256k", 0, "Très haute qualité - Excellente fidélité"),
+        MAXIMUM("320k", 0, "Qualité maximale - Indiscernable du CD")
+    }
+
+    /**
+     * Download audio using a quality preset.
+     *
+     * @param url The URL to download from
+     * @param preset Quality preset to use
+     * @param outputTemplate Output filename template
+     * @param noCheckCertificate Bypass SSL certificate verification
+     * @param extraArgs Additional arguments
+     * @param timeout Download timeout
+     * @param onEvent Event callback
+     * @return Handle to control the download
+     */
+    fun downloadAudioMp3WithPreset(
+        url: String,
+        preset: AudioQualityPreset = AudioQualityPreset.HIGH,
+        outputTemplate: String? = "%(title)s.%(ext)s",
+        noCheckCertificate: Boolean = false,
+        extraArgs: List<String> = emptyList(),
+        timeout: Duration? = ofMinutes(30),
+        onEvent: (Event) -> Unit
+    ): Handle {
+        return downloadAudioMp3WithBitrate(
+            url = url,
+            bitrate = preset.bitrate,
+            outputTemplate = outputTemplate,
+            vbr = true, // Utiliser VBR pour une meilleure qualité
+            noCheckCertificate = noCheckCertificate,
+            extraArgs = extraArgs,
+            timeout = timeout,
+            onEvent = onEvent
+        )
+    }
 
 }
 

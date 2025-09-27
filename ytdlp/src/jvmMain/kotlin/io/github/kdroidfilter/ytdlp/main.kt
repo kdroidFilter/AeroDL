@@ -46,14 +46,11 @@ fun main() = runBlocking {
     val url = "https://www.youtube.com/watch?v=UoywDs3YXOM"
     println("📥 Téléchargement de la vidéo: $url")
 
-    val handle = wrapper.download(
+    val handle = wrapper.downloadAudioMp3(
         url,
-        YtDlpWrapper.Options(
-            format = "bestvideo+bestaudio/best",
-            noCheckCertificate = true, // mets true si problèmes TLS côté réseau filtré
-            timeout = Duration.ofMinutes(20), // coupe proprement si ça stagne trop longtemps
-            extraArgs = listOf("--concurrent-fragments", "8") // exemple d’opt utile
-        )
+        audioQuality = 0,
+        noCheckCertificate = true
+
     ) { event ->
         when (event) {
             is Event.Started -> println("▶️  Téléchargement démarré…")
@@ -74,6 +71,7 @@ fun main() = runBlocking {
             is Event.Cancelled -> println("\n⏹️  Téléchargement annulé.")
         }
     }
+
 
     // Wait for completion (or timeout/annulation)
     handle.process.waitFor()
