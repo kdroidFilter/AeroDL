@@ -337,7 +337,7 @@ private fun InternalYtDlp.extractMetadata(
     }
 
     val pb = ProcessBuilder(buildList { add(ytDlpPathProvider()); addAll(cmdArgs) })
-        .redirectErrorStream(false) // Keep streams separate for better error reporting
+        .redirectErrorStream(false)
 
     val process = try { pb.start() } catch (t: Throwable) {
         return Result.failure(IllegalStateException("Failed to start yt-dlp process", t))
@@ -345,7 +345,10 @@ private fun InternalYtDlp.extractMetadata(
 
     val jsonOutput = StringBuilder()
     val errorOutput = StringBuilder()
-    val outputReader = Thread { process.inputStream.bufferedReader(StandardCharsets.UTF_8).useLines { it.forEach(jsonOutput::append) } }
+
+    // LA CORRECTION EST ICI : appendLine au lieu de append
+    val outputReader = Thread { process.inputStream.bufferedReader(StandardCharsets.UTF_8).useLines { it.forEach(jsonOutput::appendLine) } }
+
     val errorReader = Thread { process.errorStream.bufferedReader(StandardCharsets.UTF_8).useLines { it.forEach(errorOutput::appendLine) } }
 
     outputReader.start(); errorReader.start()
