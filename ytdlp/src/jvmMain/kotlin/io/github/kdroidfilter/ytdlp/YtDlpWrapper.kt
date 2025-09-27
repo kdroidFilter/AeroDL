@@ -4,6 +4,11 @@ import io.github.kdroidfilter.ytdlp.core.Event
 import io.github.kdroidfilter.ytdlp.core.Handle
 import io.github.kdroidfilter.ytdlp.core.InternalYtDlp
 import io.github.kdroidfilter.ytdlp.core.Options
+import io.github.kdroidfilter.ytdlp.core.extractPlaylistInfo
+import io.github.kdroidfilter.ytdlp.core.extractVideoInfo
+import io.github.kdroidfilter.ytdlp.core.extractVideoInfoList
+import io.github.kdroidfilter.ytdlp.model.PlaylistInfo
+import io.github.kdroidfilter.ytdlp.model.VideoInfo
 import io.github.kdroidfilter.ytdlp.util.PlatformUtils
 import java.io.File
 import java.time.Duration
@@ -25,7 +30,7 @@ class YtDlpWrapper {
     var downloadDir: File? = null
 
     // Internal engine (composition over inheritance)
-    private val engine by lazy {
+    val engine by lazy {
         InternalYtDlp(
             ytDlpPathProvider = { ytDlpPath },
             ytDlpPathSetter   = { ytDlpPath = it },
@@ -471,4 +476,33 @@ private fun ((Event) -> Unit).toCore(): (Event) -> Unit = { e ->
         Event.Started     -> this(Event.Started)
         is Event.NetworkProblem -> this(Event.NetworkProblem(e.detail))
     }
+}
+
+// Extension functions for YtDlpWrapper
+fun YtDlpWrapper.getVideoInfo(
+    url: String,
+    extractFlat: Boolean = false,
+    noCheckCertificate: Boolean = false,
+    timeoutSec: Long = 20
+): Result<VideoInfo> {
+    return engine.extractVideoInfo(url, extractFlat, noCheckCertificate, timeoutSec)
+}
+
+fun YtDlpWrapper.getPlaylistInfo(
+    url: String,
+    extractFlat: Boolean = true,
+    noCheckCertificate: Boolean = false,
+    timeoutSec: Long = 60
+): Result<PlaylistInfo> {
+    return engine.extractPlaylistInfo(url, extractFlat, noCheckCertificate, timeoutSec)
+}
+
+fun YtDlpWrapper.getVideoInfoList(
+    url: String,
+    maxEntries: Int? = null,
+    extractFlat: Boolean = true,
+    noCheckCertificate: Boolean = false,
+    timeoutSec: Long = 60
+): Result<List<VideoInfo>> {
+    return engine.extractVideoInfoList(url, maxEntries, extractFlat, noCheckCertificate, timeoutSec)
 }

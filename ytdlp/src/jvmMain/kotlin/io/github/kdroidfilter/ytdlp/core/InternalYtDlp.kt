@@ -3,19 +3,33 @@ package io.github.kdroidfilter.ytdlp.core
 import io.github.kdroidfilter.platformtools.OperatingSystem
 import io.github.kdroidfilter.platformtools.getOperatingSystem
 import io.github.kdroidfilter.platformtools.releasefetcher.github.GitHubReleaseFetcher
+import io.github.kdroidfilter.ytdlp.model.ChapterInfo
+import io.github.kdroidfilter.ytdlp.model.PlaylistInfo
+import io.github.kdroidfilter.ytdlp.model.SubtitleFormat
+import io.github.kdroidfilter.ytdlp.model.SubtitleInfo
+import io.github.kdroidfilter.ytdlp.model.VideoInfo
 import io.github.kdroidfilter.ytdlp.util.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.doubleOrNull
+import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.longOrNull
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
+import java.time.Duration
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.min
 
-internal class InternalYtDlp(
-    private val ytDlpPathProvider: () -> String,
+class InternalYtDlp(
+    val ytDlpPathProvider: () -> String,
     private val ytDlpPathSetter: (String) -> Unit,
-    private val ffmpegPathProvider: () -> String?,
+    internal val ffmpegPathProvider: () -> String?,
     private val ffmpegPathSetter: (String?) -> Unit,
     private val downloadDirProvider: () -> java.io.File?
 ) {
@@ -373,4 +387,348 @@ internal class InternalYtDlp(
         return download(url, opts, onEvent)
     }
 
+}
+
+fun InternalYtDlp.extractVideoInfo(
+    url: String,
+    extractFlat: Boolean,
+    noCheckCertificate: Boolean,
+    timeoutSec: Long
+): Result<VideoInfo> {
+    require(isAvailable()) { "yt-dlp is not available. Call downloadOrUpdate() first or set ytDlpPath." }
+
+    val net = checkNetwork(url, 5000, 5000)
+    if (net.isFailure) return Result.failure(IllegalStateException("Network preflight failed: ${net.exceptionOrNull()?.message}"))
+
+    val cmd = buildList {
+        add(ytDlpPathProvider())
+        add("--dump-json")
+        add("--no-playlist")
+        if (extractFlat) add("--flat-playlist")
+        if (noCheckCertificate) add("--no-check-certificate")
+        ffmpegPathProvider()?.takeIf { it.isNotBlank() }?.let { addAll(listOf("--ffmpeg-location", it)) }
+        add(url)
+    }
+
+    val pb = ProcessBuilder(cmd).redirectErrorStream(false)
+    val process = try { pb.start() } catch (t: Throwable) {
+        return Result.failure(IllegalStateException("Failed to start yt-dlp process", t))
+    }
+
+    // Lire les streams dans des threads séparés pour éviter le deadlock
+    val jsonOutput = StringBuilder()
+    val errorOutput = StringBuilder()
+
+    val outputReader = Thread {
+        process.inputStream.bufferedReader(Charsets.UTF_8).use { reader ->
+            reader.forEachLine { jsonOutput.append(it) }
+        }
+    }
+
+    val errorReader = Thread {
+        process.errorStream.bufferedReader(Charsets.UTF_8).use { reader ->
+            reader.forEachLine { errorOutput.append(it).append("\n") }
+        }
+    }
+
+    outputReader.start()
+    errorReader.start()
+
+    val finished = process.waitFor(timeoutSec, TimeUnit.SECONDS)
+
+    if (!finished) {
+        process.destroy()
+        outputReader.interrupt()
+        errorReader.interrupt()
+        return Result.failure(IllegalStateException("yt-dlp metadata extraction timed out after ${timeoutSec}s"))
+    }
+
+    // Attendre que les threads de lecture se terminent
+    outputReader.join(5000)
+    errorReader.join(5000)
+
+    val exit = process.exitValue()
+
+    if (exit != 0) {
+        return Result.failure(IllegalStateException("yt-dlp metadata extraction failed (exit $exit)\n${errorOutput}"))
+    }
+
+    return try {
+        val videoInfo = parseVideoInfoFromJson(jsonOutput.toString())
+        Result.success(videoInfo)
+    } catch (e: Exception) {
+        Result.failure(IllegalStateException("Failed to parse video metadata JSON", e))
+    }
+}
+
+fun InternalYtDlp.extractPlaylistInfo(
+    url: String,
+    extractFlat: Boolean,
+    noCheckCertificate: Boolean,
+    timeoutSec: Long
+): Result<PlaylistInfo> {
+    require(isAvailable()) { "yt-dlp is not available. Call downloadOrUpdate() first or set ytDlpPath." }
+
+    val net = checkNetwork(url, 5000, 5000)
+    if (net.isFailure) return Result.failure(IllegalStateException("Network preflight failed: ${net.exceptionOrNull()?.message}"))
+
+    val cmd = buildList {
+        add(ytDlpPathProvider())
+        add("--dump-json")
+        if (extractFlat) add("--flat-playlist")
+        if (noCheckCertificate) add("--no-check-certificate")
+        ffmpegPathProvider()?.takeIf { it.isNotBlank() }?.let { addAll(listOf("--ffmpeg-location", it)) }
+        add(url)
+    }
+
+    val pb = ProcessBuilder(cmd).redirectErrorStream(false)
+    val process = try { pb.start() } catch (t: Throwable) {
+        return Result.failure(IllegalStateException("Failed to start yt-dlp process", t))
+    }
+
+    // Lire les streams dans des threads séparés
+    val jsonOutput = StringBuilder()
+    val errorOutput = StringBuilder()
+
+    val outputReader = Thread {
+        try {
+            process.inputStream.bufferedReader(Charsets.UTF_8).use { reader ->
+                reader.lineSequence().forEach { line ->
+                    jsonOutput.append(line)
+                }
+            }
+        } catch (e: Exception) {
+            // Thread interrompu ou erreur I/O
+        }
+    }.apply { start() }
+
+    val errorReader = Thread {
+        try {
+            process.errorStream.bufferedReader(Charsets.UTF_8).use { reader ->
+                reader.lineSequence().forEach { line ->
+                    errorOutput.appendLine(line)
+                }
+            }
+        } catch (e: Exception) {
+            // Thread interrompu ou erreur I/O
+        }
+    }.apply { start() }
+
+    val finished = process.waitFor(timeoutSec, TimeUnit.SECONDS)
+
+    if (!finished) {
+        process.destroyForcibly()
+        outputReader.interrupt()
+        errorReader.interrupt()
+        return Result.failure(IllegalStateException("yt-dlp playlist extraction timed out after ${timeoutSec}s"))
+    }
+
+    outputReader.join(5000)
+    errorReader.join(5000)
+
+    val exit = process.exitValue()
+
+    if (exit != 0) {
+        return Result.failure(IllegalStateException("yt-dlp playlist extraction failed (exit $exit)\n$errorOutput"))
+    }
+
+    return try {
+        val playlistInfo = parsePlaylistInfoFromJson(jsonOutput.toString())
+        Result.success(playlistInfo)
+    } catch (e: Exception) {
+        Result.failure(IllegalStateException("Failed to parse playlist metadata JSON", e))
+    }
+}
+
+fun InternalYtDlp.extractVideoInfoList(
+    url: String,
+    maxEntries: Int?,
+    extractFlat: Boolean,
+    noCheckCertificate: Boolean,
+    timeoutSec: Long
+): Result<List<VideoInfo>> {
+    require(isAvailable()) { "yt-dlp is not available. Call downloadOrUpdate() first or set ytDlpPath." }
+
+    val net = checkNetwork(url, 5000, 5000)
+    if (net.isFailure) return Result.failure(IllegalStateException("Network preflight failed: ${net.exceptionOrNull()?.message}"))
+
+    val cmd = buildList {
+        add(ytDlpPathProvider())
+        add("--dump-json")
+        if (extractFlat) add("--flat-playlist")
+        maxEntries?.let { addAll(listOf("--playlist-end", it.toString())) }
+        if (noCheckCertificate) add("--no-check-certificate")
+        ffmpegPathProvider()?.takeIf { it.isNotBlank() }?.let { addAll(listOf("--ffmpeg-location", it)) }
+        add(url)
+    }
+
+    val pb = ProcessBuilder(cmd).redirectErrorStream(false)
+    val process = try { pb.start() } catch (t: Throwable) {
+        return Result.failure(IllegalStateException("Failed to start yt-dlp process", t))
+    }
+
+    // Lire les streams dans des threads séparés
+    val jsonLines = mutableListOf<String>()
+    val errorOutput = StringBuilder()
+
+    val outputReader = Thread {
+        try {
+            process.inputStream.bufferedReader(Charsets.UTF_8).use { reader ->
+                reader.lineSequence().forEach { line ->
+                    synchronized(jsonLines) {
+                        jsonLines.add(line)
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            // Thread interrompu ou erreur I/O
+        }
+    }.apply { start() }
+
+    val errorReader = Thread {
+        try {
+            process.errorStream.bufferedReader(Charsets.UTF_8).use { reader ->
+                reader.lineSequence().forEach { line ->
+                    errorOutput.appendLine(line)
+                }
+            }
+        } catch (e: Exception) {
+            // Thread interrompu ou erreur I/O
+        }
+    }.apply { start() }
+
+    val finished = process.waitFor(timeoutSec, TimeUnit.SECONDS)
+
+    if (!finished) {
+        process.destroyForcibly()
+        outputReader.interrupt()
+        errorReader.interrupt()
+        return Result.failure(IllegalStateException("yt-dlp extraction timed out after ${timeoutSec}s"))
+    }
+
+    outputReader.join(5000)
+    errorReader.join(5000)
+
+    val exit = process.exitValue()
+
+    if (exit != 0) {
+        return Result.failure(IllegalStateException("yt-dlp extraction failed (exit $exit)\n$errorOutput"))
+    }
+
+    return try {
+        // Check if it's a single JSON object (playlist) or multiple JSON objects (entries)
+        val videos = if (jsonLines.size == 1 && jsonLines[0].trim().startsWith("{\"_type\":\"playlist\"")) {
+            // It's a playlist JSON
+            val playlistInfo = parsePlaylistInfoFromJson(jsonLines[0])
+            playlistInfo.entries
+        } else {
+            // Multiple JSON objects, one per line
+            jsonLines.filter { it.isNotBlank() }.map { line ->
+                parseVideoInfoFromJson(line)
+            }
+        }
+        Result.success(videos)
+    } catch (e: Exception) {
+        Result.failure(IllegalStateException("Failed to parse video list JSON", e))
+    }
+}
+
+private fun parseVideoInfoFromJson(jsonString: String): VideoInfo {
+    val json = Json {
+        ignoreUnknownKeys = true
+        isLenient = true
+    }
+    val jsonObj = json.parseToJsonElement(jsonString).jsonObject
+
+    return VideoInfo(
+        id = jsonObj["id"]?.jsonPrimitive?.content ?: jsonObj["url"]?.jsonPrimitive?.content ?: "",
+        title = jsonObj["title"]?.jsonPrimitive?.content ?: "Unknown",
+        url = jsonObj["url"]?.jsonPrimitive?.content
+            ?: jsonObj["webpage_url"]?.jsonPrimitive?.content
+            ?: "",
+        thumbnail = jsonObj["thumbnail"]?.jsonPrimitive?.content,
+        duration = jsonObj["duration"]?.jsonPrimitive?.doubleOrNull?.let { Duration.ofSeconds(it.toLong()) },
+        description = jsonObj["description"]?.jsonPrimitive?.content,
+        uploader = jsonObj["uploader"]?.jsonPrimitive?.content
+            ?: jsonObj["channel"]?.jsonPrimitive?.content,
+        uploaderUrl = jsonObj["uploader_url"]?.jsonPrimitive?.content
+            ?: jsonObj["channel_url"]?.jsonPrimitive?.content,
+        uploadDate = jsonObj["upload_date"]?.jsonPrimitive?.content,
+        viewCount = jsonObj["view_count"]?.jsonPrimitive?.longOrNull,
+        likeCount = jsonObj["like_count"]?.jsonPrimitive?.longOrNull,
+        width = jsonObj["width"]?.jsonPrimitive?.intOrNull,
+        height = jsonObj["height"]?.jsonPrimitive?.intOrNull,
+        fps = jsonObj["fps"]?.jsonPrimitive?.doubleOrNull,
+        formatNote = jsonObj["format_note"]?.jsonPrimitive?.content,
+        availableSubtitles = parseSubtitles(jsonObj["subtitles"]),
+        chapters = parseChapters(jsonObj["chapters"]),
+        tags = jsonObj["tags"]?.jsonArray?.mapNotNull { it.jsonPrimitive?.content } ?: emptyList(),
+        categories = jsonObj["categories"]?.jsonArray?.mapNotNull { it.jsonPrimitive?.content } ?: emptyList()
+    )
+}
+
+private fun parsePlaylistInfoFromJson(jsonString: String): PlaylistInfo {
+    val json = Json {
+        ignoreUnknownKeys = true
+        isLenient = true
+    }
+    val jsonObj = json.parseToJsonElement(jsonString).jsonObject
+
+    val entries = jsonObj["entries"]?.jsonArray?.map { entry ->
+        parseVideoInfoFromJson(entry.toString())
+    } ?: emptyList()
+
+    return PlaylistInfo(
+        id = jsonObj["id"]?.jsonPrimitive?.content,
+        title = jsonObj["title"]?.jsonPrimitive?.content,
+        description = jsonObj["description"]?.jsonPrimitive?.content,
+        uploader = jsonObj["uploader"]?.jsonPrimitive?.content,
+        uploaderUrl = jsonObj["uploader_url"]?.jsonPrimitive?.content,
+        entries = entries,
+        entryCount = jsonObj["playlist_count"]?.jsonPrimitive?.intOrNull ?: entries.size
+    )
+}
+
+private fun parseSubtitles(subtitlesElement: JsonElement?): Map<String, SubtitleInfo> {
+    val subtitlesObj = subtitlesElement?.jsonObject ?: return emptyMap()
+
+    return subtitlesObj.mapNotNull { (lang, data) ->
+        try {
+            val subtitleArray = data.jsonArray
+            val formats = subtitleArray.mapNotNull { formatElement ->
+                val formatObj = formatElement.jsonObject
+                SubtitleFormat(
+                    ext = formatObj["ext"]?.jsonPrimitive?.content ?: return@mapNotNull null,
+                    url = formatObj["url"]?.jsonPrimitive?.content,
+                    name = formatObj["name"]?.jsonPrimitive?.content
+                )
+            }
+
+            lang to SubtitleInfo(
+                language = lang,
+                languageName = subtitleArray.firstOrNull()?.jsonObject?.get("name")?.jsonPrimitive?.content,
+                formats = formats,
+                autoGenerated = false
+            )
+        } catch (e: Exception) {
+            null
+        }
+    }.toMap()
+}
+
+private fun parseChapters(chaptersElement: JsonElement?): List<ChapterInfo> {
+    val chaptersArray = chaptersElement?.jsonArray ?: return emptyList()
+
+    return chaptersArray.mapNotNull { chapterElement ->
+        try {
+            val chapterObj = chapterElement.jsonObject
+            ChapterInfo(
+                title = chapterObj["title"]?.jsonPrimitive?.content,
+                startTime = chapterObj["start_time"]?.jsonPrimitive?.doubleOrNull ?: return@mapNotNull null,
+                endTime = chapterObj["end_time"]?.jsonPrimitive?.doubleOrNull ?: return@mapNotNull null
+            )
+        } catch (e: Exception) {
+            null
+        }
+    }
 }
