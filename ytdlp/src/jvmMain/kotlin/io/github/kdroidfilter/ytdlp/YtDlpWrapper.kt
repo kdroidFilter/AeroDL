@@ -204,7 +204,7 @@ class YtDlpWrapper {
     }
 
     // --- Network Pre-check ---
-    suspend fun checkNetwork(
+    fun checkNetwork(
         targetUrl: String,
         connectTimeoutMs: Int = 5000,
         readTimeoutMs: Int = 5000
@@ -288,7 +288,7 @@ class YtDlpWrapper {
                         downloadLogic()
                     } ?: run {
                         process.destroyForcibly()
-                        onEvent(Event.Error("Download timed out after ${finalOptions.timeout?.toMinutes() ?: "N/A"} minutes."))
+                        onEvent(Event.Error("Download timed out after ${finalOptions.timeout.toMinutes()} minutes."))
                         onEvent(Event.Completed(-1, false))
                     }
                 } else {
@@ -327,7 +327,7 @@ class YtDlpWrapper {
         val result = executeCommand(args, timeoutSec).getOrElse { return Result.failure(it) }
 
         if (result.exitCode != 0) {
-            val errorDetails = if (result.stderr.isNotBlank()) result.stderr else result.stdout.joinToString("\n")
+            val errorDetails = result.stderr.ifBlank { result.stdout.joinToString("\n") }
             return Result.failure(IllegalStateException("yt-dlp -g failed (exit ${result.exitCode})\n$errorDetails"))
         }
 

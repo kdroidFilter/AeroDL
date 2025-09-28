@@ -11,7 +11,6 @@ import java.nio.ByteBuffer
 import java.nio.channels.Channels
 import java.nio.file.Files
 import java.nio.file.attribute.PosixFilePermission
-import kotlin.coroutines.coroutineContext
 
 object PlatformUtils {
 
@@ -102,7 +101,7 @@ object PlatformUtils {
         } catch (_: UnsupportedOperationException) {
             Runtime.getRuntime().exec(arrayOf("chmod", "+x", file.absolutePath)).waitFor()
         }
-    }
+    }!!
 
     // --- FFmpeg ---
     fun getDefaultFfmpegPath(): String {
