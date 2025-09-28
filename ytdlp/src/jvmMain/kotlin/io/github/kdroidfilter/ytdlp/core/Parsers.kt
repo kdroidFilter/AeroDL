@@ -1,6 +1,7 @@
 package io.github.kdroidfilter.ytdlp.core
 
 import io.github.kdroidfilter.ytdlp.model.*
+import io.github.kdroidfilter.ytdlp.util.warnln
 import kotlinx.serialization.json.*
 
 // --- Helper to find the best direct URL from a formats array ---
@@ -111,7 +112,10 @@ fun parseVideoInfoFromJson(
     val json = Json { ignoreUnknownKeys = true; isLenient = true }
     val root = try {
         json.parseToJsonElement(jsonString).objOrNull() ?: buildJsonObject { }
-    } catch (_: Exception) { buildJsonObject { } }
+    } catch (e: Exception) {
+        warnln { "JSON parsing for VideoInfo failed, returning empty object. Error: ${e.message}" }
+        buildJsonObject { }
+    }
 
     val id = root["id"].strOrNull() ?: root["url"].strOrNull() ?: ""
     val url = root["url"].strOrNull() ?: root["webpage_url"].strOrNull() ?: ""
@@ -183,11 +187,19 @@ fun parsePlaylistInfoFromJson(jsonString: String): PlaylistInfo {
 
     val json = Json { ignoreUnknownKeys = true; isLenient = true }
     val root = try { json.parseToJsonElement(jsonString).objOrNull() ?: buildJsonObject { }
-    } catch (_: Exception) { buildJsonObject { } }
+    } catch (e: Exception) {
+        warnln { "JSON parsing for PlaylistInfo failed, returning empty object. Error: ${e.message}" }
+        buildJsonObject { }
+    }
 
     val entries: List<VideoInfo> = root["entries"].arrOrNull()
         ?.mapNotNull { el ->
-            try { parseVideoInfoFromJson(el.objOrNull().toString()) } catch (_: Exception) { null }
+            try {
+                parseVideoInfoFromJson(el.objOrNull().toString())
+            } catch (e: Exception) {
+                warnln { "Failed to parse a video entry within a playlist: ${e.message}" }
+                null
+            }
         } ?: emptyList()
 
     return PlaylistInfo(

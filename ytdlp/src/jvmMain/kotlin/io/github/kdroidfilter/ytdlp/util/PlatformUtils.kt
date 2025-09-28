@@ -37,8 +37,12 @@ object PlatformUtils {
                 val isMusl = try {
                     val p = Runtime.getRuntime().exec(arrayOf("ldd", "--version"))
                     val out = p.inputStream.bufferedReader().readText()
+                    p.waitFor()
                     out.contains("musl")
-                } catch (_: Exception) { false }
+                } catch (e: Exception) {
+                    debugln { "ldd check failed, assuming not musl. Error: ${e.message}" }
+                    false
+                }
 
                 when {
                     isMusl && (arch.contains("aarch64") || arch.contains("arm64")) -> "yt-dlp_musllinux_aarch64"
@@ -166,7 +170,7 @@ object PlatformUtils {
             ffmpegVersion(targetExe.absolutePath) ?: error("FFmpeg is not runnable after installation")
             targetExe.absolutePath
         } catch (t: Throwable) {
-            t.printStackTrace()
+            errorln { "Failed to download/install FFmpeg: ${t.stackTraceToString()}" }
             null
         }
     }

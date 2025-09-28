@@ -8,6 +8,7 @@ import io.github.kdroidfilter.ytdlp.model.PlaylistInfo
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
 import io.github.kdroidfilter.ytdlp.util.NetAndArchive
 import io.github.kdroidfilter.ytdlp.util.PlatformUtils
+import io.github.kdroidfilter.ytdlp.util.errorln
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -129,7 +130,7 @@ class YtDlpWrapper {
                 false
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            errorln { "Error during yt-dlp download/update: ${e.stackTraceToString()}" }
             false
         }
     }
