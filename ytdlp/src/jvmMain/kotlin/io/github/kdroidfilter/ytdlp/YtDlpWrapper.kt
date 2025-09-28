@@ -195,16 +195,65 @@ class YtDlpWrapper {
     }
 }
 
-
 // === Extension functions for metadata extraction ===
-fun YtDlpWrapper.getVideoInfo(url: String, extractFlat: Boolean = false, noCheckCertificate: Boolean = false, timeoutSec: Long = 20): Result<VideoInfo> {
-    return engine.extractVideoInfo(url, extractFlat, noCheckCertificate, timeoutSec)
+
+/**
+ * Get video information including metadata and direct streaming URL
+ * @param url The video URL
+ * @param extractFlat If true, extract playlist entries as-is without additional info
+ * @param noCheckCertificate Bypass SSL certificate verification
+ * @param timeoutSec Timeout in seconds
+ * @param maxHeight Maximum height for direct URL extraction (default: 1080p)
+ * @param preferredExts Preferred video extensions for direct URL (default: mp4, webm)
+ * @return Result containing VideoInfo with directUrl field populated
+ */
+fun YtDlpWrapper.getVideoInfo(
+    url: String,
+    extractFlat: Boolean = false,
+    noCheckCertificate: Boolean = false,
+    timeoutSec: Long = 20,
+    maxHeight: Int = 1080,
+    preferredExts: List<String> = listOf("mp4", "webm")
+): Result<VideoInfo> {
+    return engine.extractVideoInfo(url, extractFlat, noCheckCertificate, timeoutSec, maxHeight, preferredExts)
 }
 
-fun YtDlpWrapper.getPlaylistInfo(url: String, extractFlat: Boolean = true, noCheckCertificate: Boolean = false, timeoutSec: Long = 60): Result<PlaylistInfo> {
+/**
+ * Get playlist information
+ * @param url The playlist URL
+ * @param extractFlat If true, extract basic info only (faster)
+ * @param noCheckCertificate Bypass SSL certificate verification
+ * @param timeoutSec Timeout in seconds
+ * @return Result containing PlaylistInfo
+ */
+fun YtDlpWrapper.getPlaylistInfo(
+    url: String,
+    extractFlat: Boolean = true,
+    noCheckCertificate: Boolean = false,
+    timeoutSec: Long = 60
+): Result<PlaylistInfo> {
     return engine.extractPlaylistInfo(url, extractFlat, noCheckCertificate, timeoutSec)
 }
 
-fun YtDlpWrapper.getVideoInfoList(url: String, maxEntries: Int? = null, extractFlat: Boolean = true, noCheckCertificate: Boolean = false, timeoutSec: Long = 60): Result<List<VideoInfo>> {
-    return engine.extractVideoInfoList(url, maxEntries, extractFlat, noCheckCertificate, timeoutSec)
+/**
+ * Get a list of video information from a URL (playlist or channel)
+ * @param url The URL to extract videos from
+ * @param maxEntries Maximum number of entries to extract
+ * @param extractFlat If true, extract basic info only (faster)
+ * @param noCheckCertificate Bypass SSL certificate verification
+ * @param timeoutSec Timeout in seconds
+ * @param maxHeight Maximum height for direct URLs (default: 1080p)
+ * @param preferredExts Preferred video extensions for direct URLs (default: mp4, webm)
+ * @return Result containing list of VideoInfo with directUrl fields populated
+ */
+fun YtDlpWrapper.getVideoInfoList(
+    url: String,
+    maxEntries: Int? = null,
+    extractFlat: Boolean = true,
+    noCheckCertificate: Boolean = false,
+    timeoutSec: Long = 60,
+    maxHeight: Int = 1080,
+    preferredExts: List<String> = listOf("mp4", "webm")
+): Result<List<VideoInfo>> {
+    return engine.extractVideoInfoList(url, maxEntries, extractFlat, noCheckCertificate, timeoutSec, maxHeight, preferredExts)
 }

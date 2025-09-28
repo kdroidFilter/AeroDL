@@ -24,7 +24,9 @@ data class VideoInfo(
     val availableSubtitles: Map<String, SubtitleInfo> = emptyMap(),
     val chapters: List<ChapterInfo> = emptyList(),
     val tags: List<String> = emptyList(),
-    val categories: List<String> = emptyList()
+    val categories: List<String> = emptyList(),
+    val directUrl: String? = null,
+    val directUrlFormat: String? = null
 )
 
 /**

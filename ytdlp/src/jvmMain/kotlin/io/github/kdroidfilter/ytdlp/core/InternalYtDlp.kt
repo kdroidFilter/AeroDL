@@ -169,7 +169,6 @@ class InternalYtDlp(
 
         val result = executeCommand(args, timeoutSec).getOrElse { return Result.failure(it) }
 
-        // CORRECTION ICI : Utiliser result.stderr pour le message d'erreur
         if (result.exitCode != 0) {
             val errorDetails = if (result.stderr.isNotBlank()) result.stderr else result.stdout.joinToString("\n")
             return Result.failure(IllegalStateException("yt-dlp -g failed (exit ${result.exitCode})\n$errorDetails"))
@@ -182,7 +181,6 @@ class InternalYtDlp(
             else -> Result.failure(IllegalStateException("Multiple URLs returned (likely split A/V). Refusing to avoid merging.\n${out.joinToString("\n")}"))
         }
     }
-
 
     fun getMediumQualityUrl(url: String, maxHeight: Int, preferredExts: List<String>, noCheckCertificate: Boolean): Result<String> {
         val selector = NetAndArchive.progressiveMediumSelector(maxHeight, preferredExts)
@@ -279,7 +277,6 @@ class InternalYtDlp(
 
         val result = executeCommand(args, 60).getOrElse { return Result.failure(it) }
 
-        // CORRECTION ICI : Inclure le message d'erreur de stderr en cas d'échec
         return if (result.exitCode == 0) {
             Result.success(result.stdout)
         } else {
@@ -353,9 +350,7 @@ private fun InternalYtDlp.extractMetadata(
     val jsonOutput = StringBuilder()
     val errorOutput = StringBuilder()
 
-    // LA CORRECTION EST ICI : appendLine au lieu de append
     val outputReader = Thread { process.inputStream.bufferedReader(StandardCharsets.UTF_8).useLines { it.forEach(jsonOutput::appendLine) } }
-
     val errorReader = Thread { process.errorStream.bufferedReader(StandardCharsets.UTF_8).useLines { it.forEach(errorOutput::appendLine) } }
 
     outputReader.start(); errorReader.start()
@@ -370,12 +365,20 @@ private fun InternalYtDlp.extractMetadata(
     else Result.failure(IllegalStateException("yt-dlp metadata extraction failed (exit ${process.exitValue()})\n${errorOutput}"))
 }
 
-fun InternalYtDlp.extractVideoInfo(url: String, extractFlat: Boolean, noCheckCertificate: Boolean, timeoutSec: Long): Result<VideoInfo> {
+fun InternalYtDlp.extractVideoInfo(
+    url: String,
+    extractFlat: Boolean,
+    noCheckCertificate: Boolean,
+    timeoutSec: Long,
+    maxHeight: Int = 1080,
+    preferredExts: List<String> = listOf("mp4", "webm")
+): Result<VideoInfo> {
     val args = buildList {
         add("--no-playlist")
         if (extractFlat) add("--flat-playlist")
     }
-    return extractMetadata(url, noCheckCertificate, timeoutSec, args).mapCatching { json -> parseVideoInfoFromJson(json) }
+    return extractMetadata(url, noCheckCertificate, timeoutSec, args)
+        .mapCatching { json -> parseVideoInfoFromJson(json, maxHeight, preferredExts) }
 }
 
 fun InternalYtDlp.extractPlaylistInfo(url: String, extractFlat: Boolean, noCheckCertificate: Boolean, timeoutSec: Long): Result<PlaylistInfo> {
@@ -383,7 +386,15 @@ fun InternalYtDlp.extractPlaylistInfo(url: String, extractFlat: Boolean, noCheck
     return extractMetadata(url, noCheckCertificate, timeoutSec, args).mapCatching { json -> parsePlaylistInfoFromJson(json) }
 }
 
-fun InternalYtDlp.extractVideoInfoList(url: String, maxEntries: Int?, extractFlat: Boolean, noCheckCertificate: Boolean, timeoutSec: Long): Result<List<VideoInfo>> {
+fun InternalYtDlp.extractVideoInfoList(
+    url: String,
+    maxEntries: Int?,
+    extractFlat: Boolean,
+    noCheckCertificate: Boolean,
+    timeoutSec: Long,
+    maxHeight: Int = 1080,
+    preferredExts: List<String> = listOf("mp4", "webm")
+): Result<List<VideoInfo>> {
     val args = buildList {
         if (extractFlat) add("--flat-playlist")
         maxEntries?.let { addAll(listOf("--playlist-end", it.toString())) }
@@ -393,13 +404,71 @@ fun InternalYtDlp.extractVideoInfoList(url: String, maxEntries: Int?, extractFla
         if (jsonLines.size == 1 && jsonLines[0].trim().startsWith("{\"_type\":\"playlist\"")) {
             parsePlaylistInfoFromJson(jsonLines[0]).entries
         } else {
-            jsonLines.map { line -> parseVideoInfoFromJson(line) }
+            jsonLines.map { line -> parseVideoInfoFromJson(line, maxHeight, preferredExts) }
         }
     }
 }
 
-// --- JSON Parsers (no changes needed, already robust) ---
-private fun parseVideoInfoFromJson(jsonString: String): VideoInfo {
+// --- Helper to find best format from formats array ---
+private fun findBestDirectUrl(
+    formats: JsonArray?,
+    maxHeight: Int,
+    preferredExts: List<String>
+): Pair<String?, String?> {
+    if (formats == null || formats.isEmpty()) return null to null
+
+    // Helper to extract format properties
+    fun JsonElement?.objOrNull() = this as? JsonObject
+    fun JsonElement?.strOrNull() = this?.jsonPrimitive?.contentOrNull
+    fun JsonElement?.intOrNull() = this?.jsonPrimitive?.intOrNull
+
+    // First, try to find a progressive format (has both video and audio)
+    val progressiveFormats = formats.mapNotNull { formatEl ->
+        val format = formatEl.objOrNull() ?: return@mapNotNull null
+        val url = format["url"].strOrNull() ?: return@mapNotNull null
+        val height = format["height"].intOrNull()
+        val ext = format["ext"].strOrNull()
+        val acodec = format["acodec"].strOrNull()
+        val vcodec = format["vcodec"].strOrNull()
+        val protocol = format["protocol"].strOrNull()
+
+        // Exclude m3u8/HLS streams (IMPORTANT: this is the fix for the m3u8 issue)
+        if (protocol == "m3u8" || protocol == "m3u8_native") {
+            return@mapNotNull null
+        }
+
+        // Check if it's a progressive format (has both audio and video)
+        if (acodec != null && acodec != "none" &&
+            vcodec != null && vcodec != "none" &&
+            height != null && height <= maxHeight) {
+            Triple(url, height, ext)
+        } else null
+    }
+
+    // Sort by height (descending), then by preferred extension
+    val sorted = progressiveFormats.sortedWith(
+        compareByDescending<Triple<String, Int, String?>> { it.second }
+            .thenBy { triple ->
+                val ext = triple.third
+                if (ext != null && ext in preferredExts) {
+                    preferredExts.indexOf(ext)
+                } else {
+                    preferredExts.size
+                }
+            }
+    )
+
+    return sorted.firstOrNull()?.let { (url, height, ext) ->
+        url to "progressive_${height}p${if (ext != null) ".$ext" else ""}"
+    } ?: (null to null)
+}
+
+// --- JSON Parsers (updated with directUrl extraction) ---
+private fun parseVideoInfoFromJson(
+    jsonString: String,
+    maxHeight: Int = 1080,
+    preferredExts: List<String> = listOf("mp4", "webm")
+): VideoInfo {
     // Helpers kept local to avoid leaking symbols:
     fun JsonElement?.objOrNull() = this as? JsonObject
     fun JsonElement?.arrOrNull() = this as? JsonArray
@@ -441,16 +510,32 @@ private fun parseVideoInfoFromJson(jsonString: String): VideoInfo {
         ChapterInfo(title = o["title"].strOrNull(), startTime = start, endTime = end)
     } ?: emptyList()
 
+    // Extract direct URL from formats (NEW)
+    val formats = root["formats"].arrOrNull()
+    val (directUrl, directUrlFormat) = findBestDirectUrl(formats, maxHeight, preferredExts)
+
     return VideoInfo(
-        id = id, title = title, url = url, thumbnail = root["thumbnail"].strOrNull(),
-        duration = duration, description = root["description"].strOrNull(), uploader = uploader,
-        uploaderUrl = uploaderUrl, uploadDate = root["upload_date"].strOrNull(),
-        viewCount = root["view_count"].longOrNull(), likeCount = root["like_count"].longOrNull(),
-        width = root["width"].intOrNull(), height = root["height"].intOrNull(), fps = root["fps"].doubleOrNull(),
+        id = id,
+        title = title,
+        url = url,
+        thumbnail = root["thumbnail"].strOrNull(),
+        duration = duration,
+        description = root["description"].strOrNull(),
+        uploader = uploader,
+        uploaderUrl = uploaderUrl,
+        uploadDate = root["upload_date"].strOrNull(),
+        viewCount = root["view_count"].longOrNull(),
+        likeCount = root["like_count"].longOrNull(),
+        width = root["width"].intOrNull(),
+        height = root["height"].intOrNull(),
+        fps = root["fps"].doubleOrNull(),
         formatNote = root["format_note"].strOrNull(),
-        availableSubtitles = availableSubtitles, chapters = chapters,
+        availableSubtitles = availableSubtitles,
+        chapters = chapters,
         tags = (root["tags"].arrOrNull()?.mapNotNull { it.strOrNull() }) ?: emptyList(),
-        categories = (root["categories"].arrOrNull()?.mapNotNull { it.strOrNull() }) ?: emptyList()
+        categories = (root["categories"].arrOrNull()?.mapNotNull { it.strOrNull() }) ?: emptyList(),
+        directUrl = directUrl,  // NEW
+        directUrlFormat = directUrlFormat  // NEW
     )
 }
 
@@ -470,8 +555,12 @@ private fun parsePlaylistInfoFromJson(jsonString: String): PlaylistInfo {
         } ?: emptyList()
 
     return PlaylistInfo(
-        id = root["id"].strOrNull(), title = root["title"].strOrNull(), description = root["description"].strOrNull(),
-        uploader = root["uploader"].strOrNull(), uploaderUrl = root["uploader_url"].strOrNull(),
-        entries = entries, entryCount = root["playlist_count"].intOrNull() ?: entries.size
+        id = root["id"].strOrNull(),
+        title = root["title"].strOrNull(),
+        description = root["description"].strOrNull(),
+        uploader = root["uploader"].strOrNull(),
+        uploaderUrl = root["uploader_url"].strOrNull(),
+        entries = entries,
+        entryCount = root["playlist_count"].intOrNull() ?: entries.size
     )
 }

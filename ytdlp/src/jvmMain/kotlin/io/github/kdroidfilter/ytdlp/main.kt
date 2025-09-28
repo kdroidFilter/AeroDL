@@ -41,6 +41,7 @@ fun main() = runBlocking {
             println("  👤 Uploader: ${video.uploader}")
             println("  ⏱️ Durée: ${video.duration}")
             println("  👁️ Vues: ${video.viewCount}")
+            println("   Direct link ${video.directUrl}")
         }
         .onFailure {
             println("❌ Échec: ${it.message}")
