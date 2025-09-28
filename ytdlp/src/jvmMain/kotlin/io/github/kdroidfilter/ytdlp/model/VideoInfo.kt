@@ -3,7 +3,7 @@ package io.github.kdroidfilter.ytdlp.model
 import java.time.Duration
 
 /**
- * Data class representing video metadata
+ * Represents the metadata for a single video.
  */
 data class VideoInfo(
     val id: String,
@@ -14,7 +14,7 @@ data class VideoInfo(
     val description: String? = null,
     val uploader: String? = null,
     val uploaderUrl: String? = null,
-    val uploadDate: String? = null,
+    val uploadDate: String? = null, // YYYYMMDD format
     val viewCount: Long? = null,
     val likeCount: Long? = null,
     val width: Int? = null,
@@ -24,11 +24,14 @@ data class VideoInfo(
     val availableSubtitles: Map<String, SubtitleInfo> = emptyMap(),
     val chapters: List<ChapterInfo> = emptyList(),
     val tags: List<String> = emptyList(),
-    val categories: List<String> = emptyList()
+    val categories: List<String> = emptyList(),
+    val directUrl: String? = null,
+    val directUrlFormat: String? = null,
+    val availableResolutions: Map<Int, ResolutionAvailability> = emptyMap()
 )
 
 /**
- * Data class for subtitle information
+ * Contains information about available subtitles for a specific language.
  */
 data class SubtitleInfo(
     val language: String,
@@ -38,7 +41,7 @@ data class SubtitleInfo(
 )
 
 /**
- * Data class for subtitle format
+ * Represents a specific format (e.g., vtt, srt) of a subtitle file.
  */
 data class SubtitleFormat(
     val ext: String,
@@ -47,7 +50,7 @@ data class SubtitleFormat(
 )
 
 /**
- * Data class for chapter information
+ * Represents a single chapter within a video.
  */
 data class ChapterInfo(
     val title: String? = null,
@@ -56,7 +59,7 @@ data class ChapterInfo(
 )
 
 /**
- * Data class for playlist/channel information
+ * Represents the metadata for a playlist.
  */
 data class PlaylistInfo(
     val id: String? = null,
@@ -66,4 +69,14 @@ data class PlaylistInfo(
     val uploaderUrl: String? = null,
     val entries: List<VideoInfo> = emptyList(),
     val entryCount: Int? = null
+)
+
+/**
+ * Represents the availability of a specific video resolution.
+ * @property progressive True if a single file with video and audio is available.
+ * @property downloadable True if the resolution can be downloaded (either as progressive or by merging video and audio).
+ */
+data class ResolutionAvailability(
+    val progressive: Boolean,
+    val downloadable: Boolean
 )
