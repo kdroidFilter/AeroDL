@@ -1,3 +1,5 @@
+package io.github.kdroidfilter.ytdlp.demos
+
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper.InitEvent
 
@@ -116,7 +118,7 @@ fun main() = runBlocking {
     // For a channel, we retrieve a list of videos
     wrapper.getVideoInfoList(
         channelUrl,
-        maxEntries = 10,
+        maxEntries = 30,
         extractFlat = true,  // Faster
         timeoutSec = 90
     ).onSuccess { videos ->

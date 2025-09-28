@@ -9,15 +9,11 @@ import io.github.kdroidfilter.ytdlp.model.VideoInfo
 import io.github.kdroidfilter.ytdlp.util.NetAndArchive
 import io.github.kdroidfilter.ytdlp.util.PlatformUtils
 import io.github.kdroidfilter.ytdlp.util.errorln
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.time.Duration
 import java.util.concurrent.ArrayBlockingQueue
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.min
 
 /**
@@ -25,6 +21,7 @@ import kotlin.math.min
  * Manages the binary, FFmpeg, downloads, and metadata extraction.
  */
 class YtDlpWrapper {
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     // --- User Configuration (modifiable externally) ---
     var ytDlpPath: String = PlatformUtils.getDefaultBinaryPath()
@@ -92,14 +89,19 @@ class YtDlpWrapper {
     }
 
     // --- Availability / Version / Update ---
-    fun version(): String? = try {
-        val proc = ProcessBuilder(listOf(ytDlpPath, "--version"))
-            .redirectErrorStream(true).start()
-        val out = proc.inputStream.bufferedReader().readText().trim()
-        if (proc.waitFor() == 0 && out.isNotBlank()) out else null
-    } catch (_: Exception) { null }
+    suspend fun version(): String? = withContext(Dispatchers.IO) {
+        try {
+            val proc = ProcessBuilder(listOf(ytDlpPath, "--version"))
+                .redirectErrorStream(true).start()
+            val out = proc.inputStream.bufferedReader().readText().trim()
+            if (proc.waitFor() == 0 && out.isNotBlank()) out else null
+        } catch (_: Exception) {
+            null
+        }
+    }
 
-    fun isAvailable(): Boolean {
+
+    suspend fun isAvailable(): Boolean {
         val file = File(ytDlpPath)
         return file.exists() && file.canExecute() && version() != null
     }
@@ -138,7 +140,10 @@ class YtDlpWrapper {
     // --- FFmpeg ---
     fun getDefaultFfmpegPath(): String = PlatformUtils.getDefaultFfmpegPath()
 
-    fun ensureFfmpegAvailable(forceDownload: Boolean = false, onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null): Boolean {
+    suspend fun ensureFfmpegAvailable(
+        forceDownload: Boolean = false,
+        onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null
+    ): Boolean {
         ffmpegPath?.let {
             if (PlatformUtils.ffmpegVersion(it) != null && !forceDownload) return true
         }
@@ -156,54 +161,123 @@ class YtDlpWrapper {
     }
 
     // --- Network Pre-check ---
-    fun checkNetwork(targetUrl: String, connectTimeoutMs: Int = 5000, readTimeoutMs: Int = 5000): Result<Unit> =
+    suspend fun checkNetwork(
+        targetUrl: String,
+        connectTimeoutMs: Int = 5000,
+        readTimeoutMs: Int = 5000
+    ): Result<Unit> =
         NetAndArchive.checkNetwork(targetUrl, connectTimeoutMs, readTimeoutMs)
 
     // --- Downloader ---
     fun download(url: String, options: Options = Options(), onEvent: (Event) -> Unit): Handle {
-        require(isAvailable()) { "yt-dlp is not available." }
-
-        checkNetwork(url, 5000, 5000).getOrElse {
-            onEvent(Event.NetworkProblem(it.message ?: "Network unavailable"))
-            onEvent(Event.Error("Network pre-check failed."))
-            return Handle(NetAndArchive.startNoopProcess(), AtomicBoolean(true))
-        }
-
-        // Apply global noCheckCertificate if not specified in options
-        val finalOptions = if (options.noCheckCertificate) options else options.copy(noCheckCertificate = this.noCheckCertificate)
-        val cmd = NetAndArchive.buildCommand(ytDlpPath, ffmpegPath, url, finalOptions, downloadDir)
-        val process = try {
-            ProcessBuilder(cmd).directory(downloadDir).redirectErrorStream(true).start()
-        } catch (t: Throwable) {
-            onEvent(Event.Error("Failed to start the yt-dlp process.", t))
-            return Handle(NetAndArchive.startNoopProcess(), AtomicBoolean(true))
-        }
-
-        val cancelled = AtomicBoolean(false)
-        val tail = ArrayBlockingQueue<String>(120)
-        onEvent(Event.Started)
-
-        // Reader thread
-        Thread({
-            try {
-                process.inputStream.bufferedReader(StandardCharsets.UTF_8).forEachLine { line ->
-                    if (!tail.offer(line)) { tail.poll(); tail.offer(line) }
-                    val progress = NetAndArchive.parseProgress(line)
-                    if (progress != null) onEvent(Event.Progress(progress, line)) else onEvent(Event.Log(line))
-                }
-            } catch (t: Throwable) {
-                if (!cancelled.get()) onEvent(Event.Error("I/O error while reading yt-dlp output", t))
+        val job = scope.launch {
+            if (!isAvailable()) {
+                onEvent(Event.Error("yt-dlp is not available. Please call initialize() first."))
+                return@launch
             }
-        }, "yt-dlp-reader").apply { isDaemon = true }.start()
 
-        // Watchdog threads (timeout and completion)
-        startWatchdogThreads(process, finalOptions, cancelled, tail, onEvent)
-        return Handle(process, cancelled)
+            checkNetwork(url, 5000, 5000).getOrElse {
+                onEvent(Event.NetworkProblem(it.message ?: "Network unavailable"))
+                onEvent(Event.Error("Network pre-check failed."))
+                return@launch
+            }
+
+            val finalOptions =
+                if (options.noCheckCertificate) options else options.copy(noCheckCertificate = this@YtDlpWrapper.noCheckCertificate)
+            val cmd = NetAndArchive.buildCommand(ytDlpPath, ffmpegPath, url, finalOptions, downloadDir)
+            val process: Process = try {
+                ProcessBuilder(cmd).directory(downloadDir).redirectErrorStream(true).start()
+            } catch (t: Throwable) {
+                onEvent(Event.Error("Failed to start the yt-dlp process.", t))
+                return@launch
+            }
+
+            onEvent(Event.Started)
+            val tail = ArrayBlockingQueue<String>(120)
+
+            try {
+                // Le bloc de logique de téléchargement est extrait pour éviter la répétition
+                val downloadLogic: suspend CoroutineScope.() -> Unit = {
+                    // Reader coroutine
+                    val readerJob = launch {
+                        try {
+                            process.inputStream.bufferedReader(StandardCharsets.UTF_8).useLines { lines ->
+                                lines.forEach { line ->
+                                    if (!isActive) return@forEach
+                                    if (!tail.offer(line)) {
+                                        tail.poll(); tail.offer(line)
+                                    }
+                                    val progress = NetAndArchive.parseProgress(line)
+                                    if (progress != null) onEvent(Event.Progress(progress, line)) else onEvent(
+                                        Event.Log(line)
+                                    )
+                                }
+                            }
+                        } catch (e: Exception) {
+                            if (isActive) { // Don't report error if cancelled
+                                onEvent(Event.Error("I/O error while reading yt-dlp output", e))
+                            }
+                        }
+                    }
+
+                    // Completion waiter
+                    val exitCode = process.waitFor()
+                    readerJob.join() // Wait for reader to finish processing all output
+
+                    if (exitCode != 0) {
+                        val lines = mutableListOf<String>().also { tail.drainTo(it) }
+                        val diagnostic = NetAndArchive.diagnose(lines)
+                        val tailPreview = if (lines.isEmpty()) "(no output captured)" else lines.takeLast(
+                            min(
+                                15,
+                                lines.size
+                            )
+                        ).joinToString("\n")
+                        onEvent(
+                            Event.Error(
+                                "yt-dlp failed (exit $exitCode). ${diagnostic ?: ""}".trim() + "\n--- Last output ---\n$tailPreview"
+                            )
+                        )
+                    }
+                    onEvent(Event.Completed(exitCode, exitCode == 0))
+                }
+
+                // CORRECTION ICI: On applique le timeout seulement s'il est non-nul
+                val timeoutMillis = finalOptions.timeout?.toMillis()
+                if (timeoutMillis != null) {
+                    withTimeoutOrNull(timeoutMillis) {
+                        downloadLogic()
+                    } ?: run {
+                        // Timeout occurred
+                        process.destroyForcibly()
+                        onEvent(Event.Error("Download timed out after ${finalOptions.timeout?.toMinutes() ?: "N/A"} minutes."))
+                        onEvent(Event.Completed(-1, false))
+                    }
+                } else {
+                    // Exécute sans timeout
+                    downloadLogic()
+                }
+
+            } catch (e: CancellationException) {
+                process.destroyForcibly()
+                onEvent(Event.Cancelled)
+            } catch (t: Throwable) {
+                process.destroyForcibly()
+                onEvent(Event.Error("An unexpected error occurred during download.", t))
+                onEvent(Event.Completed(-1, false))
+            }
+        }
+        return Handle(job)
     }
 
     // --- Direct URL Helpers ---
-    fun getDirectUrlForFormat(url: String, formatSelector: String, noCheckCertificate: Boolean = false, timeoutSec: Long = 20): Result<String> {
-        require(isAvailable()) { "yt-dlp is not available." }
+    suspend fun getDirectUrlForFormat(
+        url: String,
+        formatSelector: String,
+        noCheckCertificate: Boolean = false,
+        timeoutSec: Long = 20
+    ): Result<String> {
+        if (!isAvailable()) return Result.failure(IllegalStateException("yt-dlp is not available."))
         checkNetwork(url, 5000, 5000).getOrElse { return Result.failure(it) }
 
         val useNoCheckCert = noCheckCertificate || this.noCheckCertificate
@@ -228,21 +302,73 @@ class YtDlpWrapper {
         }
     }
 
+
     // --- Simple Resolution Presets ---
     enum class Preset(val height: Int) { P360(360), P480(480), P720(720), P1080(1080), P1440(1440), P2160(2160) }
 
-    fun getProgressiveUrl(url: String, preset: Preset, preferredExts: List<String> = listOf("mp4", "webm"), noCheckCertificate: Boolean = false, timeoutSec: Long = 20): Result<String> =
+    suspend fun getProgressiveUrl(
+        url: String,
+        preset: Preset,
+        preferredExts: List<String> = listOf("mp4", "webm"),
+        noCheckCertificate: Boolean = false,
+        timeoutSec: Long = 20
+    ): Result<String> =
         getProgressiveUrlForHeight(url, preset.height, preferredExts, noCheckCertificate, timeoutSec)
 
-    fun downloadAt(url: String, preset: Preset, outputTemplate: String? = null, preferredExts: List<String> = listOf("mp4", "webm"), noCheckCertificate: Boolean = false, extraArgs: List<String> = emptyList(), timeout: Duration? = Duration.ofMinutes(30), onEvent: (Event) -> Unit): Handle =
+    fun downloadAt(
+        url: String,
+        preset: Preset,
+        outputTemplate: String? = null,
+        preferredExts: List<String> = listOf("mp4", "webm"),
+        noCheckCertificate: Boolean = false,
+        extraArgs: List<String> = emptyList(),
+        timeout: Duration? = Duration.ofMinutes(30),
+        onEvent: (Event) -> Unit
+    ): Handle =
         downloadAtHeight(url, preset.height, preferredExts, noCheckCertificate, outputTemplate, extraArgs, timeout, onEvent)
 
-    fun downloadMp4At(url: String, preset: Preset, outputTemplate: String? = "%(title)s.%(ext)s", noCheckCertificate: Boolean = false, extraArgs: List<String> = emptyList(), timeout: Duration? = Duration.ofMinutes(30), recodeIfNeeded: Boolean = false, onEvent: (Event) -> Unit): Handle =
-        downloadAtHeightMp4(url, preset.height, noCheckCertificate, outputTemplate, extraArgs, timeout, recodeIfNeeded, onEvent)
+    fun downloadMp4At(
+        url: String,
+        preset: Preset,
+        outputTemplate: String? = "%(title)s.%(ext)s",
+        noCheckCertificate: Boolean = false,
+        extraArgs: List<String> = emptyList(),
+        timeout: Duration? = Duration.ofMinutes(30),
+        recodeIfNeeded: Boolean = false,
+        onEvent: (Event) -> Unit
+    ): Handle =
+        downloadAtHeightMp4(
+            url,
+            preset.height,
+            noCheckCertificate,
+            outputTemplate,
+            extraArgs,
+            timeout,
+            recodeIfNeeded,
+            onEvent
+        )
 
     // --- Audio Downloads ---
-    fun downloadAudioMp3(url: String, outputTemplate: String? = "%(title)s.%(ext)s", audioQuality: Int = 0, noCheckCertificate: Boolean = false, extraArgs: List<String> = emptyList(), timeout: Duration? = Duration.ofMinutes(30), onEvent: (Event) -> Unit): Handle {
-        val args = listOf("--extract-audio", "--audio-format", "mp3", "--audio-quality", audioQuality.coerceIn(0, 10).toString(), "--add-metadata", "--embed-thumbnail", "-f", "bestaudio/best")
+    fun downloadAudioMp3(
+        url: String,
+        outputTemplate: String? = "%(title)s.%(ext)s",
+        audioQuality: Int = 0,
+        noCheckCertificate: Boolean = false,
+        extraArgs: List<String> = emptyList(),
+        timeout: Duration? = Duration.ofMinutes(30),
+        onEvent: (Event) -> Unit
+    ): Handle {
+        val args = listOf(
+            "--extract-audio",
+            "--audio-format",
+            "mp3",
+            "--audio-quality",
+            audioQuality.coerceIn(0, 10).toString(),
+            "--add-metadata",
+            "--embed-thumbnail",
+            "-f",
+            "bestaudio/best"
+        )
         return downloadAudioInternal(url, outputTemplate, noCheckCertificate, extraArgs, timeout, args, onEvent)
     }
 
@@ -251,23 +377,55 @@ class YtDlpWrapper {
         VERY_HIGH("256k", "Very high quality"), MAXIMUM("320k", "Maximum quality")
     }
 
-    fun downloadAudioMp3WithPreset(url: String, preset: AudioQualityPreset = AudioQualityPreset.HIGH, outputTemplate: String? = "%(title)s.%(ext)s", noCheckCertificate: Boolean = false, extraArgs: List<String> = emptyList(), timeout: Duration? = Duration.ofMinutes(30), onEvent: (Event) -> Unit): Handle {
-        val postprocessorArg = "ffmpeg:-q:a ${when(preset){
-            AudioQualityPreset.LOW -> 5; AudioQualityPreset.MEDIUM -> 4; AudioQualityPreset.HIGH -> 2;
-            AudioQualityPreset.VERY_HIGH -> 1; AudioQualityPreset.MAXIMUM -> 0
-        }}"
-        val args = listOf("--extract-audio", "--audio-format", "mp3", "--add-metadata", "--embed-thumbnail", "-f", "bestaudio/best", "--postprocessor-args", postprocessorArg)
+    fun downloadAudioMp3WithPreset(
+        url: String,
+        preset: AudioQualityPreset = AudioQualityPreset.HIGH,
+        outputTemplate: String? = "%(title)s.%(ext)s",
+        noCheckCertificate: Boolean = false,
+        extraArgs: List<String> = emptyList(),
+        timeout: Duration? = Duration.ofMinutes(30),
+        onEvent: (Event) -> Unit
+    ): Handle {
+        val postprocessorArg = "ffmpeg:-q:a ${
+            when (preset) {
+                AudioQualityPreset.LOW -> 5; AudioQualityPreset.MEDIUM -> 4; AudioQualityPreset.HIGH -> 2;
+                AudioQualityPreset.VERY_HIGH -> 1; AudioQualityPreset.MAXIMUM -> 0
+            }
+        }"
+        val args = listOf(
+            "--extract-audio",
+            "--audio-format",
+            "mp3",
+            "--add-metadata",
+            "--embed-thumbnail",
+            "-f",
+            "bestaudio/best",
+            "--postprocessor-args",
+            postprocessorArg
+        )
         return downloadAudioInternal(url, outputTemplate, noCheckCertificate, extraArgs, timeout, args, onEvent)
     }
 
-    fun getAudioStreamUrl(url: String, preferredCodecs: List<String> = listOf("opus", "m4a", "mp3", "aac", "vorbis"), noCheckCertificate: Boolean = false, timeoutSec: Long = 20): Result<String> {
+    suspend fun getAudioStreamUrl(
+        url: String,
+        preferredCodecs: List<String> = listOf("opus", "m4a", "mp3", "aac", "vorbis"),
+        noCheckCertificate: Boolean = false,
+        timeoutSec: Long = 20
+    ): Result<String> {
         val codecSelectors = preferredCodecs.joinToString("/") { "bestaudio[acodec=$it]" }
         val formatSelector = "$codecSelectors/bestaudio/best"
         return getDirectUrlForFormat(url, formatSelector, noCheckCertificate, timeoutSec)
     }
 
     // --- Metadata Extraction ---
-    fun getVideoInfo(url: String, extractFlat: Boolean = false, noCheckCertificate: Boolean = false, timeoutSec: Long = 20, maxHeight: Int = 1080, preferredExts: List<String> = listOf("mp4", "webm")): Result<VideoInfo> {
+    suspend fun getVideoInfo(
+        url: String,
+        extractFlat: Boolean = false,
+        noCheckCertificate: Boolean = false,
+        timeoutSec: Long = 20,
+        maxHeight: Int = 1080,
+        preferredExts: List<String> = listOf("mp4", "webm")
+    ): Result<VideoInfo> {
         val args = buildList {
             add("--no-playlist")
             if (extractFlat) add("--flat-playlist")
@@ -277,14 +435,27 @@ class YtDlpWrapper {
         }
     }
 
-    fun getPlaylistInfo(url: String, extractFlat: Boolean = true, noCheckCertificate: Boolean = false, timeoutSec: Long = 60): Result<PlaylistInfo> {
+    suspend fun getPlaylistInfo(
+        url: String,
+        extractFlat: Boolean = true,
+        noCheckCertificate: Boolean = false,
+        timeoutSec: Long = 60
+    ): Result<PlaylistInfo> {
         val args = if (extractFlat) listOf("--flat-playlist") else emptyList()
         return extractMetadata(url, noCheckCertificate, timeoutSec, args).mapCatching { json ->
             parsePlaylistInfoFromJson(json)
         }
     }
 
-    fun getVideoInfoList(url: String, maxEntries: Int? = null, extractFlat: Boolean = true, noCheckCertificate: Boolean = false, timeoutSec: Long = 60, maxHeight: Int = 1080, preferredExts: List<String> = listOf("mp4", "webm")): Result<List<VideoInfo>> {
+    suspend fun getVideoInfoList(
+        url: String,
+        maxEntries: Int? = null,
+        extractFlat: Boolean = true,
+        noCheckCertificate: Boolean = false,
+        timeoutSec: Long = 60,
+        maxHeight: Int = 1080,
+        preferredExts: List<String> = listOf("mp4", "webm")
+    ): Result<List<VideoInfo>> {
         val args = buildList {
             if (extractFlat) add("--flat-playlist")
             maxEntries?.let { addAll(listOf("--playlist-end", it.toString())) }
@@ -303,83 +474,119 @@ class YtDlpWrapper {
     // =================== INTERNAL PRIVATE METHODS ===================
     // =================================================================
 
-    private fun getProgressiveUrlForHeight(url: String, height: Int, preferredExts: List<String>, noCheckCertificate: Boolean, timeoutSec: Long): Result<String> {
+    private suspend fun getProgressiveUrlForHeight(
+        url: String,
+        height: Int,
+        preferredExts: List<String>,
+        noCheckCertificate: Boolean,
+        timeoutSec: Long
+    ): Result<String> {
         val selector = NetAndArchive.selectorProgressiveExact(height, preferredExts)
         return getDirectUrlForFormat(url, selector, noCheckCertificate, timeoutSec)
     }
 
-    private fun downloadAtHeight(url: String, height: Int, preferredExts: List<String>, noCheckCertificate: Boolean, outputTemplate: String?, extraArgs: List<String>, timeout: Duration?, onEvent: (Event) -> Unit): Handle {
+    private fun downloadAtHeight(
+        url: String,
+        height: Int,
+        preferredExts: List<String>,
+        noCheckCertificate: Boolean,
+        outputTemplate: String?,
+        extraArgs: List<String>,
+        timeout: Duration?,
+        onEvent: (Event) -> Unit
+    ): Handle {
         val useNoCheckCert = noCheckCertificate || this.noCheckCertificate
-        val opts = Options(format = NetAndArchive.selectorDownloadExact(height, preferredExts), outputTemplate = outputTemplate, noCheckCertificate = useNoCheckCert, extraArgs = extraArgs, timeout = timeout)
+        val opts = Options(
+            format = NetAndArchive.selectorDownloadExact(height, preferredExts),
+            outputTemplate = outputTemplate,
+            noCheckCertificate = useNoCheckCert,
+            extraArgs = extraArgs,
+            timeout = timeout
+        )
         return download(url, opts, onEvent)
     }
 
-    private fun downloadAtHeightMp4(url: String, height: Int, noCheckCertificate: Boolean, outputTemplate: String?, extraArgs: List<String>, timeout: Duration?, recodeIfNeeded: Boolean, onEvent: (Event) -> Unit): Handle {
+    private fun downloadAtHeightMp4(
+        url: String,
+        height: Int,
+        noCheckCertificate: Boolean,
+        outputTemplate: String?,
+        extraArgs: List<String>,
+        timeout: Duration?,
+        recodeIfNeeded: Boolean,
+        onEvent: (Event) -> Unit
+    ): Handle {
         val useNoCheckCert = noCheckCertificate || this.noCheckCertificate
-        val opts = Options(format = NetAndArchive.selectorDownloadExactMp4(height), outputTemplate = outputTemplate, noCheckCertificate = useNoCheckCert, extraArgs = extraArgs, timeout = timeout, targetContainer = "mp4", allowRecode = recodeIfNeeded)
+        val opts = Options(
+            format = NetAndArchive.selectorDownloadExactMp4(height),
+            outputTemplate = outputTemplate,
+            noCheckCertificate = useNoCheckCert,
+            extraArgs = extraArgs,
+            timeout = timeout,
+            targetContainer = "mp4",
+            allowRecode = recodeIfNeeded
+        )
         return download(url, opts, onEvent)
     }
 
-    private fun downloadAudioInternal(url: String, outputTemplate: String?, noCheckCertificate: Boolean, extraArgs: List<String>, timeout: Duration?, audioArgs: List<String>, onEvent: (Event) -> Unit): Handle {
+    private fun downloadAudioInternal(
+        url: String,
+        outputTemplate: String?,
+        noCheckCertificate: Boolean,
+        extraArgs: List<String>,
+        timeout: Duration?,
+        audioArgs: List<String>,
+        onEvent: (Event) -> Unit
+    ): Handle {
         val useNoCheckCert = noCheckCertificate || this.noCheckCertificate
-        val options = Options(outputTemplate = outputTemplate, noCheckCertificate = useNoCheckCert, extraArgs = audioArgs + extraArgs, timeout = timeout)
+        val options = Options(
+            outputTemplate = outputTemplate,
+            noCheckCertificate = useNoCheckCert,
+            extraArgs = audioArgs + extraArgs,
+            timeout = timeout
+        )
         return download(url, options, onEvent)
     }
 
-    private fun startWatchdogThreads(process: Process, options: Options, cancelled: AtomicBoolean, tail: ArrayBlockingQueue<String>, onEvent: (Event) -> Unit) {
-        options.timeout?.let { limit ->
-            Thread({
-                try {
-                    if (!process.waitFor(limit.toMillis(), TimeUnit.MILLISECONDS) && !cancelled.getAndSet(true)) {
-                        process.destroy()
-                        onEvent(Event.Error("Download timed out after ${limit.toMinutes()} minutes."))
-                    }
-                } catch (_: InterruptedException) {}
-            }, "yt-dlp-timeout").apply { isDaemon = true }.start()
-        }
-
-        Thread({
-            val exit = try { process.waitFor() } catch (_: InterruptedException) { -1 }
-            if (cancelled.get()) {
-                onEvent(Event.Cancelled)
-            } else if (exit != 0) {
-                val lines = mutableListOf<String>().also { tail.drainTo(it) }
-                val diagnostic = NetAndArchive.diagnose(lines)
-                val tailPreview = if (lines.isEmpty()) "(no output captured)" else lines.takeLast(min(15, lines.size)).joinToString("\n")
-                onEvent(Event.Error("yt-dlp failed (exit $exit). ${diagnostic ?: ""}".trim() + "\n--- Last output ---\n$tailPreview"))
+    private suspend fun executeCommand(args: List<String>, timeoutSec: Long): Result<ProcessResult> =
+        withContext(Dispatchers.IO) {
+            val cmd = buildList {
+                add(ytDlpPath)
+                addAll(args)
+                ffmpegPath?.takeIf { it.isNotBlank() }?.let { addAll(listOf("--ffmpeg-location", it)) }
             }
-            onEvent(Event.Completed(exit, exit == 0))
-        }, "yt-dlp-completion").apply { isDaemon = true }.start()
-    }
 
-    private fun executeCommand(args: List<String>, timeoutSec: Long): Result<ProcessResult> {
-        val cmd = buildList {
-            add(ytDlpPath)
-            addAll(args)
-            ffmpegPath?.takeIf { it.isNotBlank() }?.let { addAll(listOf("--ffmpeg-location", it)) }
+            try {
+                val process = ProcessBuilder(cmd).start()
+                val stdoutReader =
+                    async { process.inputStream.bufferedReader(StandardCharsets.UTF_8).readLines() }
+                val stderrReader =
+                    async { process.errorStream.bufferedReader(StandardCharsets.UTF_8).readText() }
+
+                val exited = withTimeoutOrNull(timeoutSec * 1000) {
+                    process.waitFor()
+                }
+
+                if (exited == null) {
+                    process.destroyForcibly()
+                    return@withContext Result.failure(IllegalStateException("yt-dlp command timed out after ${timeoutSec}s"))
+                }
+
+                Result.success(ProcessResult(process.exitValue(), stdoutReader.await(), stderrReader.await()))
+
+            } catch (t: Throwable) {
+                Result.failure(IllegalStateException("Failed to start/run yt-dlp process", t))
+            }
         }
 
-        val process = try { ProcessBuilder(cmd).start() }
-        catch (t: Throwable) { return Result.failure(IllegalStateException("Failed to start yt-dlp process", t)) }
 
-        val stdoutLines = mutableListOf<String>()
-        val stderr = StringBuilder()
-        val outReader = Thread { process.inputStream.bufferedReader(StandardCharsets.UTF_8).use { it.forEachLine(stdoutLines::add) } }
-        val errReader = Thread { process.errorStream.bufferedReader(StandardCharsets.UTF_8).use { reader -> reader.forEachLine { stderr.appendLine(it) } } }
-        outReader.start(); errReader.start()
-
-        if (!process.waitFor(timeoutSec, TimeUnit.SECONDS)) {
-            process.destroyForcibly()
-            outReader.interrupt(); errReader.interrupt()
-            return Result.failure(IllegalStateException("yt-dlp command timed out after ${timeoutSec}s"))
-        }
-
-        outReader.join(2000); errReader.join(2000)
-        return Result.success(ProcessResult(process.exitValue(), stdoutLines, stderr.toString()))
-    }
-
-    private fun extractMetadata(url: String, noCheckCertificate: Boolean, timeoutSec: Long, extraArgs: List<String>): Result<String> {
-        require(isAvailable()) { "yt-dlp is not available." }
+    private suspend fun extractMetadata(
+        url: String,
+        noCheckCertificate: Boolean,
+        timeoutSec: Long,
+        extraArgs: List<String>
+    ): Result<String> {
+        if (!isAvailable()) return Result.failure(IllegalStateException("yt-dlp is not available."))
         checkNetwork(url, 5000, 5000).getOrElse { return Result.failure(it) }
 
         val useNoCheckCert = noCheckCertificate || this.noCheckCertificate
@@ -388,23 +595,28 @@ class YtDlpWrapper {
             if (useNoCheckCert) add("--no-check-certificate")
             addAll(extraArgs); add(url)
         }
-        val pb = ProcessBuilder(buildList { add(ytDlpPath); addAll(cmdArgs) }).redirectErrorStream(false)
-        val process = try { pb.start() }
-        catch (t: Throwable) { return Result.failure(IllegalStateException("Failed to start yt-dlp process", t)) }
 
-        val jsonOutput = StringBuilder()
-        val errorOutput = StringBuilder()
-        val outputReader = Thread { process.inputStream.bufferedReader(StandardCharsets.UTF_8).useLines { it.forEach(jsonOutput::appendLine) } }
-        val errorReader = Thread { process.errorStream.bufferedReader(StandardCharsets.UTF_8).useLines { it.forEach(errorOutput::appendLine) } }
-        outputReader.start(); errorReader.start()
+        return withContext(Dispatchers.IO) {
+            try {
+                val pb = ProcessBuilder(buildList { add(ytDlpPath); addAll(cmdArgs) }).redirectErrorStream(false)
+                val process = pb.start()
+                val jsonOutput = async { process.inputStream.bufferedReader(StandardCharsets.UTF_8).readText() }
+                val errorOutput = async { process.errorStream.bufferedReader(StandardCharsets.UTF_8).readText() }
 
-        if (!process.waitFor(timeoutSec, TimeUnit.SECONDS)) {
-            process.destroyForcibly()
-            return Result.failure(IllegalStateException("Metadata extraction timed out after ${timeoutSec}s"))
+                val exited = withTimeoutOrNull(timeoutSec * 1000) {
+                    process.waitFor()
+                }
+                if (exited == null) {
+                    process.destroyForcibly()
+                    return@withContext Result.failure(IllegalStateException("Metadata extraction timed out after ${timeoutSec}s"))
+                }
+
+                if (process.exitValue() == 0) Result.success(jsonOutput.await())
+                else Result.failure(IllegalStateException("Metadata extraction failed (exit ${process.exitValue()})\n${errorOutput.await()}"))
+
+            } catch (t: Throwable) {
+                Result.failure(IllegalStateException("Failed to start yt-dlp process for metadata", t))
+            }
         }
-        outputReader.join(5000); errorReader.join(5000)
-
-        return if (process.exitValue() == 0) Result.success(jsonOutput.toString())
-        else Result.failure(IllegalStateException("Metadata extraction failed (exit ${process.exitValue()})\n${errorOutput}"))
     }
 }

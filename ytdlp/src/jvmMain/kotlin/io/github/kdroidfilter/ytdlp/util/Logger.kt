@@ -1,6 +1,6 @@
 package io.github.kdroidfilter.ytdlp.util
 
-var allowLogging: Boolean = true
+var allowYtDlpLogging: Boolean = true
 var loggingLevel: LoggingLevel = LoggingLevel.VERBOSE
 
 class LoggingLevel(val priority: Int) {
@@ -20,32 +20,32 @@ private const val COLOR_ORANGE = "\u001b[38;2;255;165;0m"
 private const val COLOR_RESET = "\u001b[0m"
 
 fun debugln(message: () -> String) {
-    if (allowLogging && loggingLevel.priority <= LoggingLevel.DEBUG.priority) {
+    if (allowYtDlpLogging && loggingLevel.priority <= LoggingLevel.DEBUG.priority) {
         println(message())
     }
 }
 
 fun verboseln(message: () -> String) {
-    if (allowLogging && loggingLevel.priority <= LoggingLevel.VERBOSE.priority) {
+    if (allowYtDlpLogging && loggingLevel.priority <= LoggingLevel.VERBOSE.priority) {
         println(message(), COLOR_LIGHT_GRAY)
     }
 }
 
 
 fun infoln(message: () -> String) {
-    if (allowLogging && loggingLevel.priority <= LoggingLevel.INFO.priority) {
+    if (allowYtDlpLogging && loggingLevel.priority <= LoggingLevel.INFO.priority) {
         println(message(), COLOR_AQUA)
     }
 }
 
 fun warnln(message: () -> String) {
-    if (allowLogging && loggingLevel.priority <= LoggingLevel.WARN.priority) {
+    if (allowYtDlpLogging && loggingLevel.priority <= LoggingLevel.WARN.priority) {
         println(message(), COLOR_ORANGE)
     }
 }
 
 fun errorln(message: () -> String) {
-    if (allowLogging && loggingLevel.priority <= LoggingLevel.ERROR.priority) {
+    if (allowYtDlpLogging && loggingLevel.priority <= LoggingLevel.ERROR.priority) {
         println(message(), COLOR_RED)
     }
 }

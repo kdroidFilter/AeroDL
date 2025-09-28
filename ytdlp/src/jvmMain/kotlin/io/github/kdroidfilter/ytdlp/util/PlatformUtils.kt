@@ -3,9 +3,15 @@ package io.github.kdroidfilter.ytdlp.util
 import io.github.kdroidfilter.platformtools.OperatingSystem
 import io.github.kdroidfilter.platformtools.getCacheDir
 import io.github.kdroidfilter.platformtools.getOperatingSystem
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withContext
 import java.io.File
+import java.nio.ByteBuffer
+import java.nio.channels.Channels
 import java.nio.file.Files
 import java.nio.file.attribute.PosixFilePermission
+import kotlin.coroutines.coroutineContext
 
 object PlatformUtils {
 
@@ -20,7 +26,7 @@ object PlatformUtils {
         return File(dir, binaryName).absolutePath
     }
 
-    fun getYtDlpAssetNameForSystem(): String {
+    suspend fun getYtDlpAssetNameForSystem(): String {
         val os = getOperatingSystem()
         val arch = (System.getProperty("os.arch") ?: "").lowercase()
         return when (os) {
@@ -29,21 +35,14 @@ object PlatformUtils {
                 arch.contains("32") || (arch.contains("x86") && !arch.contains("64")) -> "yt-dlp_x86.exe"
                 else -> "yt-dlp.exe"
             }
+
             OperatingSystem.MACOS -> when {
                 arch.contains("aarch64") || arch.contains("arm64") -> "yt-dlp_macos_arm64"
                 else -> "yt-dlp_macos"
             }
-            OperatingSystem.LINUX -> {
-                val isMusl = try {
-                    val p = Runtime.getRuntime().exec(arrayOf("ldd", "--version"))
-                    val out = p.inputStream.bufferedReader().readText()
-                    p.waitFor()
-                    out.contains("musl")
-                } catch (e: Exception) {
-                    debugln { "ldd check failed, assuming not musl. Error: ${e.message}" }
-                    false
-                }
 
+            OperatingSystem.LINUX -> {
+                val isMusl = isMusl()
                 when {
                     isMusl && (arch.contains("aarch64") || arch.contains("arm64")) -> "yt-dlp_musllinux_aarch64"
                     isMusl -> "yt-dlp_musllinux"
@@ -52,21 +51,38 @@ object PlatformUtils {
                     else -> "yt-dlp_linux"
                 }
             }
+
             else -> "yt-dlp" // Generic fallback
         }
     }
 
-    fun downloadFile(url: String, dest: File, onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null) {
+    private suspend fun isMusl(): Boolean = withContext(Dispatchers.IO) {
+        try {
+            val p = Runtime.getRuntime().exec(arrayOf("ldd", "--version"))
+            val out = p.inputStream.bufferedReader().readText()
+            p.waitFor()
+            out.contains("musl")
+        } catch (e: Exception) {
+            debugln { "ldd check failed, assuming not musl. Error: ${e.message}" }
+            false
+        }
+    }
+
+    suspend fun downloadFile(
+        url: String,
+        dest: File,
+        onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null
+    ) = withContext(Dispatchers.IO) {
         dest.parentFile?.mkdirs()
         val uri = java.net.URI.create(url)
         val conn = uri.toURL().openConnection()
         val total = conn.getHeaderFieldLong("Content-Length", -1L).takeIf { it > 0 }
         conn.getInputStream().use { input ->
-            java.nio.channels.Channels.newChannel(input).use { rch ->
+            Channels.newChannel(input).use { rch ->
                 java.io.FileOutputStream(dest).use { fos ->
-                    val buffer = java.nio.ByteBuffer.allocateDirect(1024 * 64) // 64KB buffer
+                    val buffer = ByteBuffer.allocateDirect(1024 * 64) // 64KB buffer
                     var readTotal = 0L
-                    while (true) {
+                    while (isActive) {
                         buffer.clear()
                         val n = rch.read(buffer)
                         if (n <= 0) break
@@ -80,7 +96,8 @@ object PlatformUtils {
         }
     }
 
-    fun makeExecutable(file: File) {
+
+    suspend fun makeExecutable(file: File) = withContext(Dispatchers.IO) {
         try {
             // Modern way using NIO
             val path = file.toPath()
@@ -102,20 +119,27 @@ object PlatformUtils {
         return File(dir, exe).absolutePath
     }
 
-    fun findFfmpegInSystemPath(): String? {
+    suspend fun findFfmpegInSystemPath(): String? = withContext(Dispatchers.IO) {
         val cmd = if (getOperatingSystem() == OperatingSystem.WINDOWS) listOf("where", "ffmpeg") else listOf("which", "ffmpeg")
-        return try {
+        try {
             val p = ProcessBuilder(cmd).redirectErrorStream(true).start()
             val out = p.inputStream.bufferedReader().readText().trim()
             if (p.waitFor() == 0 && out.isNotBlank()) out.lineSequence().firstOrNull()?.trim() else null
-        } catch (_: Exception) { null }
+        } catch (_: Exception) {
+            null
+        }
     }
 
-    fun ffmpegVersion(path: String): String? = try {
-        val p = ProcessBuilder(listOf(path, "-version")).redirectErrorStream(true).start()
-        val out = p.inputStream.bufferedReader().readText().trim()
-        if (p.waitFor() == 0 && out.isNotBlank()) out.lineSequence().firstOrNull() else null
-    } catch (_: Exception) { null }
+    suspend fun ffmpegVersion(path: String): String? = withContext(Dispatchers.IO) {
+        try {
+            val p = ProcessBuilder(listOf(path, "-version")).redirectErrorStream(true).start()
+            val out = p.inputStream.bufferedReader().readText().trim()
+            if (p.waitFor() == 0 && out.isNotBlank()) out.lineSequence().firstOrNull() else null
+        } catch (_: Exception) {
+            null
+        }
+    }
+
 
     fun getFfmpegAssetNameForSystem(): String? {
         val os = getOperatingSystem()
@@ -127,8 +151,10 @@ object PlatformUtils {
                 arch.contains("32") || (arch.contains("x86") && !arch.contains("64")) -> "ffmpeg-master-latest-win32-gpl.zip"
                 else -> "ffmpeg-master-latest-win64-gpl.zip"
             }
+
             OperatingSystem.LINUX -> if (isArm64) "ffmpeg-master-latest-linuxarm64-gpl.tar.xz"
             else "ffmpeg-master-latest-linux64-gpl.tar.xz"
+
             OperatingSystem.MACOS -> null // FFmpeg builds are not provided for macOS in the same repo
             else -> null
         }
@@ -137,20 +163,24 @@ object PlatformUtils {
     /**
      * Downloads and installs FFmpeg. Returns the installed binary path or null on failure.
      */
-    fun downloadAndInstallFfmpeg(assetName: String, forceDownload: Boolean, onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null): String? {
+    suspend fun downloadAndInstallFfmpeg(
+        assetName: String,
+        forceDownload: Boolean,
+        onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null
+    ): String? = withContext(Dispatchers.IO) {
         val baseDir = File(getCacheDir(), "ffmpeg")
         val binDir = File(baseDir, "bin")
         val targetExe = File(binDir, if (getOperatingSystem() == OperatingSystem.WINDOWS) "ffmpeg.exe" else "ffmpeg")
 
         if (targetExe.exists() && ffmpegVersion(targetExe.absolutePath) != null && !forceDownload) {
-            return targetExe.absolutePath
+            return@withContext targetExe.absolutePath
         }
 
         baseDir.mkdirs(); binDir.mkdirs()
         val url = "https://github.com/yt-dlp/FFmpeg-Builds/releases/latest/download/$assetName"
         val archive = File(baseDir, assetName)
 
-        return try {
+        try {
             // Download archive with progress
             downloadFile(url, archive, onProgress)
             if (assetName.endsWith(".zip")) NetAndArchive.extractZip(archive, baseDir)
