@@ -4,7 +4,7 @@ import io.github.kdroidfilter.ytdlp.model.*
 import kotlinx.serialization.json.*
 
 
-// --- Helper to find best format from formats array ---
+// --- Helper to find the best direct URL from a formats array ---
 private fun findBestDirectUrl(
     formats: JsonArray?,
     maxHeight: Int,
@@ -12,12 +12,12 @@ private fun findBestDirectUrl(
 ): Pair<String?, String?> {
     if (formats == null || formats.isEmpty()) return null to null
 
-    // Helper to extract format properties
+    // Helper to extract format properties safely
     fun JsonElement?.objOrNull() = this as? JsonObject
     fun JsonElement?.strOrNull() = this?.jsonPrimitive?.contentOrNull
     fun JsonElement?.intOrNull() = this?.jsonPrimitive?.intOrNull
 
-    // First, try to find a progressive format (has both video and audio)
+    // First, try to find a progressive format (contains both video and audio)
     val progressiveFormats = formats.mapNotNull { formatEl ->
         val format = formatEl.objOrNull() ?: return@mapNotNull null
         val url = format["url"].strOrNull() ?: return@mapNotNull null
@@ -27,7 +27,7 @@ private fun findBestDirectUrl(
         val vcodec = format["vcodec"].strOrNull()
         val protocol = format["protocol"].strOrNull()
 
-        // Exclude m3u8/HLS streams (IMPORTANT: this is the fix for the m3u8 issue)
+        // Exclude m3u8/HLS streams as they are not direct download links
         if (protocol == "m3u8" || protocol == "m3u8_native") {
             return@mapNotNull null
         }
@@ -58,13 +58,13 @@ private fun findBestDirectUrl(
     } ?: (null to null)
 }
 
-// --- JSON Parsers (updated with directUrl extraction) ---
+// --- JSON Parsers ---
 fun parseVideoInfoFromJson(
     jsonString: String,
     maxHeight: Int = 1080,
     preferredExts: List<String> = listOf("mp4", "webm")
 ): VideoInfo {
-    // Helpers kept local to avoid leaking symbols:
+    // Local helpers to avoid polluting the namespace
     fun JsonElement?.objOrNull() = this as? JsonObject
     fun JsonElement?.arrOrNull() = this as? JsonArray
     fun JsonElement?.strOrNull() = this?.jsonPrimitive?.contentOrNull
@@ -105,7 +105,7 @@ fun parseVideoInfoFromJson(
         ChapterInfo(title = o["title"].strOrNull(), startTime = start, endTime = end)
     } ?: emptyList()
 
-    // Extract direct URL from formats (NEW)
+    // Extract direct URL from the formats array
     val formats = root["formats"].arrOrNull()
     val (directUrl, directUrlFormat) = findBestDirectUrl(formats, maxHeight, preferredExts)
 
@@ -129,8 +129,8 @@ fun parseVideoInfoFromJson(
         chapters = chapters,
         tags = (root["tags"].arrOrNull()?.mapNotNull { it.strOrNull() }) ?: emptyList(),
         categories = (root["categories"].arrOrNull()?.mapNotNull { it.strOrNull() }) ?: emptyList(),
-        directUrl = directUrl,  // NEW
-        directUrlFormat = directUrlFormat  // NEW
+        directUrl = directUrl,
+        directUrlFormat = directUrlFormat
     )
 }
 

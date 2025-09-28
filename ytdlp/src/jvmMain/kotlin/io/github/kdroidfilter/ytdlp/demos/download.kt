@@ -7,98 +7,97 @@ import java.io.File
 import java.util.concurrent.CompletableFuture
 
 fun main() {
-    println("🚀 Démarrage de la démo de téléchargement...")
+    println("🚀 Starting download demo...")
 
-    // Utilise runBlocking pour exécuter le code asynchrone dans un contexte bloquant (parfait pour une app console)
+    // Use runBlocking to execute async code in a blocking context (ideal for a console app)
     runBlocking {
-        // 1. Créer une instance du wrapper
+        // 1. Create a wrapper instance
         val ytDlpWrapper = YtDlpWrapper()
-        // Définir le paramètre de manière globale pour toutes les opérations de ce wrapper
+        // Set the parameter globally for all operations of this wrapper instance
         ytDlpWrapper.noCheckCertificate = true
 
 
-        // (Optionnel) Définir un dossier de téléchargement personnalisé
+        // (Optional) Define a custom download directory
         val downloadsDir = File(System.getProperty("user.home"), "YtDlpWrapper_Downloads")
         downloadsDir.mkdirs()
         ytDlpWrapper.downloadDir = downloadsDir
-        println("📂 Fichiers seront sauvegardés dans : ${downloadsDir.absolutePath}")
+        println("📂 Files will be saved in: ${downloadsDir.absolutePath}")
 
-        // 2. Initialiser le wrapper. Ceci est crucial et doit être fait avant tout.
-        println("🔄 Initialisation de yt-dlp et FFmpeg (peut prendre un moment la première fois)...")
+        // 2. Initialize the wrapper. This is crucial and must be done first.
+        println("🔄 Initializing yt-dlp and FFmpeg (may take a moment on the first run)...")
         val initSuccess = ytDlpWrapper.initialize { event ->
-            // Affiche les événements d'initialisation pour informer l'utilisateur
+            // Display initialization events to inform the user
             when (event) {
-                is YtDlpWrapper.InitEvent.DownloadingYtDlp -> println("    -> Téléchargement de yt-dlp...")
-                is YtDlpWrapper.InitEvent.EnsuringFfmpeg -> println("    -> Vérification de FFmpeg...")
-                is YtDlpWrapper.InitEvent.Completed -> if (event.success) println("✅ Initialisation terminée avec succès !")
-                is YtDlpWrapper.InitEvent.Error -> System.err.println("❌ Erreur d'initialisation : ${event.message}")
-                else -> {} // Ignorer les autres événements comme la progression pour rester concis
+                is YtDlpWrapper.InitEvent.DownloadingYtDlp -> println("    -> Downloading yt-dlp...")
+                is YtDlpWrapper.InitEvent.EnsuringFfmpeg -> println("    -> Checking FFmpeg...")
+                is YtDlpWrapper.InitEvent.Completed -> if (event.success) println("✅ Initialization completed successfully!")
+                is YtDlpWrapper.InitEvent.Error -> System.err.println("❌ Initialization error: ${event.message}")
+                else -> {} // Ignore other events like progress to keep the output concise
             }
         }
 
         if (!initSuccess) {
-            println("🛑 Échec de l'initialisation. Le programme va s'arrêter.")
+            println("🛑 Initialization failed. The program will now exit.")
             return@runBlocking
         }
 
-        // 3. Lancer le téléchargement
-        // URL d'une vidéo de test libre de droits (Big Buck Bunny)
+        // 3. Start the download
+        // URL of a copyright-free test video (Big Buck Bunny)
         val videoUrl = "https://ivan.canet.dev/talks/bordeauxkt.html#kotlin-beyond-the-jvm"
-        println("\n🎬 Lancement du téléchargement pour : $videoUrl")
+        println("\n🎬 Starting download for: $videoUrl")
 
-        // noCheckCertificate n'est plus nécessaire ici, car il est défini globalement
+        // noCheckCertificate is no longer needed here, as it's set globally
         val table = ytDlpWrapper.probeAvailability(videoUrl)
         println(table)
 
-        // Un CompletableFuture est utilisé pour attendre la fin du téléchargement asynchrone
+        // A CompletableFuture is used to wait for the asynchronous download to finish
         val downloadFuture = CompletableFuture<Boolean>()
 
         ytDlpWrapper.downloadMp4At(
-            // noCheckCertificate n'est plus nécessaire ici
             url = videoUrl,
-            preset = YtDlpWrapper.Preset.P1080, // Spécifie la qualité 1080p
+            preset = YtDlpWrapper.Preset.P1080, // Specify 1080p quality
             onEvent = { event ->
                 when (event) {
-                    is Event.Started -> println("    -> Le processus de téléchargement a démarré.")
+                    is Event.Started -> println("    -> Download process started.")
                     is Event.Progress -> {
-                        // Affiche la progression sur une seule ligne pour une console propre
+                        // Display progress on a single line for a clean console
                         val progressPercent = event.percent ?: 0.0
-                        print("\r    -> Progression : ${"%.1f".format(progressPercent)}%")
+                        print("\r    -> Progress: ${"%.1f".format(progressPercent)}%")
                     }
                     is Event.Completed -> {
-                        println("\n    -> Téléchargement terminé.")
+                        println("\n    -> Download finished.")
                         if(event.success) {
-                            println("🎉 Succès !")
+                            println("🎉 Success!")
                             downloadFuture.complete(true)
                         } else {
-                            System.err.println("    -> Le téléchargement s'est terminé mais a échoué (exit code: ${event.exitCode}).")
+                            System.err.println("    -> The download finished but failed (exit code: ${event.exitCode}).")
                             downloadFuture.complete(false)
                         }
                     }
                     is Event.Error -> {
-                        System.err.println("\n❌ Erreur de téléchargement : ${event.message}")
+                        System.err.println("\n❌ Download error: ${event.message}")
                         downloadFuture.complete(false)
                     }
                     is Event.Cancelled -> {
-                        println("\n C Annulé.")
+                        println("\n C Cancelled.")
                         downloadFuture.complete(false)
                     }
                     is Event.NetworkProblem -> {
-                        System.err.println("\n🌐 Problème réseau : ${event.detail}")
+                        System.err.println("\n🌐 Network problem: ${event.detail}")
                         downloadFuture.complete(false)
                     }
-                    else -> {} // Ignorer les événements de log pour cette démo
+                    else -> {} // Ignore log events for this demo
                 }
             }
         )
 
-        // 4. Attendre le résultat
-        val success = downloadFuture.get() // Bloque le thread principal jusqu'à ce que le futur soit complété
+        // 4. Wait for the result
+        val success = downloadFuture.get() // Blocks the main thread until the future is completed
 
         if (success) {
-            println("\n👍 Le fichier a été téléchargé avec succès.")
+            println("\n👍 The file was downloaded successfully.")
         } else {
-            println("\n👎 Une erreur est survenue pendant le téléchargement.")
+            println("\n👎 An error occurred during the download.")
         }
     }
 }

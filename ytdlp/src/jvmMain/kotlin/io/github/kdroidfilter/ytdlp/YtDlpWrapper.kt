@@ -3,19 +3,14 @@ package io.github.kdroidfilter.ytdlp
 import io.github.kdroidfilter.platformtools.OperatingSystem
 import io.github.kdroidfilter.platformtools.getOperatingSystem
 import io.github.kdroidfilter.platformtools.releasefetcher.github.GitHubReleaseFetcher
+import io.github.kdroidfilter.ytdlp.core.*
 import io.github.kdroidfilter.ytdlp.model.PlaylistInfo
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
-import io.github.kdroidfilter.ytdlp.core.Event
-import io.github.kdroidfilter.ytdlp.core.Handle
-import io.github.kdroidfilter.ytdlp.core.Options
-import io.github.kdroidfilter.ytdlp.core.parsePlaylistInfoFromJson
-import io.github.kdroidfilter.ytdlp.core.parseVideoInfoFromJson
 import io.github.kdroidfilter.ytdlp.util.NetAndArchive
 import io.github.kdroidfilter.ytdlp.util.PlatformUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.*
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.time.Duration
@@ -25,25 +20,26 @@ import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.min
 
 /**
- * Classe principale pour interagir avec l'outil yt-dlp.
- * Gère le binaire, FFmpeg, les téléchargements et l'extraction de métadonnées.
+ * Main class for interacting with the yt-dlp tool.
+ * Manages the binary, FFmpeg, downloads, and metadata extraction.
  */
 class YtDlpWrapper {
 
-    // === Configuration utilisateur (modifiable de l'extérieur) ===
+    // --- User Configuration (modifiable externally) ---
     var ytDlpPath: String = PlatformUtils.getDefaultBinaryPath()
     var ffmpegPath: String? = null
     var downloadDir: File? = File(System.getProperty("user.home"), "Downloads/yt-dlp")
+
     /**
-     * Si vrai, ajoute l'argument '--no-check-certificate' à toutes les commandes yt-dlp.
-     * Peut être outrepassé au cas par cas dans les appels de méthode.
+     * If true, adds the '--no-check-certificate' argument to all yt-dlp commands.
+     * This can be overridden on a per-call basis in method invocations.
      */
     var noCheckCertificate: Boolean = false
 
     private val ytdlpFetcher = GitHubReleaseFetcher(owner = "yt-dlp", repo = "yt-dlp")
     private data class ProcessResult(val exitCode: Int, val stdout: List<String>, val stderr: String)
 
-    // === Événements d'initialisation pour l'UI ===
+    // --- Initialization Events for UI ---
     sealed interface InitEvent {
         data object CheckingYtDlp : InitEvent
         data object DownloadingYtDlp : InitEvent
@@ -56,15 +52,15 @@ class YtDlpWrapper {
     }
 
     /**
-     * Lance l'initialisation dans une CoroutineScope fournie.
-     * Utilisez onEvent pour observer la progression.
+     * Launches the initialization process in a provided CoroutineScope.
+     * Use onEvent to observe the progress.
      */
     fun initializeIn(scope: CoroutineScope, onEvent: (InitEvent) -> Unit = {}): Job =
         scope.launch { initialize(onEvent) }
 
     /**
-     * Effectue l'initialisation (vérification/téléchargement de yt-dlp et FFmpeg).
-     * S'exécute de manière asynchrone et émet des événements de progression.
+     * Performs initialization (checks/downloads yt-dlp and FFmpeg).
+     * Runs asynchronously and emits progress events.
      */
     suspend fun initialize(onEvent: (InitEvent) -> Unit = {}): Boolean {
         fun pct(read: Long, total: Long?): Double? = total?.takeIf { it > 0 }?.let { read * 100.0 / it }
@@ -73,7 +69,7 @@ class YtDlpWrapper {
             if (!isAvailable()) {
                 onEvent(InitEvent.DownloadingYtDlp)
                 if (!downloadOrUpdate { r, t -> onEvent(InitEvent.YtDlpProgress(r, t, pct(r, t))) }) {
-                    onEvent(InitEvent.Error("Impossible de télécharger yt-dlp", null))
+                    onEvent(InitEvent.Error("Could not download yt-dlp", null))
                     onEvent(InitEvent.Completed(false)); return false
                 }
             } else if (hasUpdate()) {
@@ -88,13 +84,13 @@ class YtDlpWrapper {
             onEvent(InitEvent.Completed(success))
             return success
         } catch (t: Throwable) {
-            onEvent(InitEvent.Error(t.message ?: "Erreur d'initialisation", t))
+            onEvent(InitEvent.Error(t.message ?: "Initialization error", t))
             onEvent(InitEvent.Completed(false))
             return false
         }
     }
 
-    // === Disponibilité / version / mise à jour ===
+    // --- Availability / Version / Update ---
     fun version(): String? = try {
         val proc = ProcessBuilder(listOf(ytDlpPath, "--version"))
             .redirectErrorStream(true).start()
@@ -138,7 +134,7 @@ class YtDlpWrapper {
         }
     }
 
-    // === FFmpeg ===
+    // --- FFmpeg ---
     fun getDefaultFfmpegPath(): String = PlatformUtils.getDefaultFfmpegPath()
 
     suspend fun ensureFfmpegAvailable(forceDownload: Boolean = false, onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null): Boolean {
@@ -158,27 +154,27 @@ class YtDlpWrapper {
         return false
     }
 
-    // === Pré-vérification réseau ===
+    // --- Network Pre-check ---
     fun checkNetwork(targetUrl: String, connectTimeoutMs: Int = 5000, readTimeoutMs: Int = 5000): Result<Unit> =
         NetAndArchive.checkNetwork(targetUrl, connectTimeoutMs, readTimeoutMs)
 
-    // === Téléchargeur ===
+    // --- Downloader ---
     fun download(url: String, options: Options = Options(), onEvent: (Event) -> Unit): Handle {
-        require(isAvailable()) { "yt-dlp n'est pas disponible." }
+        require(isAvailable()) { "yt-dlp is not available." }
 
         checkNetwork(url, 5000, 5000).getOrElse {
-            onEvent(Event.NetworkProblem(it.message ?: "Réseau non disponible"))
-            onEvent(Event.Error("La pré-vérification réseau a échoué."))
+            onEvent(Event.NetworkProblem(it.message ?: "Network unavailable"))
+            onEvent(Event.Error("Network pre-check failed."))
             return Handle(NetAndArchive.startNoopProcess(), AtomicBoolean(true))
         }
 
-        // Applique le noCheckCertificate global si non spécifié dans les options
+        // Apply global noCheckCertificate if not specified in options
         val finalOptions = if (options.noCheckCertificate) options else options.copy(noCheckCertificate = this.noCheckCertificate)
         val cmd = NetAndArchive.buildCommand(ytDlpPath, ffmpegPath, url, finalOptions, downloadDir)
         val process = try {
             ProcessBuilder(cmd).directory(downloadDir).redirectErrorStream(true).start()
         } catch (t: Throwable) {
-            onEvent(Event.Error("Échec du démarrage du processus yt-dlp.", t))
+            onEvent(Event.Error("Failed to start the yt-dlp process.", t))
             return Handle(NetAndArchive.startNoopProcess(), AtomicBoolean(true))
         }
 
@@ -186,7 +182,7 @@ class YtDlpWrapper {
         val tail = ArrayBlockingQueue<String>(120)
         onEvent(Event.Started)
 
-        // Thread de lecture
+        // Reader thread
         Thread({
             try {
                 process.inputStream.bufferedReader(StandardCharsets.UTF_8).forEachLine { line ->
@@ -195,18 +191,18 @@ class YtDlpWrapper {
                     if (progress != null) onEvent(Event.Progress(progress, line)) else onEvent(Event.Log(line))
                 }
             } catch (t: Throwable) {
-                if (!cancelled.get()) onEvent(Event.Error("Erreur d'I/O lors de la lecture de la sortie de yt-dlp", t))
+                if (!cancelled.get()) onEvent(Event.Error("I/O error while reading yt-dlp output", t))
             }
         }, "yt-dlp-reader").apply { isDaemon = true }.start()
 
-        // Threads de surveillance (timeout et achèvement)
+        // Watchdog threads (timeout and completion)
         startWatchdogThreads(process, finalOptions, cancelled, tail, onEvent)
         return Handle(process, cancelled)
     }
 
-    // === Helpers pour URL directes ===
+    // --- Direct URL Helpers ---
     fun getDirectUrlForFormat(url: String, formatSelector: String, noCheckCertificate: Boolean = false, timeoutSec: Long = 20): Result<String> {
-        require(isAvailable()) { "yt-dlp n'est pas disponible." }
+        require(isAvailable()) { "yt-dlp is not available." }
         checkNetwork(url, 5000, 5000).getOrElse { return Result.failure(it) }
 
         val useNoCheckCert = noCheckCertificate || this.noCheckCertificate
@@ -220,18 +216,18 @@ class YtDlpWrapper {
 
         if (result.exitCode != 0) {
             val errorDetails = if (result.stderr.isNotBlank()) result.stderr else result.stdout.joinToString("\n")
-            return Result.failure(IllegalStateException("yt-dlp -g a échoué (exit ${result.exitCode})\n$errorDetails"))
+            return Result.failure(IllegalStateException("yt-dlp -g failed (exit ${result.exitCode})\n$errorDetails"))
         }
 
         val out = result.stdout.map { it.trim() }.filter { it.isNotBlank() }
         return when {
-            out.isEmpty() -> Result.failure(IllegalStateException("Aucune URL retournée pour le sélecteur : $formatSelector"))
+            out.isEmpty() -> Result.failure(IllegalStateException("No URL returned for selector: $formatSelector"))
             out.size == 1 -> Result.success(out.first())
-            else -> Result.failure(IllegalStateException("Plusieurs URLs retournées (probablement A/V séparé).\n${out.joinToString("\n")}"))
+            else -> Result.failure(IllegalStateException("Multiple URLs returned (likely separate A/V).\n${out.joinToString("\n")}"))
         }
     }
 
-    // === Presets de résolution simples ===
+    // --- Simple Resolution Presets ---
     enum class Preset(val height: Int) { P360(360), P480(480), P720(720), P1080(1080), P1440(1440), P2160(2160) }
     data class ResolutionAvailability(val preset: Preset, val progressive: Boolean, val downloadable: Boolean)
 
@@ -257,16 +253,15 @@ class YtDlpWrapper {
     fun downloadMp4At(url: String, preset: Preset, outputTemplate: String? = "%(title)s.%(ext)s", noCheckCertificate: Boolean = false, extraArgs: List<String> = emptyList(), timeout: Duration? = Duration.ofMinutes(30), recodeIfNeeded: Boolean = false, onEvent: (Event) -> Unit): Handle =
         downloadAtHeightMp4(url, preset.height, noCheckCertificate, outputTemplate, extraArgs, timeout, recodeIfNeeded, onEvent)
 
-
-    // === Téléchargements audio ===
+    // --- Audio Downloads ---
     fun downloadAudioMp3(url: String, outputTemplate: String? = "%(title)s.%(ext)s", audioQuality: Int = 0, noCheckCertificate: Boolean = false, extraArgs: List<String> = emptyList(), timeout: Duration? = Duration.ofMinutes(30), onEvent: (Event) -> Unit): Handle {
         val args = listOf("--extract-audio", "--audio-format", "mp3", "--audio-quality", audioQuality.coerceIn(0, 10).toString(), "--add-metadata", "--embed-thumbnail", "-f", "bestaudio/best")
         return downloadAudioInternal(url, outputTemplate, noCheckCertificate, extraArgs, timeout, args, onEvent)
     }
 
     enum class AudioQualityPreset(val bitrate: String, val description: String) {
-        LOW("96k", "Économie d'espace"), MEDIUM("128k", "Qualité standard"), HIGH("192k", "Haute qualité"),
-        VERY_HIGH("256k", "Très haute qualité"), MAXIMUM("320k", "Qualité maximale")
+        LOW("96k", "Space saving"), MEDIUM("128k", "Standard quality"), HIGH("192k", "High quality"),
+        VERY_HIGH("256k", "Very high quality"), MAXIMUM("320k", "Maximum quality")
     }
 
     fun downloadAudioMp3WithPreset(url: String, preset: AudioQualityPreset = AudioQualityPreset.HIGH, outputTemplate: String? = "%(title)s.%(ext)s", noCheckCertificate: Boolean = false, extraArgs: List<String> = emptyList(), timeout: Duration? = Duration.ofMinutes(30), onEvent: (Event) -> Unit): Handle {
@@ -284,7 +279,7 @@ class YtDlpWrapper {
         return getDirectUrlForFormat(url, formatSelector, noCheckCertificate, timeoutSec)
     }
 
-    // === Extraction de métadonnées ===
+    // --- Metadata Extraction ---
     fun getVideoInfo(url: String, extractFlat: Boolean = false, noCheckCertificate: Boolean = false, timeoutSec: Long = 20, maxHeight: Int = 1080, preferredExts: List<String> = listOf("mp4", "webm")): Result<VideoInfo> {
         val args = buildList {
             add("--no-playlist")
@@ -317,9 +312,8 @@ class YtDlpWrapper {
         }
     }
 
-
     // =================================================================
-    // =================== MÉTHODES PRIVÉES INTERNES ===================
+    // =================== INTERNAL PRIVATE METHODS ===================
     // =================================================================
 
     private fun getProgressiveUrlForHeight(url: String, height: Int, preferredExts: List<String>, noCheckCertificate: Boolean, timeoutSec: Long): Result<String> {
@@ -356,7 +350,7 @@ class YtDlpWrapper {
     }
 
     private fun listFormatsRaw(url: String, noCheckCertificate: Boolean): Result<List<String>> {
-        require(isAvailable()) { "yt-dlp n'est pas disponible." }
+        require(isAvailable()) { "yt-dlp is not available." }
         checkNetwork(url, 5000, 5000).getOrElse { return Result.failure(it) }
 
         val useNoCheckCert = noCheckCertificate || this.noCheckCertificate
@@ -368,7 +362,7 @@ class YtDlpWrapper {
         val result = executeCommand(args, 60).getOrElse { return Result.failure(it) }
 
         return if (result.exitCode == 0) Result.success(result.stdout)
-        else Result.failure(IllegalStateException("yt-dlp -F a échoué (exit ${result.exitCode})\n${result.stderr}"))
+        else Result.failure(IllegalStateException("yt-dlp -F failed (exit ${result.exitCode})\n${result.stderr}"))
     }
 
     private fun startWatchdogThreads(process: Process, options: Options, cancelled: AtomicBoolean, tail: ArrayBlockingQueue<String>, onEvent: (Event) -> Unit) {
@@ -377,7 +371,7 @@ class YtDlpWrapper {
                 try {
                     if (!process.waitFor(limit.toMillis(), TimeUnit.MILLISECONDS) && !cancelled.getAndSet(true)) {
                         process.destroy()
-                        onEvent(Event.Error("Le téléchargement a expiré après ${limit.toMinutes()} minutes."))
+                        onEvent(Event.Error("Download timed out after ${limit.toMinutes()} minutes."))
                     }
                 } catch (_: InterruptedException) {}
             }, "yt-dlp-timeout").apply { isDaemon = true }.start()
@@ -390,8 +384,8 @@ class YtDlpWrapper {
             } else if (exit != 0) {
                 val lines = mutableListOf<String>().also { tail.drainTo(it) }
                 val diagnostic = NetAndArchive.diagnose(lines)
-                val tailPreview = if (lines.isEmpty()) "(aucune sortie capturée)" else lines.takeLast(min(15, lines.size)).joinToString("\n")
-                onEvent(Event.Error("yt-dlp a échoué (exit $exit). ${diagnostic ?: ""}".trim() + "\n--- Dernière sortie ---\n$tailPreview"))
+                val tailPreview = if (lines.isEmpty()) "(no output captured)" else lines.takeLast(min(15, lines.size)).joinToString("\n")
+                onEvent(Event.Error("yt-dlp failed (exit $exit). ${diagnostic ?: ""}".trim() + "\n--- Last output ---\n$tailPreview"))
             }
             onEvent(Event.Completed(exit, exit == 0))
         }, "yt-dlp-completion").apply { isDaemon = true }.start()
@@ -405,7 +399,7 @@ class YtDlpWrapper {
         }
 
         val process = try { ProcessBuilder(cmd).start() }
-        catch (t: Throwable) { return Result.failure(IllegalStateException("Échec du démarrage du processus yt-dlp", t)) }
+        catch (t: Throwable) { return Result.failure(IllegalStateException("Failed to start yt-dlp process", t)) }
 
         val stdoutLines = mutableListOf<String>()
         val stderr = StringBuilder()
@@ -416,7 +410,7 @@ class YtDlpWrapper {
         if (!process.waitFor(timeoutSec, TimeUnit.SECONDS)) {
             process.destroyForcibly()
             outReader.interrupt(); errReader.interrupt()
-            return Result.failure(IllegalStateException("La commande yt-dlp a expiré après ${timeoutSec}s"))
+            return Result.failure(IllegalStateException("yt-dlp command timed out after ${timeoutSec}s"))
         }
 
         outReader.join(2000); errReader.join(2000)
@@ -424,7 +418,7 @@ class YtDlpWrapper {
     }
 
     private fun extractMetadata(url: String, noCheckCertificate: Boolean, timeoutSec: Long, extraArgs: List<String>): Result<String> {
-        require(isAvailable()) { "yt-dlp n'est pas disponible." }
+        require(isAvailable()) { "yt-dlp is not available." }
         checkNetwork(url, 5000, 5000).getOrElse { return Result.failure(it) }
 
         val useNoCheckCert = noCheckCertificate || this.noCheckCertificate
@@ -435,7 +429,7 @@ class YtDlpWrapper {
         }
         val pb = ProcessBuilder(buildList { add(ytDlpPath); addAll(cmdArgs) }).redirectErrorStream(false)
         val process = try { pb.start() }
-        catch (t: Throwable) { return Result.failure(IllegalStateException("Échec du démarrage du processus yt-dlp", t)) }
+        catch (t: Throwable) { return Result.failure(IllegalStateException("Failed to start yt-dlp process", t)) }
 
         val jsonOutput = StringBuilder()
         val errorOutput = StringBuilder()
@@ -445,11 +439,11 @@ class YtDlpWrapper {
 
         if (!process.waitFor(timeoutSec, TimeUnit.SECONDS)) {
             process.destroyForcibly()
-            return Result.failure(IllegalStateException("L'extraction des métadonnées a expiré après ${timeoutSec}s"))
+            return Result.failure(IllegalStateException("Metadata extraction timed out after ${timeoutSec}s"))
         }
         outputReader.join(5000); errorReader.join(5000)
 
         return if (process.exitValue() == 0) Result.success(jsonOutput.toString())
-        else Result.failure(IllegalStateException("L'extraction des métadonnées a échoué (exit ${process.exitValue()})\n${errorOutput}"))
+        else Result.failure(IllegalStateException("Metadata extraction failed (exit ${process.exitValue()})\n${errorOutput}"))
     }
 }

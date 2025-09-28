@@ -8,7 +8,7 @@ import java.util.zip.ZipInputStream
 
 object NetAndArchive {
 
-    // ---- ZIP / TAR.XZ ----
+    // --- Archive Utilities ---
     fun extractZip(zipFile: File, destDir: File) {
         ZipInputStream(BufferedInputStream(zipFile.inputStream())).use { zis ->
             var entry = zis.nextEntry
@@ -30,7 +30,7 @@ object NetAndArchive {
         if (code != 0) error("tar failed ($code): $out")
     }
 
-    // ---- Network preflight ----
+    // --- Network Preflight Check ---
     fun checkNetwork(targetUrl: String, connectTimeoutMs: Int, readTimeoutMs: Int): Result<Unit> {
         return try {
             val url = URL(targetUrl)
@@ -53,6 +53,8 @@ object NetAndArchive {
                 }
             }
 
+            // Fallback check to a known reliable host if the target host fails, to distinguish
+            // between a general network problem and a specific host being down.
             val fallback = URL("https://www.gstatic.com/generate_204")
             (fallback.openConnection() as HttpURLConnection).apply {
                 requestMethod = "GET"
@@ -72,7 +74,7 @@ object NetAndArchive {
         }
     }
 
-    // ---- Command construction ----
+    // --- Command Construction ---
     fun buildCommand(
         ytDlpPath: String,
         ffmpegPath: String?,
@@ -95,19 +97,18 @@ object NetAndArchive {
 
         options.format?.let { cmd.addAll(listOf("-f", it)) }
 
-        // Post-processing to enforce container if requested
+        // Post-processing to enforce a container if requested
         options.targetContainer?.let { container ->
             if (container.equals("mp4", ignoreCase = true)) {
                 if (options.allowRecode) {
-                    // Slow but guaranteed: re-encode to MP4 if remux is impossible
+                    // Slow but guaranteed: re-encode to MP4 if remuxing is impossible
                     cmd.addAll(listOf("--recode-video", "mp4"))
                 } else {
                     // Fast: remux only (no quality loss). Will fail if codecs are incompatible with mp4.
-                    // yt-dlp accepts both --remux-video and --merge-output-format mp4; prefer remux.
                     cmd.addAll(listOf("--remux-video", "mp4"))
                 }
             } else {
-                // In case you want to support other containers later
+                // For other containers
                 if (options.allowRecode) cmd.addAll(listOf("--recode-video", container))
                 else cmd.addAll(listOf("--remux-video", container))
             }
@@ -118,12 +119,12 @@ object NetAndArchive {
         return cmd
     }
 
-    // ---- Progress parsing ----
+    // --- Progress Parsing ---
     private val percentRegex = Regex("(\\d{1,3}(?:[.,]\\d+)?)%")
     fun parseProgress(line: String): Double? =
         percentRegex.find(line)?.groupValues?.getOrNull(1)?.replace(',', '.')?.toDoubleOrNull()
 
-    // ---- Diagnosis ----
+    // --- Error Diagnosis ---
     fun diagnose(lines: List<String>): String? {
         val joined = lines.joinToString("\n").lowercase()
         fun has(vararg needles: String) = needles.any { joined.contains(it.lowercase()) }
@@ -140,7 +141,7 @@ object NetAndArchive {
         }
     }
 
-    // ---- Small utils ----
+    // --- Small Utilities ---
     fun startNoopProcess(): Process = try {
         val os = io.github.kdroidfilter.platformtools.getOperatingSystem()
         when (os) {
@@ -149,6 +150,7 @@ object NetAndArchive {
             else -> ProcessBuilder("sh", "-c", "true").start()
         }
     } catch (_: Exception) {
+        // Fallback if the simple commands fail for some reason
         try {
             val os = io.github.kdroidfilter.platformtools.getOperatingSystem()
             when (os) {
@@ -161,7 +163,7 @@ object NetAndArchive {
         }
     }
 
-    // ===== Resolution helpers =====
+    // --- Resolution Helpers ---
 
     /** Exact progressive selector (single A+V URL only). Falls back to progressive at same height if ext differs. */
     fun selectorProgressiveExact(height: Int, preferredExts: List<String> = listOf("mp4","webm")): String {
@@ -177,7 +179,7 @@ object NetAndArchive {
         return "$split/$progressive"
     }
 
-    /** Very small, robust `-F` parser to detect available heights (progressive vs video-only). */
+    /** A very small, robust `-F` parser to detect available heights (progressive vs. video-only). */
     fun probeAvailableHeights(formatListOutput: List<String>): Pair<Set<Int>, Set<Int>> {
         val heightRegex = Regex("""\b(\d{3,4})p\b""")
         val progressive = mutableSetOf<Int>()
@@ -209,6 +211,4 @@ object NetAndArchive {
         val any = "best[height<=${maxHeight}][acodec!=none][vcodec!=none][protocol!=m3u8]"
         return "$mp4/$any"
     }
-
-
 }

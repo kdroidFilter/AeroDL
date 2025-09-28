@@ -5,12 +5,11 @@ import io.github.kdroidfilter.platformtools.getCacheDir
 import io.github.kdroidfilter.platformtools.getOperatingSystem
 import java.io.File
 import java.nio.file.Files
-import java.nio.file.StandardCopyOption
 import java.nio.file.attribute.PosixFilePermission
 
 object PlatformUtils {
 
-    // ---- yt-dlp ----
+    // --- yt-dlp ---
     fun getDefaultBinaryPath(): String {
         val dir = getCacheDir()
         val os = getOperatingSystem()
@@ -49,7 +48,7 @@ object PlatformUtils {
                     else -> "yt-dlp_linux"
                 }
             }
-            else -> "yt-dlp"
+            else -> "yt-dlp" // Generic fallback
         }
     }
 
@@ -61,7 +60,7 @@ object PlatformUtils {
         conn.getInputStream().use { input ->
             java.nio.channels.Channels.newChannel(input).use { rch ->
                 java.io.FileOutputStream(dest).use { fos ->
-                    val buffer = java.nio.ByteBuffer.allocateDirect(1024 * 64)
+                    val buffer = java.nio.ByteBuffer.allocateDirect(1024 * 64) // 64KB buffer
                     var readTotal = 0L
                     while (true) {
                         buffer.clear()
@@ -79,6 +78,7 @@ object PlatformUtils {
 
     fun makeExecutable(file: File) {
         try {
+            // Modern way using NIO
             val path = file.toPath()
             val perms = Files.getPosixFilePermissions(path).toMutableSet()
             perms.add(PosixFilePermission.OWNER_EXECUTE)
@@ -86,11 +86,12 @@ object PlatformUtils {
             perms.add(PosixFilePermission.OTHERS_EXECUTE)
             Files.setPosixFilePermissions(path, perms)
         } catch (_: UnsupportedOperationException) {
+            // Fallback for older systems or non-POSIX filesystems
             Runtime.getRuntime().exec(arrayOf("chmod", "+x", file.absolutePath)).waitFor()
         }
     }
 
-    // ---- FFmpeg ----
+    // --- FFmpeg ---
     fun getDefaultFfmpegPath(): String {
         val dir = File(getCacheDir(), "ffmpeg/bin")
         val exe = if (getOperatingSystem() == OperatingSystem.WINDOWS) "ffmpeg.exe" else "ffmpeg"
@@ -124,13 +125,13 @@ object PlatformUtils {
             }
             OperatingSystem.LINUX -> if (isArm64) "ffmpeg-master-latest-linuxarm64-gpl.tar.xz"
             else "ffmpeg-master-latest-linux64-gpl.tar.xz"
-            OperatingSystem.MACOS -> null
+            OperatingSystem.MACOS -> null // FFmpeg builds are not provided for macOS in the same repo
             else -> null
         }
     }
 
     /**
-     * Download & install FFmpeg. Returns installed binary path or null on failure.
+     * Downloads and installs FFmpeg. Returns the installed binary path or null on failure.
      */
     fun downloadAndInstallFfmpeg(assetName: String, forceDownload: Boolean, onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null): String? {
         val baseDir = File(getCacheDir(), "ffmpeg")
@@ -152,15 +153,17 @@ object PlatformUtils {
             else if (assetName.endsWith(".tar.xz")) NetAndArchive.extractTarXzWithSystemTar(archive, baseDir)
             else error("Unsupported FFmpeg archive: $assetName")
 
+            // Find the binary, which might be in a nested directory
             val found = baseDir.walkTopDown()
                 .firstOrNull { it.isFile && it.name.startsWith("ffmpeg") && it.canRead() }
                 ?: error("FFmpeg binary not found after extraction")
 
+            // Move the binary to our target bin directory
             found.copyTo(targetExe, overwrite = true)
 
             if (getOperatingSystem() != OperatingSystem.WINDOWS) makeExecutable(targetExe)
 
-            ffmpegVersion(targetExe.absolutePath) ?: error("FFmpeg not runnable")
+            ffmpegVersion(targetExe.absolutePath) ?: error("FFmpeg is not runnable after installation")
             targetExe.absolutePath
         } catch (t: Throwable) {
             t.printStackTrace()
