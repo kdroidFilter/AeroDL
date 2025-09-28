@@ -17,9 +17,36 @@ fun main() = runBlocking {
     val initOk = wrapper.initialize { ev ->
         when (ev) {
             is InitEvent.CheckingYtDlp -> println("🔍 Checking yt-dlp…")
-            is InitEvent.EnsuringFfmpeg -> println("🎬 Checking FFmpeg…")
-            is InitEvent.Completed -> println(if (ev.success) "✅ Init OK" else "❌ Init failed")
-            else -> {} // Simplify output
+            is InitEvent.UpdatingYtDlp -> println("🔄 An update is available. Updating yt-dlp...")
+            is InitEvent.DownloadingYtDlp -> println("📥 yt-dlp not found. Downloading...")
+            is InitEvent.EnsuringFfmpeg -> println("🎬 Checking for FFmpeg...")
+
+            // Handle progress with a single, updating line
+            is InitEvent.YtDlpProgress -> {
+                val percent = ev.percent?.let { "%.1f%%".format(it) } ?: "..."
+                print("\r  -> Downloading yt-dlp: $percent")
+            }
+            is InitEvent.FfmpegProgress -> {
+                val percent = ev.percent?.let { "%.1f%%".format(it) } ?: "..."
+                print("\r  -> Downloading FFmpeg: $percent")
+            }
+
+            // Handle final states
+            is InitEvent.Completed -> {
+                // Print a newline to move past the progress bar line
+                println()
+                if (ev.success) {
+                    println("✅ Initialization successful!")
+                } else {
+                    println("❌ Initialization failed.")
+                }
+            }
+            is InitEvent.Error -> {
+                println() // Newline after any progress bar
+                // Print errors to the standard error stream
+                System.err.println("❌ Error during initialization: ${ev.message}")
+                ev.cause?.printStackTrace()
+            }
         }
     }
 
