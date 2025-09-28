@@ -41,21 +41,38 @@ fun main() {
             return@runBlocking
         }
 
-        // 3. Start the download
-        // URL of a copyright-free test video (Big Buck Bunny)
+        // 3. Get Video Info first to check available resolutions
         val videoUrl = "https://ivan.canet.dev/talks/bordeauxkt.html#kotlin-beyond-the-jvm"
-        println("\n🎬 Starting download for: $videoUrl")
+        println("\n🎬 Fetching video info for: $videoUrl")
 
-        // noCheckCertificate is no longer needed here, as it's set globally
-        val table = ytDlpWrapper.probeAvailability(videoUrl)
-        println(table)
+        val videoInfo = ytDlpWrapper.getVideoInfo(videoUrl).getOrElse {
+            println("🛑 Could not retrieve video info: ${it.message}")
+            return@runBlocking
+        }
+        println("    ✅ Video Found: ${videoInfo.title}")
+        println("    📈 Available Resolutions (Progressive / Downloadable):")
+        videoInfo.availableResolutions.toSortedMap().forEach { (height, res) ->
+            println("        - ${height}p (Progressive: ${res.progressive}, Downloadable: ${res.downloadable})")
+        }
+
+
+        // 4. Check if the desired quality is available and start the download
+        val desiredPreset = YtDlpWrapper.Preset.P1080
+        val isPresetAvailable = videoInfo.availableResolutions[desiredPreset.height]?.downloadable ?: false
+
+        if (!isPresetAvailable) {
+            println("\n⚠️ Desired quality ${desiredPreset.height}p is not available. Aborting download.")
+            return@runBlocking
+        }
+        println("\n🎬 Starting download for ${desiredPreset.height}p version...")
+
 
         // A CompletableFuture is used to wait for the asynchronous download to finish
         val downloadFuture = CompletableFuture<Boolean>()
 
         ytDlpWrapper.downloadMp4At(
             url = videoUrl,
-            preset = YtDlpWrapper.Preset.P1080, // Specify 1080p quality
+            preset = desiredPreset,
             onEvent = { event ->
                 when (event) {
                     is Event.Started -> println("    -> Download process started.")
@@ -66,7 +83,7 @@ fun main() {
                     }
                     is Event.Completed -> {
                         println("\n    -> Download finished.")
-                        if(event.success) {
+                        if (event.success) {
                             println("🎉 Success!")
                             downloadFuture.complete(true)
                         } else {
@@ -91,7 +108,7 @@ fun main() {
             }
         )
 
-        // 4. Wait for the result
+        // 5. Wait for the result
         val success = downloadFuture.get() // Blocks the main thread until the future is completed
 
         if (success) {

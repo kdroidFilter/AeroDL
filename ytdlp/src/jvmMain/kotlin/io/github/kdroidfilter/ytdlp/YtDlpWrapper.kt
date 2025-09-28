@@ -229,20 +229,6 @@ class YtDlpWrapper {
 
     // --- Simple Resolution Presets ---
     enum class Preset(val height: Int) { P360(360), P480(480), P720(720), P1080(1080), P1440(1440), P2160(2160) }
-    data class ResolutionAvailability(val preset: Preset, val progressive: Boolean, val downloadable: Boolean)
-
-    fun isAvailable(url: String, preset: Preset, noCheckCertificate: Boolean = false): Result<ResolutionAvailability> =
-        resolutionAvailability(url, preset.height, noCheckCertificate)
-            .map { ResolutionAvailability(preset, it.progressive, it.downloadable) }
-
-    fun probeAvailability(url: String, presets: Array<Preset> = Preset.entries.toTypedArray(), noCheckCertificate: Boolean = false): Map<Preset, ResolutionAvailability> {
-        val useNoCheckCert = noCheckCertificate || this.noCheckCertificate
-        val lines = listFormatsRaw(url, useNoCheckCert).getOrElse { return emptyMap() }
-        val (progressiveHeights, videoOnlyHeights) = NetAndArchive.probeAvailableHeights(lines)
-        return presets.associateWith { p ->
-            ResolutionAvailability(p, p.height in progressiveHeights, (p.height in progressiveHeights) || (p.height in videoOnlyHeights))
-        }
-    }
 
     fun getProgressiveUrl(url: String, preset: Preset, preferredExts: List<String> = listOf("mp4", "webm"), noCheckCertificate: Boolean = false, timeoutSec: Long = 20): Result<String> =
         getProgressiveUrlForHeight(url, preset.height, preferredExts, noCheckCertificate, timeoutSec)
@@ -337,32 +323,6 @@ class YtDlpWrapper {
         val useNoCheckCert = noCheckCertificate || this.noCheckCertificate
         val options = Options(outputTemplate = outputTemplate, noCheckCertificate = useNoCheckCert, extraArgs = audioArgs + extraArgs, timeout = timeout)
         return download(url, options, onEvent)
-    }
-
-    private data class ResolutionAvailabilityInternal(val height: Int, val progressive: Boolean, val downloadable: Boolean)
-
-    private fun resolutionAvailability(url: String, height: Int, noCheckCertificate: Boolean): Result<ResolutionAvailabilityInternal> {
-        val useNoCheckCert = noCheckCertificate || this.noCheckCertificate
-        return listFormatsRaw(url, useNoCheckCert).map { list ->
-            val (progressiveHeights, videoOnlyHeights) = NetAndArchive.probeAvailableHeights(list)
-            ResolutionAvailabilityInternal(height = height, progressive = height in progressiveHeights, downloadable = (height in progressiveHeights) || (height in videoOnlyHeights))
-        }
-    }
-
-    private fun listFormatsRaw(url: String, noCheckCertificate: Boolean): Result<List<String>> {
-        require(isAvailable()) { "yt-dlp is not available." }
-        checkNetwork(url, 5000, 5000).getOrElse { return Result.failure(it) }
-
-        val useNoCheckCert = noCheckCertificate || this.noCheckCertificate
-        val args = buildList {
-            addAll(listOf("-F", "--no-playlist"))
-            if (useNoCheckCert) add("--no-check-certificate")
-            add(url)
-        }
-        val result = executeCommand(args, 60).getOrElse { return Result.failure(it) }
-
-        return if (result.exitCode == 0) Result.success(result.stdout)
-        else Result.failure(IllegalStateException("yt-dlp -F failed (exit ${result.exitCode})\n${result.stderr}"))
     }
 
     private fun startWatchdogThreads(process: Process, options: Options, cancelled: AtomicBoolean, tail: ArrayBlockingQueue<String>, onEvent: (Event) -> Unit) {

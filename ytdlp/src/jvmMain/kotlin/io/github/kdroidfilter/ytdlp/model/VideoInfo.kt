@@ -26,7 +26,8 @@ data class VideoInfo(
     val tags: List<String> = emptyList(),
     val categories: List<String> = emptyList(),
     val directUrl: String? = null,
-    val directUrlFormat: String? = null
+    val directUrlFormat: String? = null,
+    val availableResolutions: Map<Int, ResolutionAvailability> = emptyMap()
 )
 
 /**
@@ -68,4 +69,14 @@ data class PlaylistInfo(
     val uploaderUrl: String? = null,
     val entries: List<VideoInfo> = emptyList(),
     val entryCount: Int? = null
+)
+
+/**
+ * Represents the availability of a specific video resolution.
+ * @property progressive True if a single file with video and audio is available.
+ * @property downloadable True if the resolution can be downloaded (either as progressive or by merging video and audio).
+ */
+data class ResolutionAvailability(
+    val progressive: Boolean,
+    val downloadable: Boolean
 )

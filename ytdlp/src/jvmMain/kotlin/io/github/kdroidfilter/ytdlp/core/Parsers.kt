@@ -3,7 +3,6 @@ package io.github.kdroidfilter.ytdlp.core
 import io.github.kdroidfilter.ytdlp.model.*
 import kotlinx.serialization.json.*
 
-
 // --- Helper to find the best direct URL from a formats array ---
 private fun findBestDirectUrl(
     formats: JsonArray?,
@@ -58,6 +57,43 @@ private fun findBestDirectUrl(
     } ?: (null to null)
 }
 
+
+// --- Helper to parse resolution availability from a formats array ---
+private fun parseResolutionAvailability(formats: JsonArray?): Map<Int, ResolutionAvailability> {
+    if (formats == null || formats.isEmpty()) return emptyMap()
+
+    fun JsonElement?.objOrNull() = this as? JsonObject
+    fun JsonElement?.strOrNull() = this?.jsonPrimitive?.contentOrNull
+    fun JsonElement?.intOrNull() = this?.jsonPrimitive?.intOrNull
+
+    val progressiveHeights = mutableSetOf<Int>()
+    val videoOnlyHeights = mutableSetOf<Int>()
+
+    formats.forEach { formatEl ->
+        val format = formatEl.objOrNull() ?: return@forEach
+        val height = format["height"].intOrNull() ?: return@forEach
+        val vcodec = format["vcodec"].strOrNull()
+        val acodec = format["acodec"].strOrNull()
+
+        if (vcodec != null && vcodec != "none") {
+            if (acodec != null && acodec != "none") {
+                progressiveHeights.add(height)
+            } else {
+                videoOnlyHeights.add(height)
+            }
+        }
+    }
+
+    val allHeights = (progressiveHeights + videoOnlyHeights).toSet()
+    return allHeights.associateWith { height ->
+        ResolutionAvailability(
+            progressive = height in progressiveHeights,
+            downloadable = true // A resolution is downloadable if it exists as progressive or video-only
+        )
+    }
+}
+
+
 // --- JSON Parsers ---
 fun parseVideoInfoFromJson(
     jsonString: String,
@@ -105,9 +141,13 @@ fun parseVideoInfoFromJson(
         ChapterInfo(title = o["title"].strOrNull(), startTime = start, endTime = end)
     } ?: emptyList()
 
-    // Extract direct URL from the formats array
     val formats = root["formats"].arrOrNull()
+
+    // Extract direct URL from the formats array
     val (directUrl, directUrlFormat) = findBestDirectUrl(formats, maxHeight, preferredExts)
+
+    // Extract available resolutions from the same formats array
+    val availableResolutions = parseResolutionAvailability(formats)
 
     return VideoInfo(
         id = id,
@@ -130,7 +170,8 @@ fun parseVideoInfoFromJson(
         tags = (root["tags"].arrOrNull()?.mapNotNull { it.strOrNull() }) ?: emptyList(),
         categories = (root["categories"].arrOrNull()?.mapNotNull { it.strOrNull() }) ?: emptyList(),
         directUrl = directUrl,
-        directUrlFormat = directUrlFormat
+        directUrlFormat = directUrlFormat,
+        availableResolutions = availableResolutions
     )
 }
 

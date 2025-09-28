@@ -179,23 +179,6 @@ object NetAndArchive {
         return "$split/$progressive"
     }
 
-    /** A very small, robust `-F` parser to detect available heights (progressive vs. video-only). */
-    fun probeAvailableHeights(formatListOutput: List<String>): Pair<Set<Int>, Set<Int>> {
-        val heightRegex = Regex("""\b(\d{3,4})p\b""")
-        val progressive = mutableSetOf<Int>()
-        val videoOnly = mutableSetOf<Int>()
-        for (line in formatListOutput) {
-            val h = heightRegex.find(line)?.groupValues?.getOrNull(1)?.toIntOrNull() ?: continue
-            val lower = line.lowercase()
-            when {
-                "audio only" in lower -> {} // ignore
-                "video only" in lower -> videoOnly += h
-                else -> progressive += h
-            }
-        }
-        return progressive to videoOnly
-    }
-
     // Prefer MP4/M4A at exact height (falls back if not available)
     fun selectorDownloadExactMp4(height: Int): String {
         val splitPreferMp4 = "bestvideo[height=$height][ext=mp4]+bestaudio[ext=m4a]/" +
@@ -204,5 +187,4 @@ object NetAndArchive {
                 "best[height=$height][acodec!=none][vcodec!=none][protocol!=m3u8]"
         return "$splitPreferMp4/$progressiveMp4"
     }
-
 }
