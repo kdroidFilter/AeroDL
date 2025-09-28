@@ -68,6 +68,7 @@ data class PlaylistInfo(
     val uploader: String? = null,
     val uploaderUrl: String? = null,
     val entries: List<VideoInfo> = emptyList(),
+    val thumbnail: String? = null,
     val entryCount: Int? = null
 )
 

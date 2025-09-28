@@ -1,7 +1,7 @@
 package io.github.kdroidfilter.ytdlp.core
 
 import io.github.kdroidfilter.ytdlp.model.*
-import io.github.kdroidfilter.ytdlp.util.warnln
+import io.github.kdroidfilter.ytdlp.util.YouTubeThumbnailHelper
 import kotlinx.serialization.json.*
 
 // --- Helper to find the best direct URL from a formats array ---
@@ -96,12 +96,15 @@ private fun parseResolutionAvailability(formats: JsonArray?): Map<Int, Resolutio
 
 
 // --- JSON Parsers ---
+/**
+ * Enhanced JSON parser for VideoInfo that auto-generates YouTube thumbnails when missing
+ */
 fun parseVideoInfoFromJson(
     jsonString: String,
     maxHeight: Int = 1080,
     preferredExts: List<String> = listOf("mp4", "webm")
 ): VideoInfo {
-    // Local helpers to avoid polluting the namespace
+    // Local helpers
     fun JsonElement?.objOrNull() = this as? JsonObject
     fun JsonElement?.arrOrNull() = this as? JsonArray
     fun JsonElement?.strOrNull() = this?.jsonPrimitive?.contentOrNull
@@ -112,14 +115,30 @@ fun parseVideoInfoFromJson(
     val json = Json { ignoreUnknownKeys = true; isLenient = true }
     val root = try {
         json.parseToJsonElement(jsonString).objOrNull() ?: buildJsonObject { }
-    } catch (e: Exception) {
-        warnln { "JSON parsing for VideoInfo failed, returning empty object. Error: ${e.message}" }
-        buildJsonObject { }
-    }
+    } catch (_: Exception) { buildJsonObject { } }
 
     val id = root["id"].strOrNull() ?: root["url"].strOrNull() ?: ""
     val url = root["url"].strOrNull() ?: root["webpage_url"].strOrNull() ?: ""
     val title = root["title"].strOrNull() ?: "Unknown"
+
+    // Try to get thumbnail from JSON
+    var thumbnail = root["thumbnail"].strOrNull()
+
+    // If no thumbnail and it's a YouTube video, generate it from the ID
+    if (thumbnail == null && url.isNotBlank()) {
+        if (YouTubeThumbnailHelper.isYouTubeUrl(url)) {
+            // First try to extract from URL
+            val videoId = YouTubeThumbnailHelper.extractVideoId(url) ?: id
+            if (videoId.isNotBlank() && videoId.length == 11) {
+                // Generate high quality thumbnail URL
+                thumbnail = YouTubeThumbnailHelper.getThumbnailUrl(
+                    videoId,
+                    YouTubeThumbnailHelper.ThumbnailQuality.HIGH
+                )
+            }
+        }
+    }
+
     val duration = root["duration"].doubleOrNull()?.let { java.time.Duration.ofSeconds(it.toLong()) }
     val uploader = root["uploader"].strOrNull() ?: root["channel"].strOrNull()
     val uploaderUrl = root["uploader_url"].strOrNull() ?: root["channel_url"].strOrNull()
@@ -133,7 +152,11 @@ fun parseVideoInfoFromJson(
                 SubtitleFormat(ext = ext, url = fo["url"].strOrNull(), name = fo["name"].strOrNull())
             }
             if (formats.isNotEmpty()) {
-                put(lang, SubtitleInfo(language = lang, languageName = arr.firstOrNull()?.objOrNull()?.get("name")?.strOrNull(), formats = formats))
+                put(lang, SubtitleInfo(
+                    language = lang,
+                    languageName = arr.firstOrNull()?.objOrNull()?.get("name")?.strOrNull(),
+                    formats = formats
+                ))
             }
         }
     }
@@ -157,7 +180,7 @@ fun parseVideoInfoFromJson(
         id = id,
         title = title,
         url = url,
-        thumbnail = root["thumbnail"].strOrNull(),
+        thumbnail = thumbnail, // Now potentially auto-generated
         duration = duration,
         description = root["description"].strOrNull(),
         uploader = uploader,
@@ -179,6 +202,9 @@ fun parseVideoInfoFromJson(
     )
 }
 
+/**
+ * Enhanced JSON parser for PlaylistInfo with thumbnail support
+ */
 fun parsePlaylistInfoFromJson(jsonString: String): PlaylistInfo {
     fun JsonElement?.objOrNull() = this as? JsonObject
     fun JsonElement?.arrOrNull() = this as? JsonArray
@@ -186,28 +212,49 @@ fun parsePlaylistInfoFromJson(jsonString: String): PlaylistInfo {
     fun JsonElement?.intOrNull() = this?.jsonPrimitive?.intOrNull
 
     val json = Json { ignoreUnknownKeys = true; isLenient = true }
-    val root = try { json.parseToJsonElement(jsonString).objOrNull() ?: buildJsonObject { }
-    } catch (e: Exception) {
-        warnln { "JSON parsing for PlaylistInfo failed, returning empty object. Error: ${e.message}" }
+    val root = try {
+        json.parseToJsonElement(jsonString).objOrNull() ?: buildJsonObject { }
+    } catch (_: Exception) {
         buildJsonObject { }
     }
 
+    val playlistId = root["id"].strOrNull()
+    val playlistUrl = root["webpage_url"].strOrNull() ?: root["url"].strOrNull()
+
+    // Parse entries and ensure they have thumbnails
     val entries: List<VideoInfo> = root["entries"].arrOrNull()
         ?.mapNotNull { el ->
             try {
+                // When parsing entries, the enhanced parseVideoInfoFromJson will auto-generate thumbnails
                 parseVideoInfoFromJson(el.objOrNull().toString())
-            } catch (e: Exception) {
-                warnln { "Failed to parse a video entry within a playlist: ${e.message}" }
+            } catch (_: Exception) {
                 null
             }
         } ?: emptyList()
 
+    // Try to get playlist thumbnail
+    var playlistThumbnail = root["thumbnail"].strOrNull()
+
+    // If no playlist thumbnail, try to use the first video's thumbnail
+    if (playlistThumbnail == null && entries.isNotEmpty()) {
+        playlistThumbnail = entries.first().thumbnail
+    }
+
+    // If still no thumbnail and it's a YouTube playlist, try to generate one
+    if (playlistThumbnail == null && playlistUrl != null && YouTubeThumbnailHelper.isYouTubeUrl(playlistUrl)) {
+        val extractedPlaylistId = YouTubeThumbnailHelper.extractPlaylistId(playlistUrl) ?: playlistId
+        if (extractedPlaylistId != null) {
+            playlistThumbnail = YouTubeThumbnailHelper.getPlaylistThumbnailUrl(extractedPlaylistId)
+        }
+    }
+
     return PlaylistInfo(
-        id = root["id"].strOrNull(),
+        id = playlistId,
         title = root["title"].strOrNull(),
         description = root["description"].strOrNull(),
         uploader = root["uploader"].strOrNull(),
         uploaderUrl = root["uploader_url"].strOrNull(),
+        thumbnail = playlistThumbnail, // New field!
         entries = entries,
         entryCount = root["playlist_count"].intOrNull() ?: entries.size
     )

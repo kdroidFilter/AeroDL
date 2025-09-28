@@ -48,6 +48,10 @@ fun main() = application {
     }
     wrapper.noCheckCertificate = true
     allowYtDlpLogging = true
+
+
+
+
     var videoReady by rememberSaveable { mutableStateOf(false)}
     val videoState = rememberVideoPlayerState()
     TrayApp(
@@ -74,6 +78,17 @@ fun main() = application {
 
                     LaunchedEffect(Unit){
                         val videoUrl = "https://ivan.canet.dev/talks/bordeauxkt.html#kotlin-beyond-the-jvm"
+
+                        wrapper.initialize { event ->
+                            // Display initialization events to inform the user
+                            when (event) {
+                                is YtDlpWrapper.InitEvent.DownloadingYtDlp -> println("    -> Downloading yt-dlp...")
+                                is YtDlpWrapper.InitEvent.EnsuringFfmpeg -> println("    -> Checking FFmpeg...")
+                                is YtDlpWrapper.InitEvent.Completed -> if (event.success) println("✅ Initialization completed successfully!")
+                                is YtDlpWrapper.InitEvent.Error -> System.err.println("❌ Initialization error: ${event.message}")
+                                else -> {} // Ignore other events like progress to keep the output concise
+                            }
+                        }
 
                         wrapper.getVideoInfo(videoUrl, timeoutSec = 60)
                             .onSuccess { video ->
