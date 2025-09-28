@@ -13,6 +13,9 @@ fun main() {
     runBlocking {
         // 1. Créer une instance du wrapper
         val ytDlpWrapper = YtDlpWrapper()
+        // Définir le paramètre de manière globale pour toutes les opérations de ce wrapper
+        ytDlpWrapper.noCheckCertificate = true
+
 
         // (Optionnel) Définir un dossier de téléchargement personnalisé
         val downloadsDir = File(System.getProperty("user.home"), "YtDlpWrapper_Downloads")
@@ -43,16 +46,17 @@ fun main() {
         val videoUrl = "https://ivan.canet.dev/talks/bordeauxkt.html#kotlin-beyond-the-jvm"
         println("\n🎬 Lancement du téléchargement pour : $videoUrl")
 
-        val table = ytDlpWrapper.probeAvailability(videoUrl, noCheckCertificate = true)
+        // noCheckCertificate n'est plus nécessaire ici, car il est défini globalement
+        val table = ytDlpWrapper.probeAvailability(videoUrl)
         println(table)
 
         // Un CompletableFuture est utilisé pour attendre la fin du téléchargement asynchrone
         val downloadFuture = CompletableFuture<Boolean>()
 
         ytDlpWrapper.downloadMp4At(
-            noCheckCertificate = true,
+            // noCheckCertificate n'est plus nécessaire ici
             url = videoUrl,
-            preset = YtDlpWrapper.Preset.P1080, // Spécifie la qualité 720p
+            preset = YtDlpWrapper.Preset.P1080, // Spécifie la qualité 1080p
             onEvent = { event ->
                 when (event) {
                     is Event.Started -> println("    -> Le processus de téléchargement a démarré.")

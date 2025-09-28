@@ -8,6 +8,9 @@ fun main() = runBlocking {
     val wrapper = YtDlpWrapper().apply {
         downloadDir = File(System.getProperty("user.home"), "Downloads/yt-dlp")
     }
+    // Définir le paramètre de manière globale pour toutes les opérations
+    wrapper.noCheckCertificate = true
+
 
     // Initialisation
     println("🔧 Initialisation de yt-dlp/ffmpeg…")
@@ -31,7 +34,8 @@ fun main() = runBlocking {
     println("\n📹 TEST 1: Vidéo simple")
     val videoUrl = "https://ivan.canet.dev/talks/bordeauxkt.html#kotlin-beyond-the-jvm" // Me at the zoo
 
-    wrapper.getVideoInfo(videoUrl, noCheckCertificate = true, timeoutSec = 60)
+    // L'argument noCheckCertificate n'est plus nécessaire
+    wrapper.getVideoInfo(videoUrl, timeoutSec = 60)
         .onSuccess { video ->
             println("✅ Vidéo trouvée:")
             println("  📝 Titre: ${video.title}")
@@ -63,7 +67,6 @@ fun main() = runBlocking {
 //        wrapper.getPlaylistInfo(
 //            playlistUrl,
 //            extractFlat = true,  // Plus rapide, juste les métadonnées de base
-//            noCheckCertificate = true,
 //            timeoutSec = 60
 //        ).onSuccess { playlist ->
 //            println("✅ Playlist trouvée:")
@@ -95,11 +98,11 @@ fun main() = runBlocking {
         println("\n📺 Chaîne: $channelUrl")
 
         // Pour une chaîne, on récupère une liste de vidéos
+        // L'argument noCheckCertificate n'est plus nécessaire
         wrapper.getVideoInfoList(
             channelUrl,
             maxEntries = 30,
             extractFlat = true,  // Plus rapide
-            noCheckCertificate = true,
             timeoutSec = 90
         ).onSuccess { videos ->
             println("✅ Vidéos de la chaîne:")
@@ -124,7 +127,6 @@ fun main() = runBlocking {
 //    wrapper.getPlaylistInfo(
 //        shortPlaylist,
 //        extractFlat = false,  // Récupère TOUTES les infos (lent!)
-//        noCheckCertificate = true,
 //        timeoutSec = 120
 //    ).onSuccess { playlist ->
 //        println("✅ Playlist complète:")
@@ -158,7 +160,7 @@ fun main() = runBlocking {
 //    val shortsUrl = "https://www.youtube.com/shorts/n0QNaym0jDI"
 //
 //    println("Testing vidéo dans playlist...")
-//    wrapper.getVideoInfo(videoInPlaylist, noCheckCertificate = true)
+//    wrapper.getVideoInfo(videoInPlaylist)
 //        .onSuccess { println("  ✅ ${it.title}") }
 //        .onFailure { println("  ❌ ${it.message}") }
 }
