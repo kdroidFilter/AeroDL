@@ -29,10 +29,7 @@ object PlatformUtils {
                 arch.contains("32") || (arch.contains("x86") && !arch.contains("64")) -> "yt-dlp_x86.exe"
                 else -> "yt-dlp.exe"
             }
-            OperatingSystem.MACOS -> when {
-                arch.contains("aarch64") || arch.contains("arm64") -> "yt-dlp_macos_arm64"
-                else -> "yt-dlp_macos"
-            }
+            OperatingSystem.MACOS -> "yt-dlp_macos"
             OperatingSystem.LINUX -> {
                 val isMusl = try {
                     val p = Runtime.getRuntime().exec(arrayOf("ldd", "--version"))

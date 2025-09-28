@@ -109,26 +109,51 @@ class YtDlpWrapper {
         return currentVersion.removePrefix("v").trim() != latestVersion.removePrefix("v").trim()
     }
 
+// Dans le fichier YtDlpWrapper.kt
+
     suspend fun downloadOrUpdate(onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null): Boolean {
         val assetName = PlatformUtils.getYtDlpAssetNameForSystem()
+        println("ℹ️ System asset determined: $assetName")
+
         val destFile = File(PlatformUtils.getDefaultBinaryPath())
+        println("ℹ️ Destination path: ${destFile.absolutePath}")
+
         destFile.parentFile?.mkdirs()
 
         return try {
-            val release = ytdlpFetcher.getLatestRelease() ?: return false
-            val asset = release.assets.find { it.name == assetName } ?: return false
+            val release = ytdlpFetcher.getLatestRelease()
+            if (release == null) {
+                System.err.println("❌ ERROR: Could not fetch latest release info from GitHub.")
+                return false
+            }
+
+            val asset = release.assets.find { it.name == assetName }
+            if (asset == null) {
+                System.err.println("❌ ERROR: Asset '$assetName' not found in the latest release.")
+                System.err.println("   Available assets: ${release.assets.joinToString { it.name }}")
+                return false
+            }
+
+            println("ℹ️ Attempting to download from URL: ${asset.browser_download_url}")
 
             PlatformUtils.downloadFile(asset.browser_download_url, destFile, onProgress)
-            if (getOperatingSystem() != OperatingSystem.WINDOWS) PlatformUtils.makeExecutable(destFile)
+
+            if (getOperatingSystem() != OperatingSystem.WINDOWS) {
+                println("ℹ️ Making file executable...")
+                PlatformUtils.makeExecutable(destFile)
+            }
 
             if (isAvailable()) {
                 ytDlpPath = destFile.absolutePath
+                println("✅ Download and setup successful.")
                 true
             } else {
+                System.err.println("❌ ERROR: File was downloaded but is not available/executable.")
                 destFile.delete()
                 false
             }
         } catch (e: Exception) {
+            System.err.println("🔥 CRITICAL: An exception occurred during the download process.")
             e.printStackTrace()
             false
         }
