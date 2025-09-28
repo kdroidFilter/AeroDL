@@ -43,6 +43,9 @@ fun main() {
         val videoUrl = "https://ivan.canet.dev/talks/bordeauxkt.html#kotlin-beyond-the-jvm"
         println("\n🎬 Lancement du téléchargement pour : $videoUrl")
 
+        val table = ytDlpWrapper.probeAvailability(videoUrl, noCheckCertificate = true)
+        println(table)
+
         // Un CompletableFuture est utilisé pour attendre la fin du téléchargement asynchrone
         val downloadFuture = CompletableFuture<Boolean>()
 

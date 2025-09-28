@@ -161,16 +161,6 @@ object NetAndArchive {
         }
     }
 
-    // ---- Selector helpers ----
-    fun progressiveMediumSelector(
-        maxHeight: Int = 480,
-        preferredExts: List<String> = listOf("mp4", "webm")
-    ): String {
-        val common = "best[acodec!=none][vcodec!=none][height<=$maxHeight]"
-        val biased = preferredExts.joinToString("/") { ext -> "$common[ext=$ext]" }
-        return "$biased/$common"
-    }
-
     // ===== Resolution helpers =====
 
     /** Exact progressive selector (single A+V URL only). Falls back to progressive at same height if ext differs. */

@@ -17,7 +17,8 @@ data class Handle(
     val cancelled: AtomicBoolean
 ) {
     fun cancel() {
-        cancelled.set(true)
-        process.destroy()
+        if (!cancelled.getAndSet(true)) {
+            process.destroy()
+        }
     }
 }
