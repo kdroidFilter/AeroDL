@@ -137,7 +137,7 @@ class YtDlpWrapper {
     // --- FFmpeg ---
     fun getDefaultFfmpegPath(): String = PlatformUtils.getDefaultFfmpegPath()
 
-    suspend fun ensureFfmpegAvailable(forceDownload: Boolean = false, onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null): Boolean {
+    fun ensureFfmpegAvailable(forceDownload: Boolean = false, onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null): Boolean {
         ffmpegPath?.let {
             if (PlatformUtils.ffmpegVersion(it) != null && !forceDownload) return true
         }
@@ -235,7 +235,7 @@ class YtDlpWrapper {
         resolutionAvailability(url, preset.height, noCheckCertificate)
             .map { ResolutionAvailability(preset, it.progressive, it.downloadable) }
 
-    fun probeAvailability(url: String, presets: Array<Preset> = Preset.values(), noCheckCertificate: Boolean = false): Map<Preset, ResolutionAvailability> {
+    fun probeAvailability(url: String, presets: Array<Preset> = Preset.entries.toTypedArray(), noCheckCertificate: Boolean = false): Map<Preset, ResolutionAvailability> {
         val useNoCheckCert = noCheckCertificate || this.noCheckCertificate
         val lines = listFormatsRaw(url, useNoCheckCert).getOrElse { return emptyMap() }
         val (progressiveHeights, videoOnlyHeights) = NetAndArchive.probeAvailableHeights(lines)

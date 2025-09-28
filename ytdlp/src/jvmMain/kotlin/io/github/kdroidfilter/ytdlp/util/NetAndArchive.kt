@@ -33,7 +33,7 @@ object NetAndArchive {
     // --- Network Preflight Check ---
     fun checkNetwork(targetUrl: String, connectTimeoutMs: Int, readTimeoutMs: Int): Result<Unit> {
         return try {
-            val url = URL(targetUrl)
+            val url = URI(targetUrl).toURL()
             try { InetAddress.getByName(url.host) } catch (e: UnknownHostException) {
                 return Result.failure(IllegalStateException("DNS resolution failed for ${url.host}", e))
             }
@@ -55,7 +55,7 @@ object NetAndArchive {
 
             // Fallback check to a known reliable host if the target host fails, to distinguish
             // between a general network problem and a specific host being down.
-            val fallback = URL("https://www.gstatic.com/generate_204")
+            val fallback = URI("https://www.gstatic.com/generate_204").toURL()
             (fallback.openConnection() as HttpURLConnection).apply {
                 requestMethod = "GET"
                 connectTimeout = connectTimeoutMs
@@ -205,10 +205,4 @@ object NetAndArchive {
         return "$splitPreferMp4/$progressiveMp4"
     }
 
-    /** Best progressive MP4 at or below maxHeight */
-    fun progressiveMediumSelectorMp4(maxHeight: Int): String {
-        val mp4 = "best[height<=${maxHeight}][ext=mp4][acodec!=none][vcodec!=none][protocol!=m3u8]"
-        val any = "best[height<=${maxHeight}][acodec!=none][vcodec!=none][protocol!=m3u8]"
-        return "$mp4/$any"
-    }
 }
