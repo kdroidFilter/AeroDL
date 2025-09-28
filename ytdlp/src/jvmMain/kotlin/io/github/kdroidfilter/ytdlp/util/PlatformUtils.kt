@@ -35,12 +35,7 @@ object PlatformUtils {
                 arch.contains("32") || (arch.contains("x86") && !arch.contains("64")) -> "yt-dlp_x86.exe"
                 else -> "yt-dlp.exe"
             }
-
-            OperatingSystem.MACOS -> when {
-                arch.contains("aarch64") || arch.contains("arm64") -> "yt-dlp_macos_arm64"
-                else -> "yt-dlp_macos"
-            }
-
+            OperatingSystem.MACOS -> error("yt-dlp asset should not be fetched for macOS directly.")
             OperatingSystem.LINUX -> {
                 val isMusl = isMusl()
                 when {
@@ -51,8 +46,7 @@ object PlatformUtils {
                     else -> "yt-dlp_linux"
                 }
             }
-
-            else -> "yt-dlp" // Generic fallback
+            else -> "yt-dlp"
         }
     }
 
@@ -99,7 +93,6 @@ object PlatformUtils {
 
     suspend fun makeExecutable(file: File) = withContext(Dispatchers.IO) {
         try {
-            // Modern way using NIO
             val path = file.toPath()
             val perms = Files.getPosixFilePermissions(path).toMutableSet()
             perms.add(PosixFilePermission.OWNER_EXECUTE)
@@ -107,7 +100,6 @@ object PlatformUtils {
             perms.add(PosixFilePermission.OTHERS_EXECUTE)
             Files.setPosixFilePermissions(path, perms)
         } catch (_: UnsupportedOperationException) {
-            // Fallback for older systems or non-POSIX filesystems
             Runtime.getRuntime().exec(arrayOf("chmod", "+x", file.absolutePath)).waitFor()
         }
     }
@@ -140,6 +132,16 @@ object PlatformUtils {
         }
     }
 
+    suspend fun findYtDlpInSystemPath(): String? = withContext(Dispatchers.IO) {
+        val cmd = if (getOperatingSystem() == OperatingSystem.WINDOWS) listOf("where", "yt-dlp") else listOf("which", "yt-dlp")
+        try {
+            val p = ProcessBuilder(cmd).redirectErrorStream(true).start()
+            val out = p.inputStream.bufferedReader().readText().trim()
+            if (p.waitFor() == 0 && out.isNotBlank()) out.lineSequence().firstOrNull()?.trim() else null
+        } catch (_: Exception) {
+            null
+        }
+    }
 
     fun getFfmpegAssetNameForSystem(): String? {
         val os = getOperatingSystem()
@@ -155,14 +157,11 @@ object PlatformUtils {
             OperatingSystem.LINUX -> if (isArm64) "ffmpeg-master-latest-linuxarm64-gpl.tar.xz"
             else "ffmpeg-master-latest-linux64-gpl.tar.xz"
 
-            OperatingSystem.MACOS -> null // FFmpeg builds are not provided for macOS in the same repo
+            OperatingSystem.MACOS -> null
             else -> null
         }
     }
 
-    /**
-     * Downloads and installs FFmpeg. Returns the installed binary path or null on failure.
-     */
     suspend fun downloadAndInstallFfmpeg(
         assetName: String,
         forceDownload: Boolean,
@@ -181,18 +180,15 @@ object PlatformUtils {
         val archive = File(baseDir, assetName)
 
         try {
-            // Download archive with progress
             downloadFile(url, archive, onProgress)
             if (assetName.endsWith(".zip")) NetAndArchive.extractZip(archive, baseDir)
             else if (assetName.endsWith(".tar.xz")) NetAndArchive.extractTarXzWithSystemTar(archive, baseDir)
             else error("Unsupported FFmpeg archive: $assetName")
 
-            // Find the binary, which might be in a nested directory
             val found = baseDir.walkTopDown()
                 .firstOrNull { it.isFile && it.name.startsWith("ffmpeg") && it.canRead() }
                 ?: error("FFmpeg binary not found after extraction")
 
-            // Move the binary to our target bin directory
             found.copyTo(targetExe, overwrite = true)
 
             if (getOperatingSystem() != OperatingSystem.WINDOWS) makeExecutable(targetExe)

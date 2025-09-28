@@ -62,29 +62,49 @@ class YtDlpWrapper {
      */
     suspend fun initialize(onEvent: (InitEvent) -> Unit = {}): Boolean {
         fun pct(read: Long, total: Long?): Double? = total?.takeIf { it > 0 }?.let { read * 100.0 / it }
-        try {
-            onEvent(InitEvent.CheckingYtDlp)
-            if (!isAvailable()) {
-                onEvent(InitEvent.DownloadingYtDlp)
-                if (!downloadOrUpdate { r, t -> onEvent(InitEvent.YtDlpProgress(r, t, pct(r, t))) }) {
-                    onEvent(InitEvent.Error("Could not download yt-dlp", null))
-                    onEvent(InitEvent.Completed(false)); return false
+
+        if (getOperatingSystem() == OperatingSystem.MACOS) {
+            try {
+                onEvent(InitEvent.CheckingYtDlp)
+                val path = PlatformUtils.findYtDlpInSystemPath()
+                if (path == null) {
+                    onEvent(InitEvent.Error("yt-dlp not found. Please install it using 'brew install yt-dlp'."))
+                    onEvent(InitEvent.Completed(false))
+                    return false
                 }
-            } else if (hasUpdate()) {
-                onEvent(InitEvent.UpdatingYtDlp)
-                downloadOrUpdate { r, t -> onEvent(InitEvent.YtDlpProgress(r, t, pct(r, t))) }
+                ytDlpPath = path
+                onEvent(InitEvent.Completed(true))
+                return true
+            } catch (t: Throwable) {
+                onEvent(InitEvent.Error(t.message ?: "Initialization error on macOS", t))
+                onEvent(InitEvent.Completed(false))
+                return false
             }
+        } else {
+            try {
+                onEvent(InitEvent.CheckingYtDlp)
+                if (!isAvailable()) {
+                    onEvent(InitEvent.DownloadingYtDlp)
+                    if (!downloadOrUpdate { r, t -> onEvent(InitEvent.YtDlpProgress(r, t, pct(r, t))) }) {
+                        onEvent(InitEvent.Error("Could not download yt-dlp", null))
+                        onEvent(InitEvent.Completed(false)); return false
+                    }
+                } else if (hasUpdate()) {
+                    onEvent(InitEvent.UpdatingYtDlp)
+                    downloadOrUpdate { r, t -> onEvent(InitEvent.YtDlpProgress(r, t, pct(r, t))) }
+                }
 
-            onEvent(InitEvent.EnsuringFfmpeg)
-            ensureFfmpegAvailable(false) { r, t -> onEvent(InitEvent.FfmpegProgress(r, t, pct(r, t))) }
+                onEvent(InitEvent.EnsuringFfmpeg)
+                ensureFfmpegAvailable(false) { r, t -> onEvent(InitEvent.FfmpegProgress(r, t, pct(r, t))) }
 
-            val success = isAvailable()
-            onEvent(InitEvent.Completed(success))
-            return success
-        } catch (t: Throwable) {
-            onEvent(InitEvent.Error(t.message ?: "Initialization error", t))
-            onEvent(InitEvent.Completed(false))
-            return false
+                val success = isAvailable()
+                onEvent(InitEvent.Completed(success))
+                return success
+            } catch (t: Throwable) {
+                onEvent(InitEvent.Error(t.message ?: "Initialization error", t))
+                onEvent(InitEvent.Completed(false))
+                return false
+            }
         }
     }
 
@@ -100,19 +120,41 @@ class YtDlpWrapper {
         }
     }
 
-
     suspend fun isAvailable(): Boolean {
         val file = File(ytDlpPath)
         return file.exists() && file.canExecute() && version() != null
     }
 
     suspend fun hasUpdate(): Boolean {
+        if (getOperatingSystem() == OperatingSystem.MACOS) {
+            return true // On macOS, we can always attempt an update.
+        }
         val currentVersion = version() ?: return true
         val latestVersion = ytdlpFetcher.getLatestRelease()?.tag_name ?: return false
         return currentVersion.removePrefix("v").trim() != latestVersion.removePrefix("v").trim()
     }
 
     suspend fun downloadOrUpdate(onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null): Boolean {
+        if (getOperatingSystem() == OperatingSystem.MACOS) {
+            return withContext(Dispatchers.IO) {
+                try {
+                    println("Attempting to update yt-dlp with 'yt-dlp -U'...")
+                    val process = ProcessBuilder(ytDlpPath, "-U").inheritIO().start()
+                    val exitCode = process.waitFor()
+                    if (exitCode == 0) {
+                        println("yt-dlp update command completed successfully.")
+                        true
+                    } else {
+                        System.err.println("yt-dlp update command failed with exit code $exitCode.")
+                        false
+                    }
+                } catch (e: Exception) {
+                    errorln { "Error executing 'yt-dlp -U': ${e.stackTraceToString()}" }
+                    false
+                }
+            }
+        }
+
         val assetName = PlatformUtils.getYtDlpAssetNameForSystem()
         val destFile = File(PlatformUtils.getDefaultBinaryPath())
         destFile.parentFile?.mkdirs()
@@ -136,6 +178,7 @@ class YtDlpWrapper {
             false
         }
     }
+
 
     // --- FFmpeg ---
     fun getDefaultFfmpegPath(): String = PlatformUtils.getDefaultFfmpegPath()
@@ -196,9 +239,7 @@ class YtDlpWrapper {
             val tail = ArrayBlockingQueue<String>(120)
 
             try {
-                // Le bloc de logique de téléchargement est extrait pour éviter la répétition
                 val downloadLogic: suspend CoroutineScope.() -> Unit = {
-                    // Reader coroutine
                     val readerJob = launch {
                         try {
                             process.inputStream.bufferedReader(StandardCharsets.UTF_8).useLines { lines ->
@@ -214,15 +255,14 @@ class YtDlpWrapper {
                                 }
                             }
                         } catch (e: Exception) {
-                            if (isActive) { // Don't report error if cancelled
+                            if (isActive) {
                                 onEvent(Event.Error("I/O error while reading yt-dlp output", e))
                             }
                         }
                     }
 
-                    // Completion waiter
                     val exitCode = process.waitFor()
-                    readerJob.join() // Wait for reader to finish processing all output
+                    readerJob.join()
 
                     if (exitCode != 0) {
                         val lines = mutableListOf<String>().also { tail.drainTo(it) }
@@ -242,19 +282,16 @@ class YtDlpWrapper {
                     onEvent(Event.Completed(exitCode, exitCode == 0))
                 }
 
-                // CORRECTION ICI: On applique le timeout seulement s'il est non-nul
                 val timeoutMillis = finalOptions.timeout?.toMillis()
                 if (timeoutMillis != null) {
                     withTimeoutOrNull(timeoutMillis) {
                         downloadLogic()
                     } ?: run {
-                        // Timeout occurred
                         process.destroyForcibly()
                         onEvent(Event.Error("Download timed out after ${finalOptions.timeout?.toMinutes() ?: "N/A"} minutes."))
                         onEvent(Event.Completed(-1, false))
                     }
                 } else {
-                    // Exécute sans timeout
                     downloadLogic()
                 }
 
@@ -469,10 +506,6 @@ class YtDlpWrapper {
             }
         }
     }
-
-    // =================================================================
-    // =================== INTERNAL PRIVATE METHODS ===================
-    // =================================================================
 
     private suspend fun getProgressiveUrlForHeight(
         url: String,
