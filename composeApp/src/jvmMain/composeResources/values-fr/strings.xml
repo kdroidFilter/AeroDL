@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="quit">Quitter</string>
+    <string name="home">Accueil</string>
+    <string name="history">Historique</string>
+    <string name="about">À propos</string>
+</resources>
