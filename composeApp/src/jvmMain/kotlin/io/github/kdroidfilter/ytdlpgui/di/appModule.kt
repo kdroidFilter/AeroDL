@@ -29,6 +29,6 @@ val appModule = module {
     viewModel { BulkDownloadViewModel(get()) }
     viewModel { HistoryViewModel(get()) }
     viewModel { SettingsViewModel(get()) }
-    viewModel { SingleDownloadViewModel(get()) }
+    single { SingleDownloadViewModel(get(), get(), get()) }
 
 }

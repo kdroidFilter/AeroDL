@@ -31,6 +31,10 @@ kotlin {
             implementation(libs.compose.fluent.icons.extended)
             implementation(libs.composemediaplayer)
 
+            // Coil
+            implementation("io.coil-kt.coil3:coil-compose:3.3.0")
+            implementation("io.coil-kt.coil3:coil-network-okhttp:3.3.0")
+
             // DI
             implementation(libs.koin.core)
             implementation(libs.koin.compose)

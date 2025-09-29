@@ -58,6 +58,7 @@ fun HomeView(
                 value = state.link,
                 onValueChange = { onEvent(HomeEvents.OnLinkChanged(it)) },
                 placeholder = { Text("https://youtu.be/XXXXXXXXX", maxLines = 1) },
+                singleLine = true,
                 header = {
                     val modifier = Modifier.fillMaxWidth(0.85f)
                     val textAlign = TextAlign.Center
@@ -96,6 +97,4 @@ fun HomeView(
             Icon(Icons.Default.ArrowRight, contentDescription = null)
         }
     }
-
-
 }
