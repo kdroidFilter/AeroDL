@@ -1,16 +1,19 @@
 package io.github.kdroidfilter.ytdlp.model
 
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Contextual
 import java.time.Duration
 
 /**
  * Represents the metadata for a single video.
  */
+@Serializable
 data class VideoInfo(
     val id: String,
     val title: String,
     val url: String,
     val thumbnail: String? = null,
-    val duration: Duration? = null,
+    @Contextual val duration: Duration? = null,
     val description: String? = null,
     val uploader: String? = null,
     val uploaderUrl: String? = null,
@@ -33,6 +36,7 @@ data class VideoInfo(
 /**
  * Contains information about available subtitles for a specific language.
  */
+@Serializable
 data class SubtitleInfo(
     val language: String,
     val languageName: String? = null,
@@ -43,6 +47,7 @@ data class SubtitleInfo(
 /**
  * Represents a specific format (e.g., vtt, srt) of a subtitle file.
  */
+@Serializable
 data class SubtitleFormat(
     val ext: String,
     val url: String? = null,
@@ -52,6 +57,7 @@ data class SubtitleFormat(
 /**
  * Represents a single chapter within a video.
  */
+@Serializable
 data class ChapterInfo(
     val title: String? = null,
     val startTime: Double,
@@ -61,6 +67,7 @@ data class ChapterInfo(
 /**
  * Represents the metadata for a playlist.
  */
+@Serializable
 data class PlaylistInfo(
     val id: String? = null,
     val title: String? = null,
@@ -77,6 +84,7 @@ data class PlaylistInfo(
  * @property progressive True if a single file with video and audio is available.
  * @property downloadable True if the resolution can be downloaded (either as progressive or by merging video and audio).
  */
+@Serializable
 data class ResolutionAvailability(
     val progressive: Boolean,
     val downloadable: Boolean

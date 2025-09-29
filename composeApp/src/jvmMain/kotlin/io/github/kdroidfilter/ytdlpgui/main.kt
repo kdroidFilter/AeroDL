@@ -23,7 +23,7 @@ import io.github.composefluent.icons.filled.PictureInPictureExit
 import io.github.composefluent.icons.regular.ArrowDownload
 import io.github.composefluent.lightColors
 import io.github.kdroidfilter.platformtools.darkmodedetector.isSystemInDarkMode
-import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.MainNavHost
+import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.App
 import io.github.kdroidfilter.ytdlpgui.di.appModule
 import org.koin.compose.KoinApplication
 
@@ -65,7 +65,7 @@ fun main() = application {
 
                 ) {
 
-                    MainNavHost()
+                    App()
 
 
 //                Column(

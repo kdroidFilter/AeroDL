@@ -38,9 +38,28 @@ import ytdlpgui.composeapp.generated.resources.home
 
 @OptIn(ExperimentalFluentApi::class)
 @Composable
-fun MainNavHost() {
+fun App() {
     val navController = rememberNavController()
     val navigator = koinInject<Navigator>()
+
+//    init {
+//        viewModelScope.launch {
+//            ytDlpWrapper.apply {
+//                noCheckCertificate = true
+//            }.initialize { event ->
+//                when (event) {
+//                    YtDlpWrapper.InitEvent.CheckingYtDlp -> TODO()
+//                    is YtDlpWrapper.InitEvent.Completed -> TODO()
+//                    YtDlpWrapper.InitEvent.DownloadingYtDlp -> TODO()
+//                    YtDlpWrapper.InitEvent.EnsuringFfmpeg -> TODO()
+//                    is YtDlpWrapper.InitEvent.Error -> TODO()
+//                    is YtDlpWrapper.InitEvent.FfmpegProgress -> TODO()
+//                    YtDlpWrapper.InitEvent.UpdatingYtDlp -> TODO()
+//                    is YtDlpWrapper.InitEvent.YtDlpProgress -> TODO()
+//                }
+//            }
+//        }
+//    }
 
     ObserveAsEvents(flow = navigator.navigationActions) { action ->
         when (action) {

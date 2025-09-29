@@ -6,11 +6,13 @@ import androidx.compose.runtime.collectAsState
 data class HomeState(
     val link: String = "",
     val isLoading: Boolean = false,
+    val errorMessage: String? = null,
 )
 
 @Composable
 fun collectHomeState(viewModel: HomeViewModel) : HomeState =
     HomeState(
-        link = viewModel.link.collectAsState().value,
+        link = viewModel.textFieldContent.collectAsState().value,
         isLoading = viewModel.isLoading.collectAsState().value,
+        errorMessage = viewModel.errorMessage.collectAsState().value,
     )

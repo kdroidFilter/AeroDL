@@ -24,7 +24,7 @@ val appModule = module {
         DefaultNavigator(startDestination = Destination.MainGraph)
     }
 
-    viewModel { HomeViewModel(get()) }
+    single { HomeViewModel(get(), get()) }
     viewModel { AboutViewModel(get()) }
     viewModel { BulkDownloadViewModel(get()) }
     viewModel { HistoryViewModel(get()) }
