@@ -18,7 +18,7 @@ serialization-json = "1.9.0"
 # UI Libraries
 fluent = "v0.1.0"
 composemediaplayer = "0.8.4"
-composenativetray = "0.9.3"
+composenativetray = "0.9.4"
 
 # Network & Tools
 ktor = "3.3.0"

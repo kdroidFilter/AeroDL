@@ -73,7 +73,7 @@ fun main() = runBlocking {
         }
 
     println("\n📺 TEST 3: YouTube Channels")
-    val channelUrl = "https://www.youtube.com/@PhilippLackner"
+    val channelUrl = "https://www.youtube.com/@BordeauxKt"
 
     println("\n📺 Channel: $channelUrl")
 

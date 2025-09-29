@@ -39,7 +39,10 @@ kotlin {
             // Platform tools
             implementation(libs.platformtools.darkmodedetector)
             implementation(libs.platformtools.clipboardmanager)
-
+            implementation("io.github.vinceglb:auto-launch:0.7.0")
+            implementation("io.github.vinceglb:filekit-core:0.11.0")
+            implementation("io.github.vinceglb:filekit-dialogs:0.11.0")
+            implementation("io.github.vinceglb:filekit-dialogs-compose:0.11.0")
             // Serialization
             implementation(libs.kotlinx.serialization.json)
         }
