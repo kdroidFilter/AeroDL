@@ -1,6 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Navigation -->
     <string name="home">דף הבית</string>
     <string name="history">היסטוריה</string>
     <string name="about">אודות</string>
+
+    <!-- Home screen -->
+    <string name="app_name">AeroDL</string>
+    <string name="logo_content_desc">לוגו</string>
+    <string name="placeholder_link_example">https://youtu.be/XXXXXXXXX</string>
+    <string name="paste_video_link_header">הדבק קישור לסרטון</string>
+    <string name="paste_link_content_desc">הדבק קישור</string>
+    <string name="loading">בטעינה…</string>
+    <string name="next">הבא</string>
+    <string name="error_single_valid_url">יש להדביק כתובת URL אחת תקינה.</string>
+    <string name="error_invalid_url_format">תבנית כתובת ה-URL אינה תקינה.</string>
+
+    <!-- כותרות מסך זמניות -->
+    <string name="about_screen_title">מסך אודות</string>
+    <string name="bulk_download_screen_title">מסך הורדה מרובה</string>
+    <string name="history_screen_title">מסך היסטוריה</string>
+    <string name="settings_screen_title">מסך הגדרות</string>
 </resources>

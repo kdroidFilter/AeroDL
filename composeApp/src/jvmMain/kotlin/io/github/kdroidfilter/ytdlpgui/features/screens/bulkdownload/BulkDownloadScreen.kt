@@ -2,6 +2,8 @@ package io.github.kdroidfilter.ytdlpgui.features.screens.bulkdownload
 
 import io.github.composefluent.component.Text
 import androidx.compose.runtime.Composable
+import org.jetbrains.compose.resources.stringResource
+import ytdlpgui.composeapp.generated.resources.*
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -19,5 +21,5 @@ fun BulkDownloadView(
     state: BulkDownloadState,
     onEvent: (BulkDownloadEvents) -> Unit,
 ) {
-    Text("Bulk Download Screen")
+    Text(stringResource(Res.string.bulk_download_screen_title))
 }

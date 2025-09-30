@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.awt.Toolkit.getDefaultToolkit
+import org.jetbrains.compose.resources.getString
+import ytdlpgui.composeapp.generated.resources.*
 
 class HomeViewModel(
     private val navigator: Navigator,
@@ -57,7 +59,9 @@ class HomeViewModel(
         val matches = urlRegex.findAll(input).toList()
 
         if (matches.size != 1 || matches.first().value != input) {
-            _errorMessage.value = "Please paste a single valid URL."
+            viewModelScope.launch {
+                _errorMessage.value = getString(Res.string.error_single_valid_url)
+            }
             return
         }
 
@@ -66,7 +70,9 @@ class HomeViewModel(
         try {
             java.net.URL(url).toURI()
         } catch (e: Exception) {
-            _errorMessage.value = "Invalid URL format."
+            viewModelScope.launch {
+                _errorMessage.value = getString(Res.string.error_invalid_url_format)
+            }
             return
         }
 

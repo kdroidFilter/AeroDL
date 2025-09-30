@@ -5,19 +5,23 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.*
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.filled.ClipboardPaste
+import io.github.composefluent.icons.regular.ArrowLeft
 import io.github.composefluent.icons.regular.ArrowRight
 import io.github.kdroidfilter.platformtools.darkmodedetector.isSystemInDarkMode
+import io.github.kdroidfilter.ytdlpgui.core.presentation.tools.PreviewContainer
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
-import ytdlpgui.composeapp.generated.resources.AeroDl
-import ytdlpgui.composeapp.generated.resources.AeroDlDark
-import ytdlpgui.composeapp.generated.resources.Res
+import ytdlpgui.composeapp.generated.resources.*
 
 @Composable
 fun HomeScreen() {
@@ -34,6 +38,8 @@ fun HomeView(
     state: HomeState,
     onEvent: (HomeEvents) -> Unit,
 ) {
+    val currentLayoutDirection = LocalLayoutDirection.current
+    val isRtl = (currentLayoutDirection == LayoutDirection.Rtl)
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.SpaceBetween,
@@ -42,10 +48,10 @@ fun HomeView(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text("AeroDL", style = FluentTheme.typography.title)
+            Text(stringResource(Res.string.app_name), style = FluentTheme.typography.title)
             Image(
                 painter = painterResource(if (isSystemInDarkMode()) Res.drawable.AeroDlDark else Res.drawable.AeroDl),
-                contentDescription = "Logo",
+                contentDescription = stringResource(Res.string.logo_content_desc),
                 modifier = Modifier.fillMaxSize(0.5f)
             )
         }
@@ -56,45 +62,59 @@ fun HomeView(
         ) {
             TextField(
                 value = state.link,
+                enabled = !state.isLoading,
                 onValueChange = { onEvent(HomeEvents.OnLinkChanged(it)) },
-                placeholder = { Text("https://youtu.be/XXXXXXXXX", maxLines = 1) },
+                placeholder = { Text(stringResource(Res.string.placeholder_link_example), maxLines = 1) },
                 singleLine = true,
                 header = {
-                    val modifier = Modifier.fillMaxWidth(0.85f)
-                    val textAlign = TextAlign.Center
-                    val style =  FluentTheme.typography.caption
-                    if (state.errorMessage == null) {
-                        Text(
-                            text = "Paste a Video link",
-                            style = style,
-                            textAlign = textAlign,
-                            color = FluentTheme.colors.text.text.disabled,
-                            modifier = modifier
-                        )
-                    } else {
-                        Text(
-                            text = state.errorMessage,
-                            style = style,
-                            textAlign = textAlign,
-                            color = FluentTheme.colors.system.critical,
-                            modifier = modifier
-                        )
+                    val (headerText, headerColor) = when {
+                        state.isLoading -> stringResource(Res.string.loading) to FluentTheme.colors.text.text.tertiary
+                        state.errorMessage != null -> state.errorMessage to FluentTheme.colors.system.critical
+                        else -> stringResource(Res.string.paste_video_link_header) to FluentTheme.colors.text.text.disabled
                     }
+                    Text(
+                        text = headerText,
+                        style = FluentTheme.typography.caption,
+                        textAlign = TextAlign.Center,
+                        color = headerColor,
+                        modifier = Modifier.fillMaxWidth(0.85f)
+                    )
                 }
             )
             Button(
                 modifier = Modifier.size(33.dp),
                 onClick = { onEvent(HomeEvents.OnClipBoardClicked) },
-                iconOnly = true
+                iconOnly = true,
+                disabled = state.isLoading,
             ) {
-                Icon(Icons.Filled.ClipboardPaste, contentDescription = "Paste Link")
+                Icon(
+                    Icons.Filled.ClipboardPaste,
+                    contentDescription = stringResource(Res.string.paste_link_content_desc)
+                )
             }
         }
         AccentButton(
-            onClick = { onEvent(HomeEvents.OnNextClicked) }
+            onClick = { onEvent(HomeEvents.OnNextClicked) },
+            disabled = state.isLoading
         ) {
-            Text("Next")
-            Icon(Icons.Default.ArrowRight, contentDescription = null)
+            Text(stringResource(Res.string.next))
+            Icon(if (isRtl) Icons.Default.ArrowLeft else Icons.Default.ArrowRight, contentDescription = null)
         }
+    }
+}
+
+@Preview
+@Composable
+fun HomeScreenPreview() {
+    PreviewContainer {
+        HomeView(state = HomeState.emptyState, onEvent = {})
+    }
+}
+
+@Preview
+@Composable
+fun HomeScreenPreviewLoading() {
+    PreviewContainer {
+        HomeView(state = HomeState.loadingState, onEvent = {})
     }
 }

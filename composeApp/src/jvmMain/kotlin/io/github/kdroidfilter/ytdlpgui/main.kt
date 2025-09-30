@@ -3,6 +3,7 @@ package io.github.kdroidfilter.ytdlpgui
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -11,7 +12,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.application
 import androidx.navigation.NavController
@@ -32,9 +35,11 @@ import io.github.kdroidfilter.platformtools.darkmodedetector.isSystemInDarkMode
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.App
 import io.github.kdroidfilter.ytdlpgui.di.appModule
 import org.koin.compose.KoinApplication
+import java.util.Locale
 
 @OptIn(ExperimentalTrayAppApi::class, ExperimentalFluentApi::class)
 fun main() = application {
+    Locale.setDefault(Locale("he", "IL"))
 
     KoinApplication(application = {
         modules(appModule)
@@ -58,22 +63,22 @@ fun main() = application {
                 Item("Quitter", onClick = { exitApplication() }, icon = Icons.Filled.PictureInPictureExit)
             }
         ) {
-            val navController = rememberNavController()
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
 
-            FluentTheme(colors = if (isSystemInDarkMode()) darkColors() else lightColors()) {
-                Mica(
-                    Modifier
-                        .fillMaxSize()
-                        .clip(RoundedCornerShape(12.dp))
-                        .border(
-                            1.dp,
-                            if (isSystemInDarkMode()) Color.DarkGray else Color.LightGray,
-                            RoundedCornerShape(12.dp)
-                        )
+                FluentTheme(colors = if (isSystemInDarkMode()) darkColors() else lightColors()) {
+                    Mica(
+                        Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(12.dp))
+                            .border(
+                                1.dp,
+                                if (isSystemInDarkMode()) Color.DarkGray else Color.LightGray,
+                                RoundedCornerShape(12.dp)
+                            )
 
-                ) {
+                    ) {
 
-                    App(navController)
+                        App()
 
 
 //                Column(
@@ -158,6 +163,7 @@ fun main() = application {
 //                        }
 //                    }
 //                }
+                    }
                 }
             }
         }

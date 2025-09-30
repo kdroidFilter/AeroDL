@@ -2,6 +2,8 @@ package io.github.kdroidfilter.ytdlpgui.features.screens.about
 
 import androidx.compose.runtime.Composable
 import io.github.composefluent.component.Text
+import org.jetbrains.compose.resources.stringResource
+import ytdlpgui.composeapp.generated.resources.*
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -19,5 +21,5 @@ fun AboutView(
     state: AboutState,
     onEvent: (AboutEvents) -> Unit,
 ) {
-    Text("About Screen")
+    Text(stringResource(Res.string.about_screen_title))
 }

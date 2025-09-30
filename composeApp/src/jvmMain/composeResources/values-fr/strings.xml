@@ -1,7 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Navigation -->
     <string name="quit">Quitter</string>
     <string name="home">Accueil</string>
     <string name="history">Historique</string>
     <string name="about">À propos</string>
+
+    <!-- Écran d'accueil -->
+    <string name="app_name">AeroDL</string>
+    <string name="logo_content_desc">Logo</string>
+    <string name="placeholder_link_example">https://youtu.be/XXXXXXXXX</string>
+    <string name="paste_video_link_header">Collez un lien vidéo</string>
+    <string name="paste_link_content_desc">Coller le lien</string>
+    <string name="loading">Chargement…</string>
+    <string name="next">Suivant</string>
+    <string name="error_single_valid_url">Veuillez coller une seule URL valide.</string>
+    <string name="error_invalid_url_format">Format d’URL invalide.</string>
+
+    <!-- Titres d’écran temporaires -->
+    <string name="about_screen_title">Écran À propos</string>
+    <string name="bulk_download_screen_title">Écran Téléchargement en lot</string>
+    <string name="history_screen_title">Écran Historique</string>
+    <string name="settings_screen_title">Écran Paramètres</string>
 </resources>

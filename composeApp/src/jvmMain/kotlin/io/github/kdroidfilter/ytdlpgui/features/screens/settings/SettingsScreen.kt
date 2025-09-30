@@ -2,6 +2,8 @@ package io.github.kdroidfilter.ytdlpgui.features.screens.settings
 
 import io.github.composefluent.component.Text
 import androidx.compose.runtime.Composable
+import org.jetbrains.compose.resources.stringResource
+import ytdlpgui.composeapp.generated.resources.*
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -19,5 +21,5 @@ fun SettingsView(
     state: SettingsState,
     onEvent: (SettingsEvents) -> Unit,
 ) {
-    Text("Settings Screen")
+    Text(stringResource(Res.string.settings_screen_title))
 }

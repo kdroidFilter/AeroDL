@@ -1,6 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Navigation -->
     <string name="home">Home</string>
     <string name="history">History</string>
     <string name="about">About</string>
+
+    <!-- Home screen -->
+    <string name="app_name">AeroDL</string>
+    <string name="logo_content_desc">Logo</string>
+    <string name="placeholder_link_example">https://youtu.be/XXXXXXXXX</string>
+    <string name="paste_video_link_header">Paste a Video link</string>
+    <string name="paste_link_content_desc">Paste Link</string>
+    <string name="loading">Loading…</string>
+    <string name="next">Next</string>
+    <string name="error_single_valid_url">Please paste a single valid URL.</string>
+    <string name="error_invalid_url_format">Invalid URL format.</string>
+
+    <!-- Placeholder screen titles -->
+    <string name="about_screen_title">About Screen</string>
+    <string name="bulk_download_screen_title">Bulk Download Screen</string>
+    <string name="history_screen_title">History Screen</string>
+    <string name="settings_screen_title">Settings Screen</string>
 </resources>

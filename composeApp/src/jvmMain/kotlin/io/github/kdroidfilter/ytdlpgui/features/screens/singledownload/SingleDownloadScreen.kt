@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -200,25 +201,19 @@ private fun ThumbnailWithDuration(
                             ProgressRing(modifier = Modifier.size(48.dp))
                         }
                         if (isHovered) {
-                            Icon(
-                                imageVector = Icons.Default.Pause,
-                                contentDescription = null,
-                                modifier = Modifier.size(48.dp).clickable(
-                                    onClick = { videoPlayerState.pause() }
-                                ))
+                            IconButton({videoPlayerState.pause()}) {
+                                Icon(
+                                    imageVector = Icons.Default.Pause,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(48.dp)
+                                )
+                            }
                         }
                     }
                 }
             }
         }
 
-
-    }
-}
-
-@Composable
-fun VideoPlayer(videoPlayerState: VideoPlayerState, videoInfo: VideoInfo) {
-    VideoPlayerSurface(videoPlayerState, modifier = Modifier.fillMaxSize()) {
 
     }
 }

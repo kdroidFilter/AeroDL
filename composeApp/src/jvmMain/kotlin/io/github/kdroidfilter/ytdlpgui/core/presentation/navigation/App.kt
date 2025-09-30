@@ -45,7 +45,8 @@ import ytdlpgui.composeapp.generated.resources.home
 
 @OptIn(ExperimentalFluentApi::class)
 @Composable
-fun App(navController: NavHostController) {
+fun App() {
+    val navController = rememberNavController()
     val navigator = koinInject<Navigator>()
 
     ObserveAsEvents(flow = navigator.navigationActions) { action ->
@@ -73,7 +74,6 @@ fun App(navController: NavHostController) {
         horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
     ) {
         val currentDestination by navigator.currentDestination.collectAsState()
-        val scope = rememberCoroutineScope()
         var expanded by remember { mutableStateOf(false) }
         TopNav(
             expanded = expanded,
@@ -106,7 +106,8 @@ fun App(navController: NavHostController) {
                     },
                     icon = {
                         Icon(imageVector = icon, contentDescription = null)
-                    }
+                    },
+                    modifier = Modifier.weight(1f)
                 )
             }
         }
