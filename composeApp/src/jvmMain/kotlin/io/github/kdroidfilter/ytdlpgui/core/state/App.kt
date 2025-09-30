@@ -1,4 +1,4 @@
-package io.github.kdroidfilter.ytdlpgui.core.presentation.navigation
+package io.github.kdroidfilter.ytdlpgui.core.state
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,11 +10,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
@@ -28,6 +26,12 @@ import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.Home
 import io.github.composefluent.icons.regular.History
 import io.github.composefluent.icons.regular.Info
+import io.github.kdroidfilter.ytdlpgui.core.presentation.components.AppHeader
+import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Destination
+import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.NavigationAction
+import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Navigator
+import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.ObserveAsEvents
+import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.noAnimatedComposable
 import io.github.kdroidfilter.ytdlpgui.features.screens.about.AboutScreen
 import io.github.kdroidfilter.ytdlpgui.features.screens.bulkdownload.BulkDownloadScreen
 import io.github.kdroidfilter.ytdlpgui.features.screens.history.HistoryScreen
@@ -45,7 +49,7 @@ import ytdlpgui.composeapp.generated.resources.home
 
 @OptIn(ExperimentalFluentApi::class)
 @Composable
-fun App() {
+fun App(state: AppState) {
     val navController = rememberNavController()
     val navigator = koinInject<Navigator>()
 
@@ -71,46 +75,13 @@ fun App() {
 
     Column(
         Modifier.fillMaxSize().padding(4.dp),
-        horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        AppHeader(
+            navigator = navigator
+        )
+
         val currentDestination by navigator.currentDestination.collectAsState()
-        var expanded by remember { mutableStateOf(false) }
-        TopNav(
-            expanded = expanded,
-            onExpandedChanged = { expanded = it },
-        ) {
-            items(3) { index ->
-                val (titleRes, icon, destForIndex) = when (index) {
-                    0 -> Triple(Res.string.home, Icons.Default.Home, Destination.HomeScreen as Destination)
-                    1 -> Triple(Res.string.history, Icons.Default.History, Destination.HistoryScreen as Destination)
-                    else -> Triple(Res.string.about, Icons.Default.Info, Destination.AboutScreen as Destination)
-                }
-                val isSelected = when (destForIndex) {
-                    Destination.HomeScreen -> currentDestination is Destination.HomeScreen
-                    Destination.HistoryScreen -> currentDestination is Destination.HistoryScreen
-                    Destination.AboutScreen -> currentDestination is Destination.AboutScreen
-                    else -> false
-                }
-                TopNavItem(
-                    selected = isSelected,
-                    onClick = {
-                        // Drive navigation exclusively through Navigator
-                        // so it becomes the single source of truth.
-                        // This also works for destinations without a tab index.
-                        CoroutineScope(Dispatchers.Main).launch {
-                            navigator.navigate(destForIndex)
-                        }
-                    },
-                    text = {
-                        Text(text = stringResource(titleRes))
-                    },
-                    icon = {
-                        Icon(imageVector = icon, contentDescription = null)
-                    },
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        }
 
         NavHost(
             navController = navController,

@@ -27,22 +27,6 @@ class SingleDownloadViewModel(
     private val _isLoading = MutableStateFlow(true)
     val isLoading = _isLoading.asStateFlow()
     
-    init {
-        val scope = CoroutineScope(Dispatchers.IO)
-        scope.launch {
-            println("Getting video info for $videoUrl")
-            ytDlpWrapper.apply {
-                noCheckCertificate = true
-            }.initialize { event ->
-
-            }
-            ytDlpWrapper.getVideoInfo(videoUrl).onSuccess {
-                _videoInfo.value = it
-                _isLoading.value = false
-            }
-
-        }
-    }
 
 
 

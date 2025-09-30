@@ -5,6 +5,7 @@ import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.DefaultNavigator
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Navigator
+import io.github.kdroidfilter.ytdlpgui.core.state.AppViewModel
 import io.github.kdroidfilter.ytdlpgui.features.screens.home.HomeViewModel
 import io.github.kdroidfilter.ytdlpgui.features.screens.about.AboutViewModel
 import io.github.kdroidfilter.ytdlpgui.features.screens.bulkdownload.BulkDownloadViewModel
@@ -22,6 +23,10 @@ val appModule = module {
 
     single<Navigator> {
         DefaultNavigator(startDestination = Destination.MainGraph)
+    }
+
+    single {
+        AppViewModel(get(), get())
     }
 
     viewModel { HomeViewModel(get(), get()) }

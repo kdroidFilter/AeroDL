@@ -6,9 +6,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -17,9 +14,6 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.application
-import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.kdroid.composetray.tray.api.TrayApp
 import com.kdroid.composetray.tray.api.rememberTrayAppState
@@ -32,9 +26,12 @@ import io.github.composefluent.icons.filled.PictureInPictureExit
 import io.github.composefluent.icons.regular.ArrowDownload
 import io.github.composefluent.lightColors
 import io.github.kdroidfilter.platformtools.darkmodedetector.isSystemInDarkMode
-import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.App
+import io.github.kdroidfilter.ytdlpgui.core.state.App
+import io.github.kdroidfilter.ytdlpgui.core.state.AppViewModel
+import io.github.kdroidfilter.ytdlpgui.core.state.collectAppState
 import io.github.kdroidfilter.ytdlpgui.di.appModule
 import org.koin.compose.KoinApplication
+import org.koin.compose.viewmodel.koinViewModel
 import java.util.Locale
 
 @OptIn(ExperimentalTrayAppApi::class, ExperimentalFluentApi::class)
@@ -77,8 +74,10 @@ fun main() = application {
                             )
 
                     ) {
+                        val appViewModel = koinViewModel<AppViewModel>()
+                        val appState = collectAppState(appViewModel)
 
-                        App()
+                        App(appState)
 
 
 //                Column(
