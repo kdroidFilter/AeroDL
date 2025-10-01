@@ -1,12 +1,9 @@
-package io.github.kdroidfilter.ytdlpgui.core.state
+package io.github.kdroidfilter.ytdlpgui.features.screens.initscreen
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 
-// Represents the global app initialization state
-// Defaults allow simple AppState() construction
-
-data class AppState(
+data class InitState(
     val checkingYtDlp: Boolean = false,
     val checkingFFmpeg: Boolean = false,
 
@@ -25,6 +22,6 @@ data class AppState(
 )
 
 @Composable
-fun collectAppState(viewModel: AppViewModel) : AppState {
+fun collectInitState(viewModel: InitViewModel) : InitState {
     return viewModel.state.collectAsState().value
 }

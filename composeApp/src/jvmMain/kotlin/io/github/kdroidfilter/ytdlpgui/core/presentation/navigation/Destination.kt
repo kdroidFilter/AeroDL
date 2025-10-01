@@ -8,6 +8,9 @@ sealed interface Destination {
     data object MainGraph: Destination
 
     @Serializable
+    data object InitScreen: Destination
+
+    @Serializable
     data object HomeScreen: Destination
 
     @Serializable

@@ -35,7 +35,7 @@ class DefaultNavigator(
         MutableSharedFlow<NavigationAction>(extraBufferCapacity = 1)
     override val navigationActions = _navigationActions.asSharedFlow()
 
-    private val _currentDestination = MutableStateFlow<Destination>(Destination.HomeScreen)
+    private val _currentDestination = MutableStateFlow<Destination>(Destination.InitScreen)
     override val currentDestination: StateFlow<Destination> = _currentDestination.asStateFlow()
 
     override suspend fun navigate(

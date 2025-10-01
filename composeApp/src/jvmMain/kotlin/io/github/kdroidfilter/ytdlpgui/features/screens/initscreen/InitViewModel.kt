@@ -1,19 +1,19 @@
-package io.github.kdroidfilter.ytdlpgui.core.state
+package io.github.kdroidfilter.ytdlpgui.features.screens.initscreen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
+import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Navigator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class AppViewModel(
+class InitViewModel(
+    private val ytDlpWrapper: YtDlpWrapper,
     private val navigator: Navigator,
-    private val ytDlpWrapper: YtDlpWrapper
 ) : ViewModel() {
-
-    private val _state = MutableStateFlow(AppState())
+    private val _state = MutableStateFlow(InitState())
     val state = _state.asStateFlow()
 
     init {
@@ -96,6 +96,9 @@ class AppViewModel(
                             updatingFFmpeg = false,
                             initCompleted = event.success
                         )
+                        viewModelScope.launch {
+                            navigator.navigate(Destination.HomeScreen)
+                        }
                     }
                 }
             }

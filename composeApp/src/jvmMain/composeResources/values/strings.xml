@@ -16,6 +16,17 @@
     <string name="error_single_valid_url">Please paste a single valid URL.</string>
     <string name="error_invalid_url_format">Invalid URL format.</string>
 
+    <!-- Initialization messages -->
+    <string name="checking_ytdlp">Checking for yt-dlp updates…</string>
+    <string name="checking_ffmpeg">Checking FFmpeg installation…</string>
+    <string name="downloading_ytdlp">Downloading yt-dlp…</string>
+    <string name="downloading_ffmpeg">Downloading FFmpeg…</string>
+    <string name="updating_ytdlp">Updating yt-dlp…</string>
+    <string name="updating_ffmpeg">Updating FFmpeg…</string>
+
+    <!-- Error messages -->
+    <string name="error_occurred">An error occurred</string>
+
     <!-- Placeholder screen titles -->
     <string name="about_screen_title">About Screen</string>
     <string name="bulk_download_screen_title">Bulk Download Screen</string>

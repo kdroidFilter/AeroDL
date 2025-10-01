@@ -17,6 +17,17 @@
     <string name="error_single_valid_url">Veuillez coller une seule URL valide.</string>
     <string name="error_invalid_url_format">Format d’URL invalide.</string>
 
+    <!-- Messages d'initialisation -->
+    <string name="checking_ytdlp">Vérification des mises à jour de yt-dlp…</string>
+    <string name="checking_ffmpeg">Vérification de l'installation de FFmpeg…</string>
+    <string name="downloading_ytdlp">Téléchargement de yt-dlp…</string>
+    <string name="downloading_ffmpeg">Téléchargement de FFmpeg…</string>
+    <string name="updating_ytdlp">Mise à jour de yt-dlp…</string>
+    <string name="updating_ffmpeg">Mise à jour de FFmpeg…</string>
+
+    <!-- Messages d’erreur -->
+    <string name="error_occurred">Une erreur s’est produite</string>
+
     <!-- Titres d’écran temporaires -->
     <string name="about_screen_title">Écran À propos</string>
     <string name="bulk_download_screen_title">Écran Téléchargement en lot</string>

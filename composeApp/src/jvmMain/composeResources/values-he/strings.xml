@@ -16,6 +16,17 @@
     <string name="error_single_valid_url">יש להדביק כתובת URL אחת תקינה.</string>
     <string name="error_invalid_url_format">תבנית כתובת ה-URL אינה תקינה.</string>
 
+    <!-- הודעות אתחול -->
+    <string name="checking_ytdlp">בודק עדכונים עבור yt-dlp…</string>
+    <string name="checking_ffmpeg">בודק את התקנת FFmpeg…</string>
+    <string name="downloading_ytdlp">מוריד את yt-dlp…</string>
+    <string name="downloading_ffmpeg">מוריד את FFmpeg…</string>
+    <string name="updating_ytdlp">מעדכן את yt-dlp…</string>
+    <string name="updating_ffmpeg">מעדכן את FFmpeg…</string>
+
+    <!-- הודעות שגיאה -->
+    <string name="error_occurred">אירעה שגיאה</string>
+
     <!-- כותרות מסך זמניות -->
     <string name="about_screen_title">מסך אודות</string>
     <string name="bulk_download_screen_title">מסך הורדה מרובה</string>
