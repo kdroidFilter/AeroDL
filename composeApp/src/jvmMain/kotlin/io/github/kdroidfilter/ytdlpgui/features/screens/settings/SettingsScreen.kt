@@ -46,12 +46,17 @@ import ytdlpgui.composeapp.generated.resources.settings_browser_safari
 import ytdlpgui.composeapp.generated.resources.settings_browser_select
 import ytdlpgui.composeapp.generated.resources.settings_cookies_from_browser_label
 import ytdlpgui.composeapp.generated.resources.settings_cookies_from_browser_title
+import ytdlpgui.composeapp.generated.resources.settings_download_dir_caption
+import ytdlpgui.composeapp.generated.resources.settings_download_dir_not_set
+import ytdlpgui.composeapp.generated.resources.settings_download_dir_pick_title
+import ytdlpgui.composeapp.generated.resources.settings_download_dir_title
 import ytdlpgui.composeapp.generated.resources.settings_include_preset_in_filename_caption
 import ytdlpgui.composeapp.generated.resources.settings_include_preset_in_filename_title
 import ytdlpgui.composeapp.generated.resources.settings_no_check_certificate_caption
 import ytdlpgui.composeapp.generated.resources.settings_no_check_certificate_title
 import ytdlpgui.composeapp.generated.resources.settings_parallel_downloads_caption
 import ytdlpgui.composeapp.generated.resources.settings_parallel_downloads_title
+import ytdlpgui.composeapp.generated.resources.settings_select
 
 @Composable
 fun SettingsScreen() {
@@ -79,7 +84,7 @@ fun SettingsView(
                         modifier = Modifier.fillMaxWidth(0.5f)
                     )
                 },
-                icon = { Icon(imageVector = Icons.Regular.Cookies, contentDescription = "Cookies") },
+                icon = { Icon(imageVector = Icons.Regular.Cookies, contentDescription = stringResource(Res.string.settings_cookies_from_browser_title)) },
                 trailing = {
                     // Define options to reduce duplication and drive label/icon selection
                     val options = listOf(
@@ -201,14 +206,15 @@ fun SettingsView(
         item {
             // Download directory picker
             val scope = rememberCoroutineScope()
+            val pickTitle = stringResource(Res.string.settings_download_dir_pick_title)
             CardExpanderItem(
-                heading = { Text("Download directory") },
+                heading = { Text(stringResource(Res.string.settings_download_dir_title)) },
                 caption = {
-                    Column(Modifier.fillMaxWidth(0.8f)) {
-                        Text("Choose the folder where downloads will be saved by default.")
+                    Column(Modifier.fillMaxWidth(0.6f)) {
+                        Text(stringResource(Res.string.settings_download_dir_caption))
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            (state.downloadDirPath.ifBlank { "Not set" }),
+                            (state.downloadDirPath.ifBlank { stringResource(Res.string.settings_download_dir_not_set) }),
                         )
                     }
                 },
@@ -219,7 +225,7 @@ fun SettingsView(
                         onClick = {
                             scope.launch {
                                 val dir = FileKit.openDirectoryPicker(
-                                    title = "Select download folder",
+                                    title = pickTitle, 
                                     directory = null,
                                     dialogSettings = FileKitDialogSettings()
                                 )
@@ -231,7 +237,7 @@ fun SettingsView(
                                 modifier = Modifier.fillMaxWidth(0.9f),
                                 horizontalArrangement = Arrangement.SpaceEvenly
                             ) {
-                                Text("Select…")
+                                Text(stringResource(Res.string.settings_select))
                             }
                         },
                     )

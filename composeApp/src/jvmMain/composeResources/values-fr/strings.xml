@@ -48,6 +48,14 @@
     <string name="settings_include_preset_in_filename_caption">Ajouter la qualité sélectionnée (exemple : 720p) au nom du fichier téléchargé</string>
     <string name="settings_parallel_downloads_title">Téléchargements parallèles</string>
     <string name="settings_parallel_downloads_caption">Limiter le nombre de téléchargements simultanés</string>
+
+    <!-- Paramètres : section Dossier de téléchargement -->
+    <string name="settings_download_dir_title">Dossier de téléchargement</string>
+    <string name="settings_download_dir_caption">Choisissez le dossier où les téléchargements seront enregistrés par défaut.</string>
+    <string name="settings_download_dir_not_set">Non défini</string>
+    <string name="settings_download_dir_pick_title">Sélectionner le dossier de téléchargement</string>
+    <string name="settings_select">Sélectionner…</string>
+
     <string name="download_audio">Télécharger l'audio</string>
     <!-- Ces chaînes appartiennent à l'écran Download (Download screen) -->
     <string name="download_type_video">Vidéo</string>

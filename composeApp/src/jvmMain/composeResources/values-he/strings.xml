@@ -45,6 +45,14 @@
     <string name="settings_browser_safari">ספארי</string>
     <string name="settings_include_preset_in_filename_title">הצגת פריסט בשם הקובץ</string>
     <string name="settings_include_preset_in_filename_caption">הוספת איכות הבחירה (למשל 720p) לשם הקובץ המורד</string>
+
+    <!-- הגדרות: סעיף תיקיית הורדות -->
+    <string name="settings_download_dir_title">תיקיית ההורדות</string>
+    <string name="settings_download_dir_caption">בחרו את התיקייה שבה ישמרו ההורדות כברירת מחדל.</string>
+    <string name="settings_download_dir_not_set">לא הוגדר</string>
+    <string name="settings_download_dir_pick_title">בחרו תיקיית הורדות</string>
+    <string name="settings_select">בחרו…</string>
+
     <string name="download_audio">הורד אודיו</string>
     <!-- Ces chaînes appartiennent à l'écran Download (Download screen) -->
     <string name="download_type_video">וידאו</string>
