@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -21,6 +22,7 @@ import io.github.composefluent.component.MenuFlyoutItem
 import io.github.composefluent.component.Text
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.filled.DocumentEdit
+import io.github.composefluent.icons.filled.TopSpeed
 import io.github.composefluent.icons.regular.Cookies
 import io.github.composefluent.icons.regular.LockShield
 import io.github.composefluent.icons.regular.Power
@@ -155,7 +157,7 @@ fun SettingsView(
                         modifier = Modifier.fillMaxWidth(0.8f)
                     )
                 },
-                icon = { Icon(Icons.Regular.Power, null) },
+                icon = { Icon(Icons.Filled.TopSpeed, null) },
                 trailing = {
                     val options = (1..5).toList()
                     val selectionLabel = state.parallelDownloads.toString()
@@ -163,6 +165,7 @@ fun SettingsView(
                         flyout = {
                             options.forEach { count ->
                                 MenuFlyoutItem(
+                                    modifier = Modifier.width(56.dp),
                                     text = { Text(count.toString()) },
                                     onClick = {
                                         onEvent(SettingsEvents.SetParallelDownloads(count))
@@ -185,7 +188,6 @@ fun SettingsView(
                                 },
                             )
                         },
-                        adaptivePlacement = true,
                         placement = FlyoutPlacement.Bottom
                     )
                 }
