@@ -25,4 +25,9 @@ in your IDE’s toolbar or run it directly from the terminal:
 
 ---
 
+Cookies from browser
+
+- The app/libs support using your browser cookies via yt-dlp's `--cookies-from-browser <browser>` option.
+- In this project, the default is currently set to `firefox` during initialization (see composeApp InitViewModel). You can change it in code or override per download call.
+
 Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…

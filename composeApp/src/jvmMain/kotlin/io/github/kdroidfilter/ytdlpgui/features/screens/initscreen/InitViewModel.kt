@@ -20,6 +20,7 @@ class InitViewModel(
         viewModelScope.launch {
             ytDlpWrapper.apply {
                 noCheckCertificate = true
+                cookiesFromBrowser = "firefox"
             }.initialize { event ->
                 when (event) {
                     YtDlpWrapper.InitEvent.CheckingYtDlp -> {

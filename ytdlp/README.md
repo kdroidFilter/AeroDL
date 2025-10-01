@@ -18,6 +18,7 @@ It automatically manages `yt-dlp` and `FFmpeg` binaries, so you don't have to.
 * **- Cancel Support**: All download operations return a `Handle` that allows for easy cancellation.
 * **🔧 Highly Configurable**: Easily customize download directories, output templates, and pass custom arguments to `yt-dlp`.
 * **🌐 Network Pre-checks**: Intelligently checks for network connectivity before starting a download to fail fast and provide better error messages.
+* **🍪 Browser Cookies Support**: Use your signed-in session via `--cookies-from-browser <browser>` (e.g., `firefox`). Configurable globally via `YtDlpWrapper.cookiesFromBrowser` or per-call via `Options.cookiesFromBrowser`. 
 
 ## 🚀 Getting Started
 
@@ -71,6 +72,26 @@ fun main() = runBlocking {
     // Now you are ready to use the wrapper!
 }
 ```
+
+## 🍪 Using browser cookies
+
+If you need to access members-only or age-restricted content, you can reuse your browser session cookies with yt-dlp.
+
+- Global (applies to all operations):
+```
+val wrapper = YtDlpWrapper()
+wrapper.cookiesFromBrowser = "firefox" // or "chrome", "chromium", "brave", etc.
+```
+
+- Per call (overrides the global setting):
+```
+wrapper.download(
+    url = "https://example.com",
+    options = Options(cookiesFromBrowser = "firefox")
+) { /* handle events */ }
+```
+
+Note: In this repository’s desktop GUI, the initialization currently sets `cookiesFromBrowser = "firefox"` by default (see InitViewModel). You can change this at startup or per download as shown above.
 
 ## 📚 Usage Examples
 

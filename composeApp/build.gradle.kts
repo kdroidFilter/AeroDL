@@ -49,6 +49,9 @@ kotlin {
             implementation("io.github.vinceglb:filekit-dialogs-compose:0.11.0")
             // Serialization
             implementation(libs.kotlinx.serialization.json)
+
+            implementation("com.russhwolf:multiplatform-settings:1.3.0")
+
         }
 
         commonTest.dependencies {

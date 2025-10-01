@@ -34,6 +34,12 @@ class YtDlpWrapper {
      */
     var noCheckCertificate: Boolean = false
 
+    /**
+     * If set, adds '--cookies-from-browser <browser>' to commands. Example: "firefox".
+     * This can be overridden per call via Options.cookiesFromBrowser.
+     */
+    var cookiesFromBrowser: String? = null
+
     private val ytdlpFetcher = GitHubReleaseFetcher(owner = "yt-dlp", repo = "yt-dlp")
     private data class ProcessResult(val exitCode: Int, val stdout: List<String>, val stderr: String)
 
@@ -225,8 +231,10 @@ class YtDlpWrapper {
                 return@launch
             }
 
-            val finalOptions =
-                if (options.noCheckCertificate) options else options.copy(noCheckCertificate = this@YtDlpWrapper.noCheckCertificate)
+            val finalOptions = options.copy(
+                noCheckCertificate = if (options.noCheckCertificate) true else this@YtDlpWrapper.noCheckCertificate,
+                cookiesFromBrowser = options.cookiesFromBrowser ?: this@YtDlpWrapper.cookiesFromBrowser
+            )
             val cmd = NetAndArchive.buildCommand(ytDlpPath, ffmpegPath, url, finalOptions, downloadDir)
             val process: Process = try {
                 ProcessBuilder(cmd).directory(downloadDir).redirectErrorStream(true).start()
@@ -321,6 +329,7 @@ class YtDlpWrapper {
         val args = buildList {
             addAll(listOf("-f", formatSelector, "-g", "--no-playlist", "--newline"))
             if (useNoCheckCert) add("--no-check-certificate")
+            cookiesFromBrowser?.takeIf { it.isNotBlank() }?.let { addAll(listOf("--cookies-from-browser", it)) }
             add(url)
         }
 
@@ -529,10 +538,12 @@ class YtDlpWrapper {
         onEvent: (Event) -> Unit
     ): Handle {
         val useNoCheckCert = noCheckCertificate || this.noCheckCertificate
+        val useCookies = this.cookiesFromBrowser
         val opts = Options(
             format = NetAndArchive.selectorDownloadExact(height, preferredExts),
             outputTemplate = outputTemplate,
             noCheckCertificate = useNoCheckCert,
+            cookiesFromBrowser = useCookies,
             extraArgs = extraArgs,
             timeout = timeout
         )
@@ -550,10 +561,12 @@ class YtDlpWrapper {
         onEvent: (Event) -> Unit
     ): Handle {
         val useNoCheckCert = noCheckCertificate || this.noCheckCertificate
+        val useCookies = this.cookiesFromBrowser
         val opts = Options(
             format = NetAndArchive.selectorDownloadExactMp4(height),
             outputTemplate = outputTemplate,
             noCheckCertificate = useNoCheckCert,
+            cookiesFromBrowser = useCookies,
             extraArgs = extraArgs,
             timeout = timeout,
             targetContainer = "mp4",
@@ -572,9 +585,11 @@ class YtDlpWrapper {
         onEvent: (Event) -> Unit
     ): Handle {
         val useNoCheckCert = noCheckCertificate || this.noCheckCertificate
+        val useCookies = this.cookiesFromBrowser
         val options = Options(
             outputTemplate = outputTemplate,
             noCheckCertificate = useNoCheckCert,
+            cookiesFromBrowser = useCookies,
             extraArgs = audioArgs + extraArgs,
             timeout = timeout
         )
@@ -626,6 +641,7 @@ class YtDlpWrapper {
         val cmdArgs = buildList {
             add("--dump-json"); add("--no-warnings")
             if (useNoCheckCert) add("--no-check-certificate")
+            cookiesFromBrowser?.takeIf { it.isNotBlank() }?.let { addAll(listOf("--cookies-from-browser", it)) }
             addAll(extraArgs); add(url)
         }
 

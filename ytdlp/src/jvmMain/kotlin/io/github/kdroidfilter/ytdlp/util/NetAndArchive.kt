@@ -86,6 +86,7 @@ object NetAndArchive {
 
         ffmpegPath?.takeIf { it.isNotBlank() }?.let { cmd.addAll(listOf("--ffmpeg-location", it)) }
         if (options.noCheckCertificate) cmd.add("--no-check-certificate")
+        options.cookiesFromBrowser?.takeIf { it.isNotBlank() }?.let { cmd.addAll(listOf("--cookies-from-browser", it)) }
 
         downloadDir?.let { dir ->
             if (!dir.exists()) dir.mkdirs()

@@ -26,14 +26,29 @@ class SingleDownloadViewModel(
 
     private val _isLoading = MutableStateFlow(true)
     val isLoading = _isLoading.asStateFlow()
-    
 
 
+    init {
+        val scope = CoroutineScope(Dispatchers.IO)
+        scope.launch {
+            println("Getting video info for $videoUrl")
+            ytDlpWrapper.getVideoInfo(videoUrl)
+                .onSuccess {
+                    _videoInfo.value = it
+                    _isLoading.value = false
+                }
+                .onFailure {
+                    println("Error getting video info: ${it.message}")
+                }
+
+        }
+    }
 
 
     fun onEvents(event: SingleDownloadEvents) {
         when (event) {
-            SingleDownloadEvents.Refresh -> { /* TODO */ }
+            SingleDownloadEvents.Refresh -> { /* TODO */
+            }
         }
     }
 }
