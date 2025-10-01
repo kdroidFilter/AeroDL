@@ -1,14 +1,14 @@
-package io.github.kdroidfilter.ytdlpgui.features.screens.history
+package io.github.kdroidfilter.ytdlpgui.features.screens.download
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 
-data class HistoryState(
+data class DownloadState(
     val isLoading: Boolean = false,
 )
 
 @Composable
-fun collectHistoryState(viewModel: HistoryViewModel): HistoryState =
-    HistoryState(
+fun collectDownloadState(viewModel: DownloadViewModel): DownloadState =
+    DownloadState(
         isLoading = viewModel.isLoading.collectAsState().value,
     )

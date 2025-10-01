@@ -2,7 +2,7 @@
 <resources>
     <!-- Navigation -->
     <string name="home">Home</string>
-    <string name="history">History</string>
+    <string name="download">Download</string>
     <string name="about">About</string>
 
     <!-- Home screen -->
@@ -30,6 +30,6 @@
     <!-- Placeholder screen titles -->
     <string name="about_screen_title">About Screen</string>
     <string name="bulk_download_screen_title">Bulk Download Screen</string>
-    <string name="history_screen_title">History Screen</string>
+    <string name="history_screen_title">Download Screen</string>
     <string name="settings_screen_title">Settings Screen</string>
 </resources>

@@ -17,7 +17,7 @@ import io.github.kdroidfilter.ytdlpgui.core.presentation.components.AppHeader
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.*
 import io.github.kdroidfilter.ytdlpgui.features.screens.about.AboutScreen
 import io.github.kdroidfilter.ytdlpgui.features.screens.bulkdownload.BulkDownloadScreen
-import io.github.kdroidfilter.ytdlpgui.features.screens.history.HistoryScreen
+import io.github.kdroidfilter.ytdlpgui.features.screens.download.DownloadScreen
 import io.github.kdroidfilter.ytdlpgui.features.screens.home.HomeScreen
 import io.github.kdroidfilter.ytdlpgui.features.screens.initscreen.InitScreen
 import io.github.kdroidfilter.ytdlpgui.features.screens.settings.SettingsScreen
@@ -68,7 +68,7 @@ fun App() {
                 noAnimatedComposable<Destination.HomeScreen> { HomeScreen() }
                 noAnimatedComposable<Destination.BulkDownloadScreen> { BulkDownloadScreen() }
                 noAnimatedComposable<Destination.SingleDownloadScreen> { SingleDownloadScreen() }
-                noAnimatedComposable<Destination.HistoryScreen> { HistoryScreen() }
+                noAnimatedComposable<Destination.HistoryScreen> { DownloadScreen() }
                 noAnimatedComposable<Destination.SettingsScreen> { SettingsScreen() }
                 noAnimatedComposable<Destination.AboutScreen> { AboutScreen() }
             }

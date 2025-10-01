@@ -1,4 +1,4 @@
-package io.github.kdroidfilter.ytdlpgui.features.screens.history
+package io.github.kdroidfilter.ytdlpgui.features.screens.download
 
 import io.github.composefluent.component.Text
 import androidx.compose.runtime.Composable
@@ -7,19 +7,19 @@ import ytdlpgui.composeapp.generated.resources.*
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun HistoryScreen() {
-    val viewModel = koinViewModel<HistoryViewModel>()
-    val state = collectHistoryState(viewModel)
-    HistoryView(
+fun DownloadScreen() {
+    val viewModel = koinViewModel<DownloadViewModel>()
+    val state = collectDownloadState(viewModel)
+    DownloadView(
         state = state,
         onEvent = viewModel::onEvents,
     )
 }
 
 @Composable
-fun HistoryView(
-    state: HistoryState,
-    onEvent: (HistoryEvents) -> Unit,
+fun DownloadView(
+    state: DownloadState,
+    onEvent: (DownloadEvents) -> Unit,
 ) {
     Text(stringResource(Res.string.history_screen_title))
 }

@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.about
-import ytdlpgui.composeapp.generated.resources.history
+import ytdlpgui.composeapp.generated.resources.download
 import ytdlpgui.composeapp.generated.resources.home
 
 @OptIn(ExperimentalFluentApi::class)
@@ -43,7 +43,7 @@ fun AppHeader(
         items(3) { index ->
             val (titleRes, icon, destForIndex) = when (index) {
                 0 -> Triple(Res.string.home, Icons.Default.Home, Destination.HomeScreen as Destination)
-                1 -> Triple(Res.string.history, Icons.Default.History, Destination.HistoryScreen as Destination)
+                1 -> Triple(Res.string.download, Icons.Default.History, Destination.HistoryScreen as Destination)
                 else -> Triple(Res.string.about, Icons.Default.Info, Destination.AboutScreen as Destination)
             }
             val isSelected = when (destForIndex) {

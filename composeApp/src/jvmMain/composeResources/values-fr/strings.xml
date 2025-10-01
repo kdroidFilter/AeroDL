@@ -3,7 +3,7 @@
     <!-- Navigation -->
     <string name="quit">Quitter</string>
     <string name="home">Accueil</string>
-    <string name="history">Historique</string>
+    <string name="download">Téléchargement</string>
     <string name="about">À propos</string>
 
     <!-- Écran d'accueil -->
@@ -31,6 +31,6 @@
     <!-- Titres d’écran temporaires -->
     <string name="about_screen_title">Écran À propos</string>
     <string name="bulk_download_screen_title">Écran Téléchargement en lot</string>
-    <string name="history_screen_title">Écran Historique</string>
+    <string name="history_screen_title">Écran Téléchargement</string>
     <string name="settings_screen_title">Écran Paramètres</string>
 </resources>

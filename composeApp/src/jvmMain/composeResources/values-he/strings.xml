@@ -2,7 +2,7 @@
 <resources>
     <!-- Navigation -->
     <string name="home">דף הבית</string>
-    <string name="history">היסטוריה</string>
+    <string name="download">הורדות</string>
     <string name="about">אודות</string>
 
     <!-- Home screen -->
