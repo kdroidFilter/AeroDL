@@ -38,11 +38,11 @@ class DownloadManager(
     private val _items = MutableStateFlow<List<DownloadItem>>(emptyList())
     val items: StateFlow<List<DownloadItem>> = _items.asStateFlow()
 
-    /** Start a background download for the given url. */
+    /** Start a background video (MP4) download for the given url. */
     fun start(url: String, videoInfo: VideoInfo? = null, preset: YtDlpWrapper.Preset? = null) : String {
         val usedPreset = preset ?: YtDlpWrapper.Preset.P720
         val item = DownloadItem(url = url, videoInfo = videoInfo, preset = usedPreset, status = DownloadItem.Status.Running)
-        _items.value = _items.value + item
+        _items.value += item
 
         val includePreset = settings.getBoolean("include_preset_in_filename", true)
         val outputTemplate = if (includePreset) "%(title)s_${usedPreset.height}p.%(ext)s" else "%(title)s.%(ext)s"
@@ -70,6 +70,37 @@ class DownloadManager(
             }
         )
         // Save handle in the item for cancellation
+        update(item.id) { it.copy(handle = handle) }
+        return item.id
+    }
+
+    /** Start an audio-only (MP3) download for the given url. */
+    fun startAudio(url: String, videoInfo: VideoInfo? = null): String {
+        val item = DownloadItem(url = url, videoInfo = videoInfo, preset = null, status = DownloadItem.Status.Running)
+        _items.value += item
+
+        val handle = ytDlpWrapper.downloadAudioMp3WithPreset(
+            url = url,
+            preset = YtDlpWrapper.AudioQualityPreset.HIGH,
+            outputTemplate = "%(title)s.%(ext)s",
+            onEvent = { event ->
+                when (event) {
+                    is Event.Started -> update(item.id) { it.copy(status = DownloadItem.Status.Running, message = null) }
+                    is Event.Progress -> {
+                        val pct = (event.percent ?: 0.0).toFloat().coerceIn(0f, 100f)
+                        update(item.id) { it.copy(progress = pct, message = null) }
+                    }
+                    is Event.Completed -> {
+                        val status = if (event.success) DownloadItem.Status.Completed else DownloadItem.Status.Failed
+                        update(item.id) { it.copy(status = status, message = null) }
+                    }
+                    is Event.Error -> update(item.id) { it.copy(status = DownloadItem.Status.Failed, message = event.message) }
+                    is Event.Cancelled -> update(item.id) { it.copy(status = DownloadItem.Status.Cancelled, message = null) }
+                    is Event.Log -> {}
+                    is Event.NetworkProblem -> update(item.id) { it.copy(status = DownloadItem.Status.Failed, message = event.detail) }
+                }
+            }
+        )
         update(item.id) { it.copy(handle = handle) }
         return item.id
     }

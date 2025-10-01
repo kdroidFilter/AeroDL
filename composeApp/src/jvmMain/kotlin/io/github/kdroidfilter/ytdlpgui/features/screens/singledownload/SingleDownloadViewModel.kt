@@ -68,6 +68,12 @@ class SingleDownloadViewModel(
                     navigator.navigate(Destination.HistoryScreen)
                 }
             }
+            SingleDownloadEvents.StartAudioDownload -> {
+                downloadManager.startAudio(videoUrl, videoInfo.value)
+                viewModelScope.launch {
+                    navigator.navigate(Destination.HistoryScreen)
+                }
+            }
         }
     }
 }

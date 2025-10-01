@@ -66,7 +66,8 @@ fun SingleDownloadView(
             availablePresets = state.availablePresets,
             selectedPreset = state.selectedPreset,
             onSelectPreset = { onEvent(SingleDownloadEvents.SelectPreset(it)) },
-            onStartDownload = { onEvent(SingleDownloadEvents.StartDownload) }
+            onStartDownload = { onEvent(SingleDownloadEvents.StartDownload) },
+            onStartAudioDownload = { onEvent(SingleDownloadEvents.StartAudioDownload) }
         )
 }
 
@@ -88,7 +89,8 @@ private fun VideoInfoSection(
     availablePresets: List<YtDlpWrapper.Preset>,
     selectedPreset: YtDlpWrapper.Preset?,
     onSelectPreset: (YtDlpWrapper.Preset) -> Unit,
-    onStartDownload: () -> Unit
+    onStartDownload: () -> Unit,
+    onStartAudioDownload: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -149,6 +151,10 @@ private fun VideoInfoSection(
                 }
                 AccentButton(onClick = onStartDownload) {
                     Text(stringResource(Res.string.download))
+                }
+                Spacer(Modifier.height(8.dp))
+                Button(onClick = onStartAudioDownload) {
+                    Text(stringResource(Res.string.download_audio))
                 }
             }
         }
