@@ -44,4 +44,6 @@
     <string name="settings_browser_chrome">Chrome</string>
     <string name="settings_browser_firefox">Firefox</string>
     <string name="settings_browser_safari">Safari</string>
+    <string name="settings_include_preset_in_filename_title">Inclure le preset dans le nom de fichier</string>
+    <string name="settings_include_preset_in_filename_caption">Ajouter la qualité sélectionnée (exemple : 720p) au nom du fichier téléchargé</string>
 </resources>

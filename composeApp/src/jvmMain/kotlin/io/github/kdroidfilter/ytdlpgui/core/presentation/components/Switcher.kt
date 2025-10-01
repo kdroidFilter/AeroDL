@@ -39,6 +39,7 @@ import io.github.composefluent.component.SwitcherStyleScheme
 import io.github.composefluent.component.Text
 import io.github.composefluent.scheme.collectVisualState
 
+//Todo Pr this to the fluent repo for rtl fix
 @Composable
 fun Switcher(
     checked: Boolean,

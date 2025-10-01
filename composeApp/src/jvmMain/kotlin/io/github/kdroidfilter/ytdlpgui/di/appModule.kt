@@ -22,7 +22,7 @@ val appModule = module {
     single { YtDlpWrapper() }
     single<Navigator> { DefaultNavigator(startDestination = Destination.MainGraph) }
     single { Settings() }
-    single { DownloadManager(get()) }
+    single { DownloadManager(get(), get()) }
     single { InitViewModel(ytDlpWrapper = get(), navigator = get(), settings = get())}
 
 

@@ -43,4 +43,6 @@
     <string name="settings_browser_chrome">כרום</string>
     <string name="settings_browser_firefox">פיירפוקס</string>
     <string name="settings_browser_safari">ספארי</string>
+    <string name="settings_include_preset_in_filename_title">הצגת פריסט בשם הקובץ</string>
+    <string name="settings_include_preset_in_filename_caption">הוספת איכות הבחירה (למשל 720p) לשם הקובץ המורד</string>
 </resources>

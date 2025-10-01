@@ -20,6 +20,7 @@ import io.github.composefluent.component.MenuFlyoutContainer
 import io.github.composefluent.component.MenuFlyoutItem
 import io.github.composefluent.component.Text
 import io.github.composefluent.icons.Icons
+import io.github.composefluent.icons.filled.DocumentEdit
 import io.github.composefluent.icons.regular.Cookies
 import io.github.composefluent.icons.regular.LockShield
 import io.github.composefluent.icons.regular.Power
@@ -38,6 +39,8 @@ import ytdlpgui.composeapp.generated.resources.settings_browser_safari
 import ytdlpgui.composeapp.generated.resources.settings_browser_select
 import ytdlpgui.composeapp.generated.resources.settings_cookies_from_browser_label
 import ytdlpgui.composeapp.generated.resources.settings_cookies_from_browser_title
+import ytdlpgui.composeapp.generated.resources.settings_include_preset_in_filename_caption
+import ytdlpgui.composeapp.generated.resources.settings_include_preset_in_filename_title
 import ytdlpgui.composeapp.generated.resources.settings_no_check_certificate_caption
 import ytdlpgui.composeapp.generated.resources.settings_no_check_certificate_title
 
@@ -117,6 +120,25 @@ fun SettingsView(
                         },
                         adaptivePlacement = true,
                         placement = FlyoutPlacement.Bottom
+                    )
+                }
+            )
+        }
+        item {
+            // Toggle for including preset in file name
+            CardExpanderItem(
+                heading = { Text(stringResource(Res.string.settings_include_preset_in_filename_title)) },
+                caption = {
+                    Text(
+                        stringResource(Res.string.settings_include_preset_in_filename_caption),
+                        modifier = Modifier.fillMaxWidth(0.8f)
+                    )
+                },
+                icon = { Icon(Icons.Filled.DocumentEdit, null) },
+                trailing = {
+                    Switcher(
+                        checked = state.includePresetInFilename,
+                        onCheckStateChange = { onEvent(SettingsEvents.SetIncludePresetInFilename(it)) },
                     )
                 }
             )

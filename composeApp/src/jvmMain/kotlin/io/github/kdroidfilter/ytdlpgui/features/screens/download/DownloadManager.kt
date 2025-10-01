@@ -10,12 +10,15 @@ import kotlinx.coroutines.flow.asStateFlow
 import java.util.UUID
 import io.github.kdroidfilter.ytdlp.core.Handle
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
+import com.russhwolf.settings.Settings
 
 /**
  * Simple manager to handle multiple concurrent downloads and expose their state.
  */
+
 class DownloadManager(
     private val ytDlpWrapper: YtDlpWrapper,
+    private val settings: Settings,
 ) {
     private val scope = CoroutineScope(Dispatchers.IO)
 
@@ -41,10 +44,13 @@ class DownloadManager(
         val item = DownloadItem(url = url, videoInfo = videoInfo, preset = usedPreset, status = DownloadItem.Status.Running)
         _items.value = _items.value + item
 
+        val includePreset = settings.getBoolean("include_preset_in_filename", true)
+        val outputTemplate = if (includePreset) "%(title)s_${usedPreset.height}p.%(ext)s" else "%(title)s.%(ext)s"
+
         val handle = ytDlpWrapper.downloadMp4At(
             url = url,
             preset = usedPreset,
-            outputTemplate = "%(title)s_${usedPreset.height}p.%(ext)s",
+            outputTemplate = outputTemplate,
             onEvent = { event ->
                 when (event) {
                     is Event.Started -> update(item.id) { it.copy(status = DownloadItem.Status.Running, message = null) }
