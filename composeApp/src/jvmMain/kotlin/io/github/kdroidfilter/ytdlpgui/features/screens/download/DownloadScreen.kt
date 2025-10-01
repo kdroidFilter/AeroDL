@@ -1,6 +1,11 @@
 package io.github.kdroidfilter.ytdlpgui.features.screens.download
 
+import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,19 +35,30 @@ fun DownloadView(
     state: DownloadState,
     onEvent: (DownloadEvents) -> Unit,
 ) {
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Text(stringResource(Res.string.history_screen_title))
-        Spacer(Modifier.height(12.dp))
+    val listState = rememberLazyListState()
 
-        // Section: In-progress downloads
-        val inProgress = state.items.filter { it.status == DownloadManager.DownloadItem.Status.Running || it.status == DownloadManager.DownloadItem.Status.Pending }
-        Text("Téléchargements en cours")
-        Spacer(Modifier.height(8.dp))
-        if (inProgress.isEmpty()) {
-            Text("Aucun téléchargement en cours")
-        } else {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                inProgress.forEach { item ->
+    Box(modifier = Modifier.fillMaxSize().padding(8.dp)) {
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.fillMaxSize().padding(16.dp)
+        ) {
+            item {
+                Text(stringResource(Res.string.history_screen_title))
+                Spacer(Modifier.height(12.dp))
+            }
+
+            // Section: In-progress downloads
+            val inProgress = state.items.filter { it.status == DownloadManager.DownloadItem.Status.Running || it.status == DownloadManager.DownloadItem.Status.Pending }
+            item {
+                Text("Téléchargements en cours")
+                Spacer(Modifier.height(8.dp))
+            }
+            if (inProgress.isEmpty()) {
+                item {
+                    Text("Aucun téléchargement en cours")
+                }
+            } else {
+                items(inProgress) { item ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -78,19 +94,19 @@ fun DownloadView(
                     }
                 }
             }
-        }
 
-        Spacer(Modifier.height(16.dp))
+            item { Spacer(Modifier.height(16.dp)) }
 
-        // Section: History
-        Text("Historique")
-        Spacer(Modifier.height(8.dp))
-        if (state.history.isEmpty()) {
-            Text("Aucun téléchargement précédent")
-        } else {
-            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                state.history.forEach { h ->
+            // Section: History
+            item {
+                Text("Historique")
+                Spacer(Modifier.height(8.dp))
+            }
+            if (state.history.isEmpty()) {
+                item { Text("Aucun téléchargement précédent") }
+            } else {
+                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
+                items(state.history) { h ->
                     Column(Modifier.fillMaxWidth()) {
                         Text(h.videoInfo?.title ?: h.url)
                         if (h.videoInfo?.title != null) {
@@ -106,5 +122,10 @@ fun DownloadView(
                 }
             }
         }
+
+        VerticalScrollbar(
+            adapter = rememberScrollbarAdapter(listState),
+            modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight().padding(vertical = 16.dp)
+        )
     }
 }

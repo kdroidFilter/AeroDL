@@ -5,6 +5,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.VerticalScrollbar
+import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.IconButton
 import androidx.compose.runtime.Composable
@@ -95,68 +98,78 @@ private fun VideoInfoSection(
     Row(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(8.dp),
         verticalAlignment = Alignment.Top
     ) {
-        // Textual info (title + description)
-        LazyColumn(
+        // Textual info (title + description) with scrollbar
+        val listState = rememberLazyListState()
+        Box(
             modifier = Modifier
                 .fillMaxHeight()
                 .padding(end = 16.dp)
         ) {
-            item {
-                Text(
-                    text = videoInfo?.title.orEmpty(),
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Spacer(Modifier.height(8.dp))
-            }
-            item {
-                ThumbnailWithDuration(
-                    thumbnailUrl = videoInfo?.thumbnail,
-                    duration = videoInfo?.duration,
-                    videoPlayerState = videoPlayerState,
-                    videoInfo = videoInfo
-                )
-                Spacer(Modifier.height(8.dp))
-            }
-            item {
-                Text(
-                    text = videoInfo?.description.orEmpty(),
-                    fontSize = 14.sp,
-                    maxLines = 8,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Spacer(Modifier.height(16.dp))
-            }
-            item {
-                if (availablePresets.isNotEmpty()) {
-                    Text(text = "Formats")
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                item {
+                    Text(
+                        text = videoInfo?.title.orEmpty(),
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
                     Spacer(Modifier.height(8.dp))
-                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        items(availablePresets.size) { index ->
-                            val preset = availablePresets[index]
-                            val label = "${preset.height}p"
-                            if (preset == selectedPreset) {
-                                AccentButton(onClick = { onSelectPreset(preset) }) { Text(label) }
-                            } else {
-                                Button(onClick = { onSelectPreset(preset) }) { Text(label) }
-                            }
-                        }
-                    }
+                }
+                item {
+                    ThumbnailWithDuration(
+                        thumbnailUrl = videoInfo?.thumbnail,
+                        duration = videoInfo?.duration,
+                        videoPlayerState = videoPlayerState,
+                        videoInfo = videoInfo
+                    )
+                    Spacer(Modifier.height(8.dp))
+                }
+                item {
+                    Text(
+                        text = videoInfo?.description.orEmpty(),
+                        fontSize = 14.sp,
+                        maxLines = 8,
+                        overflow = TextOverflow.Ellipsis
+                    )
                     Spacer(Modifier.height(16.dp))
                 }
-                AccentButton(onClick = onStartDownload) {
-                    Text(stringResource(Res.string.download))
-                }
-                Spacer(Modifier.height(8.dp))
-                Button(onClick = onStartAudioDownload) {
-                    Text(stringResource(Res.string.download_audio))
+                item {
+                    if (availablePresets.isNotEmpty()) {
+                        Text(text = "Formats")
+                        Spacer(Modifier.height(8.dp))
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            items(availablePresets.size) { index ->
+                                val preset = availablePresets[index]
+                                val label = "${preset.height}p"
+                                if (preset == selectedPreset) {
+                                    AccentButton(onClick = { onSelectPreset(preset) }) { Text(label) }
+                                } else {
+                                    Button(onClick = { onSelectPreset(preset) }) { Text(label) }
+                                }
+                            }
+                        }
+                        Spacer(Modifier.height(16.dp))
+                    }
+                    AccentButton(onClick = onStartDownload) {
+                        Text(stringResource(Res.string.download))
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Button(onClick = onStartAudioDownload) {
+                        Text(stringResource(Res.string.download_audio))
+                    }
                 }
             }
+            VerticalScrollbar(
+                adapter = rememberScrollbarAdapter(listState),
+                modifier = Modifier.align(Alignment.CenterEnd)
+            )
         }
 
 
