@@ -2,6 +2,7 @@ package io.github.kdroidfilter.ytdlpgui.features.screens.initscreen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.russhwolf.settings.Settings
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Navigator
@@ -12,15 +13,20 @@ import kotlinx.coroutines.launch
 class InitViewModel(
     private val ytDlpWrapper: YtDlpWrapper,
     private val navigator: Navigator,
+    private val settings : Settings,
 ) : ViewModel() {
     private val _state = MutableStateFlow(InitState())
     val state = _state.asStateFlow()
 
     init {
         viewModelScope.launch {
+            // Load persisted settings for yt-dlp options
+            val noCheck = settings.getBoolean("no_check_certificate", false)
+            val cookies = settings.getString("cookies_from_browser", "").ifBlank { null }
+
             ytDlpWrapper.apply {
-                noCheckCertificate = true
-                cookiesFromBrowser = "firefox"
+                noCheckCertificate = noCheck
+                cookiesFromBrowser = cookies
             }.initialize { event ->
                 when (event) {
                     YtDlpWrapper.InitEvent.CheckingYtDlp -> {

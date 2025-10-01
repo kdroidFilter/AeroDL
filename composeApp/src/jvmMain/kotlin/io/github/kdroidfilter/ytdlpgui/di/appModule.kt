@@ -1,6 +1,7 @@
 package io.github.kdroidfilter.ytdlpgui.di
 
 
+import com.russhwolf.settings.Settings
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.DefaultNavigator
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Destination
@@ -19,14 +20,15 @@ val appModule = module {
 
     single { YtDlpWrapper() }
     single<Navigator> { DefaultNavigator(startDestination = Destination.MainGraph) }
-    single { InitViewModel(get(), get())}
+    single { Settings() }
+    single { InitViewModel(ytDlpWrapper = get(), navigator = get(), settings = get())}
 
 
     viewModel { HomeViewModel(get(), get()) }
     viewModel { AboutViewModel(get()) }
     viewModel { BulkDownloadViewModel(get()) }
     viewModel { DownloadViewModel(get()) }
-    viewModel { SettingsViewModel(get()) }
+    viewModel { SettingsViewModel(get(), get(), get()) }
     viewModel { SingleDownloadViewModel(get(), get(), get()) }
 
 }

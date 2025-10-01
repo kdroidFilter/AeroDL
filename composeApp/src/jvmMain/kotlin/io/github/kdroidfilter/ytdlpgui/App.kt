@@ -59,7 +59,7 @@ fun App() {
         NavHost(
             navController = navController,
             startDestination = navigator.startDestination,
-            modifier = Modifier
+            modifier = Modifier.fillMaxSize()
         ) {
             navigation<Destination.MainGraph>(
                 startDestination = currentDestination
@@ -70,7 +70,7 @@ fun App() {
                 noAnimatedComposable<Destination.SingleDownloadScreen> { SingleDownloadScreen() }
                 noAnimatedComposable<Destination.HistoryScreen> { DownloadScreen() }
                 noAnimatedComposable<Destination.SettingsScreen> { SettingsScreen() }
-                noAnimatedComposable<Destination.AboutScreen> { AboutScreen() }
+                noAnimatedComposable<Destination.AboutScreen> { SettingsScreen() }
             }
         }
     }

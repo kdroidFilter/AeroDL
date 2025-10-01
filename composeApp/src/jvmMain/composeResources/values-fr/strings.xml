@@ -33,4 +33,15 @@
     <string name="bulk_download_screen_title">Écran Téléchargement en lot</string>
     <string name="history_screen_title">Écran Téléchargement</string>
     <string name="settings_screen_title">Écran Paramètres</string>
+
+    <!-- Paramètres -->
+    <string name="settings_no_check_certificate_title">Ne pas vérifier le certificat</string>
+    <string name="settings_no_check_certificate_caption">Ignorer la vérification du certificat SSL (à utiliser uniquement si nécessaire)</string>
+    <string name="settings_cookies_from_browser_title">Cookies du navigateur</string>
+    <string name="settings_cookies_from_browser_label">Choisissez un navigateur pour importer les cookies pour yt-dlp. Laissez désactivé si inutile.</string>
+    <string name="settings_browser_select">Sélectionner un navigateur…</string>
+    <string name="settings_browser_disable">Désactivé</string>
+    <string name="settings_browser_chrome">Chrome</string>
+    <string name="settings_browser_firefox">Firefox</string>
+    <string name="settings_browser_safari">Safari</string>
 </resources>

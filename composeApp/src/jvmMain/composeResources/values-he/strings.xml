@@ -32,4 +32,15 @@
     <string name="bulk_download_screen_title">מסך הורדה מרובה</string>
     <string name="history_screen_title">מסך היסטוריה</string>
     <string name="settings_screen_title">מסך הגדרות</string>
+
+    <!-- הגדרות -->
+    <string name="settings_no_check_certificate_title">אי-בדיקת תעודות אבטחה</string>
+    <string name="settings_no_check_certificate_caption">דילוג על אימות תעודות אבטחה (SSL) (לשימוש בעת הצורך בלבד)</string>
+    <string name="settings_cookies_from_browser_title">עוגיות מהדפדפן</string>
+    <string name="settings_cookies_from_browser_label">בחרו דפדפן לייבוא עוגיות עבור yt-dlp. ניתן להשאיר מושבת אם לא נדרש.</string>
+    <string name="settings_browser_select">בחרו דפדפן…</string>
+    <string name="settings_browser_disable">מושבת</string>
+    <string name="settings_browser_chrome">כרום</string>
+    <string name="settings_browser_firefox">פיירפוקס</string>
+    <string name="settings_browser_safari">ספארי</string>
 </resources>

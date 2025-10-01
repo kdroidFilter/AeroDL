@@ -71,10 +71,7 @@ fun main() = application {
 
                     ) {
 
-
                         App()
-
-
 //                Column(
 //                    Modifier.fillMaxSize().padding(4.dp),
 //                    horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally

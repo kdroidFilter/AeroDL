@@ -32,4 +32,15 @@
     <string name="bulk_download_screen_title">Bulk Download Screen</string>
     <string name="history_screen_title">Download Screen</string>
     <string name="settings_screen_title">Settings Screen</string>
+
+    <!-- Settings screen strings -->
+    <string name="settings_no_check_certificate_title">No check certificate</string>
+    <string name="settings_no_check_certificate_caption">Skip SSL certificate verification (use only if necessary)</string>
+    <string name="settings_cookies_from_browser_title">Cookies from browser</string>
+    <string name="settings_cookies_from_browser_label">Choose a browser to import cookies for yt-dlp. Leave disabled if not needed.</string>
+    <string name="settings_browser_select">Select browser…</string>
+    <string name="settings_browser_disable">Disabled</string>
+    <string name="settings_browser_chrome">Chrome</string>
+    <string name="settings_browser_firefox">Firefox</string>
+    <string name="settings_browser_safari">Safari</string>
 </resources>
