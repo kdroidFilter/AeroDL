@@ -72,6 +72,7 @@ fun SingleDownloadView(
             onStartDownload = { onEvent(SingleDownloadEvents.StartDownload) },
             onStartAudioDownload = { onEvent(SingleDownloadEvents.StartAudioDownload) }
         )
+
 }
 
 @Composable

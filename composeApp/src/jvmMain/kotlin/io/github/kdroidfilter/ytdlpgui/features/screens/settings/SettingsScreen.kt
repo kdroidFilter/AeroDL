@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.composefluent.component.CardExpanderItem
@@ -21,6 +22,10 @@ import io.github.composefluent.component.MenuFlyoutContainer
 import io.github.composefluent.component.MenuFlyoutItem
 import io.github.composefluent.component.Text
 import io.github.composefluent.icons.Icons
+import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
+import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
+import kotlinx.coroutines.launch
 import io.github.composefluent.icons.filled.DocumentEdit
 import io.github.composefluent.icons.filled.TopSpeed
 import io.github.composefluent.icons.regular.Cookies
@@ -189,6 +194,46 @@ fun SettingsView(
                             )
                         },
                         placement = FlyoutPlacement.Bottom
+                    )
+                }
+            )
+        }
+        item {
+            // Download directory picker
+            val scope = rememberCoroutineScope()
+            CardExpanderItem(
+                heading = { Text("Download directory") },
+                caption = {
+                    Column(Modifier.fillMaxWidth(0.8f)) {
+                        Text("Choose the folder where downloads will be saved by default.")
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            (state.downloadDirPath.ifBlank { "Not set" }),
+                        )
+                    }
+                },
+                icon = { Icon(Icons.Regular.Power, null) },
+                trailing = {
+                    DropDownButton(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 1.dp),
+                        onClick = {
+                            scope.launch {
+                                val dir = FileKit.openDirectoryPicker(
+                                    title = "Select download folder",
+                                    directory = null,
+                                    dialogSettings = FileKitDialogSettings()
+                                )
+                                dir?.let { onEvent(SettingsEvents.SetDownloadDir(it.file.absolutePath)) }
+                            }
+                        },
+                        content = {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(0.9f),
+                                horizontalArrangement = Arrangement.SpaceEvenly
+                            ) {
+                                Text("Select…")
+                            }
+                        },
                     )
                 }
             )

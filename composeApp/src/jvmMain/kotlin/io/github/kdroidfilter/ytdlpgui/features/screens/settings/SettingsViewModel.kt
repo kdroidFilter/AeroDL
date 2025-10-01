@@ -19,6 +19,7 @@ class SettingsViewModel(
     private val KEY_COOKIES_FROM_BROWSER = "cookies_from_browser"
     private val KEY_INCLUDE_PRESET_IN_FILENAME = "include_preset_in_filename"
     private val KEY_PARALLEL_DOWNLOADS = "parallel_downloads"
+    private val KEY_DOWNLOAD_DIR = "download_dir"
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
@@ -36,6 +37,19 @@ class SettingsViewModel(
     private val _parallelDownloads = MutableStateFlow(settings.getInt(KEY_PARALLEL_DOWNLOADS, 2).coerceIn(1, 10))
     val parallelDownloads = _parallelDownloads.asStateFlow()
 
+    private val _downloadDirPath = MutableStateFlow(settings.getString(KEY_DOWNLOAD_DIR, ""))
+    val downloadDirPath = _downloadDirPath.asStateFlow()
+
+    init {
+        // Apply persisted settings to wrapper on creation
+        ytDlpWrapper.noCheckCertificate = _noCheckCertificate.value
+        ytDlpWrapper.cookiesFromBrowser = _cookiesFromBrowser.value.ifBlank { null }
+        val path = _downloadDirPath.value
+        if (path.isNotBlank()) {
+            ytDlpWrapper.downloadDir = java.io.File(path)
+        }
+    }
+
     fun onEvents(event: SettingsEvents) {
         when (event) {
             SettingsEvents.Refresh -> {
@@ -44,9 +58,12 @@ class SettingsViewModel(
                 _cookiesFromBrowser.update { settings.getString(KEY_COOKIES_FROM_BROWSER, "") }
                 _includePresetInFilename.update { settings.getBoolean(KEY_INCLUDE_PRESET_IN_FILENAME, true) }
                 _parallelDownloads.update { settings.getInt(KEY_PARALLEL_DOWNLOADS, 2).coerceIn(1, 10) }
+                _downloadDirPath.update { settings.getString(KEY_DOWNLOAD_DIR, "") }
                 // Also ensure wrapper reflects persisted values when refreshing
                 ytDlpWrapper.noCheckCertificate = _noCheckCertificate.value
                 ytDlpWrapper.cookiesFromBrowser = _cookiesFromBrowser.value.ifBlank { null }
+                val p = _downloadDirPath.value
+                ytDlpWrapper.downloadDir = p.takeIf { it.isNotBlank() }?.let { java.io.File(it) }
             }
             is SettingsEvents.SetNoCheckCertificate -> {
                 settings.putBoolean(KEY_NO_CHECK_CERT, event.enabled)
@@ -70,6 +87,12 @@ class SettingsViewModel(
                 val clamped = event.count.coerceIn(1, 10)
                 settings.putInt(KEY_PARALLEL_DOWNLOADS, clamped)
                 _parallelDownloads.value = clamped
+            }
+            is SettingsEvents.SetDownloadDir -> {
+                val path = event.path.trim()
+                settings.putString(KEY_DOWNLOAD_DIR, path)
+                _downloadDirPath.value = path
+                ytDlpWrapper.downloadDir = path.takeIf { it.isNotBlank() }?.let { java.io.File(it) }
             }
         }
     }

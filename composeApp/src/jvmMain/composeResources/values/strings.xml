@@ -47,6 +47,14 @@
     <string name="settings_include_preset_in_filename_caption">Append the selected quality (e.g., 720p) to the downloaded file name</string>
     <string name="settings_parallel_downloads_title">Parallel downloads</string>
     <string name="settings_parallel_downloads_caption">Limit how many downloads can run simultaneously</string>
+
+    <!-- Settings: Download directory section -->
+    <string name="settings_download_dir_title">Download directory</string>
+    <string name="settings_download_dir_caption">Choose the folder where downloads will be saved by default.</string>
+    <string name="settings_download_dir_not_set">Not set</string>
+    <string name="settings_download_dir_pick_title">Select download folder</string>
+    <string name="settings_select">Select…</string>
+
     <string name="download_audio">Download audio</string>
     <!-- Ces chaînes appartiennent à l'écran Download (Download screen) -->
     <string name="download_type_video">Video</string>
