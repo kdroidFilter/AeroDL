@@ -10,6 +10,7 @@ import io.github.kdroidfilter.ytdlpgui.features.screens.home.HomeViewModel
 import io.github.kdroidfilter.ytdlpgui.features.screens.about.AboutViewModel
 import io.github.kdroidfilter.ytdlpgui.features.screens.bulkdownload.BulkDownloadViewModel
 import io.github.kdroidfilter.ytdlpgui.features.screens.download.DownloadViewModel
+import io.github.kdroidfilter.ytdlpgui.features.screens.download.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.features.screens.initscreen.InitViewModel
 import io.github.kdroidfilter.ytdlpgui.features.screens.settings.SettingsViewModel
 import io.github.kdroidfilter.ytdlpgui.features.screens.singledownload.SingleDownloadViewModel
@@ -21,14 +22,15 @@ val appModule = module {
     single { YtDlpWrapper() }
     single<Navigator> { DefaultNavigator(startDestination = Destination.MainGraph) }
     single { Settings() }
+    single { DownloadManager(get()) }
     single { InitViewModel(ytDlpWrapper = get(), navigator = get(), settings = get())}
 
 
     viewModel { HomeViewModel(get(), get()) }
     viewModel { AboutViewModel(get()) }
     viewModel { BulkDownloadViewModel(get()) }
-    viewModel { DownloadViewModel(get()) }
+    viewModel { DownloadViewModel(get(), get()) }
     viewModel { SettingsViewModel(get(), get(), get()) }
-    viewModel { SingleDownloadViewModel(get(), get(), get()) }
+    viewModel { SingleDownloadViewModel(get(), get(), get(), get()) }
 
 }

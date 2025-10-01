@@ -3,6 +3,7 @@ package io.github.kdroidfilter.ytdlpgui.features.screens.singledownload
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.IconButton
 import androidx.compose.runtime.Composable
@@ -27,6 +28,9 @@ import coil3.compose.AsyncImage
 import io.github.composefluent.component.Icon
 import io.github.composefluent.component.ProgressRing
 import io.github.composefluent.component.Text
+import io.github.composefluent.component.AccentButton
+import org.jetbrains.compose.resources.stringResource
+import ytdlpgui.composeapp.generated.resources.*
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.Pause
 import io.github.composefluent.icons.regular.Play
@@ -57,7 +61,8 @@ fun SingleDownloadView(
     if (state.isLoading) Loader() else
         VideoInfoSection(
             videoPlayerState = videoPlayerState,
-            videoInfo = state.videoInfo
+            videoInfo = state.videoInfo,
+            onStartDownload = { onEvent(SingleDownloadEvents.StartDownload) }
         )
 }
 
@@ -73,7 +78,7 @@ private fun Loader() {
  * description on the left.
  */
 @Composable
-private fun VideoInfoSection(videoPlayerState: VideoPlayerState, videoInfo: VideoInfo?) {
+private fun VideoInfoSection(videoPlayerState: VideoPlayerState, videoInfo: VideoInfo?, onStartDownload: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxSize()
@@ -81,33 +86,44 @@ private fun VideoInfoSection(videoPlayerState: VideoPlayerState, videoInfo: Vide
         verticalAlignment = Alignment.Top
     ) {
         // Textual info (title + description)
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxHeight()
                 .padding(end = 16.dp)
         ) {
-            Text(
-                text = videoInfo?.title.orEmpty(),
-                fontSize = 22.sp,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
-            Spacer(Modifier.height(8.dp))
-            ThumbnailWithDuration(
-                thumbnailUrl = videoInfo?.thumbnail,
-                duration = videoInfo?.duration,
-                videoPlayerState = videoPlayerState,
-                videoInfo = videoInfo
-            )
-            Spacer(Modifier.height(8.dp))
-
-            Text(
-                text = videoInfo?.description.orEmpty(),
-                fontSize = 14.sp,
-                maxLines = 8,
-                overflow = TextOverflow.Ellipsis
-            )
+            item {
+                Text(
+                    text = videoInfo?.title.orEmpty(),
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(Modifier.height(8.dp))
+            }
+            item {
+                ThumbnailWithDuration(
+                    thumbnailUrl = videoInfo?.thumbnail,
+                    duration = videoInfo?.duration,
+                    videoPlayerState = videoPlayerState,
+                    videoInfo = videoInfo
+                )
+                Spacer(Modifier.height(8.dp))
+            }
+            item {
+                Text(
+                    text = videoInfo?.description.orEmpty(),
+                    fontSize = 14.sp,
+                    maxLines = 8,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(Modifier.height(16.dp))
+            }
+            item {
+                AccentButton(onClick = onStartDownload) {
+                    Text(stringResource(Res.string.download))
+                }
+            }
         }
 
 

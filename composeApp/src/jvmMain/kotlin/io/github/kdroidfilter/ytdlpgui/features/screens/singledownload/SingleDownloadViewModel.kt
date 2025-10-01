@@ -17,7 +17,8 @@ import kotlinx.coroutines.launch
 class SingleDownloadViewModel(
     private val navigator: Navigator,
     private val savedStateHandle: SavedStateHandle,
-    private val ytDlpWrapper: YtDlpWrapper
+    private val ytDlpWrapper: YtDlpWrapper,
+    private val downloadManager: io.github.kdroidfilter.ytdlpgui.features.screens.download.DownloadManager,
 ) : ViewModel() {
 
     val videoUrl = savedStateHandle.toRoute<Destination.SingleDownloadScreen>().videoLink
@@ -47,7 +48,12 @@ class SingleDownloadViewModel(
 
     fun onEvents(event: SingleDownloadEvents) {
         when (event) {
-            SingleDownloadEvents.Refresh -> { /* TODO */
+            SingleDownloadEvents.Refresh -> { /* TODO */ }
+            SingleDownloadEvents.StartDownload -> {
+                downloadManager.start(videoUrl, videoInfo.value)
+                viewModelScope.launch {
+                    navigator.navigate(Destination.HistoryScreen)
+                }
             }
         }
     }
