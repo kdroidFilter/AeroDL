@@ -6,7 +6,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
     alias(libs.plugins.kotlinSerialization)
-
+    alias(libs.plugins.sqlDelight)
 }
 
 kotlin {
@@ -65,6 +65,9 @@ kotlin {
 
             // Project dependencies
             implementation(project(":ytdlp"))
+
+            // SQLDelight driver
+            implementation(libs.sqlDelight.driver.sqlite)
         }
     }
 }
@@ -78,6 +81,17 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "io.github.kdroidfilter.ytdlpgui"
             packageVersion = "1.0.0"
+        }
+    }
+}
+
+sqldelight {
+    databases {
+        create("Database") {
+            // Database configuration here.
+            // https://cashapp.github.io/sqldelight
+            packageName.set("io.github.kdroidfilter.ytdlpgui.db")
+            dialect("app.cash.sqldelight:sqlite-3-24-dialect:${libs.versions.sqlDelight.get()}")
         }
     }
 }

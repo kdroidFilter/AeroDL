@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
@@ -52,7 +53,7 @@ fun HomeView(
             Image(
                 painter = painterResource(if (isSystemInDarkMode()) Res.drawable.AeroDlDark else Res.drawable.AeroDl),
                 contentDescription = stringResource(Res.string.logo_content_desc),
-                modifier = Modifier.fillMaxSize(0.5f)
+                modifier = Modifier.fillMaxSize(0.5f).let { if (isRtl) it.scale(scaleX = -1f, scaleY = 1f) else it }
             )
         }
         Row(

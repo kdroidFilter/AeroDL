@@ -6,6 +6,7 @@ import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.DefaultNavigator
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Navigator
+import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
 import io.github.kdroidfilter.ytdlpgui.features.screens.home.HomeViewModel
 import io.github.kdroidfilter.ytdlpgui.features.screens.about.AboutViewModel
 import io.github.kdroidfilter.ytdlpgui.features.screens.bulkdownload.BulkDownloadViewModel
@@ -22,14 +23,19 @@ val appModule = module {
     single { YtDlpWrapper() }
     single<Navigator> { DefaultNavigator(startDestination = Destination.MainGraph) }
     single { Settings() }
-    single { DownloadManager(get(), get()) }
-    single { InitViewModel(ytDlpWrapper = get(), navigator = get(), settings = get())}
+
+    // Database & repositories
+    single { DownloadHistoryRepository.defaultDatabase() }
+    single { DownloadHistoryRepository(get()) }
+
+    single { DownloadManager(get(), get(), get<DownloadHistoryRepository>()) }
+    single { InitViewModel(get(), get(), get())}
 
 
     viewModel { HomeViewModel(get(), get()) }
     viewModel { AboutViewModel(get()) }
     viewModel { BulkDownloadViewModel(get()) }
-    viewModel { DownloadViewModel(get(), get()) }
+    viewModel { DownloadViewModel(get(), get(), get<DownloadHistoryRepository>()) }
     viewModel { SettingsViewModel(get(), get(), get()) }
     viewModel { SingleDownloadViewModel(get(), get(), get(), get()) }
 

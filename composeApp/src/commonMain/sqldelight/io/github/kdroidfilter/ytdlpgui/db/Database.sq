@@ -1,0 +1,19 @@
+CREATE TABLE IF NOT EXISTS download_history (
+  id TEXT NOT NULL PRIMARY KEY,
+  url TEXT NOT NULL,
+  video_info_json TEXT,
+  output_path TEXT,
+  is_audio INTEGER NOT NULL,
+  preset_height INTEGER,
+  created_at INTEGER NOT NULL
+);
+
+-- Inserts a new history entry
+insertHistory:
+INSERT INTO download_history(id, url, video_info_json, output_path, is_audio, preset_height, created_at)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+-- Selects all history entries ordered by newest first
+selectAllHistory:
+SELECT * FROM download_history
+ORDER BY created_at DESC;

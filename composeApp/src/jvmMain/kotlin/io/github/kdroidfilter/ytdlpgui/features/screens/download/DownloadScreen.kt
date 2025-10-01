@@ -11,6 +11,9 @@ import io.github.composefluent.component.Text
 import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.*
 import org.koin.compose.viewmodel.koinViewModel
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun DownloadScreen() {
@@ -30,13 +33,16 @@ fun DownloadView(
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text(stringResource(Res.string.history_screen_title))
         Spacer(Modifier.height(12.dp))
-        if (state.items.isEmpty()) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("No downloads yet")
-            }
+
+        // Section: In-progress downloads
+        val inProgress = state.items.filter { it.status == DownloadManager.DownloadItem.Status.Running || it.status == DownloadManager.DownloadItem.Status.Pending }
+        Text("Téléchargements en cours")
+        Spacer(Modifier.height(8.dp))
+        if (inProgress.isEmpty()) {
+            Text("Aucun téléchargement en cours")
         } else {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                state.items.forEach { item ->
+                inProgress.forEach { item ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -69,6 +75,33 @@ fun DownloadView(
                                 }
                             }
                         }
+                    }
+                }
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        // Section: History
+        Text("Historique")
+        Spacer(Modifier.height(8.dp))
+        if (state.history.isEmpty()) {
+            Text("Aucun téléchargement précédent")
+        } else {
+            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                state.history.forEach { h ->
+                    Column(Modifier.fillMaxWidth()) {
+                        Text(h.videoInfo?.title ?: h.url)
+                        if (h.videoInfo?.title != null) {
+                            Text(h.url)
+                        }
+                        val typeLabel = if (h.isAudio) stringResource(Res.string.download_type_audio) else stringResource(Res.string.download_type_video)
+                        val typeAndPreset = if (!h.isAudio && h.presetHeight != null) "$typeLabel • ${h.presetHeight}p" else typeLabel
+                        Text(typeAndPreset)
+                        val whenStr = formatter.format(Instant.ofEpochMilli(h.createdAt))
+                        val whereStr = h.outputPath ?: ""
+                        Text("$whenStr • $whereStr")
                     }
                 }
             }

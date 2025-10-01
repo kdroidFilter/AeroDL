@@ -11,6 +11,8 @@ import java.util.UUID
 import io.github.kdroidfilter.ytdlp.core.Handle
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
 import com.russhwolf.settings.Settings
+import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
+import java.io.File
 
 /**
  * Simple manager to handle multiple concurrent downloads and expose their state.
@@ -19,6 +21,7 @@ import com.russhwolf.settings.Settings
 class DownloadManager(
     private val ytDlpWrapper: YtDlpWrapper,
     private val settings: Settings,
+    private val historyRepository: DownloadHistoryRepository,
 ) {
     private val scope = CoroutineScope(Dispatchers.IO)
 
@@ -86,6 +89,17 @@ class DownloadManager(
         val item = _items.value.find { it.id == id } ?: return
         if (item.status != DownloadItem.Status.Pending) return
 
+        // Track destination path from yt-dlp logs
+        var lastDestPath: String? = null
+        val destRegex = Regex("Destination: (.+)")
+        val mergeRegex = Regex("Merging formats into \"(.+)\"")
+
+        fun resolveAbsolutePath(path: String?): String? {
+            if (path.isNullOrBlank()) return null
+            val file = File(path)
+            return if (file.isAbsolute) file.absolutePath else File(ytDlpWrapper.downloadDir ?: File("."), path).absolutePath
+        }
+
         if (item.preset == null) {
             // Audio download
             val handle = ytDlpWrapper.downloadAudioMp3WithPreset(
@@ -102,6 +116,17 @@ class DownloadManager(
                         is Event.Completed -> {
                             val status = if (event.success) DownloadItem.Status.Completed else DownloadItem.Status.Failed
                             update(id) { it.copy(status = status, message = null) }
+                            if (event.success) {
+                                historyRepository.add(
+                                    id = id,
+                                    url = item.url,
+                                    videoInfo = item.videoInfo,
+                                    outputPath = ytDlpWrapper.downloadDir?.absolutePath,
+                                    isAudio = true,
+                                    presetHeight = null,
+                                    createdAt = System.currentTimeMillis()
+                                )
+                            }
                             maybeStartPending()
                         }
                         is Event.Error -> {
@@ -112,7 +137,11 @@ class DownloadManager(
                             update(id) { it.copy(status = DownloadItem.Status.Cancelled, message = null) }
                             maybeStartPending()
                         }
-                        is Event.Log -> {}
+                        is Event.Log -> {
+                            val line = event.line
+                            destRegex.find(line)?.let { m -> lastDestPath = m.groupValues[1] }
+                            mergeRegex.find(line)?.let { m -> lastDestPath = m.groupValues[1] }
+                        }
                         is Event.NetworkProblem -> {
                             update(id) { it.copy(status = DownloadItem.Status.Failed, message = event.detail) }
                             maybeStartPending()
@@ -144,6 +173,17 @@ class DownloadManager(
                         is Event.Completed -> {
                             val status = if (event.success) DownloadItem.Status.Completed else DownloadItem.Status.Failed
                             update(id) { it.copy(status = status, message = null) }
+                            if (event.success) {
+                                historyRepository.add(
+                                    id = id,
+                                    url = item.url,
+                                    videoInfo = item.videoInfo,
+                                    outputPath = ytDlpWrapper.downloadDir?.absolutePath,
+                                    isAudio = false,
+                                    presetHeight = usedPreset?.height,
+                                    createdAt = System.currentTimeMillis()
+                                )
+                            }
                             maybeStartPending()
                         }
                         is Event.Error -> {
@@ -154,7 +194,11 @@ class DownloadManager(
                             update(id) { it.copy(status = DownloadItem.Status.Cancelled, message = null) }
                             maybeStartPending()
                         }
-                        is Event.Log -> {}
+                        is Event.Log -> {
+                            val line = event.line
+                            destRegex.find(line)?.let { m -> lastDestPath = m.groupValues[1] }
+                            mergeRegex.find(line)?.let { m -> lastDestPath = m.groupValues[1] }
+                        }
                         is Event.NetworkProblem -> {
                             update(id) { it.copy(status = DownloadItem.Status.Failed, message = event.detail) }
                             maybeStartPending()
