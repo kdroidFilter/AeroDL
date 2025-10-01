@@ -47,4 +47,7 @@
     <string name="settings_include_preset_in_filename_title">Inclure le preset dans le nom de fichier</string>
     <string name="settings_include_preset_in_filename_caption">Ajouter la qualité sélectionnée (exemple : 720p) au nom du fichier téléchargé</string>
     <string name="download_audio">Télécharger l'audio</string>
+    <!-- Ces chaînes appartiennent à l'écran Download (Download screen) -->
+    <string name="download_type_video">Vidéo</string>
+    <string name="download_type_audio">Audio</string>
 </resources>

@@ -47,6 +47,9 @@ fun DownloadView(
                             if (item.videoInfo?.title != null) {
                                 Text(item.url)
                             }
+                            val typeLabel = if (item.preset != null) stringResource(Res.string.download_type_video) else stringResource(Res.string.download_type_audio)
+                            val typeAndPreset = if (item.preset != null) "$typeLabel • ${item.preset.height}p" else typeLabel
+                            Text(typeAndPreset)
                             val statusText = when (item.status) {
                                 DownloadManager.DownloadItem.Status.Pending -> "Pending"
                                 DownloadManager.DownloadItem.Status.Running -> "Running"
