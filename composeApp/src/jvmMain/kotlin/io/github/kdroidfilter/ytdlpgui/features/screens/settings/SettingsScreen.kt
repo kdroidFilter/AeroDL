@@ -43,6 +43,8 @@ import ytdlpgui.composeapp.generated.resources.settings_include_preset_in_filena
 import ytdlpgui.composeapp.generated.resources.settings_include_preset_in_filename_title
 import ytdlpgui.composeapp.generated.resources.settings_no_check_certificate_caption
 import ytdlpgui.composeapp.generated.resources.settings_no_check_certificate_title
+import ytdlpgui.composeapp.generated.resources.settings_parallel_downloads_caption
+import ytdlpgui.composeapp.generated.resources.settings_parallel_downloads_title
 
 @Composable
 fun SettingsScreen() {
@@ -139,6 +141,52 @@ fun SettingsView(
                     Switcher(
                         checked = state.includePresetInFilename,
                         onCheckStateChange = { onEvent(SettingsEvents.SetIncludePresetInFilename(it)) },
+                    )
+                }
+            )
+        }
+        item {
+            // Selector for parallel downloads
+            CardExpanderItem(
+                heading = { Text(stringResource(Res.string.settings_parallel_downloads_title)) },
+                caption = {
+                    Text(
+                        stringResource(Res.string.settings_parallel_downloads_caption),
+                        modifier = Modifier.fillMaxWidth(0.8f)
+                    )
+                },
+                icon = { Icon(Icons.Regular.Power, null) },
+                trailing = {
+                    val options = (1..5).toList()
+                    val selectionLabel = state.parallelDownloads.toString()
+                    MenuFlyoutContainer(
+                        flyout = {
+                            options.forEach { count ->
+                                MenuFlyoutItem(
+                                    text = { Text(count.toString()) },
+                                    onClick = {
+                                        onEvent(SettingsEvents.SetParallelDownloads(count))
+                                        isFlyoutVisible = false
+                                    }
+                                )
+                            }
+                        },
+                        content = {
+                            DropDownButton(
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 1.dp),
+                                onClick = { isFlyoutVisible = !isFlyoutVisible },
+                                content = {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(0.9f),
+                                        horizontalArrangement = Arrangement.SpaceEvenly
+                                    ) {
+                                        Text(selectionLabel)
+                                    }
+                                },
+                            )
+                        },
+                        adaptivePlacement = true,
+                        placement = FlyoutPlacement.Bottom
                     )
                 }
             )

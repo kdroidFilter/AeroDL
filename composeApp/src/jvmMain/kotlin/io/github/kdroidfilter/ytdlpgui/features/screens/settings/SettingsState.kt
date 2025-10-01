@@ -12,6 +12,7 @@ data class SettingsState(
     val noCheckCertificate: Boolean = false,
     val cookiesFromBrowser: String = "",
     val includePresetInFilename: Boolean = true,
+    val parallelDownloads: Int = 2,
 )
 
 @Composable
@@ -21,4 +22,5 @@ fun collectSettingsState(viewModel: SettingsViewModel): SettingsState =
         noCheckCertificate = viewModel.noCheckCertificate.collectAsState().value,
         cookiesFromBrowser = viewModel.cookiesFromBrowser.collectAsState().value,
         includePresetInFilename = viewModel.includePresetInFilename.collectAsState().value,
+        parallelDownloads = viewModel.parallelDownloads.collectAsState().value,
     )

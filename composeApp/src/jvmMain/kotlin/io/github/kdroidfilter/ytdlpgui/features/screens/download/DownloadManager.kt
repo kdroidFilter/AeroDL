@@ -26,7 +26,7 @@ class DownloadManager(
         val id: String = UUID.randomUUID().toString(),
         val url: String,
         val videoInfo: VideoInfo? = null,
-        val preset: YtDlpWrapper.Preset? = null,
+        val preset: YtDlpWrapper.Preset? = null, // null -> audio
         val progress: Float = 0f,
         val status: Status = Status.Pending,
         val message: String? = null,
@@ -38,77 +38,132 @@ class DownloadManager(
     private val _items = MutableStateFlow<List<DownloadItem>>(emptyList())
     val items: StateFlow<List<DownloadItem>> = _items.asStateFlow()
 
-    /** Start a background video (MP4) download for the given url. */
+    // Simple FIFO queue of pending downloads (by id)
+    private val pendingQueue: ArrayDeque<String> = ArrayDeque()
+
+    private fun maxParallel(): Int = settings.getInt("parallel_downloads", 2).coerceIn(1, 10)
+
+    private fun runningCount(): Int = _items.value.count { it.status == DownloadItem.Status.Running }
+
+    /** Enqueue a background video (MP4) download for the given url. */
     fun start(url: String, videoInfo: VideoInfo? = null, preset: YtDlpWrapper.Preset? = null) : String {
         val usedPreset = preset ?: YtDlpWrapper.Preset.P720
-        val item = DownloadItem(url = url, videoInfo = videoInfo, preset = usedPreset, status = DownloadItem.Status.Running)
+        val item = DownloadItem(url = url, videoInfo = videoInfo, preset = usedPreset, status = DownloadItem.Status.Pending)
         _items.value += item
-
-        val includePreset = settings.getBoolean("include_preset_in_filename", true)
-        val outputTemplate = if (includePreset) "%(title)s_${usedPreset.height}p.%(ext)s" else "%(title)s.%(ext)s"
-
-        val handle = ytDlpWrapper.downloadMp4At(
-            url = url,
-            preset = usedPreset,
-            outputTemplate = outputTemplate,
-            onEvent = { event ->
-                when (event) {
-                    is Event.Started -> update(item.id) { it.copy(status = DownloadItem.Status.Running, message = null) }
-                    is Event.Progress -> {
-                        val pct = (event.percent ?: 0.0).toFloat().coerceIn(0f, 100f)
-                        update(item.id) { it.copy(progress = pct, message = null) }
-                    }
-                    is Event.Completed -> {
-                        val status = if (event.success) DownloadItem.Status.Completed else DownloadItem.Status.Failed
-                        update(item.id) { it.copy(status = status, message = null) }
-                    }
-                    is Event.Error -> update(item.id) { it.copy(status = DownloadItem.Status.Failed, message = event.message) }
-                    is Event.Cancelled -> update(item.id) { it.copy(status = DownloadItem.Status.Cancelled, message = null) }
-                    is Event.Log -> {}
-                    is Event.NetworkProblem -> update(item.id) { it.copy(status = DownloadItem.Status.Failed, message = event.detail) }
-                }
-            }
-        )
-        // Save handle in the item for cancellation
-        update(item.id) { it.copy(handle = handle) }
+        pendingQueue.addLast(item.id)
+        maybeStartPending()
         return item.id
     }
 
-    /** Start an audio-only (MP3) download for the given url. */
+    /** Enqueue an audio-only (MP3) download for the given url. */
     fun startAudio(url: String, videoInfo: VideoInfo? = null): String {
-        val item = DownloadItem(url = url, videoInfo = videoInfo, preset = null, status = DownloadItem.Status.Running)
+        val item = DownloadItem(url = url, videoInfo = videoInfo, preset = null, status = DownloadItem.Status.Pending)
         _items.value += item
-
-        val handle = ytDlpWrapper.downloadAudioMp3WithPreset(
-            url = url,
-            preset = YtDlpWrapper.AudioQualityPreset.HIGH,
-            outputTemplate = "%(title)s.%(ext)s",
-            onEvent = { event ->
-                when (event) {
-                    is Event.Started -> update(item.id) { it.copy(status = DownloadItem.Status.Running, message = null) }
-                    is Event.Progress -> {
-                        val pct = (event.percent ?: 0.0).toFloat().coerceIn(0f, 100f)
-                        update(item.id) { it.copy(progress = pct, message = null) }
-                    }
-                    is Event.Completed -> {
-                        val status = if (event.success) DownloadItem.Status.Completed else DownloadItem.Status.Failed
-                        update(item.id) { it.copy(status = status, message = null) }
-                    }
-                    is Event.Error -> update(item.id) { it.copy(status = DownloadItem.Status.Failed, message = event.message) }
-                    is Event.Cancelled -> update(item.id) { it.copy(status = DownloadItem.Status.Cancelled, message = null) }
-                    is Event.Log -> {}
-                    is Event.NetworkProblem -> update(item.id) { it.copy(status = DownloadItem.Status.Failed, message = event.detail) }
-                }
-            }
-        )
-        update(item.id) { it.copy(handle = handle) }
+        pendingQueue.addLast(item.id)
+        maybeStartPending()
         return item.id
     }
 
     fun cancel(id: String) {
+        // If it's still pending, remove from queue
+        pendingQueue.remove(id)
         val current = _items.value.find { it.id == id }
         current?.handle?.cancel()
         update(id) { it.copy(status = DownloadItem.Status.Cancelled) }
+        // Free a slot if something was running and try to start next
+        maybeStartPending()
+    }
+
+    private fun maybeStartPending() {
+        // Start as many as allowed
+        while (runningCount() < maxParallel() && pendingQueue.isNotEmpty()) {
+            val nextId = pendingQueue.removeFirst()
+            launchDownload(nextId)
+        }
+    }
+
+    private fun launchDownload(id: String) {
+        val item = _items.value.find { it.id == id } ?: return
+        if (item.status != DownloadItem.Status.Pending) return
+
+        if (item.preset == null) {
+            // Audio download
+            val handle = ytDlpWrapper.downloadAudioMp3WithPreset(
+                url = item.url,
+                preset = YtDlpWrapper.AudioQualityPreset.HIGH,
+                outputTemplate = "%(title)s.%(ext)s",
+                onEvent = { event ->
+                    when (event) {
+                        is Event.Started -> update(id) { it.copy(status = DownloadItem.Status.Running, message = null) }
+                        is Event.Progress -> {
+                            val pct = (event.percent ?: 0.0).toFloat().coerceIn(0f, 100f)
+                            update(id) { it.copy(progress = pct, message = null) }
+                        }
+                        is Event.Completed -> {
+                            val status = if (event.success) DownloadItem.Status.Completed else DownloadItem.Status.Failed
+                            update(id) { it.copy(status = status, message = null) }
+                            maybeStartPending()
+                        }
+                        is Event.Error -> {
+                            update(id) { it.copy(status = DownloadItem.Status.Failed, message = event.message) }
+                            maybeStartPending()
+                        }
+                        is Event.Cancelled -> {
+                            update(id) { it.copy(status = DownloadItem.Status.Cancelled, message = null) }
+                            maybeStartPending()
+                        }
+                        is Event.Log -> {}
+                        is Event.NetworkProblem -> {
+                            update(id) { it.copy(status = DownloadItem.Status.Failed, message = event.detail) }
+                            maybeStartPending()
+                        }
+                    }
+                }
+            )
+            update(id) { it.copy(handle = handle) }
+        } else {
+            // Video download
+            val usedPreset = item.preset
+            val includePreset = settings.getBoolean("include_preset_in_filename", true)
+            val outputTemplate = if (includePreset && usedPreset != null) {
+                "%(title)s_${usedPreset.height}p.%(ext)s"
+            } else {
+                "%(title)s.%(ext)s"
+            }
+            val handle = ytDlpWrapper.downloadMp4At(
+                url = item.url,
+                preset = usedPreset ?: YtDlpWrapper.Preset.P720,
+                outputTemplate = outputTemplate,
+                onEvent = { event ->
+                    when (event) {
+                        is Event.Started -> update(id) { it.copy(status = DownloadItem.Status.Running, message = null) }
+                        is Event.Progress -> {
+                            val pct = (event.percent ?: 0.0).toFloat().coerceIn(0f, 100f)
+                            update(id) { it.copy(progress = pct, message = null) }
+                        }
+                        is Event.Completed -> {
+                            val status = if (event.success) DownloadItem.Status.Completed else DownloadItem.Status.Failed
+                            update(id) { it.copy(status = status, message = null) }
+                            maybeStartPending()
+                        }
+                        is Event.Error -> {
+                            update(id) { it.copy(status = DownloadItem.Status.Failed, message = event.message) }
+                            maybeStartPending()
+                        }
+                        is Event.Cancelled -> {
+                            update(id) { it.copy(status = DownloadItem.Status.Cancelled, message = null) }
+                            maybeStartPending()
+                        }
+                        is Event.Log -> {}
+                        is Event.NetworkProblem -> {
+                            update(id) { it.copy(status = DownloadItem.Status.Failed, message = event.detail) }
+                            maybeStartPending()
+                        }
+                    }
+                }
+            )
+            update(id) { it.copy(handle = handle) }
+        }
     }
 
     private fun update(id: String, transform: (DownloadItem) -> DownloadItem) {
