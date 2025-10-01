@@ -44,6 +44,7 @@ class DownloadManager(
         val handle = ytDlpWrapper.downloadMp4At(
             url = url,
             preset = usedPreset,
+            outputTemplate = "%(title)s_${usedPreset.height}p.%(ext)s",
             onEvent = { event ->
                 when (event) {
                     is Event.Started -> update(item.id) { it.copy(status = DownloadItem.Status.Running, message = null) }
