@@ -28,29 +28,42 @@ class SingleDownloadViewModel(
     private val _isLoading = MutableStateFlow(true)
     val isLoading = _isLoading.asStateFlow()
 
+    private val _availablePresets = MutableStateFlow<List<YtDlpWrapper.Preset>>(emptyList())
+    val availablePresets = _availablePresets.asStateFlow()
+
+    private val _selectedPreset = MutableStateFlow<YtDlpWrapper.Preset?>(null)
+    val selectedPreset = _selectedPreset.asStateFlow()
 
     init {
         val scope = CoroutineScope(Dispatchers.IO)
         scope.launch {
             println("Getting video info for $videoUrl")
             ytDlpWrapper.getVideoInfo(videoUrl)
-                .onSuccess {
-                    _videoInfo.value = it
+                .onSuccess { info ->
+                    _videoInfo.value = info
+                    // Derive available presets from availableResolutions (downloadable)
+                    val presets = YtDlpWrapper.Preset.entries.filter { preset ->
+                        info.availableResolutions[preset.height]?.downloadable == true
+                    }.sortedBy { it.height }
+                    _availablePresets.value = presets
+                    _selectedPreset.value = presets.maxByOrNull { it.height }
                     _isLoading.value = false
                 }
                 .onFailure {
                     println("Error getting video info: ${it.message}")
+                    _isLoading.value = false
                 }
-
         }
     }
-
 
     fun onEvents(event: SingleDownloadEvents) {
         when (event) {
             SingleDownloadEvents.Refresh -> { /* TODO */ }
+            is SingleDownloadEvents.SelectPreset -> {
+                _selectedPreset.value = event.preset
+            }
             SingleDownloadEvents.StartDownload -> {
-                downloadManager.start(videoUrl, videoInfo.value)
+                downloadManager.start(videoUrl, videoInfo.value, selectedPreset.value)
                 viewModelScope.launch {
                     navigator.navigate(Destination.HistoryScreen)
                 }

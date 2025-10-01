@@ -4,10 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.IconButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,15 +29,16 @@ import io.github.composefluent.component.Icon
 import io.github.composefluent.component.ProgressRing
 import io.github.composefluent.component.Text
 import io.github.composefluent.component.AccentButton
+import io.github.composefluent.component.Button
 import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.*
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.Pause
 import io.github.composefluent.icons.regular.Play
-import io.github.kdroidfilter.composemediaplayer.InitialPlayerState
 import io.github.kdroidfilter.composemediaplayer.VideoPlayerState
 import io.github.kdroidfilter.composemediaplayer.VideoPlayerSurface
 import io.github.kdroidfilter.composemediaplayer.rememberVideoPlayerState
+import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
 import org.koin.compose.viewmodel.koinViewModel
 import java.time.Duration
@@ -62,6 +63,9 @@ fun SingleDownloadView(
         VideoInfoSection(
             videoPlayerState = videoPlayerState,
             videoInfo = state.videoInfo,
+            availablePresets = state.availablePresets,
+            selectedPreset = state.selectedPreset,
+            onSelectPreset = { onEvent(SingleDownloadEvents.SelectPreset(it)) },
             onStartDownload = { onEvent(SingleDownloadEvents.StartDownload) }
         )
 }
@@ -78,7 +82,14 @@ private fun Loader() {
  * description on the left.
  */
 @Composable
-private fun VideoInfoSection(videoPlayerState: VideoPlayerState, videoInfo: VideoInfo?, onStartDownload: () -> Unit) {
+private fun VideoInfoSection(
+    videoPlayerState: VideoPlayerState,
+    videoInfo: VideoInfo?,
+    availablePresets: List<YtDlpWrapper.Preset>,
+    selectedPreset: YtDlpWrapper.Preset?,
+    onSelectPreset: (YtDlpWrapper.Preset) -> Unit,
+    onStartDownload: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxSize()
@@ -120,6 +131,22 @@ private fun VideoInfoSection(videoPlayerState: VideoPlayerState, videoInfo: Vide
                 Spacer(Modifier.height(16.dp))
             }
             item {
+                if (availablePresets.isNotEmpty()) {
+                    Text(text = "Formats")
+                    Spacer(Modifier.height(8.dp))
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        items(availablePresets.size) { index ->
+                            val preset = availablePresets[index]
+                            val label = "${preset.height}p"
+                            if (preset == selectedPreset) {
+                                AccentButton(onClick = { onSelectPreset(preset) }) { Text(label) }
+                            } else {
+                                Button(onClick = { onSelectPreset(preset) }) { Text(label) }
+                            }
+                        }
+                    }
+                    Spacer(Modifier.height(16.dp))
+                }
                 AccentButton(onClick = onStartDownload) {
                     Text(stringResource(Res.string.download))
                 }

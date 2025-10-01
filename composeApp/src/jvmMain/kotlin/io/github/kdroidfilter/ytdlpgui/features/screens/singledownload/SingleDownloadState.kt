@@ -2,11 +2,14 @@ package io.github.kdroidfilter.ytdlpgui.features.screens.singledownload
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
 
 data class SingleDownloadState(
     val isLoading: Boolean = false,
     val videoInfo: VideoInfo? = null,
+    val availablePresets: List<YtDlpWrapper.Preset> = emptyList(),
+    val selectedPreset: YtDlpWrapper.Preset? = null,
 )
 
 @Composable
@@ -14,4 +17,6 @@ fun collectSingleDownloadState(viewModel: SingleDownloadViewModel): SingleDownlo
     SingleDownloadState(
         isLoading = viewModel.isLoading.collectAsState().value,
         videoInfo = viewModel.videoInfo.collectAsState().value,
+        availablePresets = viewModel.availablePresets.collectAsState().value,
+        selectedPreset = viewModel.selectedPreset.collectAsState().value,
     )

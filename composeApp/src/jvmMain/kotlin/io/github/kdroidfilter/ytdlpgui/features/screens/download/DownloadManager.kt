@@ -4,11 +4,9 @@ import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlp.core.Event
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import java.util.UUID
 import io.github.kdroidfilter.ytdlp.core.Handle
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
@@ -25,6 +23,7 @@ class DownloadManager(
         val id: String = UUID.randomUUID().toString(),
         val url: String,
         val videoInfo: VideoInfo? = null,
+        val preset: YtDlpWrapper.Preset? = null,
         val progress: Float = 0f,
         val status: Status = Status.Pending,
         val message: String? = null,
@@ -37,13 +36,14 @@ class DownloadManager(
     val items: StateFlow<List<DownloadItem>> = _items.asStateFlow()
 
     /** Start a background download for the given url. */
-    fun start(url: String, videoInfo: VideoInfo? = null) : String {
-        val item = DownloadItem(url = url, videoInfo = videoInfo, status = DownloadItem.Status.Running)
+    fun start(url: String, videoInfo: VideoInfo? = null, preset: YtDlpWrapper.Preset? = null) : String {
+        val usedPreset = preset ?: YtDlpWrapper.Preset.P720
+        val item = DownloadItem(url = url, videoInfo = videoInfo, preset = usedPreset, status = DownloadItem.Status.Running)
         _items.value = _items.value + item
 
         val handle = ytDlpWrapper.downloadMp4At(
             url = url,
-            preset = YtDlpWrapper.Preset.P720,
+            preset = usedPreset,
             onEvent = { event ->
                 when (event) {
                     is Event.Started -> update(item.id) { it.copy(status = DownloadItem.Status.Running, message = null) }
