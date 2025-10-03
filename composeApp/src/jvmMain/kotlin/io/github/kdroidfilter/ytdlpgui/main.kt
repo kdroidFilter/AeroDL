@@ -23,13 +23,11 @@ import io.github.composefluent.background.Mica
 import io.github.composefluent.darkColors
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.filled.PictureInPictureExit
-import io.github.composefluent.icons.regular.ArrowDownload
 import io.github.composefluent.lightColors
 import io.github.kdroidfilter.platformtools.darkmodedetector.isSystemInDarkMode
 import io.github.kdroidfilter.ytdlpgui.core.presentation.icons.AeroDlLogoOnly
 import io.github.kdroidfilter.ytdlpgui.di.appModule
 import org.koin.compose.KoinApplication
-import java.util.Locale
 
 @OptIn(ExperimentalTrayAppApi::class, ExperimentalFluentApi::class)
 fun main() = application {
@@ -44,7 +42,6 @@ fun main() = application {
             initiallyVisible = true
         )
         val trayVisible by trayAppState.isVisible.collectAsState()
-
 
         TrayApp(
             state = trayAppState,

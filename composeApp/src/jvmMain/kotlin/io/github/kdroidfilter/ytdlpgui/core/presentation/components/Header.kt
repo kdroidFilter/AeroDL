@@ -13,14 +13,15 @@ import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.*
 import io.github.composefluent.icons.Icons
+import io.github.composefluent.icons.filled.MoreVertical
 import io.github.composefluent.icons.regular.ArrowLeft
 import io.github.composefluent.icons.regular.ArrowRight
 import io.github.composefluent.icons.regular.Copy
 import io.github.composefluent.icons.regular.Delete
 import io.github.composefluent.icons.regular.History
 import io.github.composefluent.icons.regular.Home
+import io.github.composefluent.icons.regular.Info
 import io.github.composefluent.icons.regular.Settings
-import io.github.composefluent.icons.regular.Share
 import io.github.kdroidfilter.ytdlpgui.core.presentation.icons.AeroDlLogoOnly
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Navigator
@@ -39,7 +40,7 @@ fun Header(
 ) {
     val canGoBack by navigator.canGoBack.collectAsState()
     val currentDestination by navigator.currentDestination.collectAsState()
-    val coroutineScope = rememberCoroutineScope()
+    val scope = rememberCoroutineScope()
     var expanded by remember { mutableStateOf(false) }
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     Row(
@@ -56,7 +57,7 @@ fun Header(
                     SubtleButton(
                         iconOnly = true,
                         onClick = {
-                            coroutineScope.launch { navigator.navigateUp() }
+                            scope.launch { navigator.navigateUp() }
                         },
                         modifier = Modifier.padding(top = 12.dp, start = 4.dp)
                     ) { Icon(if (isRtl) Icons.Default.ArrowRight else Icons.Default.ArrowLeft, "Back") }
@@ -95,7 +96,7 @@ fun Header(
                 TopNavItem(
                     selected = isSelected,
                     onClick = {
-                        coroutineScope.launch {
+                        scope.launch {
                             navigator.navigateAndClearBackStack(destForIndex)
                         }
                     },
@@ -114,37 +115,27 @@ fun Header(
                     placement = FlyoutPlacement.BottomAlignedEnd,
                     flyout = {
                         MenuFlyoutItem(
-                            onClick = { isFlyoutVisible = false },
-                            icon = { Icon(Icons.Default.Share, contentDescription = null) },
-                            text = { Text("Share") }
+                            onClick = {
+                                isFlyoutVisible = false
+                                scope.launch { navigator.navigate(Destination.SettingsScreen) }
+                            },
+                            icon = { Icon(Icons.Default.Settings, contentDescription = null) },
+                            text = { Text("Settings") }
                         )
                         MenuFlyoutItem(
-                            onClick = { isFlyoutVisible = false },
-                            icon = { Icon(Icons.Default.Copy, contentDescription = null) },
-                            text = { Text("Copy") }
-                        )
-                        MenuFlyoutItem(
-                            onClick = { isFlyoutVisible = false },
-                            icon = { Icon(Icons.Default.Delete, contentDescription = null) },
-                            text = { Text("Delete") }
-                        )
-                        MenuFlyoutSeparator()
-                        MenuFlyoutItem(
-                            onClick = { isFlyoutVisible = false },
-                            icon = { },
-                            text = { Text("Rename") }
-                        )
-                        MenuFlyoutItem(
-                            onClick = { isFlyoutVisible = false },
-                            icon = { },
-                            text = { Text("Select") }
+                            onClick = {
+                                isFlyoutVisible = false
+                                scope.launch { navigator.navigate(Destination.AboutScreen) }
+                            },
+                            icon = { Icon(Icons.Default.Info, contentDescription = null) },
+                            text = { Text("About") }
                         )
                     },
                     content = {
                         SubtleButton(
                             iconOnly = true,
                             onClick = { isFlyoutVisible = !isFlyoutVisible },
-                            content = { Icon(Icons.Default.Settings, contentDescription = null) },
+                            content = { Icon(Icons.Filled.MoreVertical, contentDescription = null) },
                         )
                     }
                 )

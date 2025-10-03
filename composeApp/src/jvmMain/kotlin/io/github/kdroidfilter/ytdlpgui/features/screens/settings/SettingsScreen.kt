@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import io.github.composefluent.component.Button
 import io.github.composefluent.component.CardExpanderItem
 import io.github.composefluent.component.DropDownButton
 import io.github.composefluent.component.FlyoutPlacement
@@ -27,6 +28,7 @@ import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
 import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
 import kotlinx.coroutines.launch
 import io.github.composefluent.icons.filled.DocumentEdit
+import io.github.composefluent.icons.filled.OpenFolder
 import io.github.composefluent.icons.filled.TopSpeed
 import io.github.composefluent.icons.regular.Cookies
 import io.github.composefluent.icons.regular.LockShield
@@ -73,7 +75,7 @@ fun SettingsView(
     state: SettingsState,
     onEvent: (SettingsEvents) -> Unit,
 ) {
-    LazyColumn(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         item {
             // Cookies-from-browser selection using CardExpanderItem with a flyout
             CardExpanderItem(
@@ -84,7 +86,12 @@ fun SettingsView(
                         modifier = Modifier.fillMaxWidth(0.5f)
                     )
                 },
-                icon = { Icon(imageVector = Icons.Regular.Cookies, contentDescription = stringResource(Res.string.settings_cookies_from_browser_title)) },
+                icon = {
+                    Icon(
+                        imageVector = Icons.Regular.Cookies,
+                        contentDescription = stringResource(Res.string.settings_cookies_from_browser_title)
+                    )
+                },
                 trailing = {
                     // Define options to reduce duplication and drive label/icon selection
                     val options = listOf(
@@ -119,7 +126,7 @@ fun SettingsView(
                                 onClick = { isFlyoutVisible = !isFlyoutVisible },
                                 content = {
                                     Row(
-                                        modifier = Modifier.fillMaxWidth(0.9f),
+                                        modifier = Modifier.fillMaxWidth(1f),
                                         horizontalArrangement = Arrangement.SpaceEvenly
                                     ) {
                                         Icon(
@@ -141,7 +148,12 @@ fun SettingsView(
         item {
             // Toggle for including preset in file name
             CardExpanderItem(
-                heading = { Text(stringResource(Res.string.settings_include_preset_in_filename_title)) },
+                heading = {
+                    Text(
+                        stringResource(Res.string.settings_include_preset_in_filename_title),
+                        modifier = Modifier.fillMaxWidth(0.8f)
+                    )
+                },
                 caption = {
                     Text(
                         stringResource(Res.string.settings_include_preset_in_filename_caption),
@@ -220,12 +232,12 @@ fun SettingsView(
                 },
                 icon = { Icon(Icons.Regular.Power, null) },
                 trailing = {
-                    DropDownButton(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 1.dp),
+                    Button(
+                        iconOnly = true,
                         onClick = {
                             scope.launch {
                                 val dir = FileKit.openDirectoryPicker(
-                                    title = pickTitle, 
+                                    title = pickTitle,
                                     directory = null,
                                     dialogSettings = FileKitDialogSettings()
                                 )
@@ -233,12 +245,7 @@ fun SettingsView(
                             }
                         },
                         content = {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(0.9f),
-                                horizontalArrangement = Arrangement.SpaceEvenly
-                            ) {
-                                Text(stringResource(Res.string.settings_select))
-                            }
+                            Icon(Icons.Filled.OpenFolder, "Open directory picker")
                         },
                     )
                 }
