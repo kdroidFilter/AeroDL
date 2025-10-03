@@ -21,7 +21,7 @@ import org.koin.dsl.module
 val appModule = module {
 
     single { YtDlpWrapper() }
-    single<Navigator> { DefaultNavigator(startDestination = Destination.MainGraph) }
+    single<Navigator> { DefaultNavigator(startDestination = Destination.InitScreen) }
     single { Settings() }
 
     // Database & repositories

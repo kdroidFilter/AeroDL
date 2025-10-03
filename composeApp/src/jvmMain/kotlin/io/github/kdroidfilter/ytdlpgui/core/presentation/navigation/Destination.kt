@@ -1,12 +1,9 @@
 package io.github.kdroidfilter.ytdlpgui.core.presentation.navigation
 
-import io.github.kdroidfilter.ytdlp.model.VideoInfo
 import kotlinx.serialization.Serializable
 
+@Serializable
 sealed interface Destination {
-    @Serializable
-    data object MainGraph: Destination
-
     @Serializable
     data object InitScreen: Destination
 
@@ -27,5 +24,4 @@ sealed interface Destination {
 
     @Serializable
     data object AboutScreen: Destination
-
 }

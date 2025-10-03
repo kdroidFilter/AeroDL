@@ -32,7 +32,7 @@ import java.util.Locale
 
 @OptIn(ExperimentalTrayAppApi::class, ExperimentalFluentApi::class)
 fun main() = application {
-    Locale.setDefault(Locale("he", "IL"))
+    Locale.setDefault(Locale("en", "US"))
 
     KoinApplication(application = {
         modules(appModule)
@@ -56,8 +56,7 @@ fun main() = application {
                 Item("Quitter", onClick = { exitApplication() }, icon = Icons.Filled.PictureInPictureExit)
             }
         ) {
-            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                 FluentTheme(colors = if (isSystemInDarkMode()) darkColors() else lightColors()) {
                     Mica(
                         Modifier
@@ -70,90 +69,7 @@ fun main() = application {
                             )
 
                     ) {
-
                         App()
-//                Column(
-//                    Modifier.fillMaxSize().padding(4.dp),
-//                    horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
-//                ) {
-//
-//                    var selectedIndex by remember { mutableStateOf(0) }
-//                    var expanded by remember { mutableStateOf(false) }
-//                    TopNav(
-//                        expanded = expanded,
-//                        onExpandedChanged = { expanded = it },
-//                    ) {
-//                        items(3) { index ->
-//                            TopNavItem(
-//                                selected = index == selectedIndex,
-//                                onClick = {
-//                                    selectedIndex = index
-//                                },
-//                                text = {
-//                                    Text(text = "Item ${index + 1}")
-//                                },
-//                                icon = {
-//                                    Icon(imageVector = Icons.Default.Star, contentDescription = null)
-//                                }
-//                            )
-//                        }
-//                    }
-//
-//
-//                    var value by remember { mutableStateOf(TextFieldValue()) }
-//                    TextField(value, onValueChange = { value = it }, modifier = Modifier.fillMaxWidth())
-//                    Spacer(modifier = Modifier.height(16.dp))
-//
-//                    ProgressBar(modifier = Modifier.fillMaxWidth())
-//                    LaunchedEffect(Unit){
-//                        val videoUrl = "https://ivan.canet.dev/talks/bordeauxkt.html#kotlin-beyond-the-jvm"
-//
-//                        wrapper.initialize { event ->
-//                            // Display initialization events to inform the user
-//                            when (event) {
-//                                is YtDlpWrapper.InitEvent.DownloadingYtDlp -> println("    -> Downloading yt-dlp...")
-//                                is YtDlpWrapper.InitEvent.EnsuringFfmpeg -> println("    -> Checking FFmpeg...")
-//                                is YtDlpWrapper.InitEvent.Completed -> if (event.success) println("✅ Initialization completed successfully!")
-//                                is YtDlpWrapper.InitEvent.Error -> System.err.println("❌ Initialization error: ${event.message}")
-//                                else -> {} // Ignore other events like progress to keep the output concise
-//                            }
-//                        }
-//
-//                        wrapper.getVideoInfo(videoUrl, timeoutSec = 60)
-//                            .onSuccess { video ->
-//                                println("✅ Video found:")
-//                                println("  📝 Title: ${video.title}")
-//                                println("  👤 Uploader: ${video.uploader}")
-//                                println("  ⏱️ Duration: ${video.duration}")
-//                                println("  👁️ Views: ${video.viewCount}")
-//                                println("  🔗 Direct link: ${video.directUrl ?: "N/A"}")
-//                                videoReady = true
-//                                video.directUrl?.let { videoState.openUri(it) }
-//                                println("  📈 Available Resolutions:")
-//                                video.availableResolutions.toSortedMap(compareByDescending { it }).forEach { (height, res) ->
-//                                    println("     - ${height}p (Progressive: ${if (res.progressive) "Yes" else "No"})")
-//                                }
-//                            }
-//                            .onFailure {
-//                                println("❌ Failure: ${it.message}")
-//                                it.cause?.printStackTrace()
-//                            }
-//
-//
-//                    }
-//                    if (videoReady) {
-//                        Box(Modifier.fillMaxSize()) {
-//                            VideoPlayerSurface(videoState) {
-//
-//                                Button(onClick = {
-//                                    videoState.toggleFullscreen()
-//                                }) {
-//                                    Icon(Icons.Default.ArrowDown, "")
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
                     }
                 }
             }

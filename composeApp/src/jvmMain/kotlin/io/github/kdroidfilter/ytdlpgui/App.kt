@@ -4,13 +4,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.kdroidfilter.ytdlpgui.core.presentation.components.AppHeader
@@ -30,22 +28,20 @@ fun App() {
     val navController = rememberNavController()
     val navigator = koinInject<Navigator>()
 
+    // Drive NavController from Navigator events; do NOT decode routes from BackStack
     ObserveAsEvents(flow = navigator.navigationActions) { action ->
         when (action) {
-            is NavigationAction.Navigate -> navController.navigate(
-                action.destination
-            ) {
-                action.navOptions(this)
+            is NavigationAction.Navigate -> {
+                navController.navigate(action.destination) {
+                    action.navOptions(this)
+                }
+                // After the framework processes it, previousBackStackEntry may not be updated immediately
+                // but our Navigator already updated stack/canGoBack/currentDestination.
             }
-
-            NavigationAction.NavigateUp -> navController.navigateUp()
-        }
-    }
-
-    // Keep Navigator aware of back stack availability
-    LaunchedEffect(navController) {
-        navController.currentBackStackEntryFlow.collect {
-            navigator.setCanGoBack(navController.previousBackStackEntry != null)
+            NavigationAction.NavigateUp -> {
+                // Let NavController go back; our Navigator already popped its own stack.
+                navController.navigateUp()
+            }
         }
     }
 
@@ -56,22 +52,19 @@ fun App() {
     ) {
         val currentDestination by navigator.currentDestination.collectAsState()
         if (currentDestination != Destination.InitScreen) AppHeader(navigator = navigator)
+
         NavHost(
             navController = navController,
-            startDestination = navigator.startDestination,
+            startDestination = Destination.InitScreen,
             modifier = Modifier.fillMaxSize()
         ) {
-            navigation<Destination.MainGraph>(
-                startDestination = currentDestination
-            ) {
-                noAnimatedComposable<Destination.InitScreen> { InitScreen() }
-                noAnimatedComposable<Destination.HomeScreen> { HomeScreen() }
-                noAnimatedComposable<Destination.BulkDownloadScreen> { BulkDownloadScreen() }
-                noAnimatedComposable<Destination.SingleDownloadScreen> { SingleDownloadScreen() }
-                noAnimatedComposable<Destination.HistoryScreen> { DownloadScreen() }
-                noAnimatedComposable<Destination.SettingsScreen> { SettingsScreen() }
-                noAnimatedComposable<Destination.AboutScreen> { SettingsScreen() }
-            }
+            noAnimatedComposable<Destination.InitScreen> { InitScreen() }
+            noAnimatedComposable<Destination.HomeScreen> { HomeScreen() }
+            noAnimatedComposable<Destination.BulkDownloadScreen> { BulkDownloadScreen() }
+            noAnimatedComposable<Destination.SingleDownloadScreen> { SingleDownloadScreen() }
+            noAnimatedComposable<Destination.HistoryScreen> { DownloadScreen() }
+            noAnimatedComposable<Destination.SettingsScreen> { SettingsScreen() }
+            noAnimatedComposable<Destination.AboutScreen> { AboutScreen() }
         }
     }
 }
