@@ -7,4 +7,5 @@ sealed class SettingsEvents {
     data class SetIncludePresetInFilename(val enabled: Boolean) : SettingsEvents()
     data class SetParallelDownloads(val count: Int) : SettingsEvents()
     data class SetDownloadDir(val path: String) : SettingsEvents()
+    data class SetClipboardMonitoring(val enabled: Boolean) : SettingsEvents()
 }

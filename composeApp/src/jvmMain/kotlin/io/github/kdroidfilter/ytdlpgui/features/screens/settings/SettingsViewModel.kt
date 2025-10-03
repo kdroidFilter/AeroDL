@@ -11,7 +11,8 @@ import kotlinx.coroutines.flow.update
 class SettingsViewModel(
     private val navigator: Navigator,
     private val ytDlpWrapper: YtDlpWrapper,
-    private val settings: Settings
+    private val settings: Settings,
+    private val clipboardMonitorManager: io.github.kdroidfilter.ytdlpgui.core.clipboard.ClipboardMonitorManager,
 ) : ViewModel() {
 
     // Keys for persisted settings
@@ -20,6 +21,7 @@ class SettingsViewModel(
     private val KEY_INCLUDE_PRESET_IN_FILENAME = "include_preset_in_filename"
     private val KEY_PARALLEL_DOWNLOADS = "parallel_downloads"
     private val KEY_DOWNLOAD_DIR = "download_dir"
+    private val KEY_CLIPBOARD_MONITORING = "clipboard_monitoring_enabled"
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
@@ -40,6 +42,9 @@ class SettingsViewModel(
     private val _downloadDirPath = MutableStateFlow(settings.getString(KEY_DOWNLOAD_DIR, ""))
     val downloadDirPath = _downloadDirPath.asStateFlow()
 
+    private val _clipboardMonitoring = MutableStateFlow(settings.getBoolean(KEY_CLIPBOARD_MONITORING, false))
+    val clipboardMonitoring = _clipboardMonitoring.asStateFlow()
+
     init {
         // Apply persisted settings to wrapper on creation
         ytDlpWrapper.noCheckCertificate = _noCheckCertificate.value
@@ -59,6 +64,7 @@ class SettingsViewModel(
                 _includePresetInFilename.update { settings.getBoolean(KEY_INCLUDE_PRESET_IN_FILENAME, true) }
                 _parallelDownloads.update { settings.getInt(KEY_PARALLEL_DOWNLOADS, 2).coerceIn(1, 10) }
                 _downloadDirPath.update { settings.getString(KEY_DOWNLOAD_DIR, "") }
+                _clipboardMonitoring.update { settings.getBoolean(KEY_CLIPBOARD_MONITORING, false) }
                 // Also ensure wrapper reflects persisted values when refreshing
                 ytDlpWrapper.noCheckCertificate = _noCheckCertificate.value
                 ytDlpWrapper.cookiesFromBrowser = _cookiesFromBrowser.value.ifBlank { null }
@@ -93,6 +99,11 @@ class SettingsViewModel(
                 settings.putString(KEY_DOWNLOAD_DIR, path)
                 _downloadDirPath.value = path
                 ytDlpWrapper.downloadDir = path.takeIf { it.isNotBlank() }?.let { java.io.File(it) }
+            }
+            is SettingsEvents.SetClipboardMonitoring -> {
+                _clipboardMonitoring.value = event.enabled
+                // Persist and start/stop monitoring through the manager
+                clipboardMonitorManager.onSettingChanged(event.enabled)
             }
         }
     }

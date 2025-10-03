@@ -51,6 +51,9 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
 
             implementation("com.russhwolf:multiplatform-settings-no-arg:1.3.0")
+
+            implementation("io.github.kdroidfilter:knotify:0.4.2")
+            implementation("io.github.kdroidfilter:knotify-compose:0.4.2")
         }
 
         commonTest.dependencies {

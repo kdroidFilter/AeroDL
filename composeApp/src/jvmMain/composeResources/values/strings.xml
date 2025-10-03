@@ -64,4 +64,7 @@
     <string name="single_no_subtitle">No subtitles</string>
     <string name="error_fetch_video_info">An error occurred while fetching video info: %s</string>
     <string name="thumbnail_content_desc">Thumbnail</string>
+    <!-- Settings: Clipboard monitoring -->
+    <string name="settings_clipboard_monitoring_title">Clipboard monitoring</string>
+    <string name="settings_clipboard_monitoring_caption">When enabled, copying a YouTube link will automatically open the single download screen.</string>
 </resources>

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.russhwolf.settings.Settings
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
+import io.github.kdroidfilter.ytdlpgui.core.clipboard.ClipboardMonitorManager
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Navigator
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,6 +15,8 @@ class InitViewModel(
     private val ytDlpWrapper: YtDlpWrapper,
     private val navigator: Navigator,
     private val settings : Settings,
+    // Injected to force eager initialization of clipboard monitoring
+    private val clipboardMonitorManager: ClipboardMonitorManager,
 ) : ViewModel() {
     private val _state = MutableStateFlow(InitState())
     val state = _state.asStateFlow()

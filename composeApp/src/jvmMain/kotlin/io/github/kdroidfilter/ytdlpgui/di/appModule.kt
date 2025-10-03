@@ -13,6 +13,7 @@ import io.github.kdroidfilter.ytdlpgui.features.screens.bulkdownload.BulkDownloa
 import io.github.kdroidfilter.ytdlpgui.features.screens.download.DownloadViewModel
 import io.github.kdroidfilter.ytdlpgui.features.screens.download.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.features.screens.initscreen.InitViewModel
+import io.github.kdroidfilter.ytdlpgui.core.clipboard.ClipboardMonitorManager
 import io.github.kdroidfilter.ytdlpgui.features.screens.settings.SettingsViewModel
 import io.github.kdroidfilter.ytdlpgui.features.screens.singledownload.SingleDownloadViewModel
 import org.koin.core.module.dsl.viewModel
@@ -29,14 +30,15 @@ val appModule = module {
     single { DownloadHistoryRepository(get()) }
 
     single { DownloadManager(get(), get(), get<DownloadHistoryRepository>()) }
-    single { InitViewModel(get(), get(), get())}
+    single { ClipboardMonitorManager(get(), get()) }
+    single { InitViewModel(get(), get(), get(), get())}
 
 
     viewModel { HomeViewModel(get(), get()) }
     viewModel { AboutViewModel(get()) }
     viewModel { BulkDownloadViewModel(get()) }
     viewModel { DownloadViewModel(get(), get(), get<DownloadHistoryRepository>()) }
-    viewModel { SettingsViewModel(get(), get(), get()) }
+    viewModel { SettingsViewModel(get(), get(), get(), get()) }
     viewModel { SingleDownloadViewModel(get(), get(), get(), get()) }
 
 }

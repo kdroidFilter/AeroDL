@@ -46,6 +46,8 @@ import ytdlpgui.composeapp.generated.resources.settings_browser_disable
 import ytdlpgui.composeapp.generated.resources.settings_browser_firefox
 import ytdlpgui.composeapp.generated.resources.settings_browser_safari
 import ytdlpgui.composeapp.generated.resources.settings_browser_select
+import ytdlpgui.composeapp.generated.resources.settings_clipboard_monitoring_caption
+import ytdlpgui.composeapp.generated.resources.settings_clipboard_monitoring_title
 import ytdlpgui.composeapp.generated.resources.settings_cookies_from_browser_label
 import ytdlpgui.composeapp.generated.resources.settings_cookies_from_browser_title
 import ytdlpgui.composeapp.generated.resources.settings_download_dir_caption
@@ -59,6 +61,8 @@ import ytdlpgui.composeapp.generated.resources.settings_no_check_certificate_tit
 import ytdlpgui.composeapp.generated.resources.settings_parallel_downloads_caption
 import ytdlpgui.composeapp.generated.resources.settings_parallel_downloads_title
 import ytdlpgui.composeapp.generated.resources.settings_select
+import ytdlpgui.composeapp.generated.resources.settings_clipboard_monitoring_title
+import ytdlpgui.composeapp.generated.resources.settings_clipboard_monitoring_caption
 
 @Composable
 fun SettingsScreen() {
@@ -266,6 +270,25 @@ fun SettingsView(
                     Switcher(
                         checked = state.noCheckCertificate,
                         onCheckStateChange = { onEvent(SettingsEvents.SetNoCheckCertificate(it)) },
+                    )
+                }
+            )
+        }
+        item {
+            // Toggle for clipboard monitoring
+            CardExpanderItem(
+                heading = { Text(stringResource(Res.string.settings_clipboard_monitoring_title)) },
+                caption = {
+                    Text(
+                        stringResource(Res.string.settings_clipboard_monitoring_caption),
+                        modifier = Modifier.fillMaxWidth(0.8f)
+                    )
+                },
+                icon = { Icon(Icons.Regular.Power, null) },
+                trailing = {
+                    Switcher(
+                        checked = state.clipboardMonitoringEnabled,
+                        onCheckStateChange = { onEvent(SettingsEvents.SetClipboardMonitoring(it)) },
                     )
                 }
             )
