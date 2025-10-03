@@ -13,7 +13,6 @@ import androidx.compose.ui.unit.dp
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.component.Icon
 import io.github.composefluent.component.SubtleButton
-import io.github.composefluent.icons.Icons
 import io.github.kdroidfilter.ytdlpgui.core.presentation.icons.Github
 import java.awt.Desktop
 import java.net.URI
@@ -33,18 +32,16 @@ fun Footer(
             onClick = {
                 val url = "https://github.com/kdroidFilter/ytdlpgui"
                 try {
-                    if (Desktop.isDesktopSupported()) {
-                        val desktop = Desktop.getDesktop()
-                        if (desktop.isSupported(Desktop.Action.BROWSE)) {
-                            desktop.browse(URI(url))
-                        }
+                    val desktop = Desktop.getDesktop()
+                    if (desktop.isSupported(Desktop.Action.BROWSE)) {
+                        desktop.browse(URI(url))
                     }
                 } catch (_: Exception) {
                     // no-op: ignore failures to open browser
                 }
             },
             modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
-        ){
+        ) {
             Icon(Github, contentDescription = null)
         }
     }
