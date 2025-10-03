@@ -34,6 +34,7 @@ class DownloadManager(
         val status: Status = Status.Pending,
         val message: String? = null,
         val handle: Handle? = null,
+        val subtitleLanguages: List<String>? = null,
     ) {
         enum class Status { Pending, Running, Completed, Failed, Cancelled }
     }
@@ -52,6 +53,17 @@ class DownloadManager(
     fun start(url: String, videoInfo: VideoInfo? = null, preset: YtDlpWrapper.Preset? = null) : String {
         val usedPreset = preset ?: YtDlpWrapper.Preset.P720
         val item = DownloadItem(url = url, videoInfo = videoInfo, preset = usedPreset, status = DownloadItem.Status.Pending)
+        _items.value += item
+        pendingQueue.addLast(item.id)
+        maybeStartPending()
+        return item.id
+    }
+
+    /** Enqueue a background video (MP4) download with subtitles for the given url. */
+    fun startWithSubtitles(url: String, videoInfo: VideoInfo? = null, preset: YtDlpWrapper.Preset? = null, languages: List<String>) : String {
+        val usedPreset = preset ?: YtDlpWrapper.Preset.P720
+        val langs = languages.filter { it.isNotBlank() }
+        val item = DownloadItem(url = url, videoInfo = videoInfo, preset = usedPreset, status = DownloadItem.Status.Pending, subtitleLanguages = langs)
         _items.value += item
         pendingQueue.addLast(item.id)
         maybeStartPending()
@@ -159,53 +171,106 @@ class DownloadManager(
             } else {
                 "%(title)s.%(ext)s"
             }
-            val handle = ytDlpWrapper.downloadMp4At(
-                url = item.url,
-                preset = usedPreset ?: YtDlpWrapper.Preset.P720,
-                outputTemplate = outputTemplate,
-                onEvent = { event ->
-                    when (event) {
-                        is Event.Started -> update(id) { it.copy(status = DownloadItem.Status.Running, message = null) }
-                        is Event.Progress -> {
-                            val pct = (event.percent ?: 0.0).toFloat().coerceIn(0f, 100f)
-                            update(id) { it.copy(progress = pct, message = null) }
-                        }
-                        is Event.Completed -> {
-                            val status = if (event.success) DownloadItem.Status.Completed else DownloadItem.Status.Failed
-                            update(id) { it.copy(status = status, message = null) }
-                            if (event.success) {
-                                historyRepository.add(
-                                    id = id,
-                                    url = item.url,
-                                    videoInfo = item.videoInfo,
-                                    outputPath = ytDlpWrapper.downloadDir?.absolutePath,
-                                    isAudio = false,
-                                    presetHeight = usedPreset?.height,
-                                    createdAt = System.currentTimeMillis()
-                                )
+            val handle = if (!item.subtitleLanguages.isNullOrEmpty()) {
+                ytDlpWrapper.downloadWithSpecificSubtitles(
+                    url = item.url,
+                    languages = item.subtitleLanguages,
+                    preset = usedPreset ?: YtDlpWrapper.Preset.P720,
+                    includeAutoSubtitles = true,
+                    keepSubtitleFiles = false,
+                    subtitleFormat = "srt",
+                    onEvent = { event ->
+                        when (event) {
+                            is Event.Started -> update(id) { it.copy(status = DownloadItem.Status.Running, message = null) }
+                            is Event.Progress -> {
+                                val pct = (event.percent ?: 0.0).toFloat().coerceIn(0f, 100f)
+                                update(id) { it.copy(progress = pct, message = null) }
                             }
-                            maybeStartPending()
-                        }
-                        is Event.Error -> {
-                            update(id) { it.copy(status = DownloadItem.Status.Failed, message = event.message) }
-                            maybeStartPending()
-                        }
-                        is Event.Cancelled -> {
-                            update(id) { it.copy(status = DownloadItem.Status.Cancelled, message = null) }
-                            maybeStartPending()
-                        }
-                        is Event.Log -> {
-                            val line = event.line
-                            destRegex.find(line)?.let { m -> lastDestPath = m.groupValues[1] }
-                            mergeRegex.find(line)?.let { m -> lastDestPath = m.groupValues[1] }
-                        }
-                        is Event.NetworkProblem -> {
-                            update(id) { it.copy(status = DownloadItem.Status.Failed, message = event.detail) }
-                            maybeStartPending()
+                            is Event.Completed -> {
+                                val status = if (event.success) DownloadItem.Status.Completed else DownloadItem.Status.Failed
+                                update(id) { it.copy(status = status, message = null) }
+                                if (event.success) {
+                                    historyRepository.add(
+                                        id = id,
+                                        url = item.url,
+                                        videoInfo = item.videoInfo,
+                                        outputPath = ytDlpWrapper.downloadDir?.absolutePath,
+                                        isAudio = false,
+                                        presetHeight = usedPreset?.height,
+                                        createdAt = System.currentTimeMillis()
+                                    )
+                                }
+                                maybeStartPending()
+                            }
+                            is Event.Error -> {
+                                update(id) { it.copy(status = DownloadItem.Status.Failed, message = event.message) }
+                                maybeStartPending()
+                            }
+                            is Event.Cancelled -> {
+                                update(id) { it.copy(status = DownloadItem.Status.Cancelled, message = null) }
+                                maybeStartPending()
+                            }
+                            is Event.Log -> {
+                                val line = event.line
+                                destRegex.find(line)?.let { m -> lastDestPath = m.groupValues[1] }
+                                mergeRegex.find(line)?.let { m -> lastDestPath = m.groupValues[1] }
+                            }
+                            is Event.NetworkProblem -> {
+                                update(id) { it.copy(status = DownloadItem.Status.Failed, message = event.detail) }
+                                maybeStartPending()
+                            }
                         }
                     }
-                }
-            )
+                )
+            } else {
+                ytDlpWrapper.downloadMp4At(
+                    url = item.url,
+                    preset = usedPreset ?: YtDlpWrapper.Preset.P720,
+                    outputTemplate = outputTemplate,
+                    onEvent = { event ->
+                        when (event) {
+                            is Event.Started -> update(id) { it.copy(status = DownloadItem.Status.Running, message = null) }
+                            is Event.Progress -> {
+                                val pct = (event.percent ?: 0.0).toFloat().coerceIn(0f, 100f)
+                                update(id) { it.copy(progress = pct, message = null) }
+                            }
+                            is Event.Completed -> {
+                                val status = if (event.success) DownloadItem.Status.Completed else DownloadItem.Status.Failed
+                                update(id) { it.copy(status = status, message = null) }
+                                if (event.success) {
+                                    historyRepository.add(
+                                        id = id,
+                                        url = item.url,
+                                        videoInfo = item.videoInfo,
+                                        outputPath = ytDlpWrapper.downloadDir?.absolutePath,
+                                        isAudio = false,
+                                        presetHeight = usedPreset?.height,
+                                        createdAt = System.currentTimeMillis()
+                                    )
+                                }
+                                maybeStartPending()
+                            }
+                            is Event.Error -> {
+                                update(id) { it.copy(status = DownloadItem.Status.Failed, message = event.message) }
+                                maybeStartPending()
+                            }
+                            is Event.Cancelled -> {
+                                update(id) { it.copy(status = DownloadItem.Status.Cancelled, message = null) }
+                                maybeStartPending()
+                            }
+                            is Event.Log -> {
+                                val line = event.line
+                                destRegex.find(line)?.let { m -> lastDestPath = m.groupValues[1] }
+                                mergeRegex.find(line)?.let { m -> lastDestPath = m.groupValues[1] }
+                            }
+                            is Event.NetworkProblem -> {
+                                update(id) { it.copy(status = DownloadItem.Status.Failed, message = event.detail) }
+                                maybeStartPending()
+                            }
+                        }
+                    }
+                )
+            }
             update(id) { it.copy(handle = handle) }
         }
     }

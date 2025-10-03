@@ -1,6 +1,7 @@
 package io.github.kdroidfilter.ytdlp.util
 
 import io.github.kdroidfilter.ytdlp.core.Options
+import io.github.kdroidfilter.ytdlp.core.SubtitleOptions
 import java.io.BufferedInputStream
 import java.io.File
 import java.net.*
@@ -98,6 +99,11 @@ object NetAndArchive {
 
         options.format?.let { cmd.addAll(listOf("-f", it)) }
 
+        // --- NEW: Handle subtitle options ---
+        options.subtitles?.let { subOpts ->
+            handleSubtitleOptions(cmd, subOpts)
+        }
+
         // Post-processing to enforce a container if requested
         options.targetContainer?.let { container ->
             if (container.equals("mp4", ignoreCase = true)) {
@@ -118,6 +124,54 @@ object NetAndArchive {
         if (options.extraArgs.isNotEmpty()) cmd.addAll(options.extraArgs)
         cmd.add(url)
         return cmd
+    }
+
+    /**
+     * Add subtitle-related arguments to the command
+     */
+    private fun handleSubtitleOptions(cmd: MutableList<String>, subOpts: SubtitleOptions) {
+        when {
+            // Download all subtitles
+            subOpts.allSubtitles -> {
+                cmd.add("--all-subs")
+                if (subOpts.writeAutoSubtitles) {
+                    cmd.add("--write-auto-subs")
+                }
+            }
+            // Download specific languages
+            subOpts.languages.isNotEmpty() -> {
+                cmd.add("--write-subs")
+                cmd.addAll(listOf("--sub-langs", subOpts.languages.joinToString(",")))
+                if (subOpts.writeAutoSubtitles) {
+                    cmd.add("--write-auto-subs")
+                }
+            }
+            // Only auto-subs requested without specific languages
+            subOpts.writeAutoSubtitles -> {
+                cmd.add("--write-auto-subs")
+            }
+        }
+
+        // Embed subtitles in the video file (requires ffmpeg)
+        if (subOpts.embedSubtitles) {
+            cmd.add("--embed-subs")
+        }
+
+        // Specify subtitle format preference
+        subOpts.subFormat?.let {
+            cmd.addAll(listOf("--sub-format", it))
+        }
+
+        // Convert subtitles to a specific format after download
+        subOpts.convertSubtitles?.let {
+            cmd.addAll(listOf("--convert-subs", it))
+        }
+
+        // Keep subtitle files after embedding
+        if (subOpts.embedSubtitles && !subOpts.writeSubtitles) {
+            // If embedding but not writing separate files, we don't need to add anything
+            // as yt-dlp will download them temporarily for embedding
+        }
     }
 
     // --- Progress Parsing ---

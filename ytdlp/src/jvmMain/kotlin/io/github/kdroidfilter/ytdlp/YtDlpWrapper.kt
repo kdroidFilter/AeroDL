@@ -668,4 +668,213 @@ class YtDlpWrapper {
             }
         }
     }
+
+
+    /**
+     * Downloads a video with subtitles embedded
+     *
+     * @param url The video URL
+     * @param preset The video quality preset
+     * @param subtitleLanguages List of subtitle language codes to download (e.g., ["en", "fr"])
+     *                         If empty, no subtitles will be downloaded
+     *                         If null, all available subtitles will be downloaded
+     * @param includeAutoSubtitles Include auto-generated subtitles if available
+     * @param outputTemplate The output file name template
+     * @param noCheckCertificate Disable SSL certificate validation
+     * @param timeout Download timeout
+     * @param onEvent Event callback
+     */
+    fun downloadWithSubtitles(
+        url: String,
+        preset: Preset = Preset.P1080,
+        subtitleLanguages: List<String>? = null,
+        includeAutoSubtitles: Boolean = false,
+        outputTemplate: String? = "%(title)s.%(ext)s",
+        noCheckCertificate: Boolean = false,
+        timeout: Duration? = Duration.ofMinutes(30),
+        onEvent: (Event) -> Unit
+    ): Handle {
+        val useNoCheckCert = noCheckCertificate || this.noCheckCertificate
+        val useCookies = this.cookiesFromBrowser
+
+        val subtitleOptions = when {
+            subtitleLanguages == null -> {
+                // Download all available subtitles
+                SubtitleOptions(
+                    allSubtitles = true,
+                    writeAutoSubtitles = includeAutoSubtitles,
+                    embedSubtitles = true,
+                    writeSubtitles = false // Don't keep separate files after embedding
+                )
+            }
+            subtitleLanguages.isNotEmpty() -> {
+                // Download specific languages
+                SubtitleOptions(
+                    languages = subtitleLanguages,
+                    writeAutoSubtitles = includeAutoSubtitles,
+                    embedSubtitles = true,
+                    writeSubtitles = false // Don't keep separate files after embedding
+                )
+            }
+            else -> {
+                // No subtitles requested
+                null
+            }
+        }
+
+        val opts = Options(
+            format = NetAndArchive.selectorDownloadExactMp4(preset.height),
+            outputTemplate = outputTemplate,
+            noCheckCertificate = useNoCheckCert,
+            cookiesFromBrowser = useCookies,
+            timeout = timeout,
+            targetContainer = "mp4",
+            allowRecode = false,
+            subtitles = subtitleOptions
+        )
+
+        return download(url, opts, onEvent)
+    }
+
+    /**
+     * Downloads a video with all available subtitles in specific languages
+     *
+     * @param url The video URL
+     * @param languages List of language codes (e.g., ["en", "fr", "es", "de"])
+     * @param preset Video quality preset
+     * @param includeAutoSubtitles Also download auto-generated subtitles for these languages
+     * @param keepSubtitleFiles Keep subtitle files after embedding (creates .srt/.vtt files)
+     * @param subtitleFormat Preferred subtitle format (e.g., "srt", "vtt", "ass")
+     * @param onEvent Event callback
+     */
+    fun downloadWithSpecificSubtitles(
+        url: String,
+        languages: List<String>,
+        preset: Preset = Preset.P1080,
+        includeAutoSubtitles: Boolean = true,
+        keepSubtitleFiles: Boolean = false,
+        subtitleFormat: String? = "srt",
+        outputTemplate: String? = "%(title)s.%(ext)s",
+        noCheckCertificate: Boolean = false,
+        timeout: Duration? = Duration.ofMinutes(30),
+        onEvent: (Event) -> Unit
+    ): Handle {
+        val useNoCheckCert = noCheckCertificate || this.noCheckCertificate
+        val useCookies = this.cookiesFromBrowser
+
+        val subtitleOptions = SubtitleOptions(
+            languages = languages,
+            writeAutoSubtitles = includeAutoSubtitles,
+            embedSubtitles = true,
+            writeSubtitles = keepSubtitleFiles,
+            subFormat = subtitleFormat
+        )
+
+        val opts = Options(
+            format = NetAndArchive.selectorDownloadExactMp4(preset.height),
+            outputTemplate = outputTemplate,
+            noCheckCertificate = useNoCheckCert,
+            cookiesFromBrowser = useCookies,
+            timeout = timeout,
+            targetContainer = "mp4",
+            allowRecode = false,
+            subtitles = subtitleOptions
+        )
+
+        return download(url, opts, onEvent)
+    }
+
+    /**
+     * Enhanced getVideoInfo that ensures automatic captions are included
+     *
+     * @param url The video URL
+     * @param extractFlat Extract basic info only (faster)
+     * @param includeAutoSubtitles Explicitly request automatic captions
+     * @param noCheckCertificate Disable SSL certificate validation
+     * @param timeoutSec Timeout in seconds
+     * @param maxHeight Maximum height for progressive URL selection
+     * @param preferredExts Preferred video extensions
+     */
+    suspend fun getVideoInfoWithAllSubtitles(
+        url: String,
+        extractFlat: Boolean = false,
+        includeAutoSubtitles: Boolean = true,
+        noCheckCertificate: Boolean = false,
+        timeoutSec: Long = 20,
+        maxHeight: Int = 1080,
+        preferredExts: List<String> = listOf("mp4", "webm")
+    ): Result<VideoInfo> {
+        val args = buildList {
+            add("--no-playlist")
+            if (extractFlat) add("--flat-playlist")
+            // Request automatic captions in the JSON output
+            if (includeAutoSubtitles) add("--write-auto-subs")
+        }
+        return extractMetadata(url, noCheckCertificate, timeoutSec, args).mapCatching { json ->
+            parseVideoInfoFromJson(json, maxHeight, preferredExts)
+        }
+    }
+
+    /**
+     * Downloads only the subtitles without downloading the video
+     *
+     * @param url The video URL
+     * @param languages Specific languages to download, or null for all
+     * @param includeAutoSubtitles Include auto-generated subtitles
+     * @param subtitleFormat Output format for subtitles
+     * @param outputDir Directory where subtitle files will be saved
+     * @param onEvent Event callback
+     */
+    fun downloadSubtitlesOnly(
+        url: String,
+        languages: List<String>? = null,
+        includeAutoSubtitles: Boolean = true,
+        subtitleFormat: String = "srt",
+        outputDir: File? = null,
+        noCheckCertificate: Boolean = false,
+        onEvent: (Event) -> Unit
+    ): Handle {
+        val useNoCheckCert = noCheckCertificate || this.noCheckCertificate
+        val useCookies = this.cookiesFromBrowser
+
+        val subtitleOptions = if (languages == null) {
+            SubtitleOptions(
+                allSubtitles = true,
+                writeAutoSubtitles = includeAutoSubtitles,
+                embedSubtitles = false, // Don't embed since we're not downloading video
+                writeSubtitles = true,
+                subFormat = subtitleFormat
+            )
+        } else {
+            SubtitleOptions(
+                languages = languages,
+                writeAutoSubtitles = includeAutoSubtitles,
+                embedSubtitles = false,
+                writeSubtitles = true,
+                subFormat = subtitleFormat
+            )
+        }
+
+        // Use --skip-download to only get subtitles
+        val extraArgs = listOf("--skip-download")
+
+        val opts = Options(
+            noCheckCertificate = useNoCheckCert,
+            cookiesFromBrowser = useCookies,
+            subtitles = subtitleOptions,
+            extraArgs = extraArgs,
+            outputTemplate = "%(title)s.%(ext)s"
+        )
+
+        // Use custom download dir if specified
+        val originalDir = downloadDir
+        outputDir?.let { downloadDir = it }
+
+        val handle = download(url, opts, onEvent)
+
+        // Restore original download dir
+        downloadDir = originalDir
+
+        return handle
+    }
 }

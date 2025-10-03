@@ -58,7 +58,6 @@ private fun findBestDirectUrl(
     } ?: (null to null)
 }
 
-
 // --- Helper to parse resolution availability from a formats array ---
 private fun parseResolutionAvailability(formats: JsonArray?): Map<Int, ResolutionAvailability> {
     if (formats == null || formats.isEmpty()) return emptyMap()
@@ -94,10 +93,40 @@ private fun parseResolutionAvailability(formats: JsonArray?): Map<Int, Resolutio
     }
 }
 
+// --- Helper to parse subtitles from JSON ---
+private fun parseSubtitles(subtitlesElement: JsonElement?, isAutomatic: Boolean = false): Map<String, SubtitleInfo> {
+    fun JsonElement?.objOrNull() = this as? JsonObject
+    fun JsonElement?.arrOrNull() = this as? JsonArray
+    fun JsonElement?.strOrNull() = this?.jsonPrimitive?.contentOrNull
+
+    return buildMap {
+        subtitlesElement?.objOrNull()?.forEach { (lang, dataEl) ->
+            val arr = dataEl.arrOrNull() ?: return@forEach
+            val formats = arr.mapNotNull { fe ->
+                val fo = fe.objOrNull() ?: return@mapNotNull null
+                val ext = fo["ext"].strOrNull() ?: return@mapNotNull null
+                SubtitleFormat(
+                    ext = ext,
+                    url = fo["url"].strOrNull(),
+                    name = fo["name"].strOrNull()
+                )
+            }
+            if (formats.isNotEmpty()) {
+                put(lang, SubtitleInfo(
+                    language = lang,
+                    languageName = arr.firstOrNull()?.objOrNull()?.get("name")?.strOrNull(),
+                    formats = formats,
+                    isAutomatic = isAutomatic
+                ))
+            }
+        }
+    }
+}
 
 // --- JSON Parsers ---
 /**
  * Enhanced JSON parser for VideoInfo that auto-generates YouTube thumbnails when missing
+ * and includes automatic captions
  */
 fun parseVideoInfoFromJson(
     jsonString: String,
@@ -143,23 +172,18 @@ fun parseVideoInfoFromJson(
     val uploader = root["uploader"].strOrNull() ?: root["channel"].strOrNull()
     val uploaderUrl = root["uploader_url"].strOrNull() ?: root["channel_url"].strOrNull()
 
-    val availableSubtitles: Map<String, SubtitleInfo> = buildMap {
-        root["subtitles"].objOrNull()?.forEach { (lang, dataEl) ->
-            val arr = dataEl.arrOrNull() ?: return@forEach
-            val formats = arr.mapNotNull { fe ->
-                val fo = fe.objOrNull() ?: return@mapNotNull null
-                val ext = fo["ext"].strOrNull() ?: return@mapNotNull null
-                SubtitleFormat(ext = ext, url = fo["url"].strOrNull(), name = fo["name"].strOrNull())
-            }
-            if (formats.isNotEmpty()) {
-                put(lang, SubtitleInfo(
-                    language = lang,
-                    languageName = arr.firstOrNull()?.objOrNull()?.get("name")?.strOrNull(),
-                    formats = formats
-                ))
-            }
-        }
+    // Parse both manual and automatic subtitles
+    val manualSubtitles = parseSubtitles(root["subtitles"], isAutomatic = false)
+    val automaticSubtitles = parseSubtitles(root["automatic_captions"], isAutomatic = true)
+
+    // Merge subtitles, preferring manual over automatic for same language
+    val availableSubtitles = buildMap {
+        putAll(automaticSubtitles) // Add automatic first
+        putAll(manualSubtitles)     // Manual will override if same language exists
     }
+
+    // Also create a separate map for automatic captions for backward compatibility
+    val automaticCaptions = automaticSubtitles
 
     val chapters: List<ChapterInfo> = root["chapters"].arrOrNull()?.mapNotNull { el ->
         val o = el.objOrNull() ?: return@mapNotNull null
@@ -180,7 +204,7 @@ fun parseVideoInfoFromJson(
         id = id,
         title = title,
         url = url,
-        thumbnail = thumbnail, // Now potentially auto-generated
+        thumbnail = thumbnail,
         duration = duration,
         description = root["description"].strOrNull(),
         uploader = uploader,
@@ -193,6 +217,7 @@ fun parseVideoInfoFromJson(
         fps = root["fps"].doubleOrNull(),
         formatNote = root["format_note"].strOrNull(),
         availableSubtitles = availableSubtitles,
+        automaticCaptions = automaticCaptions,
         chapters = chapters,
         tags = (root["tags"].arrOrNull()?.mapNotNull { it.strOrNull() }) ?: emptyList(),
         categories = (root["categories"].arrOrNull()?.mapNotNull { it.strOrNull() }) ?: emptyList(),
@@ -254,7 +279,7 @@ fun parsePlaylistInfoFromJson(jsonString: String): PlaylistInfo {
         description = root["description"].strOrNull(),
         uploader = root["uploader"].strOrNull(),
         uploaderUrl = root["uploader_url"].strOrNull(),
-        thumbnail = playlistThumbnail, // New field!
+        thumbnail = playlistThumbnail,
         entries = entries,
         entryCount = root["playlist_count"].intOrNull() ?: entries.size
     )

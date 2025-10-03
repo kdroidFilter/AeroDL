@@ -34,11 +34,20 @@ class SingleDownloadViewModel(
     private val _selectedPreset = MutableStateFlow<YtDlpWrapper.Preset?>(null)
     val selectedPreset = _selectedPreset.asStateFlow()
 
+    private val _availableSubtitleLanguages = MutableStateFlow<List<String>>(emptyList())
+    val availableSubtitleLanguages = _availableSubtitleLanguages.asStateFlow()
+
+    private val _selectedSubtitle = MutableStateFlow<String?>(null)
+    val selectedSubtitle = _selectedSubtitle.asStateFlow()
+
     init {
         val scope = CoroutineScope(Dispatchers.IO)
         scope.launch {
             println("Getting video info for $videoUrl")
-            ytDlpWrapper.getVideoInfo(videoUrl)
+            ytDlpWrapper.getVideoInfoWithAllSubtitles(
+                url = videoUrl,
+                includeAutoSubtitles = true
+            )
                 .onSuccess { info ->
                     _videoInfo.value = info
                     // Derive available presets from availableResolutions (downloadable)
@@ -47,6 +56,10 @@ class SingleDownloadViewModel(
                     }.sortedBy { it.height }
                     _availablePresets.value = presets
                     _selectedPreset.value = presets.maxByOrNull { it.height }
+                    // Subtitles
+                    val allLangs = info.getAllSubtitleLanguages()
+                    _availableSubtitleLanguages.value = allLangs.sorted()
+                    _selectedSubtitle.value = null
                     _isLoading.value = false
                 }
                 .onFailure {
@@ -62,8 +75,22 @@ class SingleDownloadViewModel(
             is SingleDownloadEvents.SelectPreset -> {
                 _selectedPreset.value = event.preset
             }
+            is SingleDownloadEvents.SelectSubtitle -> {
+                _selectedSubtitle.value = event.language
+            }
             SingleDownloadEvents.StartDownload -> {
-                downloadManager.start(videoUrl, videoInfo.value, selectedPreset.value)
+                val preset = selectedPreset.value
+                val subtitle = selectedSubtitle.value
+                if (!subtitle.isNullOrBlank()) {
+                    downloadManager.startWithSubtitles(
+                        url = videoUrl,
+                        videoInfo = videoInfo.value,
+                        preset = preset,
+                        languages = listOf(subtitle)
+                    )
+                } else {
+                    downloadManager.start(videoUrl, videoInfo.value, preset)
+                }
                 viewModelScope.launch {
                     navigator.navigate(Destination.HistoryScreen)
                 }

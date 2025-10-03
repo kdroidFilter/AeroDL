@@ -33,6 +33,10 @@ import io.github.composefluent.component.ProgressRing
 import io.github.composefluent.component.Text
 import io.github.composefluent.component.AccentButton
 import io.github.composefluent.component.Button
+import io.github.composefluent.component.DropDownButton
+import io.github.composefluent.component.MenuFlyoutContainer
+import io.github.composefluent.component.MenuFlyoutItem
+import io.github.composefluent.component.FlyoutPlacement
 import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.*
 import io.github.composefluent.icons.Icons
@@ -68,7 +72,10 @@ fun SingleDownloadView(
             videoInfo = state.videoInfo,
             availablePresets = state.availablePresets,
             selectedPreset = state.selectedPreset,
+            availableSubtitleLanguages = state.availableSubtitleLanguages,
+            selectedSubtitle = state.selectedSubtitle,
             onSelectPreset = { onEvent(SingleDownloadEvents.SelectPreset(it)) },
+            onSelectSubtitle = { onEvent(SingleDownloadEvents.SelectSubtitle(it)) },
             onStartDownload = { onEvent(SingleDownloadEvents.StartDownload) },
             onStartAudioDownload = { onEvent(SingleDownloadEvents.StartAudioDownload) }
         )
@@ -92,7 +99,10 @@ private fun VideoInfoSection(
     videoInfo: VideoInfo?,
     availablePresets: List<YtDlpWrapper.Preset>,
     selectedPreset: YtDlpWrapper.Preset?,
+    availableSubtitleLanguages: List<String>,
+    selectedSubtitle: String?,
     onSelectPreset: (YtDlpWrapper.Preset) -> Unit,
+    onSelectSubtitle: (String?) -> Unit,
     onStartDownload: () -> Unit,
     onStartAudioDownload: () -> Unit
 ) {
@@ -158,6 +168,46 @@ private fun VideoInfoSection(
                         }
                         Spacer(Modifier.height(16.dp))
                     }
+
+                    // Subtitles drop-down
+                    Text(text = "Sous-titres")
+                    Spacer(Modifier.height(8.dp))
+                    val subtitleLabel = selectedSubtitle ?: "Aucun sous-titre"
+                    MenuFlyoutContainer(
+                        flyout = {
+                            // None option
+                            MenuFlyoutItem(
+                                text = { Text("Aucun sous-titre") },
+                                onClick = {
+                                    onSelectSubtitle(null)
+                                    isFlyoutVisible = false
+                                },
+                            )
+                            // Languages
+                            availableSubtitleLanguages.forEach { lang ->
+                                MenuFlyoutItem(
+                                    text = { Text(lang) },
+                                    onClick = {
+                                        onSelectSubtitle(lang)
+                                        isFlyoutVisible = false
+                                    }
+                                )
+                            }
+                        },
+                        content = {
+                            DropDownButton(
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 1.dp),
+                                onClick = { isFlyoutVisible = !isFlyoutVisible },
+                                content = {
+                                    Text(subtitleLabel)
+                                },
+                            )
+                        },
+                        adaptivePlacement = true,
+                        placement = FlyoutPlacement.Bottom
+                    )
+                    Spacer(Modifier.height(16.dp))
+
                     AccentButton(onClick = onStartDownload) {
                         Text(stringResource(Res.string.download))
                     }
