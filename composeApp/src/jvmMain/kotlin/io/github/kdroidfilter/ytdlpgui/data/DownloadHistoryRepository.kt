@@ -72,6 +72,20 @@ class DownloadHistoryRepository(
         reload()
     }
 
+    fun delete(id: String) {
+        try {
+            db.databaseQueries.deleteHistoryById(id)
+        } catch (_: Throwable) { /* ignore */ }
+        reload()
+    }
+
+    fun clear() {
+        try {
+            db.databaseQueries.clearHistory()
+        } catch (_: Throwable) { /* ignore */ }
+        reload()
+    }
+
     private fun Download_history.toModel(): HistoryItem {
         val info = try {
             this.video_info_json?.let { json.decodeFromString<VideoInfo>(it) }

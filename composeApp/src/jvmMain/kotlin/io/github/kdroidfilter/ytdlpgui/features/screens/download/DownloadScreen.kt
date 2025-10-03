@@ -99,7 +99,18 @@ fun DownloadView(
 
             // Section: History
             item {
-                Text("Historique")
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Historique")
+                    if (state.history.isNotEmpty()) {
+                        Button(onClick = { onEvent(DownloadEvents.ClearHistory) }) {
+                            Text("Vider l'historique")
+                        }
+                    }
+                }
                 Spacer(Modifier.height(8.dp))
             }
             if (state.history.isEmpty()) {
@@ -107,17 +118,26 @@ fun DownloadView(
             } else {
                 val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
                 items(state.history) { h ->
-                    Column(Modifier.fillMaxWidth()) {
-                        Text(h.videoInfo?.title ?: h.url)
-                        if (h.videoInfo?.title != null) {
-                            Text(h.url)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text(h.videoInfo?.title ?: h.url)
+                            if (h.videoInfo?.title != null) {
+                                Text(h.url)
+                            }
+                            val typeLabel = if (h.isAudio) stringResource(Res.string.download_type_audio) else stringResource(Res.string.download_type_video)
+                            val typeAndPreset = if (!h.isAudio && h.presetHeight != null) "$typeLabel • ${h.presetHeight}p" else typeLabel
+                            Text(typeAndPreset)
+                            val whenStr = formatter.format(Instant.ofEpochMilli(h.createdAt))
+                            val whereStr = h.outputPath ?: ""
+                            Text("$whenStr • $whereStr")
                         }
-                        val typeLabel = if (h.isAudio) stringResource(Res.string.download_type_audio) else stringResource(Res.string.download_type_video)
-                        val typeAndPreset = if (!h.isAudio && h.presetHeight != null) "$typeLabel • ${h.presetHeight}p" else typeLabel
-                        Text(typeAndPreset)
-                        val whenStr = formatter.format(Instant.ofEpochMilli(h.createdAt))
-                        val whereStr = h.outputPath ?: ""
-                        Text("$whenStr • $whereStr")
+                        Button(onClick = { onEvent(DownloadEvents.DeleteHistory(h.id)) }) {
+                            Text("Supprimer")
+                        }
                     }
                 }
             }

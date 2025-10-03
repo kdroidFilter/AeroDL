@@ -23,6 +23,8 @@ class DownloadViewModel(
         when (event) {
             is DownloadEvents.Cancel -> downloadManager.cancel(event.id)
             DownloadEvents.Refresh -> { /* no-op for now */ }
+            DownloadEvents.ClearHistory -> historyRepository.clear()
+            is DownloadEvents.DeleteHistory -> historyRepository.delete(event.id)
         }
     }
 }
