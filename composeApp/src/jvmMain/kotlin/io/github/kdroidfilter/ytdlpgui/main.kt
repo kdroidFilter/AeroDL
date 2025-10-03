@@ -26,13 +26,14 @@ import io.github.composefluent.icons.filled.PictureInPictureExit
 import io.github.composefluent.icons.regular.ArrowDownload
 import io.github.composefluent.lightColors
 import io.github.kdroidfilter.platformtools.darkmodedetector.isSystemInDarkMode
+import io.github.kdroidfilter.ytdlpgui.core.presentation.icons.AeroDlLogoOnly
 import io.github.kdroidfilter.ytdlpgui.di.appModule
 import org.koin.compose.KoinApplication
 import java.util.Locale
 
 @OptIn(ExperimentalTrayAppApi::class, ExperimentalFluentApi::class)
 fun main() = application {
-    Locale.setDefault(Locale("en", "US"))
+    Locale.setDefault(Locale("he", "US"))
 
     KoinApplication(application = {
         modules(appModule)
@@ -47,7 +48,7 @@ fun main() = application {
 
         TrayApp(
             state = trayAppState,
-            icon = Icons.Default.ArrowDownload,
+            icon = AeroDlLogoOnly,
             tooltip = "YTDLP GUI",
             menu = {
                 CheckableItem("Ouvrir au démarrage", checked = true, onCheckedChange = {})
@@ -56,7 +57,7 @@ fun main() = application {
                 Item("Quitter", onClick = { exitApplication() }, icon = Icons.Filled.PictureInPictureExit)
             }
         ) {
-            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
                 FluentTheme(colors = if (isSystemInDarkMode()) darkColors() else lightColors()) {
                     Mica(
                         Modifier

@@ -6,7 +6,7 @@
     <string name="about">אודות</string>
 
     <!-- Home screen -->
-    <string name="app_name">AeroDL</string>
+    <string name="app_name">אירודיאל</string>
     <string name="logo_content_desc">לוגו</string>
     <string name="placeholder_link_example">https://youtu.be/XXXXXXXXX</string>
     <string name="paste_video_link_header">הדבק קישור לסרטון</string>

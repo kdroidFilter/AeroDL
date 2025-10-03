@@ -13,7 +13,7 @@ import androidx.compose.ui.input.key.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import io.github.composefluent.ExperimentalFluentApi
-import io.github.kdroidfilter.ytdlpgui.core.presentation.components.AppHeader
+import io.github.kdroidfilter.ytdlpgui.core.presentation.components.MainNavigator
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.*
 import io.github.kdroidfilter.ytdlpgui.features.screens.about.AboutScreen
 import io.github.kdroidfilter.ytdlpgui.features.screens.bulkdownload.BulkDownloadScreen
@@ -70,7 +70,7 @@ fun App() {
         verticalArrangement = Arrangement.Center
     ) {
         val currentDestination by navigator.currentDestination.collectAsState()
-        if (currentDestination != Destination.InitScreen) AppHeader(navigator = navigator)
+        if (currentDestination != Destination.InitScreen) MainNavigator(navigator = navigator)
 
         NavHost(
             navController = navController,
