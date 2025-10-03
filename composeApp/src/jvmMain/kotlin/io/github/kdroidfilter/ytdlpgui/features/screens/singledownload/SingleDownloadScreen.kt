@@ -49,6 +49,7 @@ import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
 import org.koin.compose.viewmodel.koinViewModel
 import java.time.Duration
+import java.util.Locale
 
 @Composable
 fun SingleDownloadScreen() {
@@ -174,7 +175,7 @@ private fun VideoInfoSection(
                     // Subtitles drop-down
                     Text(text = "Sous-titres")
                     Spacer(Modifier.height(8.dp))
-                    val subtitleLabel = if (selectedSubtitles.isEmpty()) "Aucun sous-titre" else selectedSubtitles.joinToString(", ")
+                    val subtitleLabel = if (selectedSubtitles.isEmpty()) "Aucun sous-titre" else selectedSubtitles.map { languageCodeToDisplayName(it) }.joinToString(", ")
                     MenuFlyoutContainer(
                         flyout = {
                             // None option (clear all)
@@ -185,10 +186,13 @@ private fun VideoInfoSection(
                                     isFlyoutVisible = false
                                 },
                             )
-                            // Languages (toggle selection)
-                            availableSubtitleLanguages.forEach { lang ->
+                            // Languages (toggle selection) - sorted alphabetically by localized display name
+                            val sortedLanguages = availableSubtitleLanguages
+                                .sortedBy { languageCodeToDisplayName(it).lowercase(Locale.getDefault()) }
+                            sortedLanguages.forEach { lang ->
                                 val checked = selectedSubtitles.contains(lang)
-                                val label = (if (checked) "✓ " else "") + lang
+                                val displayName = languageCodeToDisplayName(lang)
+                                val label = (if (checked) "✓ " else "") + displayName
                                 MenuFlyoutItem(
                                     text = { Text(label) },
                                     onClick = {
@@ -253,6 +257,33 @@ private fun formatDuration(d: Duration?): String {
     val m = (totalSec % 3600) / 60
     val s = totalSec % 60
     return if (h > 0) "%d:%02d:%02d".format(h, m, s) else "%d:%02d".format(m, s)
+}
+
+/**
+ * Convert a BCP-47-like language code (e.g. "en", "en-GB", legacy "iw")
+ * into a localized display name (e.g. "anglais" in French UI, "English" in English UI).
+ * Falls back to the original code if it can't be resolved.
+ */
+private fun languageCodeToDisplayName(langCode: String, targetLocale: Locale = Locale.getDefault()): String {
+    val deprecated = mapOf(
+        "iw" to "he", // Hebrew old code
+        "in" to "id", // Indonesian old code
+        "ji" to "yi"  // Yiddish old code
+    )
+    val trimmed = langCode.trim()
+    if (trimmed.isEmpty()) return trimmed
+
+    // Normalize underscores to hyphens and map deprecated primary subtags
+    val parts = trimmed.replace('_', '-').split('-', limit = 3).toMutableList()
+    if (parts.isNotEmpty()) {
+        val primary = parts[0].lowercase()
+        parts[0] = deprecated[primary] ?: primary
+    }
+    val normalizedTag = parts.joinToString("-")
+
+    val locale = Locale.forLanguageTag(normalizedTag)
+    val display = locale.getDisplayLanguage(targetLocale).ifEmpty { trimmed }
+    return display
 }
 
 
@@ -330,7 +361,5 @@ private fun ThumbnailWithDuration(
                 }
             }
         }
-
-
     }
 }
