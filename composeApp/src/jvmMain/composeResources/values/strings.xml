@@ -59,4 +59,9 @@
     <!-- Ces chaînes appartiennent à l'écran Download (Download screen) -->
     <string name="download_type_video">Video</string>
     <string name="download_type_audio">Audio</string>
+    <string name="single_formats">Formats</string>
+    <string name="single_subtitles">Subtitles</string>
+    <string name="single_no_subtitle">No subtitles</string>
+    <string name="error_fetch_video_info">An error occurred while fetching video info: %s</string>
+    <string name="thumbnail_content_desc">Thumbnail</string>
 </resources>

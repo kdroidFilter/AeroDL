@@ -40,6 +40,9 @@ class SingleDownloadViewModel(
     private val _selectedSubtitles = MutableStateFlow<List<String>>(emptyList())
     val selectedSubtitles = _selectedSubtitles.asStateFlow()
 
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage = _errorMessage.asStateFlow()
+
     init {
         val scope = CoroutineScope(Dispatchers.IO)
         scope.launch {
@@ -63,7 +66,9 @@ class SingleDownloadViewModel(
                     _isLoading.value = false
                 }
                 .onFailure {
-                    println("Error getting video info: ${it.message}")
+                    val detail = it.localizedMessage ?: it.message ?: it.toString()
+                    println("Error getting video info: $detail")
+                    _errorMessage.value = detail
                     _isLoading.value = false
                 }
         }

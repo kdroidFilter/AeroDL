@@ -28,6 +28,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.Icon
 import io.github.composefluent.component.ProgressRing
 import io.github.composefluent.component.Text
@@ -67,8 +68,9 @@ fun SingleDownloadView(
     onEvent: (SingleDownloadEvents) -> Unit,
 ) {
     val videoPlayerState = rememberVideoPlayerState()
-    if (state.isLoading) Loader() else
-        VideoInfoSection(
+    if (state.isLoading) Loader()
+    else if (state.errorMessage != null) ErrorBox(state.errorMessage)
+    else VideoInfoSection(
             videoPlayerState = videoPlayerState,
             videoInfo = state.videoInfo,
             availablePresets = state.availablePresets,
@@ -88,6 +90,13 @@ fun SingleDownloadView(
 private fun Loader() {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         ProgressRing()
+    }
+}
+
+@Composable
+private fun ErrorBox(message: String) {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text(text = stringResource(Res.string.error_fetch_video_info, message), color = Color.Red)
     }
 }
 
@@ -156,7 +165,7 @@ private fun VideoInfoSection(
                 }
                 item {
                     if (availablePresets.isNotEmpty()) {
-                        Text(text = "Formats")
+                        Text(text = stringResource(Res.string.single_formats))
                         Spacer(Modifier.height(8.dp))
                         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             items(availablePresets.size) { index ->
@@ -173,14 +182,14 @@ private fun VideoInfoSection(
                     }
 
                     // Subtitles drop-down
-                    Text(text = "Sous-titres")
+                    Text(text = stringResource(Res.string.single_subtitles))
                     Spacer(Modifier.height(8.dp))
-                    val subtitleLabel = if (selectedSubtitles.isEmpty()) "Aucun sous-titre" else selectedSubtitles.map { languageCodeToDisplayName(it) }.joinToString(", ")
+                    val subtitleLabel = if (selectedSubtitles.isEmpty()) stringResource(Res.string.single_no_subtitle) else selectedSubtitles.map { languageCodeToDisplayName(it) }.joinToString(", ")
                     MenuFlyoutContainer(
                         flyout = {
                             // None option (clear all)
                             MenuFlyoutItem(
-                                text = { Text("Aucun sous-titre") },
+                                text = { Text(stringResource(Res.string.single_no_subtitle)) },
                                 onClick = {
                                     onClearSubtitles()
                                     isFlyoutVisible = false
@@ -308,7 +317,7 @@ private fun ThumbnailWithDuration(
             if (!videoPlayerState.isPlaying) {
                 AsyncImage(
                     model = thumbnailUrl,
-                    contentDescription = "thumbnail",
+                    contentDescription = stringResource(Res.string.thumbnail_content_desc),
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )

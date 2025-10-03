@@ -7,6 +7,7 @@ import io.github.kdroidfilter.ytdlp.model.VideoInfo
 
 data class SingleDownloadState(
     val isLoading: Boolean = false,
+    val errorMessage: String? = null,
     val videoInfo: VideoInfo? = null,
     val availablePresets: List<YtDlpWrapper.Preset> = emptyList(),
     val selectedPreset: YtDlpWrapper.Preset? = null,
@@ -18,6 +19,7 @@ data class SingleDownloadState(
 fun collectSingleDownloadState(viewModel: SingleDownloadViewModel): SingleDownloadState =
     SingleDownloadState(
         isLoading = viewModel.isLoading.collectAsState().value,
+        errorMessage = viewModel.errorMessage.collectAsState().value,
         videoInfo = viewModel.videoInfo.collectAsState().value,
         availablePresets = viewModel.availablePresets.collectAsState().value,
         selectedPreset = viewModel.selectedPreset.collectAsState().value,
