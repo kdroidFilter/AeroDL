@@ -133,14 +133,22 @@ object NetAndArchive {
         when {
             // Download all subtitles
             subOpts.allSubtitles -> {
-                cmd.add("--all-subs")
+                if (subOpts.writeSubtitles || !subOpts.embedSubtitles) {
+                    cmd.add("--all-subs")
+                } else {
+                    // Embed only - download temporarily without keeping files
+                    cmd.add("--all-subs")
+                }
                 if (subOpts.writeAutoSubtitles) {
                     cmd.add("--write-auto-subs")
                 }
             }
             // Download specific languages
             subOpts.languages.isNotEmpty() -> {
-                cmd.add("--write-subs")
+                // Only add --write-subs if we want to keep separate files
+                if (subOpts.writeSubtitles || !subOpts.embedSubtitles) {
+                    cmd.add("--write-subs")
+                }
                 cmd.addAll(listOf("--sub-langs", subOpts.languages.joinToString(",")))
                 if (subOpts.writeAutoSubtitles) {
                     cmd.add("--write-auto-subs")
@@ -148,7 +156,9 @@ object NetAndArchive {
             }
             // Only auto-subs requested without specific languages
             subOpts.writeAutoSubtitles -> {
-                cmd.add("--write-auto-subs")
+                if (subOpts.writeSubtitles || !subOpts.embedSubtitles) {
+                    cmd.add("--write-auto-subs")
+                }
             }
         }
 
@@ -165,12 +175,6 @@ object NetAndArchive {
         // Convert subtitles to a specific format after download
         subOpts.convertSubtitles?.let {
             cmd.addAll(listOf("--convert-subs", it))
-        }
-
-        // Keep subtitle files after embedding
-        if (subOpts.embedSubtitles && !subOpts.writeSubtitles) {
-            // If embedding but not writing separate files, we don't need to add anything
-            // as yt-dlp will download them temporarily for embedding
         }
     }
 
