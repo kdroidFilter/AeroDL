@@ -33,7 +33,7 @@ import java.util.Locale
 
 @OptIn(ExperimentalTrayAppApi::class, ExperimentalFluentApi::class)
 fun main() = application {
-    Locale.setDefault(Locale("he", "US"))
+//    Locale.setDefault(Locale("he", "US"))
 
     KoinApplication(application = {
         modules(appModule)
@@ -57,7 +57,7 @@ fun main() = application {
                 Item("Quitter", onClick = { exitApplication() }, icon = Icons.Filled.PictureInPictureExit)
             }
         ) {
-            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                 FluentTheme(colors = if (isSystemInDarkMode()) darkColors() else lightColors()) {
                     Mica(
                         Modifier

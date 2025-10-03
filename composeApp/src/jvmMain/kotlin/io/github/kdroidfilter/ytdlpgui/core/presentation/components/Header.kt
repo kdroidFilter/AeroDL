@@ -101,7 +101,7 @@ fun MainNavigator(
                     },
                     text = {
                         val full = stringResource(titleRes)
-                        val display = if (full.length > 10) full.take(10) + "…" else full
+                        val display = if (full.length > 8) full.take(8) + "…" else full
                         Text(text = display)
                     },
                     icon = {

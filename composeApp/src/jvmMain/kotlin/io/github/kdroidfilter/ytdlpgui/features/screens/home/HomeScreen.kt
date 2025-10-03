@@ -17,6 +17,7 @@ import io.github.composefluent.icons.filled.ClipboardPaste
 import io.github.composefluent.icons.regular.ArrowLeft
 import io.github.composefluent.icons.regular.ArrowRight
 import io.github.kdroidfilter.platformtools.darkmodedetector.isSystemInDarkMode
+import io.github.kdroidfilter.ytdlpgui.core.presentation.icons.AeroDlLogoOnly
 import io.github.kdroidfilter.ytdlpgui.core.presentation.tools.PreviewContainer
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -49,11 +50,11 @@ fun HomeView(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(stringResource(Res.string.app_name), style = FluentTheme.typography.title)
-            Image(
-                painter = painterResource(if (isSystemInDarkMode()) Res.drawable.AeroDlDark else Res.drawable.AeroDl),
+            Icon(
+                imageVector = AeroDlLogoOnly,
                 contentDescription = stringResource(Res.string.logo_content_desc),
-                modifier = Modifier.fillMaxSize(0.5f).let { if (isRtl) it.scale(scaleX = -1f, scaleY = 1f) else it }
+                modifier = Modifier.fillMaxSize(0.5f),
+                tint = FluentTheme.colors.system.neutral
             )
         }
         Row(
