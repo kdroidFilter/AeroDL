@@ -33,7 +33,7 @@ import ytdlpgui.composeapp.generated.resources.home
 
 @OptIn(ExperimentalFluentApi::class)
 @Composable
-fun MainNavigator(
+fun Header(
     navigator: Navigator,
     modifier: Modifier = Modifier,
 ) {
