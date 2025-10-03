@@ -37,8 +37,8 @@ class SingleDownloadViewModel(
     private val _availableSubtitleLanguages = MutableStateFlow<List<String>>(emptyList())
     val availableSubtitleLanguages = _availableSubtitleLanguages.asStateFlow()
 
-    private val _selectedSubtitle = MutableStateFlow<String?>(null)
-    val selectedSubtitle = _selectedSubtitle.asStateFlow()
+    private val _selectedSubtitles = MutableStateFlow<List<String>>(emptyList())
+    val selectedSubtitles = _selectedSubtitles.asStateFlow()
 
     init {
         val scope = CoroutineScope(Dispatchers.IO)
@@ -59,7 +59,7 @@ class SingleDownloadViewModel(
                     // Subtitles
                     val allLangs = info.getAllSubtitleLanguages()
                     _availableSubtitleLanguages.value = allLangs.sorted()
-                    _selectedSubtitle.value = null
+                    _selectedSubtitles.value = emptyList()
                     _isLoading.value = false
                 }
                 .onFailure {
@@ -75,18 +75,26 @@ class SingleDownloadViewModel(
             is SingleDownloadEvents.SelectPreset -> {
                 _selectedPreset.value = event.preset
             }
-            is SingleDownloadEvents.SelectSubtitle -> {
-                _selectedSubtitle.value = event.language
+            is SingleDownloadEvents.ToggleSubtitle -> {
+                val current = _selectedSubtitles.value
+                _selectedSubtitles.value = if (current.contains(event.language)) {
+                    current.filterNot { it == event.language }
+                } else {
+                    current + event.language
+                }
+            }
+            SingleDownloadEvents.ClearSubtitles -> {
+                _selectedSubtitles.value = emptyList()
             }
             SingleDownloadEvents.StartDownload -> {
                 val preset = selectedPreset.value
-                val subtitle = selectedSubtitle.value
-                if (!subtitle.isNullOrBlank()) {
+                val subtitles = selectedSubtitles.value
+                if (subtitles.isNotEmpty()) {
                     downloadManager.startWithSubtitles(
                         url = videoUrl,
                         videoInfo = videoInfo.value,
                         preset = preset,
-                        languages = listOf(subtitle)
+                        languages = subtitles
                     )
                 } else {
                     downloadManager.start(videoUrl, videoInfo.value, preset)

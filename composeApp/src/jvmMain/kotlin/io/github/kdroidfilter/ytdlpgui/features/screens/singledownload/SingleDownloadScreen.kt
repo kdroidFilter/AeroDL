@@ -73,9 +73,10 @@ fun SingleDownloadView(
             availablePresets = state.availablePresets,
             selectedPreset = state.selectedPreset,
             availableSubtitleLanguages = state.availableSubtitleLanguages,
-            selectedSubtitle = state.selectedSubtitle,
+            selectedSubtitles = state.selectedSubtitles,
             onSelectPreset = { onEvent(SingleDownloadEvents.SelectPreset(it)) },
-            onSelectSubtitle = { onEvent(SingleDownloadEvents.SelectSubtitle(it)) },
+            onToggleSubtitle = { onEvent(SingleDownloadEvents.ToggleSubtitle(it)) },
+            onClearSubtitles = { onEvent(SingleDownloadEvents.ClearSubtitles) },
             onStartDownload = { onEvent(SingleDownloadEvents.StartDownload) },
             onStartAudioDownload = { onEvent(SingleDownloadEvents.StartAudioDownload) }
         )
@@ -100,9 +101,10 @@ private fun VideoInfoSection(
     availablePresets: List<YtDlpWrapper.Preset>,
     selectedPreset: YtDlpWrapper.Preset?,
     availableSubtitleLanguages: List<String>,
-    selectedSubtitle: String?,
+    selectedSubtitles: List<String>,
     onSelectPreset: (YtDlpWrapper.Preset) -> Unit,
-    onSelectSubtitle: (String?) -> Unit,
+    onToggleSubtitle: (String) -> Unit,
+    onClearSubtitles: () -> Unit,
     onStartDownload: () -> Unit,
     onStartAudioDownload: () -> Unit
 ) {
@@ -172,23 +174,25 @@ private fun VideoInfoSection(
                     // Subtitles drop-down
                     Text(text = "Sous-titres")
                     Spacer(Modifier.height(8.dp))
-                    val subtitleLabel = selectedSubtitle ?: "Aucun sous-titre"
+                    val subtitleLabel = if (selectedSubtitles.isEmpty()) "Aucun sous-titre" else selectedSubtitles.joinToString(", ")
                     MenuFlyoutContainer(
                         flyout = {
-                            // None option
+                            // None option (clear all)
                             MenuFlyoutItem(
                                 text = { Text("Aucun sous-titre") },
                                 onClick = {
-                                    onSelectSubtitle(null)
+                                    onClearSubtitles()
                                     isFlyoutVisible = false
                                 },
                             )
-                            // Languages
+                            // Languages (toggle selection)
                             availableSubtitleLanguages.forEach { lang ->
+                                val checked = selectedSubtitles.contains(lang)
+                                val label = (if (checked) "✓ " else "") + lang
                                 MenuFlyoutItem(
-                                    text = { Text(lang) },
+                                    text = { Text(label) },
                                     onClick = {
-                                        onSelectSubtitle(lang)
+                                        onToggleSubtitle(lang)
                                         isFlyoutVisible = false
                                     }
                                 )

@@ -11,7 +11,7 @@ data class SingleDownloadState(
     val availablePresets: List<YtDlpWrapper.Preset> = emptyList(),
     val selectedPreset: YtDlpWrapper.Preset? = null,
     val availableSubtitleLanguages: List<String> = emptyList(),
-    val selectedSubtitle: String? = null,
+    val selectedSubtitles: List<String> = emptyList(),
 )
 
 @Composable
@@ -22,5 +22,5 @@ fun collectSingleDownloadState(viewModel: SingleDownloadViewModel): SingleDownlo
         availablePresets = viewModel.availablePresets.collectAsState().value,
         selectedPreset = viewModel.selectedPreset.collectAsState().value,
         availableSubtitleLanguages = viewModel.availableSubtitleLanguages.collectAsState().value,
-        selectedSubtitle = viewModel.selectedSubtitle.collectAsState().value,
+        selectedSubtitles = viewModel.selectedSubtitles.collectAsState().value,
     )
