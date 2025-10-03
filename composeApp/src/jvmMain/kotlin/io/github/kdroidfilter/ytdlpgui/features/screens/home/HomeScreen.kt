@@ -43,8 +43,8 @@ fun HomeView(
     val currentLayoutDirection = LocalLayoutDirection.current
     val isRtl = (currentLayoutDirection == LayoutDirection.Rtl)
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Column(
@@ -53,7 +53,7 @@ fun HomeView(
             Icon(
                 imageVector = AeroDlLogoOnly,
                 contentDescription = stringResource(Res.string.logo_content_desc),
-                modifier = Modifier.fillMaxSize(0.5f),
+                modifier = Modifier.height(150.dp),
                 tint = FluentTheme.colors.system.neutral
             )
         }

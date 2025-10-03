@@ -3,6 +3,7 @@ package io.github.kdroidfilter.ytdlpgui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -10,6 +11,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.*
+import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import io.github.composefluent.ExperimentalFluentApi
@@ -75,7 +77,7 @@ fun App() {
         NavHost(
             navController = navController,
             startDestination = Destination.InitScreen,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize().padding(16.dp)
         ) {
             noAnimatedComposable<Destination.InitScreen> { InitScreen() }
             noAnimatedComposable<Destination.HomeScreen> { HomeScreen() }
