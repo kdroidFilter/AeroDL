@@ -369,9 +369,20 @@ class YtDlpWrapper {
         noCheckCertificate: Boolean = false,
         extraArgs: List<String> = emptyList(),
         timeout: Duration? = Duration.ofMinutes(30),
+        subtitles: SubtitleOptions? = null,
         onEvent: (Event) -> Unit
     ): Handle =
-        downloadAtHeight(url, preset.height, preferredExts, noCheckCertificate, outputTemplate, extraArgs, timeout, onEvent)
+        downloadAtHeight(
+            url,
+            preset.height,
+            preferredExts,
+            noCheckCertificate,
+            outputTemplate,
+            extraArgs,
+            timeout,
+            subtitles,
+            onEvent
+        )
 
     fun downloadMp4At(
         url: String,
@@ -381,6 +392,7 @@ class YtDlpWrapper {
         extraArgs: List<String> = emptyList(),
         timeout: Duration? = Duration.ofMinutes(30),
         recodeIfNeeded: Boolean = false,
+        subtitles: SubtitleOptions? = null,
         onEvent: (Event) -> Unit
     ): Handle =
         downloadAtHeightMp4(
@@ -391,6 +403,7 @@ class YtDlpWrapper {
             extraArgs,
             timeout,
             recodeIfNeeded,
+            subtitles,
             onEvent
         )
 
@@ -535,6 +548,7 @@ class YtDlpWrapper {
         outputTemplate: String?,
         extraArgs: List<String>,
         timeout: Duration?,
+        subtitles: SubtitleOptions?,
         onEvent: (Event) -> Unit
     ): Handle {
         val useNoCheckCert = noCheckCertificate || this.noCheckCertificate
@@ -545,7 +559,8 @@ class YtDlpWrapper {
             noCheckCertificate = useNoCheckCert,
             cookiesFromBrowser = useCookies,
             extraArgs = extraArgs,
-            timeout = timeout
+            timeout = timeout,
+            subtitles = subtitles
         )
         return download(url, opts, onEvent)
     }
@@ -558,6 +573,7 @@ class YtDlpWrapper {
         extraArgs: List<String>,
         timeout: Duration?,
         recodeIfNeeded: Boolean,
+        subtitles: SubtitleOptions?,
         onEvent: (Event) -> Unit
     ): Handle {
         val useNoCheckCert = noCheckCertificate || this.noCheckCertificate
@@ -570,7 +586,8 @@ class YtDlpWrapper {
             extraArgs = extraArgs,
             timeout = timeout,
             targetContainer = "mp4",
-            allowRecode = recodeIfNeeded
+            allowRecode = recodeIfNeeded,
+            subtitles = subtitles
         )
         return download(url, opts, onEvent)
     }
@@ -670,119 +687,7 @@ class YtDlpWrapper {
     }
 
 
-    /**
-     * Downloads a video with subtitles embedded
-     *
-     * @param url The video URL
-     * @param preset The video quality preset
-     * @param subtitleLanguages List of subtitle language codes to download (e.g., ["en", "fr"])
-     *                         If empty, no subtitles will be downloaded
-     *                         If null, all available subtitles will be downloaded
-     * @param includeAutoSubtitles Include auto-generated subtitles if available
-     * @param outputTemplate The output file name template
-     * @param noCheckCertificate Disable SSL certificate validation
-     * @param timeout Download timeout
-     * @param onEvent Event callback
-     */
-    fun downloadWithSubtitles(
-        url: String,
-        preset: Preset = Preset.P1080,
-        subtitleLanguages: List<String>? = null,
-        includeAutoSubtitles: Boolean = false,
-        outputTemplate: String? = "%(title)s.%(ext)s",
-        noCheckCertificate: Boolean = false,
-        timeout: Duration? = Duration.ofMinutes(30),
-        onEvent: (Event) -> Unit
-    ): Handle {
-        val useNoCheckCert = noCheckCertificate || this.noCheckCertificate
-        val useCookies = this.cookiesFromBrowser
 
-        val subtitleOptions = when {
-            subtitleLanguages == null -> {
-                // Download all available subtitles
-                SubtitleOptions(
-                    allSubtitles = true,
-                    writeAutoSubtitles = includeAutoSubtitles,
-                    embedSubtitles = true,
-                    writeSubtitles = false // Don't keep separate files after embedding
-                )
-            }
-            subtitleLanguages.isNotEmpty() -> {
-                // Download specific languages
-                SubtitleOptions(
-                    languages = subtitleLanguages,
-                    writeAutoSubtitles = includeAutoSubtitles,
-                    embedSubtitles = true,
-                    writeSubtitles = false // Don't keep separate files after embedding
-                )
-            }
-            else -> {
-                // No subtitles requested
-                null
-            }
-        }
-
-        val opts = Options(
-            format = NetAndArchive.selectorDownloadExactMp4(preset.height),
-            outputTemplate = outputTemplate,
-            noCheckCertificate = useNoCheckCert,
-            cookiesFromBrowser = useCookies,
-            timeout = timeout,
-            targetContainer = "mp4",
-            allowRecode = false,
-            subtitles = subtitleOptions
-        )
-
-        return download(url, opts, onEvent)
-    }
-
-    /**
-     * Downloads a video with all available subtitles in specific languages
-     *
-     * @param url The video URL
-     * @param languages List of language codes (e.g., ["en", "fr", "es", "de"])
-     * @param preset Video quality preset
-     * @param includeAutoSubtitles Also download auto-generated subtitles for these languages
-     * @param keepSubtitleFiles Keep subtitle files after embedding (creates .srt/.vtt files)
-     * @param subtitleFormat Preferred subtitle format (e.g., "srt", "vtt", "ass")
-     * @param onEvent Event callback
-     */
-    fun downloadWithSpecificSubtitles(
-        url: String,
-        languages: List<String>,
-        preset: Preset = Preset.P1080,
-        includeAutoSubtitles: Boolean = true,
-        keepSubtitleFiles: Boolean = false,
-        subtitleFormat: String? = "srt",
-        outputTemplate: String? = "%(title)s.%(ext)s",
-        noCheckCertificate: Boolean = false,
-        timeout: Duration? = Duration.ofMinutes(30),
-        onEvent: (Event) -> Unit
-    ): Handle {
-        val useNoCheckCert = noCheckCertificate || this.noCheckCertificate
-        val useCookies = this.cookiesFromBrowser
-
-        val subtitleOptions = SubtitleOptions(
-            languages = languages,
-            writeAutoSubtitles = includeAutoSubtitles,
-            embedSubtitles = true,
-            writeSubtitles = keepSubtitleFiles,
-            subFormat = subtitleFormat
-        )
-
-        val opts = Options(
-            format = NetAndArchive.selectorDownloadExactMp4(preset.height),
-            outputTemplate = outputTemplate,
-            noCheckCertificate = useNoCheckCert,
-            cookiesFromBrowser = useCookies,
-            timeout = timeout,
-            targetContainer = "mp4",
-            allowRecode = false,
-            subtitles = subtitleOptions
-        )
-
-        return download(url, opts, onEvent)
-    }
 
     /**
      * Enhanced getVideoInfo that ensures automatic captions are included

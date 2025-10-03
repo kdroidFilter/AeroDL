@@ -2,6 +2,7 @@ package io.github.kdroidfilter.ytdlp.demos
 
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlp.core.Event
+import io.github.kdroidfilter.ytdlp.core.SubtitleOptions
 import kotlinx.coroutines.runBlocking
 import java.io.File
 
@@ -74,13 +75,16 @@ fun main() = runBlocking {
     // ===== EXAMPLE 2: Download video with specific subtitles =====
     println("\n📺 EXAMPLE 2: Download video with English and French subtitles...")
 
-    val downloadHandle1 = wrapper.downloadWithSpecificSubtitles(
+    val downloadHandle1 = wrapper.downloadMp4At(
         url = videoUrl,
-        languages = listOf("en", "fr"), // English and French
         preset = YtDlpWrapper.Preset.P720,
-        includeAutoSubtitles = true,    // Include auto-generated if manual not available
-        keepSubtitleFiles = true,       // Also save .srt files separately
-        subtitleFormat = "srt",
+        subtitles = SubtitleOptions(
+            languages = listOf("en", "fr"), // English and French
+            writeAutoSubtitles = true,    // Include auto-generated if manual not available
+            embedSubtitles = true,
+            writeSubtitles = true,       // Also save .srt files separately
+            subFormat = "srt"
+        ),
         onEvent = { event ->
             when (event) {
                 is Event.Started -> println("  → Download started")
@@ -100,11 +104,15 @@ fun main() = runBlocking {
     // ===== EXAMPLE 3: Download video with ALL available subtitles =====
     println("\n📺 EXAMPLE 3: Download video with ALL available subtitles...")
 
-    val downloadHandle2 = wrapper.downloadWithSubtitles(
+    val downloadHandle2 = wrapper.downloadMp4At(
         url = videoUrl,
         preset = YtDlpWrapper.Preset.P480,
-        subtitleLanguages = null,       // null = download all available
-        includeAutoSubtitles = true,
+        subtitles = SubtitleOptions(
+            allSubtitles = true,       // download all available
+            writeAutoSubtitles = true,
+            embedSubtitles = true,
+            writeSubtitles = false
+        ),
         onEvent = { event ->
             when (event) {
                 is Event.Started -> println("  → Download started")

@@ -2,6 +2,7 @@ package io.github.kdroidfilter.ytdlpgui.features.screens.download
 
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlp.core.Event
+import io.github.kdroidfilter.ytdlp.core.SubtitleOptions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -172,13 +173,17 @@ class DownloadManager(
                 "%(title)s.%(ext)s"
             }
             val handle = if (!item.subtitleLanguages.isNullOrEmpty()) {
-                ytDlpWrapper.downloadWithSpecificSubtitles(
+                ytDlpWrapper.downloadMp4At(
                     url = item.url,
-                    languages = item.subtitleLanguages,
                     preset = usedPreset ?: YtDlpWrapper.Preset.P720,
-                    includeAutoSubtitles = true,
-                    keepSubtitleFiles = false,
-                    subtitleFormat = "srt",
+                    outputTemplate = outputTemplate,
+                    subtitles = SubtitleOptions(
+                        languages = item.subtitleLanguages,
+                        writeAutoSubtitles = true,
+                        embedSubtitles = true,
+                        writeSubtitles = false,
+                        subFormat = "srt"
+                    ),
                     onEvent = { event ->
                         when (event) {
                             is Event.Started -> update(id) { it.copy(status = DownloadItem.Status.Running, message = null) }
