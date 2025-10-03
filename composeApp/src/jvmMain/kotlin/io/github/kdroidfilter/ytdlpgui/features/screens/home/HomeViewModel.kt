@@ -32,7 +32,8 @@ class HomeViewModel(
         when (event) {
             is HomeEvents.OnLinkChanged -> {
                 _textFieldContent.value = event.link
-                _errorMessage.value = null
+                // Validate as the user types
+                validateLink(event.link)
             }
             HomeEvents.OnNextClicked -> checkLink()
             HomeEvents.OnClipBoardClicked -> copyFromClipboard()
@@ -44,37 +45,57 @@ class HomeViewModel(
         val contents = clipboard.getContents(null)
         if (contents != null && contents.isDataFlavorSupported(java.awt.datatransfer.DataFlavor.stringFlavor)) {
             try {
-                _textFieldContent.value =
-                    contents.getTransferData(java.awt.datatransfer.DataFlavor.stringFlavor) as String
+                val pasted = contents.getTransferData(java.awt.datatransfer.DataFlavor.stringFlavor) as String
+                _textFieldContent.value = pasted
+                // Validate immediately after pasting
+                validateLink(pasted)
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
     }
 
-    private fun checkLink() {
-        val input = textFieldContent.value.trim()
+    private fun validateLink(inputRaw: String): Boolean {
+        val input = inputRaw.trim()
+        // If empty, clear error and consider invalid (can't navigate yet)
+        if (input.isEmpty()) {
+            _errorMessage.value = null
+            return false
+        }
+
         // Extract a single URL from the input using a simple regex for http/https links
-        val urlRegex = Regex("""https?://[^\s]+""")
+        val urlRegex = Regex("""https?://\S+""")
         val matches = urlRegex.findAll(input).toList()
 
         if (matches.size != 1 || matches.first().value != input) {
+            // Either multiple URLs or extra text around the URL
             viewModelScope.launch {
                 _errorMessage.value = getString(Res.string.error_single_valid_url)
             }
-            return
+            return false
         }
 
         val url = matches.first().value
         // Validate URL structure
-        try {
-            java.net.URL(url).toURI()
+        return try {
+            java.net.URI(url)
+            // Looks valid
+            _errorMessage.value = null
+            true
         } catch (e: Exception) {
             viewModelScope.launch {
                 _errorMessage.value = getString(Res.string.error_invalid_url_format)
             }
-            return
+            false
         }
+    }
+
+    private fun checkLink() {
+        val current = textFieldContent.value
+        val isValid = validateLink(current)
+        if (!isValid) return
+
+        val url = current.trim()
 
         // Classify: playlist/channel → Bulk, otherwise Single
         val lower = url.lowercase()
