@@ -18,6 +18,9 @@ interface Navigator {
         navOptions: NavOptionsBuilder.() -> Unit = {}
     )
 
+    // Navigate to a destination and clear the back stack so that back is disabled
+    suspend fun navigateAndClearBackStack(destination: Destination)
+
     suspend fun navigateUp()
 
     val canGoBack: StateFlow<Boolean>
@@ -54,6 +57,22 @@ class DefaultNavigator(
 
         _navigationActions.emit(
             NavigationAction.Navigate(destination, navOptions)
+        )
+    }
+
+    override suspend fun navigateAndClearBackStack(destination: Destination) {
+        // Clear our local stack and push only the new destination
+        stack.clear()
+        stack.addLast(destination)
+        _currentDestination.value = destination
+        _canGoBack.value = false
+
+        _navigationActions.emit(
+            NavigationAction.Navigate(destination) {
+                // Clear the NavController back stack entirely
+                popUpTo(0)
+                launchSingleTop = true
+            }
         )
     }
 

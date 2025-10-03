@@ -104,7 +104,7 @@ class InitViewModel(
                             initCompleted = event.success
                         )
                         viewModelScope.launch {
-                            navigator.navigate(Destination.HomeScreen)
+                            navigator.navigateAndClearBackStack(Destination.HomeScreen)
                         }
                     }
                 }
