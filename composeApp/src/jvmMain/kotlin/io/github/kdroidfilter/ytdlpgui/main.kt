@@ -2,12 +2,15 @@ package io.github.kdroidfilter.ytdlpgui
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.DpSize
@@ -17,6 +20,7 @@ import androidx.compose.ui.window.application
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.kdroid.composetray.tray.api.TrayApp
 import com.kdroid.composetray.tray.api.rememberTrayAppState
+import com.kdroid.composetray.utils.isMenuBarInDarkMode
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.background.Mica
@@ -45,7 +49,7 @@ fun main() = application {
 
         TrayApp(
             state = trayAppState,
-            icon = AeroDlLogoOnly,
+            iconContent ={ Icon(AeroDlLogoOnly, "", modifier = Modifier.padding(12.dp).fillMaxSize(), tint = if (isMenuBarInDarkMode()) Color.White else Color.Black) },
             tooltip = "YTDLP GUI",
             menu = {
                 CheckableItem("Ouvrir au démarrage", checked = true, onCheckedChange = {})
