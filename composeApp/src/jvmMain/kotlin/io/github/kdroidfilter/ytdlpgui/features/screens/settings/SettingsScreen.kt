@@ -36,6 +36,7 @@ import io.github.kdroidfilter.ytdlpgui.core.presentation.icons.Cookie_off
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import ytdlpgui.composeapp.generated.resources.Res
+import ytdlpgui.composeapp.generated.resources.settings_auto_launch_title
 import ytdlpgui.composeapp.generated.resources.settings_browser_chrome
 import ytdlpgui.composeapp.generated.resources.settings_browser_disable
 import ytdlpgui.composeapp.generated.resources.settings_browser_firefox
@@ -58,6 +59,9 @@ import ytdlpgui.composeapp.generated.resources.settings_parallel_downloads_title
 import ytdlpgui.composeapp.generated.resources.settings_select
 import ytdlpgui.composeapp.generated.resources.settings_clipboard_monitoring_title
 import ytdlpgui.composeapp.generated.resources.settings_clipboard_monitoring_caption
+import ytdlpgui.composeapp.generated.resources.settings_auto_launch_title
+import ytdlpgui.composeapp.generated.resources.settings_auto_launch_caption
+import ytdlpgui.composeapp.generated.resources.open_directory
 
 @Composable
 fun SettingsScreen() {
@@ -234,7 +238,7 @@ fun SettingsView(
                         iconOnly = true,
                         onClick = { onEvent(SettingsEvents.PickDownloadDir(pickTitle)) },
                         content = {
-                            Icon(Icons.Filled.OpenFolder, "Open directory picker")
+                            Icon(Icons.Filled.OpenFolder, stringResource(Res.string.open_directory))
                         },
                     )
                 }
@@ -274,6 +278,25 @@ fun SettingsView(
                     Switcher(
                         checked = state.clipboardMonitoringEnabled,
                         onCheckStateChange = { onEvent(SettingsEvents.SetClipboardMonitoring(it)) },
+                    )
+                }
+            )
+        }
+        item {
+            // Toggle for auto-launch at system startup
+            CardExpanderItem(
+                heading = { Text(stringResource(Res.string.settings_auto_launch_title)) },
+                caption = {
+                    Text(
+                        stringResource(Res.string.settings_auto_launch_caption),
+                        modifier = Modifier.fillMaxWidth(0.8f)
+                    )
+                },
+                icon = { Icon(Icons.Regular.Power, null) },
+                trailing = {
+                    Switcher(
+                        checked = state.autoLaunchEnabled,
+                        onCheckStateChange = { onEvent(SettingsEvents.SetAutoLaunchEnabled(it)) },
                     )
                 }
             )

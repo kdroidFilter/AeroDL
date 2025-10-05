@@ -37,12 +37,16 @@ import io.github.kdroidfilter.knotify.builder.NotificationInitializer
 import io.github.kdroidfilter.platformtools.darkmodedetector.isSystemInDarkMode
 import io.github.kdroidfilter.ytdlpgui.core.presentation.icons.AeroDlLogoOnly
 import io.github.kdroidfilter.ytdlpgui.di.appModule
+import io.github.vinceglb.autolaunch.AutoLaunch
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.getString
 import org.koin.compose.KoinApplication
 import org.koin.compose.getKoin
 import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.app_name
+import ytdlpgui.composeapp.generated.resources.menu_show_window
+import ytdlpgui.composeapp.generated.resources.menu_hide_window
+import ytdlpgui.composeapp.generated.resources.quit
 
 @OptIn(ExperimentalTrayAppApi::class, ExperimentalFluentApi::class)
 fun main() = application {
@@ -68,15 +72,18 @@ fun main() = application {
         }
         val trayVisible by trayAppState.isVisible.collectAsState()
 
+
         TrayApp(
             state = trayAppState,
             iconContent ={ Icon(AeroDlLogoOnly, "", modifier = Modifier.padding(12.dp).fillMaxSize(), tint = if (isMenuBarInDarkMode()) Color.White else Color.Black) },
-            tooltip = "YTDLP GUI",
+            tooltip = runBlocking { getString(Res.string.app_name) },
             menu = {
-                CheckableItem("Ouvrir au démarrage", checked = true, onCheckedChange = {})
-                if (!trayVisible) Item("Afficher la fenetre", onClick = { trayAppState.show() })
-                else Item("Cacher la fenetre", onClick = { trayAppState.hide() })
-                Item("Quitter", onClick = { exitApplication() }, icon = Icons.Filled.PictureInPictureExit)
+                val showWindow = runBlocking { getString(Res.string.menu_show_window) }
+                val hideWindow = runBlocking { getString(Res.string.menu_hide_window) }
+                val quitLabel = runBlocking { getString(Res.string.quit) }
+                if (!trayVisible) Item(showWindow, onClick = { trayAppState.show() })
+                else Item(hideWindow, onClick = { trayAppState.hide() })
+                Item(quitLabel, onClick = { exitApplication() }, icon = Icons.Filled.PictureInPictureExit)
             }
         ) {
             CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
@@ -90,7 +97,6 @@ fun main() = application {
                                 if (isSystemInDarkMode()) Color.DarkGray else Color.LightGray,
                                 RoundedCornerShape(12.dp)
                             )
-
                     ) {
                         App()
                     }

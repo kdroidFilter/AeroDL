@@ -14,6 +14,7 @@ import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Navigator
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
 import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
+import io.github.vinceglb.autolaunch.AutoLaunch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -25,6 +26,7 @@ class SettingsViewModel(
     private val settings: Settings,
     private val clipboardMonitorManager: ClipboardMonitorManager,
     private val trayAppState: TrayAppState,
+    private val autoLaunch: AutoLaunch,
     ) : ViewModel() {
 
     // Keys for persisted settings
@@ -34,6 +36,7 @@ class SettingsViewModel(
     private val KEY_PARALLEL_DOWNLOADS = "parallel_downloads"
     private val KEY_DOWNLOAD_DIR = "download_dir"
     private val KEY_CLIPBOARD_MONITORING = "clipboard_monitoring_enabled"
+    private val KEY_AUTO_LAUNCH = "auto_launch_enabled"
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
@@ -57,7 +60,16 @@ class SettingsViewModel(
     private val _clipboardMonitoring = MutableStateFlow(settings.getBoolean(KEY_CLIPBOARD_MONITORING, false))
     val clipboardMonitoring = _clipboardMonitoring.asStateFlow()
 
+    private val _autoLaunchEnabled = MutableStateFlow(false)
+    val autoLaunchEnabled = _autoLaunchEnabled.asStateFlow()
+
     init {
+        // Query system autostart state at startup asynchronously
+        viewModelScope.launch {
+            val enabled = runCatching { autoLaunch.isEnabled() }.getOrDefault(false)
+            _autoLaunchEnabled.value = enabled
+        }
+
         // Apply persisted settings to wrapper on creation
         ytDlpWrapper.noCheckCertificate = _noCheckCertificate.value
         ytDlpWrapper.cookiesFromBrowser = _cookiesFromBrowser.value.ifBlank { null }
@@ -77,6 +89,12 @@ class SettingsViewModel(
                 _parallelDownloads.update { settings.getInt(KEY_PARALLEL_DOWNLOADS, 2).coerceIn(1, 10) }
                 _downloadDirPath.update { settings.getString(KEY_DOWNLOAD_DIR, "") }
                 _clipboardMonitoring.update { settings.getBoolean(KEY_CLIPBOARD_MONITORING, false) }
+                // Refresh autostart status from system
+                viewModelScope.launch {
+                    val enabled = runCatching { autoLaunch.isEnabled() }.getOrElse { settings.getBoolean(KEY_AUTO_LAUNCH, false) }
+                    _autoLaunchEnabled.value = enabled
+                    settings.putBoolean(KEY_AUTO_LAUNCH, enabled)
+                }
                 // Also ensure wrapper reflects persisted values when refreshing
                 ytDlpWrapper.noCheckCertificate = _noCheckCertificate.value
                 ytDlpWrapper.cookiesFromBrowser = _cookiesFromBrowser.value.ifBlank { null }
@@ -117,6 +135,16 @@ class SettingsViewModel(
                 _clipboardMonitoring.value = event.enabled
                 // Persist and start/stop monitoring through the manager
                 clipboardMonitorManager.onSettingChanged(event.enabled)
+            }
+            is SettingsEvents.SetAutoLaunchEnabled -> {
+                _autoLaunchEnabled.value = event.enabled
+                settings.putBoolean(KEY_AUTO_LAUNCH, event.enabled)
+                viewModelScope.launch {
+                    runCatching { if (event.enabled) autoLaunch.enable() else autoLaunch.disable() }
+                    val confirmed = runCatching { autoLaunch.isEnabled() }.getOrDefault(event.enabled)
+                    _autoLaunchEnabled.value = confirmed
+                    settings.putBoolean(KEY_AUTO_LAUNCH, confirmed)
+                }
             }
             is SettingsEvents.PickDownloadDir -> {
                 viewModelScope.launch {

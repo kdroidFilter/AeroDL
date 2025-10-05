@@ -92,4 +92,12 @@
     <string name="status_completed">Completed</string>
     <string name="status_failed">Failed</string>
     <string name="status_cancelled">Cancelled</string>
+    <!-- Settings: Auto-launch -->
+    <string name="settings_auto_launch_title">Launch at startup</string>
+    <string name="settings_auto_launch_caption">Automatically start the app when the system boots</string>
+
+    <!-- Tray / Menu -->
+    <string name="menu_show_window">Show window</string>
+    <string name="menu_hide_window">Hide window</string>
+    <string name="quit">Quit</string>
 </resources>

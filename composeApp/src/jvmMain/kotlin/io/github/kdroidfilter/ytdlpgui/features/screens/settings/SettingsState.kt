@@ -15,6 +15,7 @@ data class SettingsState(
     val parallelDownloads: Int = 2,
     val downloadDirPath: String = "",
     val clipboardMonitoringEnabled: Boolean = false,
+    val autoLaunchEnabled: Boolean = false,
 )
 
 @Composable
@@ -27,4 +28,5 @@ fun collectSettingsState(viewModel: SettingsViewModel): SettingsState =
         parallelDownloads = viewModel.parallelDownloads.collectAsState().value,
         downloadDirPath = viewModel.downloadDirPath.collectAsState().value,
         clipboardMonitoringEnabled = viewModel.clipboardMonitoring.collectAsState().value,
+        autoLaunchEnabled = viewModel.autoLaunchEnabled.collectAsState().value,
     )

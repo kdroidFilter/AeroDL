@@ -81,4 +81,12 @@
     <string name="status_completed">הושלם</string>
     <string name="status_failed">נכשל</string>
     <string name="status_cancelled">בוטל</string>
+    <!-- הגדרות: הפעלה אוטומטית -->
+    <string name="settings_auto_launch_title">הפעל בעת עליית המערכת</string>
+    <string name="settings_auto_launch_caption">הפעלת האפליקציה באופן אוטומטי עם עליית המערכת</string>
+
+    <!-- מגש/תפריט -->
+    <string name="menu_show_window">הצג חלון</string>
+    <string name="menu_hide_window">הסתר חלון</string>
+    <string name="quit">יציאה</string>
 </resources>

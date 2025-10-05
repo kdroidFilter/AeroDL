@@ -4,6 +4,7 @@ package io.github.kdroidfilter.ytdlpgui.di
 
 
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
+import com.kdroid.composetray.tray.api.TrayAppState
 import com.russhwolf.settings.Settings
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.DefaultNavigator
@@ -19,6 +20,7 @@ import io.github.kdroidfilter.ytdlpgui.features.screens.initscreen.InitViewModel
 import io.github.kdroidfilter.ytdlpgui.core.clipboard.ClipboardMonitorManager
 import io.github.kdroidfilter.ytdlpgui.features.screens.settings.SettingsViewModel
 import io.github.kdroidfilter.ytdlpgui.features.screens.singledownload.SingleDownloadViewModel
+import io.github.vinceglb.autolaunch.AutoLaunch
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
@@ -37,12 +39,14 @@ val appModule = module {
     single { ClipboardMonitorManager(get(), get(), get(), get()) }
     single { InitViewModel(get(), get(), get(), get(), get())}
 
+    // System integrations
+    single { AutoLaunch(appPackageName = "io.github.kdroidfilter.ytdlpgui") }
 
     viewModel { HomeViewModel(get(), get()) }
     viewModel { AboutViewModel(get()) }
     viewModel { BulkDownloadViewModel(get()) }
     viewModel { DownloadViewModel(get(), get(), get<DownloadHistoryRepository>()) }
-    viewModel { SettingsViewModel(get(), get(), get(), get(), get()) }
+    viewModel { SettingsViewModel(get(), get(), get(), get(), get<TrayAppState>(), get<AutoLaunch>()) }
     viewModel { SingleDownloadViewModel(get(), get(), get(), get()) }
 
 }
