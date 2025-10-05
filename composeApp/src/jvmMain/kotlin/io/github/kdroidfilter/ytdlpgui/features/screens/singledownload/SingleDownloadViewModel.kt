@@ -105,13 +105,13 @@ class SingleDownloadViewModel(
                     downloadManager.start(videoUrl, videoInfo.value, preset)
                 }
                 viewModelScope.launch {
-                    navigator.navigate(Destination.HistoryScreen)
+                    navigator.navigateAndClearBackStack(Destination.HistoryScreen)
                 }
             }
             SingleDownloadEvents.StartAudioDownload -> {
                 downloadManager.startAudio(videoUrl, videoInfo.value)
                 viewModelScope.launch {
-                    navigator.navigate(Destination.HistoryScreen)
+                    navigator.navigateAndClearBackStack(Destination.HistoryScreen)
                 }
             }
         }
