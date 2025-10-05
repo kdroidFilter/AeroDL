@@ -81,11 +81,11 @@ fun DownloadView(
                 ) {
                     if (state.history.isNotEmpty()) {
                         TooltipBox(tooltip = {
-                            Text("Vider l'historique")
+                            Text(stringResource(Res.string.tooltip_clear_history))
                         }) {
                             Button(onClick = { onEvent(DownloadEvents.ClearHistory) }, modifier = Modifier.padding(bottom = 8.dp)) {
-                                Text("Vider l'historique", style = FluentTheme.typography.bodyStrong)
-                                Icon(Icons.Default.Delete, "Clear history")
+                                Text(stringResource(Res.string.download_clear_history), style = FluentTheme.typography.bodyStrong)
+                                Icon(Icons.Default.Delete, stringResource(Res.string.download_clear_history))
                             }
                         }
                     }
@@ -116,15 +116,15 @@ fun DownloadView(
 
             items(state.history) { h ->
                 HistoryRow(h = h, actions = {
-                    TooltipBox(tooltip = { Text("Open Directory") }) {
+                    TooltipBox(tooltip = { Text(stringResource(Res.string.tooltip_open_directory)) }) {
                         Button(iconOnly = true, onClick = { }) {
-                            Icon(Icons.Default.Folder, "Open Directory")
+                            Icon(Icons.Default.Folder, stringResource(Res.string.open_directory))
                         }
                     }
 
-                    TooltipBox(tooltip = { Text("Delete this element") }) {
+                    TooltipBox(tooltip = { Text(stringResource(Res.string.tooltip_delete_element)) }) {
                         Button(iconOnly = true, onClick = { onEvent(DownloadEvents.DeleteHistory(h.id)) }) {
-                            Icon(Icons.Default.Delete, "Delete")
+                            Icon(Icons.Default.Delete, stringResource(Res.string.delete_element))
                         }
                     }
                 })
@@ -151,7 +151,7 @@ private fun NoDownloads() {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Aucun téléchargement")
+        Text(stringResource(Res.string.no_downloads))
     }
 }
 
@@ -174,12 +174,12 @@ private fun HistoryThumbnail(h: HistoryItem) {
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
-            val overlay = if (h.isAudio) "mp3" else h.presetHeight?.let { "${it}p" } ?: ""
+            val overlay = if (h.isAudio) "MP3" else h.presetHeight?.let { "${it}P" } ?: ""
             Text(
-                overlay, textAlign = TextAlign.Center,
-                modifier = Modifier.padding(4.dp).background(
-                    Color.Black
-                ),
+                overlay,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.background(Color.Black).padding(horizontal = 4.dp, vertical = 2.dp),
+                style = FluentTheme.typography.caption,
                 color = Color.White,
             )
         }
@@ -231,11 +231,12 @@ private fun InProgressThumbnail(item: DownloadManager.DownloadItem) {
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
-            val overlay = item.preset?.height?.let { "${it}p" } ?: "mp3"
+            val overlay = item.preset?.height?.let { "${it}P" } ?: "MP3"
             Text(
                 overlay,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(4.dp).background(Color.Black),
+                modifier = Modifier.background(Color.Black).padding(horizontal = 4.dp, vertical = 2.dp),
+                style = FluentTheme.typography.caption,
                 color = Color.White,
             )
         }
@@ -255,11 +256,11 @@ private fun InProgressRow(item: DownloadManager.DownloadItem, onCancel: (String)
         Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.SpaceBetween) {
             Text(item.videoInfo?.title ?: item.url, maxLines = 3)
             val statusText = when (item.status) {
-                DownloadManager.DownloadItem.Status.Pending -> "Pending"
-                DownloadManager.DownloadItem.Status.Running -> "Running"
-                DownloadManager.DownloadItem.Status.Completed -> "Completed"
-                DownloadManager.DownloadItem.Status.Failed -> "Failed"
-                DownloadManager.DownloadItem.Status.Cancelled -> "Cancelled"
+                DownloadManager.DownloadItem.Status.Pending -> stringResource(Res.string.status_pending)
+                DownloadManager.DownloadItem.Status.Running -> stringResource(Res.string.status_running)
+                DownloadManager.DownloadItem.Status.Completed -> stringResource(Res.string.status_completed)
+                DownloadManager.DownloadItem.Status.Failed -> stringResource(Res.string.status_failed)
+                DownloadManager.DownloadItem.Status.Cancelled -> stringResource(Res.string.status_cancelled)
             }
             Text(statusText, style = FluentTheme.typography.caption)
         }
@@ -288,13 +289,13 @@ private fun InProgressRow(item: DownloadManager.DownloadItem, onCancel: (String)
                     )
                 } else {
                     // On hover, show dismiss icon overlaid on the ring
-                    TooltipBox(tooltip = { Text("Annuler") }) {
+                    TooltipBox(tooltip = { Text(stringResource(Res.string.cancel)) }) {
                         SubtleButton(
                             iconOnly = true,
                             onClick = { onCancel(item.id) },
                             modifier = Modifier.size(18.dp)
                         ) {
-                            Icon(Icons.Default.Dismiss, "Annuler", modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.Dismiss, stringResource(Res.string.cancel), modifier = Modifier.size(16.dp))
                         }
                     }
                 }

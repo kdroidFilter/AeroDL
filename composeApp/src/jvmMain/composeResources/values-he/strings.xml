@@ -66,4 +66,19 @@
     <string name="single_no_subtitle">ללא כתוביות</string>
     <string name="error_fetch_video_info">אירעה שגיאה בעת קבלת פרטי הווידאו: %1$s</string>
     <string name="thumbnail_content_desc">תמונה ממוזערת</string>
+
+    <!-- מסך הורדות (היסטוריה ובתהליך) -->
+    <string name="download_clear_history">נקה היסטוריה</string>
+    <string name="tooltip_clear_history">נקה היסטוריה</string>
+    <string name="open_directory">פתח תיקייה</string>
+    <string name="tooltip_open_directory">פתח תיקייה</string>
+    <string name="delete_element">מחק פריט זה</string>
+    <string name="tooltip_delete_element">מחק פריט זה</string>
+    <string name="no_downloads">אין הורדות</string>
+    <string name="cancel">בטל</string>
+    <string name="status_pending">ממתין</string>
+    <string name="status_running">פועל</string>
+    <string name="status_completed">הושלם</string>
+    <string name="status_failed">נכשל</string>
+    <string name="status_cancelled">בוטל</string>
 </resources>

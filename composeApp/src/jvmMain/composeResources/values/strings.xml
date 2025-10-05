@@ -77,4 +77,19 @@
     <string name="clipboard_link_detected_message">Do you want to open this link in %1$s?\n%2$s</string>
     <string name="clipboard_open_in_app">Open in %1$s</string>
     <string name="clipboard_ignore">Ignore</string>
+
+    <!-- Download screen (history and in-progress) -->
+    <string name="download_clear_history">Clear history</string>
+    <string name="tooltip_clear_history">Clear history</string>
+    <string name="open_directory">Open directory</string>
+    <string name="tooltip_open_directory">Open directory</string>
+    <string name="delete_element">Delete this item</string>
+    <string name="tooltip_delete_element">Delete this item</string>
+    <string name="no_downloads">No downloads</string>
+    <string name="cancel">Cancel</string>
+    <string name="status_pending">Pending</string>
+    <string name="status_running">Running</string>
+    <string name="status_completed">Completed</string>
+    <string name="status_failed">Failed</string>
+    <string name="status_cancelled">Cancelled</string>
 </resources>

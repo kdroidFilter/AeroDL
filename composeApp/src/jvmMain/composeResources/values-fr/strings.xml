@@ -75,4 +75,19 @@
     <string name="clipboard_link_detected_message">Voulez-vous ouvrir ce lien dans %1$s ?\n%2$s</string>
     <string name="clipboard_open_in_app">Ouvrir dans %1$s</string>
     <string name="clipboard_ignore">Ignorer</string>
+
+    <!-- Écran de téléchargement (historique et en cours) -->
+    <string name="download_clear_history">Vider l'historique</string>
+    <string name="tooltip_clear_history">Vider l'historique</string>
+    <string name="open_directory">Ouvrir le dossier</string>
+    <string name="tooltip_open_directory">Ouvrir le dossier</string>
+    <string name="delete_element">Supprimer cet élément</string>
+    <string name="tooltip_delete_element">Supprimer cet élément</string>
+    <string name="no_downloads">Aucun téléchargement</string>
+    <string name="cancel">Annuler</string>
+    <string name="status_pending">En attente</string>
+    <string name="status_running">En cours</string>
+    <string name="status_completed">Terminé</string>
+    <string name="status_failed">Échec</string>
+    <string name="status_cancelled">Annulé</string>
 </resources>
