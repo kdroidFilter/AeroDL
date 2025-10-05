@@ -11,9 +11,16 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.onPointerEvent
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -25,11 +32,13 @@ import io.github.composefluent.Stroke
 import io.github.composefluent.component.Button
 import io.github.composefluent.component.Icon
 import io.github.composefluent.component.ProgressRing
+import io.github.composefluent.component.SubtleButton
 import io.github.composefluent.component.Text
 import io.github.composefluent.component.TooltipBox
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.Delete
 import io.github.composefluent.icons.regular.Folder
+import io.github.composefluent.icons.regular.Dismiss
 import io.github.kdroidfilter.ytdlp.util.YouTubeThumbnailHelper
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository.HistoryItem
 import org.jetbrains.compose.resources.stringResource
@@ -38,6 +47,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import kotlin.math.roundToInt
 
 @Composable
 fun DownloadScreen() {
@@ -88,7 +98,7 @@ fun DownloadView(
                 state.items.filter { it.status == DownloadManager.DownloadItem.Status.Running || it.status == DownloadManager.DownloadItem.Status.Pending }
 
             items(inProgress) { item ->
-                InProgressRow(item)
+                InProgressRow(item, onCancel = { id -> onEvent(DownloadEvents.Cancel(id)) })
                 Divider(
                     color = FluentTheme.colors.control.secondary,
                     thickness = 1.dp,
@@ -232,8 +242,9 @@ private fun InProgressThumbnail(item: DownloadManager.DownloadItem) {
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalFluentApi::class, ExperimentalFoundationApi::class)
 @Composable
-private fun InProgressRow(item: DownloadManager.DownloadItem) {
+private fun InProgressRow(item: DownloadManager.DownloadItem, onCancel: (String) -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth().height(72.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -255,7 +266,38 @@ private fun InProgressRow(item: DownloadManager.DownloadItem) {
         Spacer(Modifier.width(8.dp))
         Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             val progressFraction = (item.progress.coerceIn(0f, 100f)) / 100f
-            ProgressRing(progress = progressFraction, modifier = Modifier.size(24.dp))
+            val percent = (progressFraction * 100f).roundToInt()
+            var hovered by remember { mutableStateOf(false) }
+            Box(
+                modifier = Modifier.size(21.dp)
+                    .onPointerEvent(PointerEventType.Enter) { hovered = true }
+                    .onPointerEvent(PointerEventType.Exit) { hovered = false },
+                contentAlignment = Alignment.Center
+            ) {
+                // Always show the progress ring
+                ProgressRing(progress = progressFraction, modifier = Modifier.fillMaxSize())
+
+                if (!hovered) {
+                    // Show percentage text centered in the ring
+                    Text(
+                        "${percent}%",
+                        style = FluentTheme.typography.caption,
+                        fontSize = 8.sp,
+                        textAlign = TextAlign.Center
+                    )
+                } else {
+                    // On hover, show dismiss icon overlaid on the ring
+                    TooltipBox(tooltip = { Text("Annuler") }) {
+                        SubtleButton(
+                            iconOnly = true,
+                            onClick = { onCancel(item.id) },
+                            modifier = Modifier.size(14.dp)
+                        ) {
+                            Icon(Icons.Default.Dismiss, "Annuler", modifier = Modifier.size(16.dp))
+                        }
+                    }
+                }
+            }
         }
     }
 }
