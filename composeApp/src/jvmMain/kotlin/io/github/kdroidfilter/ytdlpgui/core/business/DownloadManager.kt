@@ -2,7 +2,6 @@
 
 package io.github.kdroidfilter.ytdlpgui.core.business
 
-import androidx.compose.ui.window.TrayState
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.kdroid.composetray.tray.api.TrayAppState
 import com.russhwolf.settings.Settings
@@ -29,17 +28,9 @@ import ytdlpgui.composeapp.generated.resources.download_completed_message
 import ytdlpgui.composeapp.generated.resources.download_completed_title
 import ytdlpgui.composeapp.generated.resources.open_directory
 import java.io.File
+import java.security.MessageDigest
 import java.util.UUID
 import kotlin.collections.ArrayDeque
-import kotlin.collections.List
-import kotlin.collections.count
-import kotlin.collections.emptyList
-import kotlin.collections.filter
-import kotlin.collections.find
-import kotlin.collections.isNotEmpty
-import kotlin.collections.isNullOrEmpty
-import kotlin.collections.map
-import kotlin.collections.plus
 
 /**
  * Manages downloading of videos and audio from URLs using the `YtDlpWrapper`. It keeps track of
@@ -125,18 +116,33 @@ class DownloadManager(
         }
     }
 
+
     private fun launchDownload(id: String) {
         val item = _items.value.find { it.id == id } ?: return
         if (item.status != DownloadItem.Status.Pending) return
 
+        // Fallback trackers from logs (kept, but strengthened)
         var lastDestPath: String? = null
-        val destRegex = Regex("Destination: (.+)")
-        val mergeRegex = Regex("Merging formats into \"(.+)\"")
+        val rDest = Regex("(?i)^\\[download]\\s+Destination:\\s+(.+)$")
+        val rMerging = Regex("(?i)^\\[(?:Merger|Fixup.*)]\\s+Merging formats into\\s+\"(.+)\"$")
+        val rMoving  = Regex("(?i)^\\[(?:download|move)]\\s+Moving to\\s+\"(.+)\"$")
 
-        val eventHandler = createEventHandler(id, item, { lastDestPath }) { line ->
-            destRegex.find(line)?.let { lastDestPath = it.groupValues[1] }
-            mergeRegex.find(line)?.let { lastDestPath = it.groupValues[1] }
-        }
+        // NEW: predictable temp sink based on URL MD5 (must match buildCommand)
+        val sinkFile = File(System.getProperty("java.io.tmpdir"), "ytdlp-finalpath-${md5(item.url)}.txt")
+        // Clean any stale file from previous run
+        runCatching { if (sinkFile.exists()) sinkFile.delete() }
+
+        val eventHandler = createEventHandler(
+            id = id,
+            item = item,
+            getOutputPath = { lastDestPath }, // logs fallback (kept)
+            onLog = { line ->
+                rDest.find(line)?.let { lastDestPath = it.groupValues[1].trim('"') }
+                rMerging.find(line)?.let { lastDestPath = it.groupValues[1].trim('"') }
+                rMoving.find(line)?.let  { lastDestPath = it.groupValues[1].trim('"') }
+            },
+            finalPathSink = sinkFile // pass to completion to read file
+        )
 
         val handle = when {
             item.preset == null -> downloadAudio(item, eventHandler)
@@ -151,53 +157,104 @@ class DownloadManager(
         id: String,
         item: DownloadItem,
         getOutputPath: () -> String?,
-        onLog: (String) -> Unit
+        onLog: (String) -> Unit,
+        finalPathSink: File
     ): (Event) -> Unit = { event ->
         when (event) {
-            is Event.Started ->
+            is Event.Started -> {
                 update(id) { it.copy(status = DownloadItem.Status.Running, message = null) }
+            }
 
             is Event.Progress -> {
                 val pct = (event.percent ?: 0.0).toFloat().coerceIn(0f, 100f)
                 update(id) { it.copy(progress = pct, message = null) }
             }
 
+            is Event.Log -> onLog(event.line)
+
             is Event.Completed -> {
                 val status = if (event.success) DownloadItem.Status.Completed else DownloadItem.Status.Failed
                 update(id) { it.copy(status = status, message = null) }
+
                 if (event.success) {
-                    val detectedPath = getOutputPath()
-                    val absolutePath = detectedPath?.let { p ->
-                        val f = File(p)
-                        if (f.isAbsolute) f.absolutePath else ytDlpWrapper.downloadDir?.let { dir -> File(dir, p).absolutePath } ?: f.absolutePath
-                    }
+                    val absolutePath =
+                        readFinalPathFromSink(finalPathSink)
+                            ?: computeAbsoluteFromFallbacks(item, getOutputPath())
+
                     saveToHistory(id, item, absolutePath)
-                    // Send completion notification if enabled
-                    if (settings.getBoolean(SettingsKeys.NOTIFY_ON_DOWNLOAD_COMPLETE, true) and !trayAppState.isVisible.value ) {
+
+                    // Notify when window hidden (kept)
+                    if (settings.getBoolean(SettingsKeys.NOTIFY_ON_DOWNLOAD_COMPLETE, true) &&
+                        !trayAppState.isVisible.value
+                    ) {
                         scope.launch { sendCompletionNotification(item, absolutePath) }
                     }
                 }
+
+                // Cleanup sink whatever the result
+                runCatching { if (finalPathSink.exists()) finalPathSink.delete() }
+
                 maybeStartPending()
             }
 
             is Event.Error -> {
                 update(id) { it.copy(status = DownloadItem.Status.Failed, message = event.message) }
+                runCatching { if (finalPathSink.exists()) finalPathSink.delete() }
                 maybeStartPending()
             }
 
             is Event.Cancelled -> {
                 update(id) { it.copy(status = DownloadItem.Status.Cancelled, message = null) }
+                runCatching { if (finalPathSink.exists()) finalPathSink.delete() }
                 maybeStartPending()
             }
 
-            is Event.Log -> onLog(event.line)
-
             is Event.NetworkProblem -> {
                 update(id) { it.copy(status = DownloadItem.Status.Failed, message = event.detail) }
+                runCatching { if (finalPathSink.exists()) finalPathSink.delete() }
                 maybeStartPending()
             }
         }
     }
+
+    private fun readFinalPathFromSink(file: File): String? {
+        return try {
+            if (!file.exists()) {
+                null
+            } else {
+                // Keep last non-blank line (handles playlists / multiple outputs appending)
+                file.readLines()
+                    .asReversed()
+                    .firstOrNull { it.isNotBlank() }
+                    ?.trim()
+                    ?.trim('"')
+            }
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun computeAbsoluteFromFallbacks(item: DownloadItem, loggedPath: String?): String? {
+        loggedPath?.let {
+            val p = File(it.trim('"'))
+            if (p.isAbsolute) return p.absolutePath
+            ytDlpWrapper.downloadDir?.let { dir -> return File(dir, p.path).absolutePath }
+            return p.absolutePath
+        }
+
+        // Final fallback: synthesize from title + preset (kept from your logic)
+        val downloadDir = ytDlpWrapper.downloadDir ?: return null
+        val videoTitle = item.videoInfo?.title ?: return null
+        val safeTitle = sanitizeFilename(videoTitle)
+        val ext = if (item.preset == null) "mp3" else "mp4"
+        return File(downloadDir.absolutePath, "$safeTitle.$ext").absolutePath
+    }
+
+    private fun md5(s: String): String {
+        val d = MessageDigest.getInstance("MD5").digest(s.toByteArray())
+        return d.joinToString("") { "%02x".format(it) }
+    }
+
 
     private fun downloadAudio(item: DownloadItem, onEvent: (Event) -> Unit): Handle =
         ytDlpWrapper.downloadAudioMp3WithPreset(
@@ -240,12 +297,11 @@ class DownloadManager(
     }
 
     private fun saveToHistory(id: String, item: DownloadItem, outputFilePath: String?) {
-        val finalPath = outputFilePath ?: ytDlpWrapper.downloadDir?.absolutePath
         historyRepository.add(
             id = id,
             url = item.url,
             videoInfo = item.videoInfo,
-            outputPath = finalPath,
+            outputPath = outputFilePath,
             isAudio = item.preset == null,
             presetHeight = item.preset?.height,
             createdAt = System.currentTimeMillis()
@@ -282,4 +338,6 @@ class DownloadManager(
     private fun update(id: String, transform: (DownloadItem) -> DownloadItem) {
         _items.value = _items.value.map { if (it.id == id) transform(it) else it }
     }
+
+    private  fun sanitizeFilename(name: String): String = name.replace(Regex("[\\\\/:*?\"<>|]"), "_")
 }
