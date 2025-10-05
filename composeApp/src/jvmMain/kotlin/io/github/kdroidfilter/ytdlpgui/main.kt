@@ -22,6 +22,7 @@ import androidx.compose.ui.window.application
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.kdroid.composetray.tray.api.TrayApp
 import com.kdroid.composetray.tray.api.TrayAppState
+import com.kdroid.composetray.tray.api.TrayWindowDismissMode
 import com.kdroid.composetray.tray.api.rememberTrayAppState
 import com.kdroid.composetray.utils.isMenuBarInDarkMode
 import io.github.composefluent.ExperimentalFluentApi
@@ -78,6 +79,7 @@ fun main() = application {
                 Item("Quitter", onClick = { exitApplication() }, icon = Icons.Filled.PictureInPictureExit)
             }
         ) {
+            trayAppState.setDismissMode(TrayWindowDismissMode.MANUAL)
             CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                 FluentTheme(colors = if (isSystemInDarkMode()) darkColors() else lightColors()) {
                     Mica(

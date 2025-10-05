@@ -35,7 +35,6 @@
     <!-- Placeholder screen titles -->
     <string name="about_screen_title">About Screen</string>
     <string name="bulk_download_screen_title">Bulk Download Screen</string>
-    <string name="history_screen_title">Download Screen</string>
     <string name="settings_screen_title">Settings Screen</string>
 
     <!-- Settings screen strings -->

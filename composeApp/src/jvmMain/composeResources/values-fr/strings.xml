@@ -36,7 +36,6 @@
     <!-- Titres d’écran temporaires -->
     <string name="about_screen_title">Écran À propos</string>
     <string name="bulk_download_screen_title">Écran Téléchargement en lot</string>
-    <string name="history_screen_title">Écran Téléchargement</string>
     <string name="settings_screen_title">Écran Paramètres</string>
 
     <!-- Paramètres -->

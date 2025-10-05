@@ -35,7 +35,6 @@
     <!-- כותרות מסך זמניות -->
     <string name="about_screen_title">מסך אודות</string>
     <string name="bulk_download_screen_title">מסך הורדה מרובה</string>
-    <string name="history_screen_title">מסך היסטוריה</string>
     <string name="settings_screen_title">מסך הגדרות</string>
 
     <!-- הגדרות -->

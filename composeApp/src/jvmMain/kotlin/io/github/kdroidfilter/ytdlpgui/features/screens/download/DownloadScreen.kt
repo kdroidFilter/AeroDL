@@ -1,18 +1,37 @@
 package io.github.kdroidfilter.ytdlpgui.features.screens.download
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.TooltipArea
 import androidx.compose.foundation.VerticalScrollbar
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollbarAdapter
+import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
+import io.github.composefluent.ExperimentalFluentApi
+import io.github.composefluent.FluentTheme
+import io.github.composefluent.Stroke
 import io.github.composefluent.component.Button
+import io.github.composefluent.component.Icon
 import io.github.composefluent.component.ProgressRing
 import io.github.composefluent.component.Text
+import io.github.composefluent.component.TooltipBox
+import io.github.composefluent.icons.Icons
+import io.github.composefluent.icons.regular.Delete
+import io.github.composefluent.icons.regular.Folder
+import io.github.kdroidfilter.ytdlp.util.YouTubeThumbnailHelper
+import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository.HistoryItem
 import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.*
 import org.koin.compose.viewmodel.koinViewModel
@@ -30,6 +49,7 @@ fun DownloadScreen() {
     )
 }
 
+@OptIn(ExperimentalFoundationApi::class, ExperimentalFluentApi::class)
 @Composable
 fun DownloadView(
     state: DownloadState,
@@ -37,115 +57,205 @@ fun DownloadView(
 ) {
     val listState = rememberLazyListState()
 
-    Box(modifier = Modifier.fillMaxSize().padding(8.dp)) {
+    Row(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             state = listState,
-            modifier = Modifier.fillMaxSize().padding(16.dp)
+            modifier = Modifier.weight(1f).fillMaxHeight()
         ) {
-            item {
-                Text(stringResource(Res.string.history_screen_title))
-                Spacer(Modifier.height(12.dp))
-            }
 
-            // Section: In-progress downloads
-            val inProgress = state.items.filter { it.status == DownloadManager.DownloadItem.Status.Running || it.status == DownloadManager.DownloadItem.Status.Pending }
-            item {
-                Text("Téléchargements en cours")
-                Spacer(Modifier.height(8.dp))
-            }
-            if (inProgress.isEmpty()) {
-                item {
-                    Text("Aucun téléchargement en cours")
-                }
-            } else {
-                items(inProgress) { item ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(Modifier.weight(1f)) {
-                            Text(item.videoInfo?.title ?: item.url)
-                            if (item.videoInfo?.title != null) {
-                                Text(item.url)
-                            }
-                            val typeLabel = if (item.preset != null) stringResource(Res.string.download_type_video) else stringResource(Res.string.download_type_audio)
-                            val typeAndPreset = if (item.preset != null) "$typeLabel • ${item.preset.height}p" else typeLabel
-                            Text(typeAndPreset)
-                            val statusText = when (item.status) {
-                                DownloadManager.DownloadItem.Status.Pending -> "Pending"
-                                DownloadManager.DownloadItem.Status.Running -> "Running"
-                                DownloadManager.DownloadItem.Status.Completed -> "Completed"
-                                DownloadManager.DownloadItem.Status.Failed -> "Failed"
-                                DownloadManager.DownloadItem.Status.Cancelled -> "Cancelled"
-                            }
-                            Text("$statusText • ${"%.1f".format(item.progress)}%")
-                            item.message?.let { Text(it) }
-                        }
-                        if (item.status == DownloadManager.DownloadItem.Status.Running) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                ProgressRing(modifier = Modifier.size(24.dp))
-                                Spacer(Modifier.width(8.dp))
-                                Button(onClick = { onEvent(DownloadEvents.Cancel(item.id)) }) {
-                                    Text("Cancel")
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            item { Spacer(Modifier.height(16.dp)) }
-
-            // Section: History
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Historique")
                     if (state.history.isNotEmpty()) {
-                        Button(onClick = { onEvent(DownloadEvents.ClearHistory) }) {
+                        TooltipBox(tooltip = {
                             Text("Vider l'historique")
+                        }) {
+                            Button(onClick = { onEvent(DownloadEvents.ClearHistory) }, modifier = Modifier.padding(bottom = 8.dp)) {
+                                Text("Vider l'historique", style = FluentTheme.typography.bodyStrong)
+                                Icon(Icons.Default.Delete, "Clear history")
+                            }
                         }
                     }
                 }
                 Spacer(Modifier.height(8.dp))
             }
-            if (state.history.isEmpty()) {
-                item { Text("Aucun téléchargement précédent") }
-            } else {
-                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
-                items(state.history) { h ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(Modifier.weight(1f)) {
-                            Text(h.videoInfo?.title ?: h.url)
-                            if (h.videoInfo?.title != null) {
-                                Text(h.url)
-                            }
-                            val typeLabel = if (h.isAudio) stringResource(Res.string.download_type_audio) else stringResource(Res.string.download_type_video)
-                            val typeAndPreset = if (!h.isAudio && h.presetHeight != null) "$typeLabel • ${h.presetHeight}p" else typeLabel
-                            Text(typeAndPreset)
-                            val whenStr = formatter.format(Instant.ofEpochMilli(h.createdAt))
-                            val whereStr = h.outputPath ?: ""
-                            Text("$whenStr • $whereStr")
-                        }
-                        Button(onClick = { onEvent(DownloadEvents.DeleteHistory(h.id)) }) {
-                            Text("Supprimer")
-                        }
-                    }
+
+            // Section: In-progress downloads
+            val inProgress =
+                state.items.filter { it.status == DownloadManager.DownloadItem.Status.Running || it.status == DownloadManager.DownloadItem.Status.Pending }
+
+            items(inProgress) { item ->
+                InProgressRow(item)
+                Divider(
+                    color = FluentTheme.colors.control.secondary,
+                    thickness = 1.dp,
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+                )
+            }
+
+            // Section: History
+
+            if (state.history.isEmpty() and inProgress.isEmpty()) {
+                item {
+                    NoDownloads()
                 }
             }
+
+            items(state.history) { h ->
+                HistoryRow(h = h, actions = {
+                    TooltipBox(tooltip = { Text("Open Directory") }) {
+                        Button(iconOnly = true, onClick = { }) {
+                            Icon(Icons.Default.Folder, "Open Directory")
+                        }
+                    }
+
+                    TooltipBox(tooltip = { Text("Delete this element") }) {
+                        Button(iconOnly = true, onClick = { onEvent(DownloadEvents.DeleteHistory(h.id)) }) {
+                            Icon(Icons.Default.Delete, "Delete")
+                        }
+                    }
+                })
+                Divider(
+                    color = FluentTheme.colors.control.secondary,
+                    thickness = 1.dp,
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+                )
+            }
+
         }
 
         VerticalScrollbar(
             adapter = rememberScrollbarAdapter(listState),
-            modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight().padding(vertical = 16.dp)
+            modifier = Modifier.fillMaxHeight().padding(top = 2.dp, start = 8.dp)
         )
+    }
+}
+
+@Composable
+private fun NoDownloads() {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Aucun téléchargement")
+    }
+}
+
+@Composable
+private fun HistoryThumbnail(h: HistoryItem) {
+    Column(
+        modifier = Modifier.width(88.dp).fillMaxHeight(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomStart) {
+            val thumbUrl = h.videoInfo?.let {
+                YouTubeThumbnailHelper.getThumbnailUrl(
+                    it.id,
+                    YouTubeThumbnailHelper.ThumbnailQuality.MEDIUM
+                )
+            }
+            AsyncImage(
+                model = thumbUrl,
+                contentDescription = stringResource(Res.string.thumbnail_content_desc),
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+            val overlay = if (h.isAudio) "mp3" else h.presetHeight?.let { "${it}p" } ?: ""
+            Text(
+                overlay, textAlign = TextAlign.Center,
+                modifier = Modifier.padding(4.dp).background(
+                    Color.Black
+                ),
+                color = Color.White,
+            )
+        }
+    }
+}
+
+@Composable
+private fun HistoryRow(
+    h: HistoryItem,
+    actions: @Composable ColumnScope.() -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().height(72.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        HistoryThumbnail(h)
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
+        val whenStr = formatter.format(Instant.ofEpochMilli(h.createdAt))
+
+        Spacer(Modifier.width(8.dp))
+        Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.SpaceBetween) {
+            Text(h.videoInfo?.title ?: h.url, maxLines = 3)
+            Text(whenStr, style = FluentTheme.typography.caption)
+        }
+        Spacer(Modifier.width(8.dp))
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.End) {
+            actions()
+        }
+    }
+}
+
+@Composable
+private fun InProgressThumbnail(item: DownloadManager.DownloadItem) {
+    Column(
+        modifier = Modifier.width(88.dp).fillMaxHeight(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomStart) {
+            val thumbUrl = item.videoInfo?.let {
+                YouTubeThumbnailHelper.getThumbnailUrl(
+                    it.id,
+                    YouTubeThumbnailHelper.ThumbnailQuality.MEDIUM
+                )
+            }
+            AsyncImage(
+                model = thumbUrl,
+                contentDescription = stringResource(Res.string.thumbnail_content_desc),
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+            val overlay = item.preset?.height?.let { "${it}p" } ?: "mp3"
+            Text(
+                overlay,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(4.dp).background(Color.Black),
+                color = Color.White,
+            )
+        }
+    }
+}
+
+@Composable
+private fun InProgressRow(item: DownloadManager.DownloadItem) {
+    Row(
+        modifier = Modifier.fillMaxWidth().height(72.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        InProgressThumbnail(item)
+        Spacer(Modifier.width(8.dp))
+        Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.SpaceBetween) {
+            Text(item.videoInfo?.title ?: item.url, maxLines = 3)
+            val statusText = when (item.status) {
+                DownloadManager.DownloadItem.Status.Pending -> "Pending"
+                DownloadManager.DownloadItem.Status.Running -> "Running"
+                DownloadManager.DownloadItem.Status.Completed -> "Completed"
+                DownloadManager.DownloadItem.Status.Failed -> "Failed"
+                DownloadManager.DownloadItem.Status.Cancelled -> "Cancelled"
+            }
+            Text(statusText, style = FluentTheme.typography.caption)
+        }
+        Spacer(Modifier.width(8.dp))
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            val progressFraction = (item.progress.coerceIn(0f, 100f)) / 100f
+            ProgressRing(progress = progressFraction, modifier = Modifier.size(24.dp))
+        }
     }
 }
