@@ -40,6 +40,7 @@ fun Header(
 ) {
     val canGoBack by navigator.canGoBack.collectAsState()
     val currentDestination by navigator.currentDestination.collectAsState()
+    val previousDestination by navigator.previousDestination.collectAsState()
     val scope = rememberCoroutineScope()
     var expanded by remember { mutableStateOf(false) }
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
@@ -54,13 +55,25 @@ fun Header(
         ) {
             item {
                 if (canGoBack) {
-                    SubtleButton(
-                        iconOnly = true,
-                        onClick = {
-                            scope.launch { navigator.navigateUp() }
-                        },
-                        modifier = Modifier.padding(top = 12.dp, start = 4.dp)
-                    ) { Icon(if (isRtl) Icons.Default.ArrowRight else Icons.Default.ArrowLeft, "Back") }
+                    Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                        SubtleButton(
+                            iconOnly = true,
+                            onClick = {
+                                scope.launch { navigator.navigateUp() }
+                            },
+                            modifier = Modifier.padding(top = 12.dp, start = 4.dp)
+                        ) { Icon(if (isRtl) Icons.Default.ArrowRight else Icons.Default.ArrowLeft, "Back") }
+                        if (previousDestination !is Destination.HomeScreen) {
+                            Spacer(Modifier.width(4.dp))
+                            SubtleButton(
+                                iconOnly = true,
+                                onClick = {
+                                    scope.launch { navigator.navigateAndClearBackStack(Destination.HomeScreen) }
+                                },
+                                modifier = Modifier.padding(top = 12.dp, end = 4.dp)
+                            ) { Icon(Icons.Default.Home, "Home") }
+                        }
+                    }
                 } else {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,

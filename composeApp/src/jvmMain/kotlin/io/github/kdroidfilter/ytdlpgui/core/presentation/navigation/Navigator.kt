@@ -12,6 +12,7 @@ interface Navigator {
     val startDestination: Destination
     val navigationActions: Flow<NavigationAction>
     val currentDestination: StateFlow<Destination>
+    val previousDestination: StateFlow<Destination?>
 
     suspend fun navigate(
         destination: Destination,
@@ -43,6 +44,9 @@ class DefaultNavigator(
     private val _currentDestination = MutableStateFlow<Destination>(startDestination)
     override val currentDestination: StateFlow<Destination> = _currentDestination.asStateFlow()
 
+    private val _previousDestination = MutableStateFlow<Destination?>(null)
+    override val previousDestination: StateFlow<Destination?> = _previousDestination.asStateFlow()
+
     private val _canGoBack = MutableStateFlow(false)
     override val canGoBack: StateFlow<Boolean> = _canGoBack.asStateFlow()
 
@@ -54,6 +58,7 @@ class DefaultNavigator(
         stack.addLast(destination)
         _currentDestination.value = destination
         _canGoBack.value = stack.size > 1
+        _previousDestination.value = if (stack.size > 1) stack.elementAt(stack.size - 2) else null
 
         _navigationActions.emit(
             NavigationAction.Navigate(destination, navOptions)
@@ -66,6 +71,7 @@ class DefaultNavigator(
         stack.addLast(destination)
         _currentDestination.value = destination
         _canGoBack.value = false
+        _previousDestination.value = null
 
         _navigationActions.emit(
             NavigationAction.Navigate(destination) {
@@ -83,6 +89,7 @@ class DefaultNavigator(
             _currentDestination.value = stack.last()
         }
         _canGoBack.value = stack.size > 1
+        _previousDestination.value = if (stack.size > 1) stack.elementAt(stack.size - 2) else null
 
         _navigationActions.emit(NavigationAction.NavigateUp)
     }
@@ -99,5 +106,6 @@ class DefaultNavigator(
         }
         _currentDestination.value = destination
         _canGoBack.value = stack.size > 1
+        _previousDestination.value = if (stack.size > 1) stack.elementAt(stack.size - 2) else null
     }
 }
