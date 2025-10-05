@@ -113,6 +113,7 @@ class SettingsViewModel(
                 ytDlpWrapper.downloadDir = path.takeIf { it.isNotBlank() }?.let { java.io.File(it) }
             }
             is SettingsEvents.SetClipboardMonitoring -> {
+                settings.putBoolean(KEY_CLIPBOARD_MONITORING, event.enabled)
                 _clipboardMonitoring.value = event.enabled
                 // Persist and start/stop monitoring through the manager
                 clipboardMonitorManager.onSettingChanged(event.enabled)

@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.kdroidfilter.ytdlpgui.core.presentation.components.Footer
@@ -23,6 +24,14 @@ import io.github.kdroidfilter.ytdlpgui.features.screens.bulkdownload.BulkDownloa
 import io.github.kdroidfilter.ytdlpgui.features.screens.download.DownloadScreen
 import io.github.kdroidfilter.ytdlpgui.features.screens.home.HomeScreen
 import io.github.kdroidfilter.ytdlpgui.features.screens.initscreen.InitScreen
+import io.github.kdroidfilter.ytdlpgui.features.screens.onboarding.OnboardingClipboardStep
+import io.github.kdroidfilter.ytdlpgui.features.screens.onboarding.OnboardingCookiesStep
+import io.github.kdroidfilter.ytdlpgui.features.screens.onboarding.OnboardingDownloadDirStep
+import io.github.kdroidfilter.ytdlpgui.features.screens.onboarding.OnboardingFinishStep
+import io.github.kdroidfilter.ytdlpgui.features.screens.onboarding.OnboardingIncludePresetStep
+import io.github.kdroidfilter.ytdlpgui.features.screens.onboarding.OnboardingNoCheckStep
+import io.github.kdroidfilter.ytdlpgui.features.screens.onboarding.OnboardingParallelStep
+import io.github.kdroidfilter.ytdlpgui.features.screens.onboarding.OnboardingWelcomeScreen
 import io.github.kdroidfilter.ytdlpgui.features.screens.settings.SettingsScreen
 import io.github.kdroidfilter.ytdlpgui.features.screens.singledownload.SingleDownloadScreen
 import kotlinx.coroutines.launch
@@ -82,8 +91,22 @@ fun App() {
         ) {
             noAnimatedComposable<Destination.InitScreen> { InitScreen() }
             noAnimatedComposable<Destination.HomeScreen> { HomeScreen() }
-            noAnimatedComposable<Destination.BulkDownloadScreen> { BulkDownloadScreen() }
-            noAnimatedComposable<Destination.SingleDownloadScreen> { SingleDownloadScreen() }
+
+            navigation<Destination.Onboarding.Graph>(startDestination = Destination.Onboarding.Welcome) {
+                noAnimatedComposable<Destination.Onboarding.Welcome> { OnboardingWelcomeScreen() }
+                noAnimatedComposable<Destination.Onboarding.DownloadDir> { OnboardingDownloadDirStep() }
+                noAnimatedComposable<Destination.Onboarding.Cookies> { OnboardingCookiesStep() }
+                noAnimatedComposable<Destination.Onboarding.IncludePreset> { OnboardingIncludePresetStep() }
+                noAnimatedComposable<Destination.Onboarding.Parallel> { OnboardingParallelStep() }
+                noAnimatedComposable<Destination.Onboarding.NoCheckCert> { OnboardingNoCheckStep() }
+                noAnimatedComposable<Destination.Onboarding.Clipboard> { OnboardingClipboardStep() }
+                noAnimatedComposable<Destination.Onboarding.Finish> { OnboardingFinishStep() }
+            }
+
+            navigation<Destination.Download.Graph>(startDestination = Destination.Download.Single("")) {
+                noAnimatedComposable<Destination.Download.Single> { SingleDownloadScreen() }
+                noAnimatedComposable<Destination.Download.Bulk> { BulkDownloadScreen() }
+            }
             noAnimatedComposable<Destination.HistoryScreen> { DownloadScreen() }
             noAnimatedComposable<Destination.SettingsScreen> { SettingsScreen() }
             noAnimatedComposable<Destination.AboutScreen> { AboutScreen() }

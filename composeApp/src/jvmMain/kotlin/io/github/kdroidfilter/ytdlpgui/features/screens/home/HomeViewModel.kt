@@ -112,9 +112,9 @@ class HomeViewModel(
 
         viewModelScope.launch {
             if (isYouTube && (isPlaylist || isChannel)) {
-                navigator.navigate(Destination.BulkDownloadScreen(url))
+                navigator.navigate(Destination.Download.Bulk(url))
             } else {
-                navigator.navigate(Destination.SingleDownloadScreen(url))
+                navigator.navigate(Destination.Download.Single(url))
             }
         }
     }

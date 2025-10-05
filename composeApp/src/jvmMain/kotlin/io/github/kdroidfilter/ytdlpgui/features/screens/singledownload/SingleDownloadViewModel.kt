@@ -21,7 +21,7 @@ class SingleDownloadViewModel(
     private val downloadManager: io.github.kdroidfilter.ytdlpgui.features.screens.download.DownloadManager,
 ) : ViewModel() {
 
-    val videoUrl = savedStateHandle.toRoute<Destination.SingleDownloadScreen>().videoLink
+    val videoUrl = savedStateHandle.toRoute<Destination.Download.Single>().videoLink
     private var _videoInfo = MutableStateFlow<VideoInfo?>(null)
     val videoInfo = _videoInfo.asStateFlow()
 

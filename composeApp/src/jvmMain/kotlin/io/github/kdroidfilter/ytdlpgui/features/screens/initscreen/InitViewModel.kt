@@ -24,6 +24,9 @@ class InitViewModel(
 
     init {
         viewModelScope.launch {
+            settings.remove("download_dir")
+            settings.remove("onboarding_completed")
+
             // Load persisted settings for yt-dlp options
             val noCheck = settings.getBoolean("no_check_certificate", false)
             val cookies = settings.getString("cookies_from_browser", "").ifBlank { null }
@@ -110,7 +113,15 @@ class InitViewModel(
                         viewModelScope.launch {
                             // On first initialization, fetch supported sites list from GitHub and store in DB
                             runCatching { supportedSitesRepository.initializeFromGitHubIfEmpty() }
-                            navigator.navigateAndClearBackStack(Destination.HomeScreen)
+
+                            // Decide whether to go through onboarding
+                            val onboardingCompleted = settings.getBoolean("onboarding_completed", false)
+                            val alreadyConfigured = settings.getString("download_dir", "").isNotBlank()
+                            if (onboardingCompleted || alreadyConfigured) {
+                                navigator.navigateAndClearBackStack(Destination.HomeScreen)
+                            } else {
+                                navigator.navigateAndClearBackStack(Destination.Onboarding.Graph)
+                            }
                         }
                     }
                 }

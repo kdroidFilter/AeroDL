@@ -123,7 +123,7 @@ class ClipboardMonitorManager(
             scope.launch {
                 trayAppState.setDismissMode(TrayWindowDismissMode.MANUAL)
                 runCatching { trayAppState.show() }
-                navigator.navigate(Destination.SingleDownloadScreen(url))
+                navigator.navigate(Destination.Download.Single(url))
                 trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
             }
         }
