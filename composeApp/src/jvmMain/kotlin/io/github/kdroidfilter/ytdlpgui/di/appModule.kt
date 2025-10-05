@@ -15,15 +15,14 @@ import io.github.kdroidfilter.ytdlpgui.features.screens.home.HomeViewModel
 import io.github.kdroidfilter.ytdlpgui.features.screens.about.AboutViewModel
 import io.github.kdroidfilter.ytdlpgui.features.screens.bulkdownload.BulkDownloadViewModel
 import io.github.kdroidfilter.ytdlpgui.features.screens.download.DownloadViewModel
-import io.github.kdroidfilter.ytdlpgui.features.screens.download.DownloadManager
+import io.github.kdroidfilter.ytdlpgui.core.business.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.features.screens.initscreen.InitViewModel
-import io.github.kdroidfilter.ytdlpgui.core.clipboard.ClipboardMonitorManager
+import io.github.kdroidfilter.ytdlpgui.core.business.ClipboardMonitorManager
 import io.github.kdroidfilter.ytdlpgui.features.screens.settings.SettingsViewModel
 import io.github.kdroidfilter.ytdlpgui.features.screens.singledownload.SingleDownloadViewModel
 import io.github.vinceglb.autolaunch.AutoLaunch
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
-import kotlin.math.sin
 
 val appModule = module {
 

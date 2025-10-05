@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.russhwolf.settings.Settings
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
-import io.github.kdroidfilter.ytdlpgui.core.clipboard.ClipboardMonitorManager
+import io.github.kdroidfilter.ytdlpgui.core.business.ClipboardMonitorManager
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Navigator
 import kotlinx.coroutines.flow.MutableStateFlow

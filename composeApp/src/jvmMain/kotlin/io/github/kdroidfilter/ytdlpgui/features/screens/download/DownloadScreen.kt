@@ -1,7 +1,6 @@
 package io.github.kdroidfilter.ytdlpgui.features.screens.download
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.TooltipArea
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -29,7 +28,6 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.FluentTheme
-import io.github.composefluent.Stroke
 import io.github.composefluent.component.Button
 import io.github.composefluent.component.Icon
 import io.github.composefluent.component.ProgressRing
@@ -41,6 +39,7 @@ import io.github.composefluent.icons.regular.Delete
 import io.github.composefluent.icons.regular.Folder
 import io.github.composefluent.icons.regular.Dismiss
 import io.github.kdroidfilter.ytdlp.util.YouTubeThumbnailHelper
+import io.github.kdroidfilter.ytdlpgui.core.business.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository.HistoryItem
 import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.*

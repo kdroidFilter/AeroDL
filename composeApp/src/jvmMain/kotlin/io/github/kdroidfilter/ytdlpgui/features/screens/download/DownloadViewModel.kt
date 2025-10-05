@@ -1,17 +1,12 @@
 package io.github.kdroidfilter.ytdlpgui.features.screens.download
 
 import androidx.lifecycle.ViewModel
-import io.github.kdroidfilter.platformtools.LinuxDesktopEnvironment
-import io.github.kdroidfilter.platformtools.OperatingSystem
-import io.github.kdroidfilter.platformtools.detectLinuxDesktopEnvironment
-import io.github.kdroidfilter.platformtools.getOperatingSystem
+import io.github.kdroidfilter.ytdlpgui.core.business.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Navigator
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import java.awt.Desktop
-import java.io.File
 
 class DownloadViewModel(
     private val navigator: Navigator,

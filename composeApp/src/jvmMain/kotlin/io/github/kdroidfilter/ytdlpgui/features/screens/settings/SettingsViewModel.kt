@@ -9,8 +9,9 @@ import com.kdroid.composetray.tray.api.TrayAppState
 import com.kdroid.composetray.tray.api.TrayWindowDismissMode
 import com.russhwolf.settings.Settings
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
-import io.github.kdroidfilter.ytdlpgui.core.clipboard.ClipboardMonitorManager
+import io.github.kdroidfilter.ytdlpgui.core.business.ClipboardMonitorManager
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Navigator
+import io.github.kdroidfilter.ytdlpgui.core.settings.SettingsKeys
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
 import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.File
 
 class SettingsViewModel(
     private val navigator: Navigator,
@@ -29,42 +31,32 @@ class SettingsViewModel(
     private val autoLaunch: AutoLaunch,
     ) : ViewModel() {
 
-    // Keys for persisted settings
-    private val KEY_NO_CHECK_CERT = "no_check_certificate"
-    private val KEY_COOKIES_FROM_BROWSER = "cookies_from_browser"
-    private val KEY_INCLUDE_PRESET_IN_FILENAME = "include_preset_in_filename"
-    private val KEY_PARALLEL_DOWNLOADS = "parallel_downloads"
-    private val KEY_DOWNLOAD_DIR = "download_dir"
-    private val KEY_CLIPBOARD_MONITORING = "clipboard_monitoring_enabled"
-    private val KEY_AUTO_LAUNCH = "auto_launch_enabled"
-    private val KEY_NOTIFY_ON_COMPLETE = "notify_on_download_complete"
-
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
 
     // Backing state for options
-    private val _noCheckCertificate = MutableStateFlow(settings.getBoolean(KEY_NO_CHECK_CERT, false))
+    private val _noCheckCertificate = MutableStateFlow(settings.getBoolean(SettingsKeys.NO_CHECK_CERTIFICATE, false))
     val noCheckCertificate = _noCheckCertificate.asStateFlow()
 
-    private val _cookiesFromBrowser = MutableStateFlow(settings.getString(KEY_COOKIES_FROM_BROWSER, ""))
+    private val _cookiesFromBrowser = MutableStateFlow(settings.getString(SettingsKeys.COOKIES_FROM_BROWSER, ""))
     val cookiesFromBrowser = _cookiesFromBrowser.asStateFlow()
 
-    private val _includePresetInFilename = MutableStateFlow(settings.getBoolean(KEY_INCLUDE_PRESET_IN_FILENAME, true))
+    private val _includePresetInFilename = MutableStateFlow(settings.getBoolean(SettingsKeys.INCLUDE_PRESET_IN_FILENAME, true))
     val includePresetInFilename = _includePresetInFilename.asStateFlow()
 
-    private val _parallelDownloads = MutableStateFlow(settings.getInt(KEY_PARALLEL_DOWNLOADS, 2).coerceIn(1, 10))
+    private val _parallelDownloads = MutableStateFlow(settings.getInt(SettingsKeys.PARALLEL_DOWNLOADS, 2).coerceIn(1, 10))
     val parallelDownloads = _parallelDownloads.asStateFlow()
 
-    private val _downloadDirPath = MutableStateFlow(settings.getString(KEY_DOWNLOAD_DIR, ""))
+    private val _downloadDirPath = MutableStateFlow(settings.getString(SettingsKeys.DOWNLOAD_DIR, ""))
     val downloadDirPath = _downloadDirPath.asStateFlow()
 
-    private val _clipboardMonitoring = MutableStateFlow(settings.getBoolean(KEY_CLIPBOARD_MONITORING, false))
+    private val _clipboardMonitoring = MutableStateFlow(settings.getBoolean(SettingsKeys.CLIPBOARD_MONITORING_ENABLED, false))
     val clipboardMonitoring = _clipboardMonitoring.asStateFlow()
 
     private val _autoLaunchEnabled = MutableStateFlow(false)
     val autoLaunchEnabled = _autoLaunchEnabled.asStateFlow()
 
-    private val _notifyOnComplete = MutableStateFlow(settings.getBoolean(KEY_NOTIFY_ON_COMPLETE, true))
+    private val _notifyOnComplete = MutableStateFlow(settings.getBoolean(SettingsKeys.NOTIFY_ON_DOWNLOAD_COMPLETE, true))
     val notifyOnComplete = _notifyOnComplete.asStateFlow()
 
     init {
@@ -79,7 +71,7 @@ class SettingsViewModel(
         ytDlpWrapper.cookiesFromBrowser = _cookiesFromBrowser.value.ifBlank { null }
         val path = _downloadDirPath.value
         if (path.isNotBlank()) {
-            ytDlpWrapper.downloadDir = java.io.File(path)
+            ytDlpWrapper.downloadDir = File(path)
         }
     }
 
@@ -87,31 +79,31 @@ class SettingsViewModel(
         when (event) {
             SettingsEvents.Refresh -> {
                 // Reload from persistent storage
-                _noCheckCertificate.update { settings.getBoolean(KEY_NO_CHECK_CERT, false) }
-                _cookiesFromBrowser.update { settings.getString(KEY_COOKIES_FROM_BROWSER, "") }
-                _includePresetInFilename.update { settings.getBoolean(KEY_INCLUDE_PRESET_IN_FILENAME, true) }
-                _parallelDownloads.update { settings.getInt(KEY_PARALLEL_DOWNLOADS, 2).coerceIn(1, 10) }
-                _downloadDirPath.update { settings.getString(KEY_DOWNLOAD_DIR, "") }
-                _clipboardMonitoring.update { settings.getBoolean(KEY_CLIPBOARD_MONITORING, false) }
-                _notifyOnComplete.update { settings.getBoolean(KEY_NOTIFY_ON_COMPLETE, true) }
+                _noCheckCertificate.update { settings.getBoolean(SettingsKeys.NO_CHECK_CERTIFICATE, false) }
+                _cookiesFromBrowser.update { settings.getString(SettingsKeys.COOKIES_FROM_BROWSER, "") }
+                _includePresetInFilename.update { settings.getBoolean(SettingsKeys.INCLUDE_PRESET_IN_FILENAME, true) }
+                _parallelDownloads.update { settings.getInt(SettingsKeys.PARALLEL_DOWNLOADS, 2).coerceIn(1, 10) }
+                _downloadDirPath.update { settings.getString(SettingsKeys.DOWNLOAD_DIR, "") }
+                _clipboardMonitoring.update { settings.getBoolean(SettingsKeys.CLIPBOARD_MONITORING_ENABLED, false) }
+                _notifyOnComplete.update { settings.getBoolean(SettingsKeys.NOTIFY_ON_DOWNLOAD_COMPLETE, true) }
                 // Refresh autostart status from system
                 viewModelScope.launch {
-                    val enabled = runCatching { autoLaunch.isEnabled() }.getOrElse { settings.getBoolean(KEY_AUTO_LAUNCH, false) }
+                    val enabled = runCatching { autoLaunch.isEnabled() }.getOrElse { settings.getBoolean(SettingsKeys.AUTO_LAUNCH_ENABLED, false) }
                     _autoLaunchEnabled.value = enabled
-                    settings.putBoolean(KEY_AUTO_LAUNCH, enabled)
+                    settings.putBoolean(SettingsKeys.AUTO_LAUNCH_ENABLED, enabled)
                 }
                 // Also ensure wrapper reflects persisted values when refreshing
                 ytDlpWrapper.noCheckCertificate = _noCheckCertificate.value
                 ytDlpWrapper.cookiesFromBrowser = _cookiesFromBrowser.value.ifBlank { null }
                 val p = _downloadDirPath.value
-                ytDlpWrapper.downloadDir = p.takeIf { it.isNotBlank() }?.let { java.io.File(it) }
+                ytDlpWrapper.downloadDir = p.takeIf { it.isNotBlank() }?.let { File(it) }
             }
             is SettingsEvents.SetNotifyOnComplete -> {
-                settings.putBoolean(KEY_NOTIFY_ON_COMPLETE, event.enabled)
+                settings.putBoolean(SettingsKeys.NOTIFY_ON_DOWNLOAD_COMPLETE, event.enabled)
                 _notifyOnComplete.value = event.enabled
             }
             is SettingsEvents.SetNoCheckCertificate -> {
-                settings.putBoolean(KEY_NO_CHECK_CERT, event.enabled)
+                settings.putBoolean(SettingsKeys.NO_CHECK_CERTIFICATE, event.enabled)
                 _noCheckCertificate.value = event.enabled
                 // Apply retroactively to the running wrapper instance
                 ytDlpWrapper.noCheckCertificate = event.enabled
@@ -119,40 +111,40 @@ class SettingsViewModel(
             is SettingsEvents.SetCookiesFromBrowser -> {
                 // Normalize value: trim, allow empty to disable
                 val value = event.browser.trim()
-                settings.putString(KEY_COOKIES_FROM_BROWSER, value)
+                settings.putString(SettingsKeys.COOKIES_FROM_BROWSER, value)
                 _cookiesFromBrowser.value = value
                 // Apply retroactively to the running wrapper instance
                 ytDlpWrapper.cookiesFromBrowser = value.ifBlank { null }
             }
             is SettingsEvents.SetIncludePresetInFilename -> {
-                settings.putBoolean(KEY_INCLUDE_PRESET_IN_FILENAME, event.enabled)
+                settings.putBoolean(SettingsKeys.INCLUDE_PRESET_IN_FILENAME, event.enabled)
                 _includePresetInFilename.value = event.enabled
             }
             is SettingsEvents.SetParallelDownloads -> {
                 val clamped = event.count.coerceIn(1, 10)
-                settings.putInt(KEY_PARALLEL_DOWNLOADS, clamped)
+                settings.putInt(SettingsKeys.PARALLEL_DOWNLOADS, clamped)
                 _parallelDownloads.value = clamped
             }
             is SettingsEvents.SetDownloadDir -> {
                 val path = event.path.trim()
-                settings.putString(KEY_DOWNLOAD_DIR, path)
+                settings.putString(SettingsKeys.DOWNLOAD_DIR, path)
                 _downloadDirPath.value = path
-                ytDlpWrapper.downloadDir = path.takeIf { it.isNotBlank() }?.let { java.io.File(it) }
+                ytDlpWrapper.downloadDir = path.takeIf { it.isNotBlank() }?.let { File(it) }
             }
             is SettingsEvents.SetClipboardMonitoring -> {
-                settings.putBoolean(KEY_CLIPBOARD_MONITORING, event.enabled)
+                settings.putBoolean(SettingsKeys.CLIPBOARD_MONITORING_ENABLED, event.enabled)
                 _clipboardMonitoring.value = event.enabled
                 // Persist and start/stop monitoring through the manager
                 clipboardMonitorManager.onSettingChanged(event.enabled)
             }
             is SettingsEvents.SetAutoLaunchEnabled -> {
                 _autoLaunchEnabled.value = event.enabled
-                settings.putBoolean(KEY_AUTO_LAUNCH, event.enabled)
+                settings.putBoolean(io.github.kdroidfilter.ytdlpgui.core.settings.SettingsKeys.AUTO_LAUNCH_ENABLED, event.enabled)
                 viewModelScope.launch {
                     runCatching { if (event.enabled) autoLaunch.enable() else autoLaunch.disable() }
                     val confirmed = runCatching { autoLaunch.isEnabled() }.getOrDefault(event.enabled)
                     _autoLaunchEnabled.value = confirmed
-                    settings.putBoolean(KEY_AUTO_LAUNCH, confirmed)
+                    settings.putBoolean(SettingsKeys.AUTO_LAUNCH_ENABLED, confirmed)
                 }
             }
             is SettingsEvents.PickDownloadDir -> {

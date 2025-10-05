@@ -1,11 +1,16 @@
-package io.github.kdroidfilter.ytdlpgui.features.screens.download
+package io.github.kdroidfilter.ytdlpgui.core.business
 
 import com.russhwolf.settings.Settings
+import io.github.kdroidfilter.knotify.builder.ExperimentalNotificationsApi
+import io.github.kdroidfilter.knotify.compose.builder.notification
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlp.core.Event
 import io.github.kdroidfilter.ytdlp.core.Handle
 import io.github.kdroidfilter.ytdlp.core.SubtitleOptions
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
+import io.github.kdroidfilter.ytdlpgui.core.settings.SettingsKeys
+import io.github.kdroidfilter.ytdlpgui.core.util.FileExplorerUtils
+import io.github.kdroidfilter.ytdlpgui.core.util.NotificationThumbUtils
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -38,9 +43,6 @@ class DownloadManager(
 ) {
     private val scope = CoroutineScope(Dispatchers.IO)
 
-    private companion object {
-        const val KEY_NOTIFY_ON_COMPLETE = "notify_on_download_complete"
-    }
 
     data class DownloadItem(
         val id: String = UUID.randomUUID().toString(),
@@ -61,7 +63,7 @@ class DownloadManager(
 
     private val pendingQueue: ArrayDeque<String> = ArrayDeque()
 
-    private fun maxParallel(): Int = settings.getInt("parallel_downloads", 2).coerceIn(1, 10)
+    private fun maxParallel(): Int = settings.getInt(SettingsKeys.PARALLEL_DOWNLOADS, 2).coerceIn(1, 10)
     private fun runningCount(): Int = _items.value.count { it.status == DownloadItem.Status.Running }
 
     fun start(url: String, videoInfo: VideoInfo? = null, preset: YtDlpWrapper.Preset? = null): String =
@@ -156,7 +158,7 @@ class DownloadManager(
                     }
                     saveToHistory(id, item, absolutePath)
                     // Send completion notification if enabled
-                    if (settings.getBoolean(KEY_NOTIFY_ON_COMPLETE, true)) {
+                    if (settings.getBoolean(SettingsKeys.NOTIFY_ON_DOWNLOAD_COMPLETE, true)) {
                         scope.launch {
                             sendCompletionNotification(item, absolutePath)
                         }
@@ -216,7 +218,7 @@ class DownloadManager(
         )
 
     private fun buildOutputTemplate(preset: YtDlpWrapper.Preset?): String {
-        val includePreset = settings.getBoolean("include_preset_in_filename", true)
+        val includePreset = settings.getBoolean(SettingsKeys.INCLUDE_PRESET_IN_FILENAME, true)
         return if (includePreset && preset != null) {
             "%(title)s_${preset.height}p.%(ext)s"
         } else {
@@ -237,21 +239,21 @@ class DownloadManager(
         )
     }
 
-    @OptIn(io.github.kdroidfilter.knotify.builder.ExperimentalNotificationsApi::class)
+    @OptIn(ExperimentalNotificationsApi::class)
     private suspend fun sendCompletionNotification(item: DownloadItem, absolutePath: String?) {
         val title = getString(Res.string.download_completed_title)
         val nameOrUrl = item.videoInfo?.title?.ifBlank { null } ?: run {
-            absolutePath?.let { java.io.File(it).nameWithoutExtension }
+            absolutePath?.let { File(it).nameWithoutExtension }
         } ?: item.url
         val message = getString(Res.string.download_completed_message, nameOrUrl)
         val openBtn = getString(Res.string.open_directory)
 
-        fun openDirAction() { absolutePath?.let { io.github.kdroidfilter.ytdlpgui.core.util.FileExplorerUtils.openDirectoryForPath(it) } }
+        fun openDirAction() { absolutePath?.let { FileExplorerUtils.openDirectoryForPath(it) } }
 
-        val thumbUrl = io.github.kdroidfilter.ytdlpgui.core.util.NotificationThumbUtils.resolveThumbnailUrl(item.videoInfo?.thumbnail, item.url)
-        val largeIconContent = io.github.kdroidfilter.ytdlpgui.core.util.NotificationThumbUtils.buildLargeIcon(thumbUrl)
+        val thumbUrl = NotificationThumbUtils.resolveThumbnailUrl(item.videoInfo?.thumbnail, item.url)
+        val largeIconContent = NotificationThumbUtils.buildLargeIcon(thumbUrl)
 
-        val notif = io.github.kdroidfilter.knotify.compose.builder.notification(
+        val notif = notification(
             title = title,
             message = message,
             largeIcon = largeIconContent,

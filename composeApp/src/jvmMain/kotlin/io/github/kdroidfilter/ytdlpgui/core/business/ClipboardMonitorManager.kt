@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalTrayAppApi::class)
 
-package io.github.kdroidfilter.ytdlpgui.core.clipboard
+package io.github.kdroidfilter.ytdlpgui.core.business
 
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.russhwolf.settings.Settings
@@ -30,23 +30,15 @@ import ytdlpgui.composeapp.generated.resources.clipboard_ignore
 import ytdlpgui.composeapp.generated.resources.clipboard_link_detected_message
 import ytdlpgui.composeapp.generated.resources.clipboard_link_detected_title
 import ytdlpgui.composeapp.generated.resources.clipboard_open_in_app
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.toComposeImageBitmap
-import io.github.kdroidfilter.ytdlp.util.YouTubeThumbnailHelper
-import org.jetbrains.skia.Image as SkiaImage
+import io.github.kdroidfilter.ytdlpgui.core.util.NotificationThumbUtils
+import io.github.kdroidfilter.ytdlpgui.data.SupportedSitesRepository
 
 class ClipboardMonitorManager(
     private val navigator: Navigator,
     private val settings: Settings,
     private val trayAppState: TrayAppState,
-    private val supportedSitesRepository: io.github.kdroidfilter.ytdlpgui.data.SupportedSitesRepository,
+    private val supportedSitesRepository: SupportedSitesRepository,
 ) {
     companion object {
         private const val KEY_CLIPBOARD_MONITORING = "clipboard_monitoring_enabled"
@@ -129,8 +121,8 @@ class ClipboardMonitorManager(
         }
 
         // Show a localized notification asking user consent to open in the app
-        val thumbUrl = io.github.kdroidfilter.ytdlpgui.core.util.NotificationThumbUtils.resolveThumbnailUrl(null, url)
-        val largeIconContent: (@Composable () -> Unit)? = io.github.kdroidfilter.ytdlpgui.core.util.NotificationThumbUtils.buildLargeIcon(thumbUrl)
+        val thumbUrl = NotificationThumbUtils.resolveThumbnailUrl(null, url)
+        val largeIconContent: (@Composable () -> Unit)? = NotificationThumbUtils.buildLargeIcon(thumbUrl)
 
         val notif = notification(
             title = title,

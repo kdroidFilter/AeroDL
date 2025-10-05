@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
+import io.github.kdroidfilter.ytdlpgui.core.business.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Navigator
 import kotlinx.coroutines.CoroutineScope
@@ -18,7 +19,7 @@ class SingleDownloadViewModel(
     private val navigator: Navigator,
     private val savedStateHandle: SavedStateHandle,
     private val ytDlpWrapper: YtDlpWrapper,
-    private val downloadManager: io.github.kdroidfilter.ytdlpgui.features.screens.download.DownloadManager,
+    private val downloadManager: DownloadManager,
 ) : ViewModel() {
 
     val videoUrl = savedStateHandle.toRoute<Destination.Download.Single>().videoLink

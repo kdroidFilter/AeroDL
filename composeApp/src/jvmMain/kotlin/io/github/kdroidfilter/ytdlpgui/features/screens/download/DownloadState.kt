@@ -2,6 +2,7 @@ package io.github.kdroidfilter.ytdlpgui.features.screens.download
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import io.github.kdroidfilter.ytdlpgui.core.business.DownloadManager
 
 data class DownloadState(
     val isLoading: Boolean = false,
