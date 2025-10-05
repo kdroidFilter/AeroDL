@@ -42,8 +42,8 @@ import io.github.kdroidfilter.ytdlpgui.core.ui.icons.AeroDlLogoOnly
 import io.github.kdroidfilter.ytdlpgui.core.ui.icons.Exit_to_app
 import io.github.kdroidfilter.ytdlpgui.core.ui.icons.Login
 import io.github.kdroidfilter.ytdlpgui.di.appModule
-import io.github.kdroidfilter.ytdlpgui.features.screens.settings.SettingsEvents
-import io.github.kdroidfilter.ytdlpgui.features.screens.settings.SettingsViewModel
+import io.github.kdroidfilter.ytdlpgui.features.screens.secondarynav.settings.SettingsEvents
+import io.github.kdroidfilter.ytdlpgui.features.screens.secondarynav.settings.SettingsViewModel
 import io.github.vinceglb.autolaunch.AutoLaunch
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.getString

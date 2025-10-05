@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalTrayAppApi::class)
 
-package io.github.kdroidfilter.ytdlpgui.features.screens.settings
+package io.github.kdroidfilter.ytdlpgui.features.screens.secondarynav.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -139,7 +139,7 @@ class SettingsViewModel(
             }
             is SettingsEvents.SetAutoLaunchEnabled -> {
                 _autoLaunchEnabled.value = event.enabled
-                settings.putBoolean(io.github.kdroidfilter.ytdlpgui.core.settings.SettingsKeys.AUTO_LAUNCH_ENABLED, event.enabled)
+                settings.putBoolean(SettingsKeys.AUTO_LAUNCH_ENABLED, event.enabled)
                 viewModelScope.launch {
                     runCatching { if (event.enabled) autoLaunch.enable() else autoLaunch.disable() }
                     val confirmed = runCatching { autoLaunch.isEnabled() }.getOrDefault(event.enabled)

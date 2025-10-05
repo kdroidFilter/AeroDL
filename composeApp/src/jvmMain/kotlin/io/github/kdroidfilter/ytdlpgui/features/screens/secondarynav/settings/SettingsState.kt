@@ -1,4 +1,4 @@
-package io.github.kdroidfilter.ytdlpgui.features.screens.settings
+package io.github.kdroidfilter.ytdlpgui.features.screens.secondarynav.settings
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState

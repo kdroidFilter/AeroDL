@@ -1,4 +1,4 @@
-package io.github.kdroidfilter.ytdlpgui.features.screens.home
+package io.github.kdroidfilter.ytdlpgui.features.screens.mainnav.home
 
 sealed class HomeEvents {
     data object OnNextClicked : HomeEvents()

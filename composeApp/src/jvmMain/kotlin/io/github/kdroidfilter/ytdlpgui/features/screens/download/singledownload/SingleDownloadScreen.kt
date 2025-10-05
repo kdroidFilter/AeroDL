@@ -1,4 +1,4 @@
-package io.github.kdroidfilter.ytdlpgui.features.screens.singledownload
+package io.github.kdroidfilter.ytdlpgui.features.screens.download.singledownload
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.text.font.FontWeight
@@ -318,8 +319,8 @@ private fun ThumbnailWithDuration(
         modifier = Modifier
             .aspectRatio(16f / 9f)
             .clip(RoundedCornerShape(12.dp))
-            .onPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Enter) { isHovered = true }
-            .onPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Exit) { isHovered = false }
+            .onPointerEvent(PointerEventType.Enter) { isHovered = true }
+            .onPointerEvent(PointerEventType.Exit) { isHovered = false }
     ) {
 
         Box(contentAlignment = Alignment.Center) {

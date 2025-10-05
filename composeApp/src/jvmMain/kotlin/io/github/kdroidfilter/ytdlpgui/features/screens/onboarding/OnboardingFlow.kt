@@ -31,8 +31,8 @@ import io.github.kdroidfilter.ytdlpgui.core.ui.icons.BrowserFirefox
 import io.github.kdroidfilter.ytdlpgui.core.ui.icons.Cookie_off
 import io.github.kdroidfilter.ytdlpgui.core.ui.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Navigator
-import io.github.kdroidfilter.ytdlpgui.features.screens.settings.SettingsEvents
-import io.github.kdroidfilter.ytdlpgui.features.screens.settings.SettingsViewModel
+import io.github.kdroidfilter.ytdlpgui.features.screens.secondarynav.settings.SettingsEvents
+import io.github.kdroidfilter.ytdlpgui.features.screens.secondarynav.settings.SettingsViewModel
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import com.russhwolf.settings.Settings as KvSettings

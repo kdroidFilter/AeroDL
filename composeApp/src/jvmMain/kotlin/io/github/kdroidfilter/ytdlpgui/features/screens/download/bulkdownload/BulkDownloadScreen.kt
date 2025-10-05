@@ -1,4 +1,4 @@
-package io.github.kdroidfilter.ytdlpgui.features.screens.bulkdownload
+package io.github.kdroidfilter.ytdlpgui.features.screens.download.bulkdownload
 
 import io.github.composefluent.component.Text
 import androidx.compose.runtime.Composable

@@ -1,4 +1,4 @@
-package io.github.kdroidfilter.ytdlpgui.features.screens.bulkdownload
+package io.github.kdroidfilter.ytdlpgui.features.screens.download.bulkdownload
 
 import androidx.lifecycle.ViewModel
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Navigator

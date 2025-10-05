@@ -1,4 +1,4 @@
-package io.github.kdroidfilter.ytdlpgui.features.screens.singledownload
+package io.github.kdroidfilter.ytdlpgui.features.screens.download.singledownload
 
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 

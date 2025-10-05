@@ -24,10 +24,10 @@ import io.github.kdroidfilter.ytdlpgui.core.ui.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.ui.navigation.NavigationAction
 import io.github.kdroidfilter.ytdlpgui.core.ui.navigation.ObserveAsEvents
 import io.github.kdroidfilter.ytdlpgui.core.ui.navigation.noAnimatedComposable
-import io.github.kdroidfilter.ytdlpgui.features.screens.about.AboutScreen
-import io.github.kdroidfilter.ytdlpgui.features.screens.bulkdownload.BulkDownloadScreen
-import io.github.kdroidfilter.ytdlpgui.features.screens.download.DownloaderScreen
-import io.github.kdroidfilter.ytdlpgui.features.screens.home.HomeScreen
+import io.github.kdroidfilter.ytdlpgui.features.screens.secondarynav.about.AboutScreen
+import io.github.kdroidfilter.ytdlpgui.features.screens.download.bulkdownload.BulkDownloadScreen
+import io.github.kdroidfilter.ytdlpgui.features.screens.mainnav.downloader.DownloaderScreen
+import io.github.kdroidfilter.ytdlpgui.features.screens.mainnav.home.HomeScreen
 import io.github.kdroidfilter.ytdlpgui.features.screens.initscreen.InitScreen
 import io.github.kdroidfilter.ytdlpgui.features.screens.onboarding.OnboardingClipboardStep
 import io.github.kdroidfilter.ytdlpgui.features.screens.onboarding.OnboardingCookiesStep
@@ -37,8 +37,8 @@ import io.github.kdroidfilter.ytdlpgui.features.screens.onboarding.OnboardingInc
 import io.github.kdroidfilter.ytdlpgui.features.screens.onboarding.OnboardingNoCheckStep
 import io.github.kdroidfilter.ytdlpgui.features.screens.onboarding.OnboardingParallelStep
 import io.github.kdroidfilter.ytdlpgui.features.screens.onboarding.OnboardingWelcomeScreen
-import io.github.kdroidfilter.ytdlpgui.features.screens.settings.SettingsScreen
-import io.github.kdroidfilter.ytdlpgui.features.screens.singledownload.SingleDownloadScreen
+import io.github.kdroidfilter.ytdlpgui.features.screens.secondarynav.settings.SettingsScreen
+import io.github.kdroidfilter.ytdlpgui.features.screens.download.singledownload.SingleDownloadScreen
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 

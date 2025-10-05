@@ -1,4 +1,4 @@
-package io.github.kdroidfilter.ytdlpgui.features.screens.home
+package io.github.kdroidfilter.ytdlpgui.features.screens.mainnav.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,6 +11,8 @@ import kotlinx.coroutines.launch
 import java.awt.Toolkit.getDefaultToolkit
 import org.jetbrains.compose.resources.getString
 import ytdlpgui.composeapp.generated.resources.*
+import java.awt.datatransfer.DataFlavor
+import java.net.URI
 
 class HomeViewModel(
     private val navigator: Navigator,
@@ -43,9 +45,9 @@ class HomeViewModel(
     private fun copyFromClipboard() {
         val clipboard = getDefaultToolkit().systemClipboard
         val contents = clipboard.getContents(null)
-        if (contents != null && contents.isDataFlavorSupported(java.awt.datatransfer.DataFlavor.stringFlavor)) {
+        if (contents != null && contents.isDataFlavorSupported(DataFlavor.stringFlavor)) {
             try {
-                val pasted = contents.getTransferData(java.awt.datatransfer.DataFlavor.stringFlavor) as String
+                val pasted = contents.getTransferData(DataFlavor.stringFlavor) as String
                 _textFieldContent.value = pasted
                 // Validate immediately after pasting
                 validateLink(pasted)
@@ -78,7 +80,7 @@ class HomeViewModel(
         val url = matches.first().value
         // Validate URL structure
         return try {
-            java.net.URI(url)
+            URI(url)
             // Looks valid
             _errorMessage.value = null
             true

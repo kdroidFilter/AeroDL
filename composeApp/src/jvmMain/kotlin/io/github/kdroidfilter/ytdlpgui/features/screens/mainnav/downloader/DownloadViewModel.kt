@@ -1,8 +1,9 @@
-package io.github.kdroidfilter.ytdlpgui.features.screens.download
+package io.github.kdroidfilter.ytdlpgui.features.screens.mainnav.downloader
 
 import androidx.lifecycle.ViewModel
 import io.github.kdroidfilter.ytdlpgui.core.business.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Navigator
+import io.github.kdroidfilter.ytdlpgui.core.util.FileExplorerUtils
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,6 +36,6 @@ class DownloadViewModel(
     private fun openDirectoryFor(historyId: String) {
         val item = historyRepository.history.value.firstOrNull { it.id == historyId } ?: return
         val path = item.outputPath ?: return
-        io.github.kdroidfilter.ytdlpgui.core.util.FileExplorerUtils.openDirectoryForPath(path)
+        FileExplorerUtils.openDirectoryForPath(path)
     }
 }

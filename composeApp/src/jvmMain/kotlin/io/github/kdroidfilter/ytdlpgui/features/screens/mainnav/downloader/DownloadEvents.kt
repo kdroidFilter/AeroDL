@@ -1,4 +1,4 @@
-package io.github.kdroidfilter.ytdlpgui.features.screens.download
+package io.github.kdroidfilter.ytdlpgui.features.screens.mainnav.downloader
 
 sealed class DownloadEvents {
     data object Refresh : DownloadEvents()

@@ -1,4 +1,4 @@
-package io.github.kdroidfilter.ytdlpgui.features.screens.about
+package io.github.kdroidfilter.ytdlpgui.features.screens.secondarynav.about
 
 import androidx.lifecycle.ViewModel
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Navigator

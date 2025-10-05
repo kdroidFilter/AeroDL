@@ -1,4 +1,4 @@
-package io.github.kdroidfilter.ytdlpgui.features.screens.download
+package io.github.kdroidfilter.ytdlpgui.features.screens.mainnav.downloader
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.VerticalScrollbar

@@ -1,4 +1,4 @@
-package io.github.kdroidfilter.ytdlpgui.features.screens.singledownload
+package io.github.kdroidfilter.ytdlpgui.features.screens.download.singledownload
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState

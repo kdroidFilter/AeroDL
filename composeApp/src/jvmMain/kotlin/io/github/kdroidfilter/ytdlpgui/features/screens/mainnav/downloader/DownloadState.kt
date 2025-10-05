@@ -1,13 +1,14 @@
-package io.github.kdroidfilter.ytdlpgui.features.screens.download
+package io.github.kdroidfilter.ytdlpgui.features.screens.mainnav.downloader
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import io.github.kdroidfilter.ytdlpgui.core.business.DownloadManager
+import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
 
 data class DownloadState(
     val isLoading: Boolean = false,
     val items: List<DownloadManager.DownloadItem> = emptyList(),
-    val history: List<io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository.HistoryItem> = emptyList(),
+    val history: List<DownloadHistoryRepository.HistoryItem> = emptyList(),
 )
 
 @Composable

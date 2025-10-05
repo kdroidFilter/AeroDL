@@ -1,4 +1,4 @@
-package io.github.kdroidfilter.ytdlpgui.features.screens.settings
+package io.github.kdroidfilter.ytdlpgui.features.screens.secondarynav.settings
 
 sealed class SettingsEvents {
 

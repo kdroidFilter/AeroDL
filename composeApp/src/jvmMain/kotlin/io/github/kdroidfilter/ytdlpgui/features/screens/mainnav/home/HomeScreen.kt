@@ -1,4 +1,4 @@
-package io.github.kdroidfilter.ytdlpgui.features.screens.home
+package io.github.kdroidfilter.ytdlpgui.features.screens.mainnav.home
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
