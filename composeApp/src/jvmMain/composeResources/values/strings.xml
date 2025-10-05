@@ -5,6 +5,10 @@
     <string name="download">Download</string>
     <string name="about">About</string>
 
+    <!-- Tooltips -->
+    <string name="tooltip_back">Go back</string>
+    <string name="tooltip_home">Go to Home</string>
+
     <!-- Home screen -->
     <string name="app_name">AeroDL</string>
     <string name="logo_content_desc">Logo</string>

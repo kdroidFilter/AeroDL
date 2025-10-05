@@ -5,6 +5,10 @@
     <string name="download">הורדות</string>
     <string name="about">אודות</string>
 
+    <!-- חלוניות מידע (Tooltips) -->
+    <string name="tooltip_back">חזור</string>
+    <string name="tooltip_home">עבור לדף הבית</string>
+
     <!-- Home screen -->
     <string name="app_name">אירודיאל</string>
     <string name="logo_content_desc">לוגו</string>

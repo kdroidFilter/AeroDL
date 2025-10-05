@@ -6,6 +6,10 @@
     <string name="download">Téléchargement</string>
     <string name="about">À propos</string>
 
+    <!-- Info-bulles -->
+    <string name="tooltip_back">Revenir en arrière</string>
+    <string name="tooltip_home">Aller à l'accueil</string>
+
     <!-- Écran d'accueil -->
     <string name="app_name">AeroDL</string>
     <string name="logo_content_desc">Logo</string>

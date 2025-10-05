@@ -1,5 +1,6 @@
 package io.github.kdroidfilter.ytdlpgui.core.presentation.components
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -31,8 +32,10 @@ import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.app_name
 import ytdlpgui.composeapp.generated.resources.download
 import ytdlpgui.composeapp.generated.resources.home
+import ytdlpgui.composeapp.generated.resources.tooltip_back
+import ytdlpgui.composeapp.generated.resources.tooltip_home
 
-@OptIn(ExperimentalFluentApi::class)
+@OptIn(ExperimentalFluentApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun Header(
     navigator: Navigator,
@@ -56,22 +59,30 @@ fun Header(
             item {
                 if (canGoBack) {
                     Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                        SubtleButton(
-                            iconOnly = true,
-                            onClick = {
-                                scope.launch { navigator.navigateUp() }
-                            },
-                            modifier = Modifier.padding(top = 12.dp, start = 4.dp)
-                        ) { Icon(if (isRtl) Icons.Default.ArrowRight else Icons.Default.ArrowLeft, "Back") }
-                        if (previousDestination !is Destination.HomeScreen) {
-                            Spacer(Modifier.width(4.dp))
+                        TooltipBox(
+                            tooltip = { Text(stringResource(Res.string.tooltip_back)) }
+                        ) {
                             SubtleButton(
                                 iconOnly = true,
                                 onClick = {
-                                    scope.launch { navigator.navigateAndClearBackStack(Destination.HomeScreen) }
+                                    scope.launch { navigator.navigateUp() }
                                 },
-                                modifier = Modifier.padding(top = 12.dp, end = 4.dp)
-                            ) { Icon(Icons.Default.Home, "Home") }
+                                modifier = Modifier.padding(top = 12.dp, start = 4.dp)
+                            ) { Icon(if (isRtl) Icons.Default.ArrowRight else Icons.Default.ArrowLeft, "Back") }
+                        }
+                        if (previousDestination !is Destination.HomeScreen) {
+                            Spacer(Modifier.width(4.dp))
+                            TooltipBox(
+                                tooltip = { Text(stringResource(Res.string.tooltip_home)) }
+                            ) {
+                                SubtleButton(
+                                    iconOnly = true,
+                                    onClick = {
+                                        scope.launch { navigator.navigateAndClearBackStack(Destination.HomeScreen) }
+                                    },
+                                    modifier = Modifier.padding(top = 12.dp, end = 4.dp)
+                                ) { Icon(Icons.Default.Home, "Home") }
+                            }
                         }
                     }
                 } else {
