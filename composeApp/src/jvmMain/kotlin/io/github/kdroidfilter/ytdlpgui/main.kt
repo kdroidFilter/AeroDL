@@ -59,9 +59,11 @@ import ytdlpgui.composeapp.generated.resources.quit
 import ytdlpgui.composeapp.generated.resources.settings_auto_launch_title
 import ytdlpgui.composeapp.generated.resources.settings_clipboard_monitoring_title
 import ytdlpgui.composeapp.generated.resources.app_version_label
+import java.io.File
 
 @OptIn(ExperimentalTrayAppApi::class, ExperimentalFluentApi::class)
 fun main() = application {
+//    clearJavaTempDir()
     KoinApplication(application = {
         modules(appModule)
     }) {
@@ -167,4 +169,18 @@ fun main() = application {
             }
         }
     }
+}
+
+fun clearJavaTempDir() {
+    val tmpDir = System.getProperty("java.io.tmpdir")
+    val dir = File(tmpDir)
+    dir.listFiles()?.forEach { file ->
+        try {
+            if (file.isDirectory) file.deleteRecursively()
+            else file.delete()
+        } catch (e: Exception) {
+            println("Failed to delete ${file.absolutePath}: ${e.message}")
+        }
+    }
+    println("Cache cleared: $tmpDir")
 }

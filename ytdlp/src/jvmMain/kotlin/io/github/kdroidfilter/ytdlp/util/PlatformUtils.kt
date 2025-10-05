@@ -7,6 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.net.HttpURLConnection
 import java.nio.ByteBuffer
 import java.nio.channels.Channels
 import java.nio.file.Files
@@ -15,6 +16,7 @@ import java.nio.file.attribute.PosixFilePermission
 object PlatformUtils {
 
     // --- yt-dlp ---
+
     fun getDefaultBinaryPath(): String {
         val dir = getCacheDir()
         val os = getOperatingSystem()
@@ -25,15 +27,23 @@ object PlatformUtils {
         return File(dir, binaryName).absolutePath
     }
 
+    /**
+     * Resolve the official asset name for yt-dlp on this platform.
+     *
+     * NOTE (macOS): KEEPING UNIVERSAL BINARY NAME. Do NOT introduce arm64-specific variant.
+     *               The correct asset is still "yt-dlp_macos".
+     */
     suspend fun getYtDlpAssetNameForSystem(): String {
         val os = getOperatingSystem()
         val arch = (System.getProperty("os.arch") ?: "").lowercase()
+
         return when (os) {
             OperatingSystem.WINDOWS -> when {
                 arch.contains("aarch64") || arch.contains("arm64") -> "yt-dlp_win_arm64.exe"
                 arch.contains("32") || (arch.contains("x86") && !arch.contains("64")) -> "yt-dlp_x86.exe"
                 else -> "yt-dlp.exe"
             }
+            // macOS stays universal
             OperatingSystem.MACOS -> "yt-dlp_macos"
             OperatingSystem.LINUX -> {
                 val isMusl = isMusl()
@@ -52,8 +62,12 @@ object PlatformUtils {
     private suspend fun isMusl(): Boolean = withContext(Dispatchers.IO) {
         try {
             val p = Runtime.getRuntime().exec(arrayOf("ldd", "--version"))
+            val exited = withContext(Dispatchers.IO) { kotlinx.coroutines.withTimeoutOrNull(1500) { p.waitFor() } }
+            if (exited == null) {
+                p.destroyForcibly()
+                return@withContext false
+            }
             val out = p.inputStream.bufferedReader().readText()
-            p.waitFor()
             out.contains("musl")
         } catch (e: Exception) {
             debugln { "ldd check failed, assuming not musl. Error: ${e.message}" }
@@ -61,19 +75,29 @@ object PlatformUtils {
         }
     }
 
+    /**
+     * Robust downloader with timeouts and progress callback.
+     * Keeps memory usage small by streaming to disk.
+     */
     suspend fun downloadFile(
         url: String,
         dest: File,
         onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null
     ) = withContext(Dispatchers.IO) {
         dest.parentFile?.mkdirs()
+
         val uri = java.net.URI.create(url)
-        val conn = uri.toURL().openConnection()
+        val conn = (uri.toURL().openConnection() as HttpURLConnection).apply {
+            connectTimeout = 12_000
+            readTimeout = 24_000
+            setRequestProperty("User-Agent", "kdroidFilter-ytdlp/1.0")
+        }
+
         val total = conn.getHeaderFieldLong("Content-Length", -1L).takeIf { it > 0 }
-        conn.getInputStream().use { input ->
+        conn.inputStream.use { input ->
             Channels.newChannel(input).use { rch ->
                 java.io.FileOutputStream(dest).use { fos ->
-                    val buffer = ByteBuffer.allocateDirect(1024 * 64) // 64KB buffer
+                    val buffer = ByteBuffer.allocateDirect(1024 * 64) // 64KB
                     var readTotal = 0L
                     while (isActive) {
                         buffer.clear()
@@ -89,6 +113,9 @@ object PlatformUtils {
         }
     }
 
+    /**
+     * Mark file as executable and remove macOS quarantine if needed.
+     */
     suspend fun makeExecutable(file: File) = withContext(Dispatchers.IO) {
         try {
             val path = file.toPath()
@@ -115,6 +142,7 @@ object PlatformUtils {
     }
 
     // --- FFmpeg ---
+
     fun getDefaultFfmpegPath(): String {
         val dir = File(getCacheDir(), "ffmpeg/bin")
         val exe = if (getOperatingSystem() == OperatingSystem.WINDOWS) "ffmpeg.exe" else "ffmpeg"
@@ -125,8 +153,12 @@ object PlatformUtils {
         val cmd = if (getOperatingSystem() == OperatingSystem.WINDOWS) listOf("where", "ffmpeg") else listOf("which", "ffmpeg")
         try {
             val p = ProcessBuilder(cmd).redirectErrorStream(true).start()
+            val exited = withContext(Dispatchers.IO) { kotlinx.coroutines.withTimeoutOrNull(1500) { p.waitFor() } }
+            if (exited == null) {
+                p.destroyForcibly(); return@withContext null
+            }
             val out = p.inputStream.bufferedReader().readText().trim()
-            if (p.waitFor() == 0 && out.isNotBlank()) out.lineSequence().firstOrNull()?.trim() else null
+            if (p.exitValue() == 0 && out.isNotBlank()) out.lineSequence().firstOrNull()?.trim() else null
         } catch (_: Exception) {
             null
         }
@@ -135,24 +167,22 @@ object PlatformUtils {
     suspend fun ffmpegVersion(path: String): String? = withContext(Dispatchers.IO) {
         try {
             val p = ProcessBuilder(listOf(path, "-version")).redirectErrorStream(true).start()
+            val exited = withContext(Dispatchers.IO) { kotlinx.coroutines.withTimeoutOrNull(2_000) { p.waitFor() } }
+            if (exited == null) {
+                p.destroyForcibly(); return@withContext null
+            }
             val out = p.inputStream.bufferedReader().readText().trim()
-            if (p.waitFor() == 0 && out.isNotBlank()) out.lineSequence().firstOrNull() else null
+            if (p.exitValue() == 0 && out.isNotBlank()) out.lineSequence().firstOrNull() else null
         } catch (_: Exception) {
             null
         }
     }
 
-    suspend fun findYtDlpInSystemPath(): String? = withContext(Dispatchers.IO) {
-        val cmd = if (getOperatingSystem() == OperatingSystem.WINDOWS) listOf("where", "yt-dlp") else listOf("which", "yt-dlp")
-        try {
-            val p = ProcessBuilder(cmd).redirectErrorStream(true).start()
-            val out = p.inputStream.bufferedReader().readText().trim()
-            if (p.waitFor() == 0 && out.isNotBlank()) out.lineSequence().firstOrNull()?.trim() else null
-        } catch (_: Exception) {
-            null
-        }
-    }
 
+    /**
+     * Select the appropriate FFmpeg asset for the current system.
+     * macOS: keep separate binaries for x64/arm64 as before (download URLs unchanged).
+     */
     fun getFfmpegAssetNameForSystem(): String? {
         val os = getOperatingSystem()
         val arch = (System.getProperty("os.arch") ?: "").lowercase()
@@ -163,15 +193,17 @@ object PlatformUtils {
                 arch.contains("32") || (arch.contains("x86") && !arch.contains("64")) -> "ffmpeg-master-latest-win32-gpl.zip"
                 else -> "ffmpeg-master-latest-win64-gpl.zip"
             }
-
             OperatingSystem.LINUX -> if (isArm64) "ffmpeg-master-latest-linuxarm64-gpl.tar.xz"
             else "ffmpeg-master-latest-linux64-gpl.tar.xz"
-
             OperatingSystem.MACOS -> if (isArm64) "ffmpeg-darwin-arm64" else "ffmpeg-darwin-x64"
             else -> null
         }
     }
 
+    /**
+     * Download and install FFmpeg in the app cache, verifying it runs.
+     * On macOS the asset is a plain binary; on Windows/Linux, archives are extracted.
+     */
     suspend fun downloadAndInstallFfmpeg(
         assetName: String,
         forceDownload: Boolean,

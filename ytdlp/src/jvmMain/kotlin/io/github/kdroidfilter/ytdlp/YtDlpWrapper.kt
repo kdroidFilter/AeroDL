@@ -14,17 +14,45 @@ import java.io.File
 import java.nio.charset.StandardCharsets
 import java.time.Duration
 import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.min
 
 /**
  * Main class for interacting with the yt-dlp tool.
- * Manages the binary, FFmpeg, downloads, and metadata extraction.
+ * All caches are process-lifetime (no TTL) and are only invalidated when the binary
+ * path changes or an explicit download/update is performed.
  */
 class YtDlpWrapper {
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
+    // --- Lifetime caches (thread-safe) ---
+
+    @Volatile
+    private var cachedVersion: String? = null
+
+    @Volatile
+    private var cachedLatestReleaseTag: String? = null
+
+    // Bounded lifetime metadata cache (no TTL, LRU capped by size to protect memory)
+    private class LruMap<K, V>(private val maxSize: Int) : LinkedHashMap<K, V>(maxSize, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<K, V>?): Boolean = size > maxSize
+    }
+    private val metadataCacheCapacity = 512
+    private val metadataCacheLock = Any()
+    private val metadataCache = LruMap<String, MetaCacheEntry>(metadataCacheCapacity)
+
+    private data class MetaCacheEntry(val json: String)
+
     // --- User Configuration (modifiable externally) ---
     var ytDlpPath: String = PlatformUtils.getDefaultBinaryPath()
+        set(value) {
+            field = value
+            // Invalidate all caches when path changes
+            cachedVersion = null
+            cachedLatestReleaseTag = null
+            synchronized(metadataCacheLock) { metadataCache.clear() }
+        }
+
     var ffmpegPath: String? = null
     var downloadDir: File? = File(System.getProperty("user.home"), "Downloads/yt-dlp")
 
@@ -41,6 +69,7 @@ class YtDlpWrapper {
     var cookiesFromBrowser: String? = null
 
     private val ytdlpFetcher = GitHubReleaseFetcher(owner = "yt-dlp", repo = "yt-dlp")
+
     private data class ProcessResult(val exitCode: Int, val stdout: List<String>, val stderr: String)
 
     // --- Initialization Events for UI ---
@@ -55,17 +84,11 @@ class YtDlpWrapper {
         data class Error(val message: String, val cause: Throwable? = null) : InitEvent
     }
 
-    /**
-     * Launches the initialization process in a provided CoroutineScope.
-     * Use onEvent to observe the progress.
-     */
+    // --- Public initialization helpers ---
+
     fun initializeIn(scope: CoroutineScope, onEvent: (InitEvent) -> Unit = {}): Job =
         scope.launch { initialize(onEvent) }
 
-    /**
-     * Performs initialization (checks/downloads yt-dlp and FFmpeg).
-     * Runs asynchronously and emits progress events.
-     */
     suspend fun initialize(onEvent: (InitEvent) -> Unit = {}): Boolean {
         fun pct(read: Long, total: Long?): Double? = total?.takeIf { it > 0 }?.let { read * 100.0 / it }
 
@@ -96,12 +119,23 @@ class YtDlpWrapper {
     }
 
     // --- Availability / Version / Update ---
+
+    /**
+     * Lifetime-cached version. First resolve by spawning the process once, then reuse.
+     */
     suspend fun version(): String? = withContext(Dispatchers.IO) {
+        cachedVersion?.let { return@withContext it }
         try {
-            val proc = ProcessBuilder(listOf(ytDlpPath, "--version"))
-                .redirectErrorStream(true).start()
+            val proc = ProcessBuilder(listOf(ytDlpPath, "--version")).redirectErrorStream(true).start()
+            val exited = withTimeoutOrNull(2_000) { proc.waitFor() }
+            if (exited == null) {
+                proc.destroyForcibly()
+                return@withContext null
+            }
             val out = proc.inputStream.bufferedReader().readText().trim()
-            if (proc.waitFor() == 0 && out.isNotBlank()) out else null
+            val res = if (proc.exitValue() == 0 && out.isNotBlank()) out else null
+            if (res != null) cachedVersion = res
+            res
         } catch (_: Exception) {
             null
         }
@@ -109,15 +143,28 @@ class YtDlpWrapper {
 
     suspend fun isAvailable(): Boolean {
         val file = File(ytDlpPath)
-        return file.exists() && file.canExecute() && version() != null
+        if (!(file.exists() && file.canExecute())) return false
+        // Avoid respawning if version is already known
+        return version() != null
     }
 
+    /**
+     * Determine if a newer release exists on GitHub.
+     * The "latest tag" is cached for the entire process lifetime to avoid repeated network calls.
+     * Cache is invalidated after successful download/update or when ytDlpPath changes.
+     */
     suspend fun hasUpdate(): Boolean {
         val currentVersion = version() ?: return true
-        val latestReleaseTag = ytdlpFetcher.getLatestRelease()?.tag_name ?: return false
-        return currentVersion.removePrefix("v").trim() != latestReleaseTag.removePrefix("v").trim()
+        val latestTag = cachedLatestReleaseTag ?: ytdlpFetcher.getLatestRelease()?.tag_name?.also {
+            cachedLatestReleaseTag = it
+        } ?: return false
+        return currentVersion.removePrefix("v").trim() != latestTag.removePrefix("v").trim()
     }
 
+    /**
+     * Download or update to the latest available asset for this platform.
+     * Invalidates caches after successful install.
+     */
     suspend fun downloadOrUpdate(onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null): Boolean {
         val assetName = PlatformUtils.getYtDlpAssetNameForSystem()
         val destFile = File(PlatformUtils.getDefaultBinaryPath())
@@ -130,9 +177,14 @@ class YtDlpWrapper {
             PlatformUtils.downloadFile(asset.browser_download_url, destFile, onProgress)
             if (getOperatingSystem() != OperatingSystem.WINDOWS) PlatformUtils.makeExecutable(destFile)
 
-            if (isAvailable()) {
+            if (destFile.exists() && destFile.canExecute()) {
+                // Reset caches so subsequent calls re-resolve version and latest tag once.
                 ytDlpPath = destFile.absolutePath
-                true
+                cachedVersion = null
+                cachedLatestReleaseTag = null
+                synchronized(metadataCacheLock) { metadataCache.clear() }
+                // Verify availability once; cache will be filled by version()
+                isAvailable()
             } else {
                 destFile.delete()
                 false
@@ -143,8 +195,8 @@ class YtDlpWrapper {
         }
     }
 
-
     // --- FFmpeg ---
+
     fun getDefaultFfmpegPath(): String = PlatformUtils.getDefaultFfmpegPath()
 
     suspend fun ensureFfmpegAvailable(
@@ -168,6 +220,7 @@ class YtDlpWrapper {
     }
 
     // --- Network Pre-check ---
+
     fun checkNetwork(
         targetUrl: String,
         connectTimeoutMs: Int = 5000,
@@ -176,6 +229,7 @@ class YtDlpWrapper {
         NetAndArchive.checkNetwork(targetUrl, connectTimeoutMs, readTimeoutMs)
 
     // --- Downloader ---
+
     fun download(url: String, options: Options = Options(), onEvent: (Event) -> Unit): Handle {
         val job = scope.launch {
             if (!isAvailable()) {
@@ -215,9 +269,7 @@ class YtDlpWrapper {
                                         tail.poll(); tail.offer(line)
                                     }
                                     val progress = NetAndArchive.parseProgress(line)
-                                    if (progress != null) onEvent(Event.Progress(progress, line)) else onEvent(
-                                        Event.Log(line)
-                                    )
+                                    if (progress != null) onEvent(Event.Progress(progress, line)) else onEvent(Event.Log(line))
                                 }
                             }
                         } catch (e: Exception) {
@@ -233,12 +285,7 @@ class YtDlpWrapper {
                     if (exitCode != 0) {
                         val lines = mutableListOf<String>().also { tail.drainTo(it) }
                         val diagnostic = NetAndArchive.diagnose(lines)
-                        val tailPreview = if (lines.isEmpty()) "(no output captured)" else lines.takeLast(
-                            min(
-                                15,
-                                lines.size
-                            )
-                        ).joinToString("\n")
+                        val tailPreview = if (lines.isEmpty()) "(no output captured)" else lines.takeLast(min(15, lines.size)).joinToString("\n")
                         onEvent(
                             Event.Error(
                                 "yt-dlp failed (exit $exitCode). ${diagnostic ?: ""}".trim() + "\n--- Last output ---\n$tailPreview"
@@ -274,6 +321,7 @@ class YtDlpWrapper {
     }
 
     // --- Direct URL Helpers ---
+
     suspend fun getDirectUrlForFormat(
         url: String,
         formatSelector: String,
@@ -306,8 +354,8 @@ class YtDlpWrapper {
         }
     }
 
-
     // --- Simple Resolution Presets ---
+
     enum class Preset(val height: Int) { P360(360), P480(480), P720(720), P1080(1080), P1440(1440), P2160(2160) }
 
     suspend fun getProgressiveUrl(
@@ -366,6 +414,7 @@ class YtDlpWrapper {
         )
 
     // --- Audio Downloads ---
+
     fun downloadAudioMp3(
         url: String,
         outputTemplate: String? = "%(title)s.%(ext)s",
@@ -377,21 +426,21 @@ class YtDlpWrapper {
     ): Handle {
         val args = listOf(
             "--extract-audio",
-            "--audio-format",
-            "mp3",
-            "--audio-quality",
-            audioQuality.coerceIn(0, 10).toString(),
+            "--audio-format", "mp3",
+            "--audio-quality", audioQuality.coerceIn(0, 10).toString(),
             "--add-metadata",
             "--embed-thumbnail",
-            "-f",
-            "bestaudio/best"
+            "-f", "bestaudio/best"
         )
         return downloadAudioInternal(url, outputTemplate, noCheckCertificate, extraArgs, timeout, args, onEvent)
     }
 
     enum class AudioQualityPreset(val bitrate: String, val description: String) {
-        LOW("96k", "Space saving"), MEDIUM("128k", "Standard quality"), HIGH("192k", "High quality"),
-        VERY_HIGH("256k", "Very high quality"), MAXIMUM("320k", "Maximum quality")
+        LOW("96k", "Space saving"),
+        MEDIUM("128k", "Standard quality"),
+        HIGH("192k", "High quality"),
+        VERY_HIGH("256k", "Very high quality"),
+        MAXIMUM("320k", "Maximum quality")
     }
 
     fun downloadAudioMp3WithPreset(
@@ -403,22 +452,20 @@ class YtDlpWrapper {
         timeout: Duration? = Duration.ofMinutes(30),
         onEvent: (Event) -> Unit
     ): Handle {
-        val postprocessorArg = "ffmpeg:-q:a ${
-            when (preset) {
-                AudioQualityPreset.LOW -> 5; AudioQualityPreset.MEDIUM -> 4; AudioQualityPreset.HIGH -> 2;
-                AudioQualityPreset.VERY_HIGH -> 1; AudioQualityPreset.MAXIMUM -> 0
-            }
-        }"
+        val postprocessorArg = "ffmpeg:-q:a " + when (preset) {
+            AudioQualityPreset.LOW -> 5
+            AudioQualityPreset.MEDIUM -> 4
+            AudioQualityPreset.HIGH -> 2
+            AudioQualityPreset.VERY_HIGH -> 1
+            AudioQualityPreset.MAXIMUM -> 0
+        }
         val args = listOf(
             "--extract-audio",
-            "--audio-format",
-            "mp3",
+            "--audio-format", "mp3",
             "--add-metadata",
             "--embed-thumbnail",
-            "-f",
-            "bestaudio/best",
-            "--postprocessor-args",
-            postprocessorArg
+            "-f", "bestaudio/best",
+            "--postprocessor-args", postprocessorArg
         )
         return downloadAudioInternal(url, outputTemplate, noCheckCertificate, extraArgs, timeout, args, onEvent)
     }
@@ -434,12 +481,13 @@ class YtDlpWrapper {
         return getDirectUrlForFormat(url, formatSelector, noCheckCertificate, timeoutSec)
     }
 
-    // --- Metadata Extraction ---
+    // --- Metadata Extraction (lifetime-cached) ---
+
     suspend fun getVideoInfo(
         url: String,
         extractFlat: Boolean = false,
         noCheckCertificate: Boolean = false,
-        timeoutSec: Long = 20,
+        timeoutSec: Long = 12,
         maxHeight: Int = 1080,
         preferredExts: List<String> = listOf("mp4", "webm")
     ): Result<VideoInfo> {
@@ -581,28 +629,27 @@ class YtDlpWrapper {
 
             try {
                 val process = ProcessBuilder(cmd).start()
-                val stdoutReader =
-                    async { process.inputStream.bufferedReader(StandardCharsets.UTF_8).readLines() }
-                val stderrReader =
-                    async { process.errorStream.bufferedReader(StandardCharsets.UTF_8).readText() }
+                val stdoutReader = async { process.inputStream.bufferedReader(StandardCharsets.UTF_8).readLines() }
+                val stderrReader = async { process.errorStream.bufferedReader(StandardCharsets.UTF_8).readText() }
 
-                val exited = withTimeoutOrNull(timeoutSec * 1000) {
-                    process.waitFor()
-                }
-
+                val exited = withTimeoutOrNull(timeoutSec * 1000) { process.waitFor() }
                 if (exited == null) {
                     process.destroyForcibly()
                     return@withContext Result.failure(IllegalStateException("yt-dlp command timed out after ${timeoutSec}s"))
                 }
 
                 Result.success(ProcessResult(process.exitValue(), stdoutReader.await(), stderrReader.await()))
-
             } catch (t: Throwable) {
                 Result.failure(IllegalStateException("Failed to start/run yt-dlp process", t))
             }
         }
 
-
+    /**
+     * Lifetime-cached metadata extractor.
+     * Keys are the full command line including all flags (so different options cache independently).
+     * No TTL; entries persist until process exit or explicit invalidation (binary path change/update)
+     * with a bounded LRU (512 entries) to prevent unbounded memory use.
+     */
     private suspend fun extractMetadata(
         url: String,
         noCheckCertificate: Boolean,
@@ -615,28 +662,46 @@ class YtDlpWrapper {
         val useNoCheckCert = noCheckCertificate || this.noCheckCertificate
         val cmdArgs = buildList {
             add("--dump-json"); add("--no-warnings")
+            // Aggressively cap network timeouts for faster failures (does not affect cache semantics)
+            addAll(listOf("--socket-timeout", "5"))
             if (useNoCheckCert) add("--no-check-certificate")
             cookiesFromBrowser?.takeIf { it.isNotBlank() }?.let { addAll(listOf("--cookies-from-browser", it)) }
             addAll(extraArgs); add(url)
         }
 
         return withContext(Dispatchers.IO) {
-            try {
-                val pb = ProcessBuilder(buildList { add(ytDlpPath); addAll(cmdArgs) }).redirectErrorStream(false)
-                val process = pb.start()
-                val jsonOutput = async { process.inputStream.bufferedReader(StandardCharsets.UTF_8).readText() }
-                val errorOutput = async { process.errorStream.bufferedReader(StandardCharsets.UTF_8).readText() }
+            val fullCmd = buildList { add(ytDlpPath); addAll(cmdArgs) }
+            val cacheKey = fullCmd.joinToString("\u0001")
 
-                val exited = withTimeoutOrNull(timeoutSec * 1000) {
-                    process.waitFor()
-                }
+            synchronized(metadataCacheLock) {
+                metadataCache[cacheKey]?.let { return@withContext Result.success(it.json) }
+            }
+
+            try {
+                val pb = ProcessBuilder(fullCmd).redirectErrorStream(false)
+                val process = pb.start()
+                val jsonDeferred = async { process.inputStream.bufferedReader(StandardCharsets.UTF_8).readText() }
+                val errorDeferred = async { process.errorStream.bufferedReader(StandardCharsets.UTF_8).readText() }
+
+                val exited = withTimeoutOrNull(timeoutSec * 1000) { process.waitFor() }
                 if (exited == null) {
                     process.destroyForcibly()
                     return@withContext Result.failure(IllegalStateException("Metadata extraction timed out after ${timeoutSec}s"))
                 }
 
-                if (process.exitValue() == 0) Result.success(jsonOutput.await())
-                else Result.failure(IllegalStateException("Metadata extraction failed (exit ${process.exitValue()})\n${errorOutput.await()}"))
+                if (process.exitValue() == 0) {
+                    val json = jsonDeferred.await()
+                    synchronized(metadataCacheLock) {
+                        metadataCache[cacheKey] = MetaCacheEntry(json)
+                    }
+                    Result.success(json)
+                } else {
+                    Result.failure(
+                        IllegalStateException(
+                            "Metadata extraction failed (exit ${process.exitValue()})\n${errorDeferred.await()}"
+                        )
+                    )
+                }
 
             } catch (t: Throwable) {
                 Result.failure(IllegalStateException("Failed to start yt-dlp process for metadata", t))
@@ -644,20 +709,8 @@ class YtDlpWrapper {
         }
     }
 
+    // --- Subtitle-friendly helpers (unchanged API) ---
 
-
-
-    /**
-     * Enhanced getVideoInfo that ensures automatic captions are included
-     *
-     * @param url The video URL
-     * @param extractFlat Extract basic info only (faster)
-     * @param includeAutoSubtitles Explicitly request automatic captions
-     * @param noCheckCertificate Disable SSL certificate validation
-     * @param timeoutSec Timeout in seconds
-     * @param maxHeight Maximum height for progressive URL selection
-     * @param preferredExts Preferred video extensions
-     */
     suspend fun getVideoInfoWithAllSubtitles(
         url: String,
         extractFlat: Boolean = false,
@@ -670,7 +723,6 @@ class YtDlpWrapper {
         val args = buildList {
             add("--no-playlist")
             if (extractFlat) add("--flat-playlist")
-            // Request automatic captions in the JSON output
             if (includeAutoSubtitles) add("--write-auto-subs")
         }
         return extractMetadata(url, noCheckCertificate, timeoutSec, args).mapCatching { json ->
@@ -678,16 +730,6 @@ class YtDlpWrapper {
         }
     }
 
-    /**
-     * Downloads only the subtitles without downloading the video
-     *
-     * @param url The video URL
-     * @param languages Specific languages to download, or null for all
-     * @param includeAutoSubtitles Include auto-generated subtitles
-     * @param subtitleFormat Output format for subtitles
-     * @param outputDir Directory where subtitle files will be saved
-     * @param onEvent Event callback
-     */
     fun downloadSubtitlesOnly(
         url: String,
         languages: List<String>? = null,
@@ -704,7 +746,7 @@ class YtDlpWrapper {
             SubtitleOptions(
                 allSubtitles = true,
                 writeAutoSubtitles = includeAutoSubtitles,
-                embedSubtitles = false, // Don't embed since we're not downloading video
+                embedSubtitles = false,
                 writeSubtitles = true,
                 subFormat = subtitleFormat
             )
@@ -718,9 +760,7 @@ class YtDlpWrapper {
             )
         }
 
-        // Use --skip-download to only get subtitles
         val extraArgs = listOf("--skip-download")
-
         val opts = Options(
             noCheckCertificate = useNoCheckCert,
             cookiesFromBrowser = useCookies,
@@ -729,13 +769,9 @@ class YtDlpWrapper {
             outputTemplate = "%(title)s.%(ext)s"
         )
 
-        // Use custom download dir if specified
         val originalDir = downloadDir
         outputDir?.let { downloadDir = it }
-
         val handle = download(url, opts, onEvent)
-
-        // Restore original download dir
         downloadDir = originalDir
 
         return handle
