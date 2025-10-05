@@ -284,7 +284,6 @@ private fun InProgressRow(item: DownloadManager.DownloadItem, onCancel: (String)
                         style = FluentTheme.typography.caption,
                         fontSize = 11.sp,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth(),
                         maxLines = 1
                     )
                 } else {
