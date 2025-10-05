@@ -277,7 +277,7 @@ private fun InProgressRow(item: DownloadManager.DownloadItem, onCancel: (String)
                 contentAlignment = Alignment.Center
             ) {
                 // Always show the progress ring
-                ProgressRing(progress = progressFraction, modifier = Modifier.fillMaxSize().padding(end = 2.dp))
+                ProgressRing(progress = progressFraction, modifier = Modifier.fillMaxSize())
 
                 if (!hovered) {
                     // Show percentage text centered in the ring
@@ -286,7 +286,8 @@ private fun InProgressRow(item: DownloadManager.DownloadItem, onCancel: (String)
                         style = FluentTheme.typography.caption,
                         fontSize = 11.sp,
                         textAlign = TextAlign.Center,
-                        maxLines = 1
+                        maxLines = 1,
+                        modifier = Modifier.offset(x = (-1).dp)
                     )
                 } else {
                     // On hover, show dismiss icon overlaid on the ring
