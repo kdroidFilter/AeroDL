@@ -14,8 +14,8 @@ import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.filled.ClipboardPaste
 import io.github.composefluent.icons.regular.ArrowLeft
 import io.github.composefluent.icons.regular.ArrowRight
-import io.github.kdroidfilter.ytdlpgui.core.presentation.icons.AeroDlLogoOnly
-import io.github.kdroidfilter.ytdlpgui.core.presentation.tools.PreviewContainer
+import io.github.kdroidfilter.ytdlpgui.core.ui.icons.AeroDlLogoOnly
+import io.github.kdroidfilter.ytdlpgui.core.ui.tools.PreviewContainer
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject

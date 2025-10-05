@@ -1,4 +1,4 @@
-package io.github.kdroidfilter.ytdlpgui.core.presentation.tools
+package io.github.kdroidfilter.ytdlpgui.core.ui.tools
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable

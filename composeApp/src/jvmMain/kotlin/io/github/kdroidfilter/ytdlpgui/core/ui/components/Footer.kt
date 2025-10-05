@@ -1,4 +1,4 @@
-package io.github.kdroidfilter.ytdlpgui.core.presentation.components
+package io.github.kdroidfilter.ytdlpgui.core.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.component.Icon
 import io.github.composefluent.component.SubtleButton
-import io.github.kdroidfilter.ytdlpgui.core.presentation.icons.Github
+import io.github.kdroidfilter.ytdlpgui.core.ui.icons.Github
 import java.awt.Desktop
 import java.net.URI
 

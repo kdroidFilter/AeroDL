@@ -1,4 +1,4 @@
-package io.github.kdroidfilter.ytdlpgui.core.presentation.navigation
+package io.github.kdroidfilter.ytdlpgui.core.ui.navigation
 
 import androidx.navigation.NavOptionsBuilder
 

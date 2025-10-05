@@ -16,10 +16,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import io.github.composefluent.ExperimentalFluentApi
-import io.github.kdroidfilter.ytdlpgui.core.presentation.components.Footer
+import io.github.kdroidfilter.ytdlpgui.core.ui.components.Footer
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.*
 import io.github.kdroidfilter.ytdlpgui.core.ui.components.MainNavigationHeader
 import io.github.kdroidfilter.ytdlpgui.core.ui.components.SecondaryNavigationHeader
+import io.github.kdroidfilter.ytdlpgui.core.ui.navigation.Destination
+import io.github.kdroidfilter.ytdlpgui.core.ui.navigation.NavigationAction
+import io.github.kdroidfilter.ytdlpgui.core.ui.navigation.ObserveAsEvents
+import io.github.kdroidfilter.ytdlpgui.core.ui.navigation.noAnimatedComposable
 import io.github.kdroidfilter.ytdlpgui.features.screens.about.AboutScreen
 import io.github.kdroidfilter.ytdlpgui.features.screens.bulkdownload.BulkDownloadScreen
 import io.github.kdroidfilter.ytdlpgui.features.screens.download.DownloaderScreen

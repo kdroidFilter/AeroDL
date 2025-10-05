@@ -18,10 +18,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import io.github.composefluent.component.Icon
 import io.github.composefluent.component.Text
 import io.github.composefluent.icons.Icons
@@ -30,19 +26,17 @@ import io.github.composefluent.icons.filled.TopSpeed
 import io.github.composefluent.icons.regular.Cookies
 import io.github.composefluent.icons.regular.LockShield
 import io.github.composefluent.icons.regular.Power
-import io.github.kdroidfilter.ytdlpgui.core.presentation.icons.BrowserChrome
-import io.github.kdroidfilter.ytdlpgui.core.presentation.icons.BrowserFirefox
-import io.github.kdroidfilter.ytdlpgui.core.presentation.icons.Cookie_off
-import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Destination
+import io.github.kdroidfilter.ytdlpgui.core.ui.icons.BrowserChrome
+import io.github.kdroidfilter.ytdlpgui.core.ui.icons.BrowserFirefox
+import io.github.kdroidfilter.ytdlpgui.core.ui.icons.Cookie_off
+import io.github.kdroidfilter.ytdlpgui.core.ui.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Navigator
 import io.github.kdroidfilter.ytdlpgui.features.screens.settings.SettingsEvents
-import io.github.kdroidfilter.ytdlpgui.features.screens.settings.SettingsState
 import io.github.kdroidfilter.ytdlpgui.features.screens.settings.SettingsViewModel
-import io.github.kdroidfilter.ytdlpgui.features.screens.settings.collectSettingsState
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import com.russhwolf.settings.Settings as KvSettings
-import io.github.kdroidfilter.ytdlpgui.core.presentation.components.Switcher
+import io.github.kdroidfilter.ytdlpgui.core.ui.components.Switcher
 import kotlinx.coroutines.launch
 
 

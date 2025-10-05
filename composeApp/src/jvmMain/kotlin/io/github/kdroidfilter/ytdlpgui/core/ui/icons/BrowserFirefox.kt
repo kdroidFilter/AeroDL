@@ -1,4 +1,4 @@
-package io.github.kdroidfilter.ytdlpgui.core.presentation.icons
+package io.github.kdroidfilter.ytdlpgui.core.ui.icons
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor

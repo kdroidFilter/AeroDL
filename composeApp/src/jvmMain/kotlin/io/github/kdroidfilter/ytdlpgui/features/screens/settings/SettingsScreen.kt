@@ -29,11 +29,10 @@ import io.github.composefluent.icons.regular.Clipboard
 import io.github.composefluent.icons.regular.Cookies
 import io.github.composefluent.icons.regular.LockShield
 import io.github.composefluent.icons.regular.Power
-import io.github.kdroidfilter.ytdlpgui.core.presentation.components.Switcher
-import io.github.kdroidfilter.ytdlpgui.core.presentation.icons.BrowserChrome
-import io.github.kdroidfilter.ytdlpgui.core.presentation.icons.BrowserFirefox
-import io.github.kdroidfilter.ytdlpgui.core.presentation.icons.BrowserSafari
-import io.github.kdroidfilter.ytdlpgui.core.presentation.icons.Cookie_off
+import io.github.kdroidfilter.ytdlpgui.core.ui.components.Switcher
+import io.github.kdroidfilter.ytdlpgui.core.ui.icons.BrowserChrome
+import io.github.kdroidfilter.ytdlpgui.core.ui.icons.BrowserFirefox
+import io.github.kdroidfilter.ytdlpgui.core.ui.icons.Cookie_off
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import ytdlpgui.composeapp.generated.resources.Res
@@ -41,7 +40,6 @@ import ytdlpgui.composeapp.generated.resources.settings_auto_launch_title
 import ytdlpgui.composeapp.generated.resources.settings_browser_chrome
 import ytdlpgui.composeapp.generated.resources.settings_browser_disable
 import ytdlpgui.composeapp.generated.resources.settings_browser_firefox
-import ytdlpgui.composeapp.generated.resources.settings_browser_safari
 import ytdlpgui.composeapp.generated.resources.settings_browser_select
 import ytdlpgui.composeapp.generated.resources.settings_clipboard_monitoring_caption
 import ytdlpgui.composeapp.generated.resources.settings_clipboard_monitoring_title
@@ -57,10 +55,6 @@ import ytdlpgui.composeapp.generated.resources.settings_no_check_certificate_cap
 import ytdlpgui.composeapp.generated.resources.settings_no_check_certificate_title
 import ytdlpgui.composeapp.generated.resources.settings_parallel_downloads_caption
 import ytdlpgui.composeapp.generated.resources.settings_parallel_downloads_title
-import ytdlpgui.composeapp.generated.resources.settings_select
-import ytdlpgui.composeapp.generated.resources.settings_clipboard_monitoring_title
-import ytdlpgui.composeapp.generated.resources.settings_clipboard_monitoring_caption
-import ytdlpgui.composeapp.generated.resources.settings_auto_launch_title
 import ytdlpgui.composeapp.generated.resources.settings_auto_launch_caption
 import ytdlpgui.composeapp.generated.resources.*
 

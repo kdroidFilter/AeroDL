@@ -23,8 +23,8 @@ import io.github.composefluent.icons.regular.History
 import io.github.composefluent.icons.regular.Home
 import io.github.composefluent.icons.regular.Info
 import io.github.composefluent.icons.regular.Settings
-import io.github.kdroidfilter.ytdlpgui.core.presentation.icons.AeroDlLogoOnly
-import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Destination
+import io.github.kdroidfilter.ytdlpgui.core.ui.icons.AeroDlLogoOnly
+import io.github.kdroidfilter.ytdlpgui.core.ui.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Navigator
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource

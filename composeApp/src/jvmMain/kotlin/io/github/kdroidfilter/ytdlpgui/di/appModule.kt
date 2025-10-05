@@ -8,7 +8,7 @@ import com.kdroid.composetray.tray.api.TrayAppState
 import com.russhwolf.settings.Settings
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.DefaultNavigator
-import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Destination
+import io.github.kdroidfilter.ytdlpgui.core.ui.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Navigator
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
 import io.github.kdroidfilter.ytdlpgui.features.screens.home.HomeViewModel

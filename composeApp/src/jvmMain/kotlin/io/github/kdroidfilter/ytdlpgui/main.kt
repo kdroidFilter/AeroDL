@@ -38,9 +38,9 @@ import io.github.kdroidfilter.knotify.builder.AppConfig
 import io.github.kdroidfilter.knotify.builder.NotificationInitializer
 import io.github.kdroidfilter.platformtools.darkmodedetector.isSystemInDarkMode
 import io.github.kdroidfilter.platformtools.getAppVersion
-import io.github.kdroidfilter.ytdlpgui.core.presentation.icons.AeroDlLogoOnly
-import io.github.kdroidfilter.ytdlpgui.core.presentation.icons.Exit_to_app
-import io.github.kdroidfilter.ytdlpgui.core.presentation.icons.Login
+import io.github.kdroidfilter.ytdlpgui.core.ui.icons.AeroDlLogoOnly
+import io.github.kdroidfilter.ytdlpgui.core.ui.icons.Exit_to_app
+import io.github.kdroidfilter.ytdlpgui.core.ui.icons.Login
 import io.github.kdroidfilter.ytdlpgui.di.appModule
 import io.github.kdroidfilter.ytdlpgui.features.screens.settings.SettingsEvents
 import io.github.kdroidfilter.ytdlpgui.features.screens.settings.SettingsViewModel
