@@ -129,36 +129,37 @@ class ClipboardMonitorManager(
         }
 
         // Show a localized notification asking user consent to open in the app
+        val videoId: String? = if (isYouTube) YouTubeThumbnailHelper.extractVideoId(url) else null
+        val largeIconContent: (@Composable () -> Unit)? =
+            if (videoId != null) {
+                {
+                    val thumbUrl = YouTubeThumbnailHelper.getThumbnailUrl(
+                        videoId,
+                        YouTubeThumbnailHelper.ThumbnailQuality.MEDIUM
+                    )
+                    var imageBitmap by remember(thumbUrl) { mutableStateOf<ImageBitmap?>(null) }
+                    LaunchedEffect(thumbUrl) {
+                        runCatching {
+                            val bytes = java.net.URL(thumbUrl).readBytes()
+                            val skiaImage = SkiaImage.makeFromEncoded(bytes)
+                            imageBitmap = skiaImage.toComposeImageBitmap()
+                        }
+                    }
+                    imageBitmap?.let { img ->
+                        Image(
+                            bitmap = img,
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                }
+            } else null
+
         val notif = notification(
             title = title,
             message = message,
-            largeIcon = {
-                if (isYouTube) {
-                    val videoId = remember(url) { YouTubeThumbnailHelper.extractVideoId(url) }
-                    if (videoId != null) {
-                        val thumbUrl = YouTubeThumbnailHelper.getThumbnailUrl(
-                            videoId,
-                            YouTubeThumbnailHelper.ThumbnailQuality.MEDIUM
-                        )
-                        var imageBitmap by remember(thumbUrl) { mutableStateOf<ImageBitmap?>(null) }
-                        LaunchedEffect(thumbUrl) {
-                            runCatching {
-                                val bytes = java.net.URL(thumbUrl).readBytes()
-                                val skiaImage = SkiaImage.makeFromEncoded(bytes)
-                                imageBitmap = skiaImage.toComposeImageBitmap()
-                            }
-                        }
-                        imageBitmap?.let { img ->
-                            Image(
-                                bitmap = img,
-                                contentDescription = null,
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
-                            )
-                        }
-                    }
-                }
-            },
+            largeIcon = largeIconContent,
             onActivated = { action() },
             onDismissed = { /* no-op */ },
             onFailed = { /* no-op */ }
