@@ -8,4 +8,5 @@ sealed class SettingsEvents {
     data class SetParallelDownloads(val count: Int) : SettingsEvents()
     data class SetDownloadDir(val path: String) : SettingsEvents()
     data class SetClipboardMonitoring(val enabled: Boolean) : SettingsEvents()
+    data class PickDownloadDir(val title: String) : SettingsEvents()
 }

@@ -61,6 +61,6 @@
     <string name="single_formats">פורמטים</string>
     <string name="single_subtitles">כתוביות</string>
     <string name="single_no_subtitle">ללא כתוביות</string>
-    <string name="error_fetch_video_info">אירעה שגיאה בעת קבלת פרטי הווידאו: %s</string>
+    <string name="error_fetch_video_info">אירעה שגיאה בעת קבלת פרטי הווידאו: %1$s</string>
     <string name="thumbnail_content_desc">תמונה ממוזערת</string>
 </resources>

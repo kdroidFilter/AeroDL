@@ -1,5 +1,8 @@
+@file:OptIn(ExperimentalTrayAppApi::class)
+
 package io.github.kdroidfilter.ytdlpgui.core.clipboard
 
+import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.russhwolf.settings.Settings
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Navigator
@@ -7,6 +10,8 @@ import io.github.kdroidfilter.platformtools.clipboardmanager.ClipboardContent
 import io.github.kdroidfilter.platformtools.clipboardmanager.ClipboardListener
 import io.github.kdroidfilter.platformtools.clipboardmanager.ClipboardMonitor
 import io.github.kdroidfilter.platformtools.clipboardmanager.ClipboardMonitorFactory
+import io.github.kdroidfilter.knotify.builder.ExperimentalNotificationsApi
+import io.github.kdroidfilter.knotify.compose.builder.notification
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -16,9 +21,20 @@ import kotlinx.coroutines.launch
  * When enabled in settings, it listens to clipboard changes and navigates
  * to SingleDownloadScreen if a YouTube link is detected.
  */
+import com.kdroid.composetray.tray.api.TrayAppState
+import com.kdroid.composetray.tray.api.TrayWindowDismissMode
+import org.jetbrains.compose.resources.getString
+import ytdlpgui.composeapp.generated.resources.Res
+import ytdlpgui.composeapp.generated.resources.app_name
+import ytdlpgui.composeapp.generated.resources.clipboard_ignore
+import ytdlpgui.composeapp.generated.resources.clipboard_link_detected_message
+import ytdlpgui.composeapp.generated.resources.clipboard_link_detected_title
+import ytdlpgui.composeapp.generated.resources.clipboard_open_in_app
+
 class ClipboardMonitorManager(
     private val navigator: Navigator,
     private val settings: Settings,
+    private val trayAppState: TrayAppState,
 ) {
     companion object {
         private const val KEY_CLIPBOARD_MONITORING = "clipboard_monitoring_enabled"
@@ -59,7 +75,8 @@ class ClipboardMonitorManager(
         monitor = null
     }
 
-    private fun handleContent(content: ClipboardContent) {
+    @OptIn(ExperimentalNotificationsApi::class)
+    private suspend fun handleContent(content: ClipboardContent) {
         val text = content.text?.trim().orEmpty()
         if (text.isEmpty()) return
         // Extract a single URL from the text
@@ -78,7 +95,37 @@ class ClipboardMonitorManager(
         // We only auto-open single video links; bulk (playlist/channel) can be noisy.
         if (isPlaylist || isChannel) return
 
+        // Mark as handled to avoid repeated prompts for the same URL
         lastHandled = url
-        scope.launch { navigator.navigate(Destination.SingleDownloadScreen(url)) }
+
+        val appName = getString(Res.string.app_name)
+        val title = getString(Res.string.clipboard_link_detected_title)
+        val message = getString(Res.string.clipboard_link_detected_message, appName, url)
+        val openBtn = getString(Res.string.clipboard_open_in_app, appName)
+        val ignoreBtn = getString(Res.string.clipboard_ignore)
+
+        // Show a localized notification asking user consent to open in the app
+        val notif = notification(
+            title = title,
+            message = message,
+            onActivated = { /* no-op */ },
+            onDismissed = { /* no-op */ },
+            onFailed = { /* no-op */ }
+        ) {
+            button(title = openBtn) {
+                // Ensure window is visible and navigate on user confirmation
+                scope.launch {
+                    trayAppState.setDismissMode(TrayWindowDismissMode.MANUAL)
+                    runCatching { trayAppState.show() }
+                    navigator.navigate(Destination.SingleDownloadScreen(url))
+                    trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
+
+                }
+            }
+            button(title = ignoreBtn) {
+                // Do nothing, simply dismiss
+            }
+        }
+        notif.send()
     }
 }

@@ -1,6 +1,9 @@
+@file:OptIn(ExperimentalTrayAppApi::class)
+
 package io.github.kdroidfilter.ytdlpgui.di
 
 
+import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.russhwolf.settings.Settings
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.DefaultNavigator
@@ -30,7 +33,7 @@ val appModule = module {
     single { DownloadHistoryRepository(get()) }
 
     single { DownloadManager(get(), get(), get<DownloadHistoryRepository>()) }
-    single { ClipboardMonitorManager(get(), get()) }
+    single { ClipboardMonitorManager(get(), get(), get()) }
     single { InitViewModel(get(), get(), get(), get())}
 
 
@@ -38,7 +41,7 @@ val appModule = module {
     viewModel { AboutViewModel(get()) }
     viewModel { BulkDownloadViewModel(get()) }
     viewModel { DownloadViewModel(get(), get(), get<DownloadHistoryRepository>()) }
-    viewModel { SettingsViewModel(get(), get(), get(), get()) }
+    viewModel { SettingsViewModel(get(), get(), get(), get(), get()) }
     viewModel { SingleDownloadViewModel(get(), get(), get(), get()) }
 
 }

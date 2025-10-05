@@ -64,6 +64,12 @@
     <string name="single_formats">Formats</string>
     <string name="single_subtitles">Sous-titres</string>
     <string name="single_no_subtitle">Aucun sous-titre</string>
-    <string name="error_fetch_video_info">Une erreur est survenue lors de la récupération des informations de la vidéo : %s</string>
+    <string name="error_fetch_video_info">Une erreur est survenue lors de la récupération des informations de la vidéo : %1$s</string>
     <string name="thumbnail_content_desc">Miniature</string>
+    
+    <!-- Notifications de surveillance du presse-papiers -->
+    <string name="clipboard_link_detected_title">Lien détecté</string>
+    <string name="clipboard_link_detected_message">Voulez-vous ouvrir ce lien dans %1$s ?\n%2$s</string>
+    <string name="clipboard_open_in_app">Ouvrir dans %1$s</string>
+    <string name="clipboard_ignore">Ignorer</string>
 </resources>

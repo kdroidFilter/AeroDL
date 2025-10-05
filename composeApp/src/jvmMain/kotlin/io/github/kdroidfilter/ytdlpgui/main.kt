@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.paint
@@ -19,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.application
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.kdroid.composetray.tray.api.TrayApp
+import com.kdroid.composetray.tray.api.TrayAppState
 import com.kdroid.composetray.tray.api.rememberTrayAppState
 import com.kdroid.composetray.utils.isMenuBarInDarkMode
 import io.github.composefluent.ExperimentalFluentApi
@@ -32,6 +35,7 @@ import io.github.kdroidfilter.platformtools.darkmodedetector.isSystemInDarkMode
 import io.github.kdroidfilter.ytdlpgui.core.presentation.icons.AeroDlLogoOnly
 import io.github.kdroidfilter.ytdlpgui.di.appModule
 import org.koin.compose.KoinApplication
+import org.koin.compose.getKoin
 
 @OptIn(ExperimentalTrayAppApi::class, ExperimentalFluentApi::class)
 fun main() = application {
@@ -41,10 +45,16 @@ fun main() = application {
         modules(appModule)
     }) {
 
-        val trayAppState = rememberTrayAppState(
+        val koin = getKoin()
+        val existingTrayState = remember { runCatching { koin.get<TrayAppState>() }.getOrNull() }
+        val trayAppState = existingTrayState ?: rememberTrayAppState(
             initialWindowSize = DpSize(350.dp, 500.dp),
             initiallyVisible = true
         )
+        if (existingTrayState == null) {
+            // Register as a singleton in Koin immediately to make it available to DI consumers
+            runCatching { koin.declare(trayAppState) }
+        }
         val trayVisible by trayAppState.isVisible.collectAsState()
 
         TrayApp(

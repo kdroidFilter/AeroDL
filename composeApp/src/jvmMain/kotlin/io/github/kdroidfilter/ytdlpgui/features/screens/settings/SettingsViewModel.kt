@@ -1,19 +1,31 @@
+@file:OptIn(ExperimentalTrayAppApi::class)
+
 package io.github.kdroidfilter.ytdlpgui.features.screens.settings
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
+import com.kdroid.composetray.tray.api.TrayAppState
+import com.kdroid.composetray.tray.api.TrayWindowDismissMode
 import com.russhwolf.settings.Settings
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
+import io.github.kdroidfilter.ytdlpgui.core.clipboard.ClipboardMonitorManager
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Navigator
+import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
+import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class SettingsViewModel(
     private val navigator: Navigator,
     private val ytDlpWrapper: YtDlpWrapper,
     private val settings: Settings,
-    private val clipboardMonitorManager: io.github.kdroidfilter.ytdlpgui.core.clipboard.ClipboardMonitorManager,
-) : ViewModel() {
+    private val clipboardMonitorManager: ClipboardMonitorManager,
+    private val trayAppState: TrayAppState,
+    ) : ViewModel() {
 
     // Keys for persisted settings
     private val KEY_NO_CHECK_CERT = "no_check_certificate"
@@ -104,6 +116,18 @@ class SettingsViewModel(
                 _clipboardMonitoring.value = event.enabled
                 // Persist and start/stop monitoring through the manager
                 clipboardMonitorManager.onSettingChanged(event.enabled)
+            }
+            is SettingsEvents.PickDownloadDir -> {
+                viewModelScope.launch {
+                    trayAppState.setDismissMode(TrayWindowDismissMode.MANUAL)
+                    val dir = FileKit.openDirectoryPicker(
+                        title = event.title,
+                        directory = null,
+                        dialogSettings = FileKitDialogSettings()
+                    )
+                    dir?.let { onEvents(SettingsEvents.SetDownloadDir(it.file.absolutePath)) }
+                   trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
+                }
             }
         }
     }

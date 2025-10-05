@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.composefluent.component.Button
@@ -23,10 +22,6 @@ import io.github.composefluent.component.MenuFlyoutContainer
 import io.github.composefluent.component.MenuFlyoutItem
 import io.github.composefluent.component.Text
 import io.github.composefluent.icons.Icons
-import io.github.vinceglb.filekit.FileKit
-import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
-import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
-import kotlinx.coroutines.launch
 import io.github.composefluent.icons.filled.DocumentEdit
 import io.github.composefluent.icons.filled.OpenFolder
 import io.github.composefluent.icons.filled.TopSpeed
@@ -221,7 +216,6 @@ fun SettingsView(
         }
         item {
             // Download directory picker
-            val scope = rememberCoroutineScope()
             val pickTitle = stringResource(Res.string.settings_download_dir_pick_title)
             CardExpanderItem(
                 heading = { Text(stringResource(Res.string.settings_download_dir_title)) },
@@ -238,16 +232,7 @@ fun SettingsView(
                 trailing = {
                     Button(
                         iconOnly = true,
-                        onClick = {
-                            scope.launch {
-                                val dir = FileKit.openDirectoryPicker(
-                                    title = pickTitle,
-                                    directory = null,
-                                    dialogSettings = FileKitDialogSettings()
-                                )
-                                dir?.let { onEvent(SettingsEvents.SetDownloadDir(it.file.absolutePath)) }
-                            }
-                        },
+                        onClick = { onEvent(SettingsEvents.PickDownloadDir(pickTitle)) },
                         content = {
                             Icon(Icons.Filled.OpenFolder, "Open directory picker")
                         },
