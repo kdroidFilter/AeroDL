@@ -30,6 +30,8 @@ koin = "4.1.1"
 
 sqlDelight = "2.1.0"
 
+hydraulicConveyor = "1.12"
+
 
 [libraries]
 # Kotlin & Testing
@@ -83,3 +85,4 @@ kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref =
 metro = { id = "dev.zacsweers.metro", version.ref = "metro" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 sqlDelight = { id = "app.cash.sqldelight", version.ref = "sqlDelight" }
+hydraulicConveyor = { id = "dev.hydraulic.conveyor", version.ref = "hydraulicConveyor" }

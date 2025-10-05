@@ -7,10 +7,15 @@ plugins {
     alias(libs.plugins.composeHotReload)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.sqlDelight)
+    alias(libs.plugins.hydraulicConveyor)
+
 }
+
+version = "1.0.0"
 
 kotlin {
     jvm()
+    jvmToolchain(21)
 
     sourceSets {
         commonMain.dependencies {
@@ -75,7 +80,6 @@ kotlin {
         }
     }
 }
-
 
 compose.desktop {
     application {
