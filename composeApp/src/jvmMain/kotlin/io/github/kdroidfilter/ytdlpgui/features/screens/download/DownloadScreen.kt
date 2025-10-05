@@ -50,7 +50,7 @@ import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
 
 @Composable
-fun DownloadScreen() {
+fun DownloaderScreen() {
     val viewModel = koinViewModel<DownloadViewModel>()
     val state = collectDownloadState(viewModel)
     DownloadView(

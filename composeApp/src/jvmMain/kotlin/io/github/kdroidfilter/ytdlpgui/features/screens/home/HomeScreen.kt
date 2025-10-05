@@ -1,11 +1,9 @@
 package io.github.kdroidfilter.ytdlpgui.features.screens.home
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
@@ -16,10 +14,8 @@ import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.filled.ClipboardPaste
 import io.github.composefluent.icons.regular.ArrowLeft
 import io.github.composefluent.icons.regular.ArrowRight
-import io.github.kdroidfilter.platformtools.darkmodedetector.isSystemInDarkMode
 import io.github.kdroidfilter.ytdlpgui.core.presentation.icons.AeroDlLogoOnly
 import io.github.kdroidfilter.ytdlpgui.core.presentation.tools.PreviewContainer
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
@@ -42,11 +38,13 @@ fun HomeView(
 ) {
     val currentLayoutDirection = LocalLayoutDirection.current
     val isRtl = (currentLayoutDirection == LayoutDirection.Rtl)
+
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -103,6 +101,7 @@ fun HomeView(
             Icon(if (isRtl) Icons.Default.ArrowLeft else Icons.Default.ArrowRight, contentDescription = null)
         }
     }
+
 }
 
 @Preview

@@ -17,11 +17,12 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.kdroidfilter.ytdlpgui.core.presentation.components.Footer
-import io.github.kdroidfilter.ytdlpgui.core.presentation.components.Header
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.*
+import io.github.kdroidfilter.ytdlpgui.core.ui.components.MainNavigationHeader
+import io.github.kdroidfilter.ytdlpgui.core.ui.components.SecondaryNavigationHeader
 import io.github.kdroidfilter.ytdlpgui.features.screens.about.AboutScreen
 import io.github.kdroidfilter.ytdlpgui.features.screens.bulkdownload.BulkDownloadScreen
-import io.github.kdroidfilter.ytdlpgui.features.screens.download.DownloadScreen
+import io.github.kdroidfilter.ytdlpgui.features.screens.download.DownloaderScreen
 import io.github.kdroidfilter.ytdlpgui.features.screens.home.HomeScreen
 import io.github.kdroidfilter.ytdlpgui.features.screens.initscreen.InitScreen
 import io.github.kdroidfilter.ytdlpgui.features.screens.onboarding.OnboardingClipboardStep
@@ -42,7 +43,7 @@ import org.koin.compose.koinInject
 fun App() {
     val navController = rememberNavController()
     val navigator = koinInject<Navigator>()
-
+    val currentDestination by navigator.currentDestination.collectAsState()
 
     // Drive NavController from Navigator events; do NOT decode routes from BackStack
     ObserveAsEvents(flow = navigator.navigationActions) { action ->
@@ -81,8 +82,9 @@ fun App() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        val currentDestination by navigator.currentDestination.collectAsState()
-        if (currentDestination != Destination.InitScreen) Header(navigator = navigator)
+
+        if (currentDestination is Destination.MainNavigation) MainNavigationHeader()
+        if (currentDestination is Destination.SecondaryNavigation || currentDestination is Destination.Download) SecondaryNavigationHeader()
 
         NavHost(
             navController = navController,
@@ -90,7 +92,16 @@ fun App() {
             modifier = Modifier.fillMaxSize().weight(1f).padding(start = 16.dp, end = 16.dp, top = 8.dp)
         ) {
             noAnimatedComposable<Destination.InitScreen> { InitScreen() }
-            noAnimatedComposable<Destination.HomeScreen> { HomeScreen() }
+
+            navigation<Destination.MainNavigation.Graph>(startDestination = Destination.MainNavigation.Home) {
+                noAnimatedComposable<Destination.MainNavigation.Home> { HomeScreen() }
+                noAnimatedComposable<Destination.MainNavigation.Downloader> { DownloaderScreen() }
+            }
+
+            navigation<Destination.SecondaryNavigation.Graph>(startDestination = Destination.SecondaryNavigation.Settings) {
+                noAnimatedComposable<Destination.SecondaryNavigation.Settings> { SettingsScreen() }
+                noAnimatedComposable<Destination.SecondaryNavigation.About> { AboutScreen() }
+            }
 
             navigation<Destination.Onboarding.Graph>(startDestination = Destination.Onboarding.Welcome) {
                 noAnimatedComposable<Destination.Onboarding.Welcome> { OnboardingWelcomeScreen() }
@@ -107,9 +118,6 @@ fun App() {
                 noAnimatedComposable<Destination.Download.Single> { SingleDownloadScreen() }
                 noAnimatedComposable<Destination.Download.Bulk> { BulkDownloadScreen() }
             }
-            noAnimatedComposable<Destination.HistoryScreen> { DownloadScreen() }
-            noAnimatedComposable<Destination.SettingsScreen> { SettingsScreen() }
-            noAnimatedComposable<Destination.AboutScreen> { AboutScreen() }
         }
 
         if (currentDestination != Destination.InitScreen) Footer()

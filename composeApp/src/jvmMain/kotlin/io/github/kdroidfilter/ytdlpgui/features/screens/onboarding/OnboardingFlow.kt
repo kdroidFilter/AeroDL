@@ -75,7 +75,7 @@ fun OnboardingWelcomeScreen() {
     val navigator = koinInject<Navigator>()
     val scope = androidx.compose.runtime.rememberCoroutineScope()
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
+        modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -249,7 +249,7 @@ fun OnboardingFinishStep() {
     // Mark onboarding completed once we enter this step
     LaunchedEffect(Unit) {
         kv.putBoolean("onboarding_completed", true)
-        navigator.navigateAndClearBackStack(Destination.HomeScreen)
+        navigator.navigateAndClearBackStack(Destination.MainNavigation.Home)
     }
     Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
         Text("Configuration terminée…")

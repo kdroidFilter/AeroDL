@@ -25,8 +25,8 @@ class InitViewModel(
 
     init {
         viewModelScope.launch {
-            settings.remove(SettingsKeys.DOWNLOAD_DIR)
-            settings.remove(SettingsKeys.ONBOARDING_COMPLETED)
+//            settings.remove(SettingsKeys.DOWNLOAD_DIR)
+//            settings.remove(SettingsKeys.ONBOARDING_COMPLETED)
 
             // Load persisted settings for yt-dlp options
             val noCheck = settings.getBoolean(SettingsKeys.NO_CHECK_CERTIFICATE, false)
@@ -119,7 +119,7 @@ class InitViewModel(
                             val onboardingCompleted = settings.getBoolean(SettingsKeys.ONBOARDING_COMPLETED, false)
                             val alreadyConfigured = settings.getString(SettingsKeys.DOWNLOAD_DIR, "").isNotBlank()
                             if (onboardingCompleted || alreadyConfigured) {
-                                navigator.navigateAndClearBackStack(Destination.HomeScreen)
+                                navigator.navigateAndClearBackStack(Destination.MainNavigation.Home)
                             } else {
                                 navigator.navigateAndClearBackStack(Destination.Onboarding.Graph)
                             }

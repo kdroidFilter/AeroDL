@@ -8,7 +8,28 @@ sealed interface Destination {
     data object InitScreen: Destination
 
     @Serializable
-    data object HomeScreen: Destination
+    sealed interface MainNavigation : Destination {
+        @Serializable
+        data object Graph : MainNavigation
+
+        @Serializable
+        data object Home : MainNavigation
+
+        @Serializable
+        data object Downloader : MainNavigation
+    }
+
+    @Serializable
+    sealed interface SecondaryNavigation : Destination {
+        @Serializable
+        data object Graph : SecondaryNavigation
+
+        @Serializable
+        data object Settings : SecondaryNavigation
+
+        @Serializable
+        data object About : SecondaryNavigation
+    }
 
     // Type-safe onboarding steps and nested graph
     @Serializable
@@ -46,12 +67,5 @@ sealed interface Destination {
         data class Bulk(val url: String) : Download
     }
 
-    @Serializable
-    data object SettingsScreen: Destination
 
-    @Serializable
-    data object HistoryScreen: Destination
-
-    @Serializable
-    data object AboutScreen: Destination
 }

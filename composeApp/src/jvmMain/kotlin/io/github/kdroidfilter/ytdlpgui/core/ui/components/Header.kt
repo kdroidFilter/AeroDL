@@ -1,4 +1,6 @@
-package io.github.kdroidfilter.ytdlpgui.core.presentation.components
+@file:OptIn(ExperimentalFluentApi::class, ExperimentalFoundationApi::class)
+
+package io.github.kdroidfilter.ytdlpgui.core.ui.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
@@ -17,8 +19,6 @@ import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.filled.MoreVertical
 import io.github.composefluent.icons.regular.ArrowLeft
 import io.github.composefluent.icons.regular.ArrowRight
-import io.github.composefluent.icons.regular.Copy
-import io.github.composefluent.icons.regular.Delete
 import io.github.composefluent.icons.regular.History
 import io.github.composefluent.icons.regular.Home
 import io.github.composefluent.icons.regular.Info
@@ -28,6 +28,7 @@ import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Navigator
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.app_name
 import ytdlpgui.composeapp.generated.resources.download
@@ -37,16 +38,13 @@ import ytdlpgui.composeapp.generated.resources.tooltip_home
 
 @OptIn(ExperimentalFluentApi::class, ExperimentalFoundationApi::class)
 @Composable
-fun Header(
-    navigator: Navigator,
+fun MainNavigationHeader(
+    navigator: Navigator = koinInject(),
     modifier: Modifier = Modifier,
 ) {
-    val canGoBack by navigator.canGoBack.collectAsState()
     val currentDestination by navigator.currentDestination.collectAsState()
-    val previousDestination by navigator.previousDestination.collectAsState()
     val scope = rememberCoroutineScope()
     var expanded by remember { mutableStateOf(false) }
-    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
@@ -57,64 +55,38 @@ fun Header(
             modifier = Modifier.weight(1f)
         ) {
             item {
-                if (canGoBack) {
-                    Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                        TooltipBox(
-                            tooltip = { Text(stringResource(Res.string.tooltip_back)) }
-                        ) {
-                            SubtleButton(
-                                iconOnly = true,
-                                onClick = {
-                                    scope.launch { navigator.navigateUp() }
-                                },
-                                modifier = Modifier.padding(top = 12.dp, start = 4.dp)
-                            ) { Icon(if (isRtl) Icons.Default.ArrowRight else Icons.Default.ArrowLeft, "Back") }
-                        }
-                        if (previousDestination !is Destination.HomeScreen) {
-                            Spacer(Modifier.width(4.dp))
-                            TooltipBox(
-                                tooltip = { Text(stringResource(Res.string.tooltip_home)) }
-                            ) {
-                                SubtleButton(
-                                    iconOnly = true,
-                                    onClick = {
-                                        scope.launch { navigator.navigateAndClearBackStack(Destination.HomeScreen) }
-                                    },
-                                    modifier = Modifier.padding(top = 12.dp, end = 4.dp)
-                                ) { Icon(Icons.Default.Home, "Home") }
-                            }
-                        }
-                    }
-                } else {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(top = 4.dp, start = 16.dp, end = 4.dp)
-                    ) {
-                        Icon(
-                            AeroDlLogoOnly,
-                            "",
-                            modifier = Modifier.fillMaxHeight(0.6f),
-                            tint = FluentTheme.colors.system.neutral
-                        )
-                        Spacer(Modifier.width(4.dp))
-                        Text(
-                            text = stringResource(Res.string.app_name),
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = FluentTheme.colors.system.neutral
-                        )
-                    }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(top = 4.dp, start = 16.dp, end = 4.dp)
+                ) {
+                    Icon(
+                        AeroDlLogoOnly,
+                        "",
+                        modifier = Modifier.fillMaxHeight(0.6f),
+                        tint = FluentTheme.colors.system.neutral
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        text = stringResource(Res.string.app_name),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = FluentTheme.colors.system.neutral
+                    )
                 }
             }
-            if (canGoBack) return@TopNav
+
             items(2) { index ->
                 val (titleRes, icon, destForIndex) = when (index) {
-                    0 -> Triple(Res.string.home, Icons.Default.Home, Destination.HomeScreen as Destination)
-                    else -> Triple(Res.string.download, Icons.Default.History, Destination.HistoryScreen as Destination)
+                    0 -> Triple(Res.string.home, Icons.Default.Home, Destination.MainNavigation.Home as Destination)
+                    else -> Triple(
+                        Res.string.download,
+                        Icons.Default.History,
+                        Destination.MainNavigation.Downloader as Destination
+                    )
                 }
                 val isSelected = when (destForIndex) {
-                    Destination.HomeScreen -> currentDestination is Destination.HomeScreen
-                    Destination.HistoryScreen -> currentDestination is Destination.HistoryScreen
+                    Destination.MainNavigation.Home -> currentDestination is Destination.MainNavigation.Home
+                    Destination.MainNavigation.Downloader -> currentDestination is Destination.MainNavigation.Downloader
                     else -> false
                 }
                 run {
@@ -164,7 +136,7 @@ fun Header(
                         MenuFlyoutItem(
                             onClick = {
                                 isFlyoutVisible = false
-                                scope.launch { navigator.navigate(Destination.SettingsScreen) }
+                                scope.launch { navigator.navigate(Destination.SecondaryNavigation.Settings) }
                             },
                             icon = { Icon(Icons.Default.Settings, contentDescription = null) },
                             text = { Text("Settings") }
@@ -172,7 +144,7 @@ fun Header(
                         MenuFlyoutItem(
                             onClick = {
                                 isFlyoutVisible = false
-                                scope.launch { navigator.navigate(Destination.AboutScreen) }
+                                scope.launch { navigator.navigate(Destination.SecondaryNavigation.Settings) }
                             },
                             icon = { Icon(Icons.Default.Info, contentDescription = null) },
                             text = { Text("About") }
@@ -188,6 +160,43 @@ fun Header(
                 )
             }
         }
+    }
+}
 
+@Composable
+fun SecondaryNavigationHeader(
+    navigator: Navigator = koinInject(),
+    modifier: Modifier = Modifier,
+) {
+    val previousDestination by navigator.previousDestination.collectAsState()
+    val scope = rememberCoroutineScope()
+    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+
+    Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = modifier.fillMaxWidth().padding(top = 4.dp, start = 4.dp, end = 4.dp)) {
+        TooltipBox(
+            tooltip = { Text(stringResource(Res.string.tooltip_back)) }
+        ) {
+            SubtleButton(
+                iconOnly = true,
+                onClick = {
+                    scope.launch { navigator.navigateUp() }
+                },
+                modifier = Modifier.padding(top = 12.dp, start = 4.dp)
+            ) { Icon(if (isRtl) Icons.Default.ArrowRight else Icons.Default.ArrowLeft, "Back") }
+        }
+        if (previousDestination !is Destination.MainNavigation.Home) {
+            Spacer(Modifier.width(4.dp))
+            TooltipBox(
+                tooltip = { Text(stringResource(Res.string.tooltip_home)) }
+            ) {
+                SubtleButton(
+                    iconOnly = true,
+                    onClick = {
+                        scope.launch { navigator.navigateAndClearBackStack(Destination.MainNavigation.Home) }
+                    },
+                    modifier = Modifier.padding(top = 12.dp, end = 4.dp)
+                ) { Icon(Icons.Default.Home, "Home") }
+            }
+        }
     }
 }
