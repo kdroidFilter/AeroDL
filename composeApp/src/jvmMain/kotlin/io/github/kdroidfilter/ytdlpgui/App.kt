@@ -87,7 +87,7 @@ fun App() {
         NavHost(
             navController = navController,
             startDestination = Destination.InitScreen,
-            modifier = Modifier.fillMaxSize().weight(1f).padding(16.dp)
+            modifier = Modifier.fillMaxSize().weight(1f).padding(start = 16.dp, end = 16.dp, top = 8.dp)
         ) {
             noAnimatedComposable<Destination.InitScreen> { InitScreen() }
             noAnimatedComposable<Destination.HomeScreen> { HomeScreen() }
