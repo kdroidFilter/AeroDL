@@ -4,6 +4,7 @@
     <string name="home">Home</string>
     <string name="download">Download</string>
     <string name="about">About</string>
+    <string name="settings">Settings</string>
 
     <!-- Tooltips -->
     <string name="tooltip_back">Go back</string>

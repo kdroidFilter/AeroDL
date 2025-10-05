@@ -5,6 +5,7 @@
     <string name="home">Accueil</string>
     <string name="download">Téléchargement</string>
     <string name="about">À propos</string>
+    <string name="settings">Paramètres</string>
 
     <!-- Info-bulles -->
     <string name="tooltip_back">Revenir en arrière</string>

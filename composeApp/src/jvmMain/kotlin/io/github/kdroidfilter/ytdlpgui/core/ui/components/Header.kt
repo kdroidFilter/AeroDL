@@ -35,6 +35,8 @@ import ytdlpgui.composeapp.generated.resources.download
 import ytdlpgui.composeapp.generated.resources.home
 import ytdlpgui.composeapp.generated.resources.tooltip_back
 import ytdlpgui.composeapp.generated.resources.tooltip_home
+import ytdlpgui.composeapp.generated.resources.about
+import ytdlpgui.composeapp.generated.resources.settings
 
 @OptIn(ExperimentalFluentApi::class, ExperimentalFoundationApi::class)
 @Composable
@@ -139,7 +141,7 @@ fun MainNavigationHeader(
                                 scope.launch { navigator.navigate(Destination.SecondaryNavigation.Settings) }
                             },
                             icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                            text = { Text("Settings") }
+                            text = { Text(stringResource(Res.string.settings)) }
                         )
                         MenuFlyoutItem(
                             onClick = {
@@ -147,7 +149,7 @@ fun MainNavigationHeader(
                                 scope.launch { navigator.navigate(Destination.SecondaryNavigation.Settings) }
                             },
                             icon = { Icon(Icons.Default.Info, contentDescription = null) },
-                            text = { Text("About") }
+                            text = { Text(stringResource(Res.string.about)) }
                         )
                     },
                     content = {

@@ -4,6 +4,7 @@
     <string name="home">דף הבית</string>
     <string name="download">הורדות</string>
     <string name="about">אודות</string>
+    <string name="settings">הגדרות</string>
 
     <!-- חלוניות מידע (Tooltips) -->
     <string name="tooltip_back">חזור</string>
