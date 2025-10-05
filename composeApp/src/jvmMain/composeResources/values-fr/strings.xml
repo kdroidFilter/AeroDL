@@ -100,4 +100,12 @@
 
     <!-- Infos application -->
     <string name="app_version_label">Version de l'application : %1$s</string>
+    
+    <!-- Paramètres : Notifications -->
+    <string name="settings_notify_on_complete_title">Notifications de fin de téléchargement</string>
+    <string name="settings_notify_on_complete_caption">Envoyer une notification lorsqu’un téléchargement se termine</string>
+
+    <!-- Notification de fin de téléchargement -->
+    <string name="download_completed_title">Téléchargement terminé</string>
+    <string name="download_completed_message">%1$s a été téléchargé</string>
 </resources>

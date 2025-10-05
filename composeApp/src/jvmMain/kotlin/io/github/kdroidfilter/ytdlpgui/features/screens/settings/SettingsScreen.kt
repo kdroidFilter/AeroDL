@@ -62,7 +62,7 @@ import ytdlpgui.composeapp.generated.resources.settings_clipboard_monitoring_tit
 import ytdlpgui.composeapp.generated.resources.settings_clipboard_monitoring_caption
 import ytdlpgui.composeapp.generated.resources.settings_auto_launch_title
 import ytdlpgui.composeapp.generated.resources.settings_auto_launch_caption
-import ytdlpgui.composeapp.generated.resources.open_directory
+import ytdlpgui.composeapp.generated.resources.*
 
 @Composable
 fun SettingsScreen() {
@@ -279,6 +279,25 @@ fun SettingsView(
                     Switcher(
                         checked = state.clipboardMonitoringEnabled,
                         onCheckStateChange = { onEvent(SettingsEvents.SetClipboardMonitoring(it)) },
+                    )
+                }
+            )
+        }
+        item {
+            // Toggle for download completion notifications
+            CardExpanderItem(
+                heading = { Text(stringResource(Res.string.settings_notify_on_complete_title)) },
+                caption = {
+                    Text(
+                        stringResource(Res.string.settings_notify_on_complete_caption),
+                        modifier = Modifier.fillMaxWidth(0.8f)
+                    )
+                },
+                icon = { Icon(Icons.Filled.TopSpeed, null) },
+                trailing = {
+                    Switcher(
+                        checked = state.notifyOnComplete,
+                        onCheckStateChange = { onEvent(SettingsEvents.SetNotifyOnComplete(it)) },
                     )
                 }
             )

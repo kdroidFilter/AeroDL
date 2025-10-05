@@ -129,32 +129,8 @@ class ClipboardMonitorManager(
         }
 
         // Show a localized notification asking user consent to open in the app
-        val videoId: String? = if (isYouTube) YouTubeThumbnailHelper.extractVideoId(url) else null
-        val largeIconContent: (@Composable () -> Unit)? =
-            if (videoId != null) {
-                {
-                    val thumbUrl = YouTubeThumbnailHelper.getThumbnailUrl(
-                        videoId,
-                        YouTubeThumbnailHelper.ThumbnailQuality.MEDIUM
-                    )
-                    var imageBitmap by remember(thumbUrl) { mutableStateOf<ImageBitmap?>(null) }
-                    LaunchedEffect(thumbUrl) {
-                        runCatching {
-                            val bytes = java.net.URL(thumbUrl).readBytes()
-                            val skiaImage = SkiaImage.makeFromEncoded(bytes)
-                            imageBitmap = skiaImage.toComposeImageBitmap()
-                        }
-                    }
-                    imageBitmap?.let { img ->
-                        Image(
-                            bitmap = img,
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
-                    }
-                }
-            } else null
+        val thumbUrl = io.github.kdroidfilter.ytdlpgui.core.util.NotificationThumbUtils.resolveThumbnailUrl(null, url)
+        val largeIconContent: (@Composable () -> Unit)? = io.github.kdroidfilter.ytdlpgui.core.util.NotificationThumbUtils.buildLargeIcon(thumbUrl)
 
         val notif = notification(
             title = title,

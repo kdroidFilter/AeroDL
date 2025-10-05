@@ -37,6 +37,7 @@ class SettingsViewModel(
     private val KEY_DOWNLOAD_DIR = "download_dir"
     private val KEY_CLIPBOARD_MONITORING = "clipboard_monitoring_enabled"
     private val KEY_AUTO_LAUNCH = "auto_launch_enabled"
+    private val KEY_NOTIFY_ON_COMPLETE = "notify_on_download_complete"
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
@@ -62,6 +63,9 @@ class SettingsViewModel(
 
     private val _autoLaunchEnabled = MutableStateFlow(false)
     val autoLaunchEnabled = _autoLaunchEnabled.asStateFlow()
+
+    private val _notifyOnComplete = MutableStateFlow(settings.getBoolean(KEY_NOTIFY_ON_COMPLETE, true))
+    val notifyOnComplete = _notifyOnComplete.asStateFlow()
 
     init {
         // Query system autostart state at startup asynchronously
@@ -89,6 +93,7 @@ class SettingsViewModel(
                 _parallelDownloads.update { settings.getInt(KEY_PARALLEL_DOWNLOADS, 2).coerceIn(1, 10) }
                 _downloadDirPath.update { settings.getString(KEY_DOWNLOAD_DIR, "") }
                 _clipboardMonitoring.update { settings.getBoolean(KEY_CLIPBOARD_MONITORING, false) }
+                _notifyOnComplete.update { settings.getBoolean(KEY_NOTIFY_ON_COMPLETE, true) }
                 // Refresh autostart status from system
                 viewModelScope.launch {
                     val enabled = runCatching { autoLaunch.isEnabled() }.getOrElse { settings.getBoolean(KEY_AUTO_LAUNCH, false) }
@@ -100,6 +105,10 @@ class SettingsViewModel(
                 ytDlpWrapper.cookiesFromBrowser = _cookiesFromBrowser.value.ifBlank { null }
                 val p = _downloadDirPath.value
                 ytDlpWrapper.downloadDir = p.takeIf { it.isNotBlank() }?.let { java.io.File(it) }
+            }
+            is SettingsEvents.SetNotifyOnComplete -> {
+                settings.putBoolean(KEY_NOTIFY_ON_COMPLETE, event.enabled)
+                _notifyOnComplete.value = event.enabled
             }
             is SettingsEvents.SetNoCheckCertificate -> {
                 settings.putBoolean(KEY_NO_CHECK_CERT, event.enabled)

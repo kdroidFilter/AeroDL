@@ -92,4 +92,12 @@
 
     <!-- פרטי אפליקציה -->
     <string name="app_version_label">גרסת אפליקציה: %1$s</string>
+    
+    <!-- הגדרות: התראות -->
+    <string name="settings_notify_on_complete_title">התראות על סיום הורדה</string>
+    <string name="settings_notify_on_complete_caption">שלח התראה כאשר הורדה מסתיימת</string>
+
+    <!-- התראת סיום הורדה -->
+    <string name="download_completed_title">ההורדה הסתיימה</string>
+    <string name="download_completed_message">%1$s הורד</string>
 </resources>

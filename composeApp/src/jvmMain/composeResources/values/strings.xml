@@ -103,4 +103,12 @@
 
     <!-- App info -->
     <string name="app_version_label">App version: %1$s</string>
+    
+    <!-- Settings: Notifications -->
+    <string name="settings_notify_on_complete_title">Download completion notifications</string>
+    <string name="settings_notify_on_complete_caption">Send a notification when a download finishes</string>
+
+    <!-- Download completion notification -->
+    <string name="download_completed_title">Download finished</string>
+    <string name="download_completed_message">%1$s has been downloaded</string>
 </resources>

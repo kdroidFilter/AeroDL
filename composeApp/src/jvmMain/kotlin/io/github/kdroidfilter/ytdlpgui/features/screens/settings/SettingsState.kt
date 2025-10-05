@@ -16,6 +16,7 @@ data class SettingsState(
     val downloadDirPath: String = "",
     val clipboardMonitoringEnabled: Boolean = false,
     val autoLaunchEnabled: Boolean = false,
+    val notifyOnComplete: Boolean = true,
 )
 
 @Composable
@@ -29,4 +30,5 @@ fun collectSettingsState(viewModel: SettingsViewModel): SettingsState =
         downloadDirPath = viewModel.downloadDirPath.collectAsState().value,
         clipboardMonitoringEnabled = viewModel.clipboardMonitoring.collectAsState().value,
         autoLaunchEnabled = viewModel.autoLaunchEnabled.collectAsState().value,
+        notifyOnComplete = viewModel.notifyOnComplete.collectAsState().value,
     )

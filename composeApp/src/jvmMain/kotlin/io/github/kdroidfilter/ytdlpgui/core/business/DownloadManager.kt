@@ -1,19 +1,35 @@
 package io.github.kdroidfilter.ytdlpgui.features.screens.download
 
+import com.russhwolf.settings.Settings
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlp.core.Event
+import io.github.kdroidfilter.ytdlp.core.Handle
 import io.github.kdroidfilter.ytdlp.core.SubtitleOptions
+import io.github.kdroidfilter.ytdlp.model.VideoInfo
+import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import java.util.UUID
-import io.github.kdroidfilter.ytdlp.core.Handle
-import io.github.kdroidfilter.ytdlp.model.VideoInfo
-import com.russhwolf.settings.Settings
-import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
+import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
+import ytdlpgui.composeapp.generated.resources.Res
+import ytdlpgui.composeapp.generated.resources.download_completed_message
+import ytdlpgui.composeapp.generated.resources.download_completed_title
+import ytdlpgui.composeapp.generated.resources.open_directory
 import java.io.File
+import java.util.UUID
+import kotlin.collections.ArrayDeque
+import kotlin.collections.List
+import kotlin.collections.count
+import kotlin.collections.emptyList
+import kotlin.collections.filter
+import kotlin.collections.find
+import kotlin.collections.isNotEmpty
+import kotlin.collections.isNullOrEmpty
+import kotlin.collections.map
+import kotlin.collections.plus
 
 class DownloadManager(
     private val ytDlpWrapper: YtDlpWrapper,
@@ -21,6 +37,10 @@ class DownloadManager(
     private val historyRepository: DownloadHistoryRepository,
 ) {
     private val scope = CoroutineScope(Dispatchers.IO)
+
+    private companion object {
+        const val KEY_NOTIFY_ON_COMPLETE = "notify_on_download_complete"
+    }
 
     data class DownloadItem(
         val id: String = UUID.randomUUID().toString(),
@@ -135,6 +155,12 @@ class DownloadManager(
                         if (f.isAbsolute) f.absolutePath else ytDlpWrapper.downloadDir?.let { dir -> File(dir, p).absolutePath } ?: f.absolutePath
                     }
                     saveToHistory(id, item, absolutePath)
+                    // Send completion notification if enabled
+                    if (settings.getBoolean(KEY_NOTIFY_ON_COMPLETE, true)) {
+                        scope.launch {
+                            sendCompletionNotification(item, absolutePath)
+                        }
+                    }
                 }
                 maybeStartPending()
             }
@@ -209,6 +235,33 @@ class DownloadManager(
             presetHeight = item.preset?.height,
             createdAt = System.currentTimeMillis()
         )
+    }
+
+    @OptIn(io.github.kdroidfilter.knotify.builder.ExperimentalNotificationsApi::class)
+    private suspend fun sendCompletionNotification(item: DownloadItem, absolutePath: String?) {
+        val title = getString(Res.string.download_completed_title)
+        val nameOrUrl = item.videoInfo?.title?.ifBlank { null } ?: run {
+            absolutePath?.let { java.io.File(it).nameWithoutExtension }
+        } ?: item.url
+        val message = getString(Res.string.download_completed_message, nameOrUrl)
+        val openBtn = getString(Res.string.open_directory)
+
+        fun openDirAction() { absolutePath?.let { io.github.kdroidfilter.ytdlpgui.core.util.FileExplorerUtils.openDirectoryForPath(it) } }
+
+        val thumbUrl = io.github.kdroidfilter.ytdlpgui.core.util.NotificationThumbUtils.resolveThumbnailUrl(item.videoInfo?.thumbnail, item.url)
+        val largeIconContent = io.github.kdroidfilter.ytdlpgui.core.util.NotificationThumbUtils.buildLargeIcon(thumbUrl)
+
+        val notif = io.github.kdroidfilter.knotify.compose.builder.notification(
+            title = title,
+            message = message,
+            largeIcon = largeIconContent,
+            onActivated = { openDirAction() },
+            onDismissed = { },
+            onFailed = { }
+        ) {
+            button(title = openBtn) { openDirAction() }
+        }
+        notif.send()
     }
 
     private fun update(id: String, transform: (DownloadItem) -> DownloadItem) {
