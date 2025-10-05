@@ -10,6 +10,7 @@ import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Navigator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import io.github.kdroidfilter.ytdlpgui.core.settings.SettingsKeys
 
 class InitViewModel(
     private val ytDlpWrapper: YtDlpWrapper,
@@ -24,12 +25,12 @@ class InitViewModel(
 
     init {
         viewModelScope.launch {
-            settings.remove("download_dir")
-            settings.remove("onboarding_completed")
+            settings.remove(SettingsKeys.DOWNLOAD_DIR)
+            settings.remove(SettingsKeys.ONBOARDING_COMPLETED)
 
             // Load persisted settings for yt-dlp options
-            val noCheck = settings.getBoolean("no_check_certificate", false)
-            val cookies = settings.getString("cookies_from_browser", "").ifBlank { null }
+            val noCheck = settings.getBoolean(SettingsKeys.NO_CHECK_CERTIFICATE, false)
+            val cookies = settings.getString(SettingsKeys.COOKIES_FROM_BROWSER, "").ifBlank { null }
 
             ytDlpWrapper.apply {
                 noCheckCertificate = noCheck
@@ -115,8 +116,8 @@ class InitViewModel(
                             runCatching { supportedSitesRepository.initializeFromGitHubIfEmpty() }
 
                             // Decide whether to go through onboarding
-                            val onboardingCompleted = settings.getBoolean("onboarding_completed", false)
-                            val alreadyConfigured = settings.getString("download_dir", "").isNotBlank()
+                            val onboardingCompleted = settings.getBoolean(SettingsKeys.ONBOARDING_COMPLETED, false)
+                            val alreadyConfigured = settings.getString(SettingsKeys.DOWNLOAD_DIR, "").isNotBlank()
                             if (onboardingCompleted || alreadyConfigured) {
                                 navigator.navigateAndClearBackStack(Destination.HomeScreen)
                             } else {

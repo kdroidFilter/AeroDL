@@ -13,4 +13,5 @@ object SettingsKeys {
     const val CLIPBOARD_MONITORING_ENABLED = "clipboard_monitoring_enabled"
     const val AUTO_LAUNCH_ENABLED = "auto_launch_enabled"
     const val NOTIFY_ON_DOWNLOAD_COMPLETE = "notify_on_download_complete"
+    const val ONBOARDING_COMPLETED = "onboarding_completed"
 }

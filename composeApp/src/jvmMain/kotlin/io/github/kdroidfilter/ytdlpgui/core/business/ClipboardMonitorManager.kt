@@ -15,12 +15,6 @@ import io.github.kdroidfilter.knotify.compose.builder.notification
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-
-/**
- * App-level clipboard monitor, independent of any screen lifecycle.
- * When enabled in settings, it listens to clipboard changes and navigates
- * to SingleDownloadScreen if a YouTube link is detected.
- */
 import com.kdroid.composetray.tray.api.TrayAppState
 import com.kdroid.composetray.tray.api.TrayWindowDismissMode
 import org.jetbrains.compose.resources.getString
@@ -33,16 +27,38 @@ import ytdlpgui.composeapp.generated.resources.clipboard_open_in_app
 import androidx.compose.runtime.*
 import io.github.kdroidfilter.ytdlpgui.core.util.NotificationThumbUtils
 import io.github.kdroidfilter.ytdlpgui.data.SupportedSitesRepository
+import io.github.kdroidfilter.ytdlpgui.core.settings.SettingsKeys
 
+/**
+ * Manages clipboard monitoring functionality, allowing detection and handling
+ * of specific clipboard content such as URLs. The class listens for changes
+ * in the clipboard and processes the content according to certain rules.
+ *
+ * This manager integrates with various components like settings, navigation,
+ * and supported sites repository to provide user prompts or actions based on
+ * recognized content (e.g., links to known or YouTube sites).
+ *
+ * The monitoring can be enabled or disabled via settings and includes
+ * handling of corner cases such as bulk links (e.g., playlists or channels)
+ * for YouTube URLs.
+ *
+ * Primary responsibilities:
+ * - Starting and stopping clipboard monitoring based on user-configured settings.
+ * - Processing clipboard changes to extract and validate URL content.
+ * - Coordinating user interaction through notifications for recognized URLs.
+ *
+ * @constructor Initializes the manager with the required dependencies.
+ * @param navigator Handles navigation within the application.
+ * @param settings Provides access to user-configurable settings.
+ * @param trayAppState Manages the application tray state for notifications and UI interaction.
+ * @param supportedSitesRepository Repository containing information about recognized or supported sites.
+ */
 class ClipboardMonitorManager(
     private val navigator: Navigator,
     private val settings: Settings,
     private val trayAppState: TrayAppState,
     private val supportedSitesRepository: SupportedSitesRepository,
 ) {
-    companion object {
-        private const val KEY_CLIPBOARD_MONITORING = "clipboard_monitoring_enabled"
-    }
 
     private val scope = CoroutineScope(Dispatchers.Default)
 
@@ -51,12 +67,12 @@ class ClipboardMonitorManager(
 
     init {
         // Start immediately if enabled in persisted settings
-        val enabled = settings.getBoolean(KEY_CLIPBOARD_MONITORING, false)
+        val enabled = settings.getBoolean(SettingsKeys.CLIPBOARD_MONITORING_ENABLED, false)
         if (enabled) start()
     }
 
     fun onSettingChanged(enabled: Boolean) {
-        settings.putBoolean(KEY_CLIPBOARD_MONITORING, enabled)
+        settings.putBoolean(SettingsKeys.CLIPBOARD_MONITORING_ENABLED, enabled)
         if (enabled) start() else stop()
     }
 

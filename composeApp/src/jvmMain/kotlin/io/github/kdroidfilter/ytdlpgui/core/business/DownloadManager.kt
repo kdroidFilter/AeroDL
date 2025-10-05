@@ -36,6 +36,15 @@ import kotlin.collections.isNullOrEmpty
 import kotlin.collections.map
 import kotlin.collections.plus
 
+/**
+ * Manages downloading of videos and audio from URLs using the `YtDlpWrapper`. It keeps track of
+ * download progress, handles download-related events, and maintains a queue for pending downloads.
+ *
+ * @constructor Creates an instance of `DownloadManager`.
+ * @param ytDlpWrapper The YtDlpWrapper instance used for performing downloads.
+ * @param settings Provides settings for configuring the maximum parallel downloads and other options.
+ * @param historyRepository Stores the history of completed downloads.
+ */
 class DownloadManager(
     private val ytDlpWrapper: YtDlpWrapper,
     private val settings: Settings,
