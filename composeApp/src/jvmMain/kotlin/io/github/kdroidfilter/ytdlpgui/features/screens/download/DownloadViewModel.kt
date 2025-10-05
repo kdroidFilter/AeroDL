@@ -1,7 +1,9 @@
 package io.github.kdroidfilter.ytdlpgui.features.screens.download
 
 import androidx.lifecycle.ViewModel
+import io.github.kdroidfilter.platformtools.LinuxDesktopEnvironment
 import io.github.kdroidfilter.platformtools.OperatingSystem
+import io.github.kdroidfilter.platformtools.detectLinuxDesktopEnvironment
 import io.github.kdroidfilter.platformtools.getOperatingSystem
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Navigator
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
@@ -61,7 +63,6 @@ class DownloadViewModel(
         }
 
         try {
-            val os = System.getProperty("os.name").lowercase()
             var handled = false
 
             if (fileToSelect != null) {
@@ -70,19 +71,33 @@ class DownloadViewModel(
                     OperatingSystem.MACOS -> runCommand("open", "-R", abs)
                     OperatingSystem.WINDOWS -> runCommand("cmd", "/c", "explorer /select,\"$abs\"")
                     else -> {
-
-                        // Linux: try common file managers with selection support; fall back to xdg-open on the directory
-                        val linuxAttempts: List<Array<String>> = listOf(
-                            arrayOf("nautilus", "--select", abs),
-                            arrayOf("dolphin", "--select", abs),
-                            arrayOf("nemo", "--select", abs),
-                            arrayOf("thunar", abs),
-                            arrayOf("pcmanfm", abs)
-                        )
                         var ok = false
-                        for (attempt in linuxAttempts) {
-                            if (runCommand(*attempt)) {
-                                ok = true; break
+
+                        // Try a desktop-environment specific file manager first
+                        when (detectLinuxDesktopEnvironment()) {
+                            LinuxDesktopEnvironment.GNOME -> { ok = runCommand("nautilus", "--select", abs) }
+                            LinuxDesktopEnvironment.KDE -> { ok = runCommand("dolphin", "--select", abs) }
+                            LinuxDesktopEnvironment.XFCE -> { ok = runCommand("thunar", abs) }
+                            LinuxDesktopEnvironment.CINNAMON -> { ok = runCommand("nemo", "--select", abs) }
+                            LinuxDesktopEnvironment.MATE -> { ok = runCommand("caja", "--select", abs) }
+                            LinuxDesktopEnvironment.UNKNOWN, null -> { /* no-op */ }
+                        }
+
+                        // If that didn't work, try common file managers; fall back to xdg-open on the directory
+                        if (!ok) {
+                            val linuxAttempts: List<Array<String>> = listOf(
+                                arrayOf("nautilus", "--select", abs),
+                                arrayOf("dolphin", "--select", abs),
+                                arrayOf("nemo", "--select", abs),
+                                arrayOf("caja", "--select", abs),
+                                arrayOf("thunar", abs),
+                                arrayOf("pcmanfm", abs)
+                            )
+                            for (attempt in linuxAttempts) {
+                                if (runCommand(*attempt)) {
+                                    ok = true
+                                    break
+                                }
                             }
                         }
                         if (!ok) {
