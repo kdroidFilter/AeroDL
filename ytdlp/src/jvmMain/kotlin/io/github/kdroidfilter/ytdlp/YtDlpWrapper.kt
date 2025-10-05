@@ -69,48 +69,29 @@ class YtDlpWrapper {
     suspend fun initialize(onEvent: (InitEvent) -> Unit = {}): Boolean {
         fun pct(read: Long, total: Long?): Double? = total?.takeIf { it > 0 }?.let { read * 100.0 / it }
 
-        if (getOperatingSystem() == OperatingSystem.MACOS) {
-            try {
-                onEvent(InitEvent.CheckingYtDlp)
-                val path = PlatformUtils.findYtDlpInSystemPath()
-                if (path == null) {
-                    onEvent(InitEvent.Error("yt-dlp not found. Please install it using 'brew install yt-dlp'."))
-                    onEvent(InitEvent.Completed(false))
-                    return false
+        try {
+            onEvent(InitEvent.CheckingYtDlp)
+            if (!isAvailable()) {
+                onEvent(InitEvent.DownloadingYtDlp)
+                if (!downloadOrUpdate { r, t -> onEvent(InitEvent.YtDlpProgress(r, t, pct(r, t))) }) {
+                    onEvent(InitEvent.Error("Could not download yt-dlp", null))
+                    onEvent(InitEvent.Completed(false)); return false
                 }
-                ytDlpPath = path
-                onEvent(InitEvent.Completed(true))
-                return true
-            } catch (t: Throwable) {
-                onEvent(InitEvent.Error(t.message ?: "Initialization error on macOS", t))
-                onEvent(InitEvent.Completed(false))
-                return false
+            } else if (hasUpdate()) {
+                onEvent(InitEvent.UpdatingYtDlp)
+                downloadOrUpdate { r, t -> onEvent(InitEvent.YtDlpProgress(r, t, pct(r, t))) }
             }
-        } else {
-            try {
-                onEvent(InitEvent.CheckingYtDlp)
-                if (!isAvailable()) {
-                    onEvent(InitEvent.DownloadingYtDlp)
-                    if (!downloadOrUpdate { r, t -> onEvent(InitEvent.YtDlpProgress(r, t, pct(r, t))) }) {
-                        onEvent(InitEvent.Error("Could not download yt-dlp", null))
-                        onEvent(InitEvent.Completed(false)); return false
-                    }
-                } else if (hasUpdate()) {
-                    onEvent(InitEvent.UpdatingYtDlp)
-                    downloadOrUpdate { r, t -> onEvent(InitEvent.YtDlpProgress(r, t, pct(r, t))) }
-                }
 
-                onEvent(InitEvent.EnsuringFfmpeg)
-                ensureFfmpegAvailable(false) { r, t -> onEvent(InitEvent.FfmpegProgress(r, t, pct(r, t))) }
+            onEvent(InitEvent.EnsuringFfmpeg)
+            ensureFfmpegAvailable(false) { r, t -> onEvent(InitEvent.FfmpegProgress(r, t, pct(r, t))) }
 
-                val success = isAvailable()
-                onEvent(InitEvent.Completed(success))
-                return success
-            } catch (t: Throwable) {
-                onEvent(InitEvent.Error(t.message ?: "Initialization error", t))
-                onEvent(InitEvent.Completed(false))
-                return false
-            }
+            val success = isAvailable()
+            onEvent(InitEvent.Completed(success))
+            return success
+        } catch (t: Throwable) {
+            onEvent(InitEvent.Error(t.message ?: "Initialization error", t))
+            onEvent(InitEvent.Completed(false))
+            return false
         }
     }
 
@@ -141,26 +122,6 @@ class YtDlpWrapper {
     }
 
     suspend fun downloadOrUpdate(onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null): Boolean {
-        if (getOperatingSystem() == OperatingSystem.MACOS) {
-            return withContext(Dispatchers.IO) {
-                try {
-                    println("Attempting to update yt-dlp with 'yt-dlp -U'...")
-                    val process = ProcessBuilder(ytDlpPath, "-U").inheritIO().start()
-                    val exitCode = process.waitFor()
-                    if (exitCode == 0) {
-                        println("yt-dlp update command completed successfully.")
-                        true
-                    } else {
-                        System.err.println("yt-dlp update command failed with exit code $exitCode.")
-                        false
-                    }
-                } catch (e: Exception) {
-                    errorln { "Error executing 'yt-dlp -U': ${e.stackTraceToString()}" }
-                    false
-                }
-            }
-        }
-
         val assetName = PlatformUtils.getYtDlpAssetNameForSystem()
         val destFile = File(PlatformUtils.getDefaultBinaryPath())
         destFile.parentFile?.mkdirs()
@@ -200,7 +161,7 @@ class YtDlpWrapper {
             ffmpegPath = it
             return true
         }
-        if (getOperatingSystem() in listOf(OperatingSystem.WINDOWS, OperatingSystem.LINUX)) {
+        if (getOperatingSystem() in listOf(OperatingSystem.WINDOWS, OperatingSystem.LINUX, OperatingSystem.MACOS)) {
             val asset = PlatformUtils.getFfmpegAssetNameForSystem() ?: return false
             val result = PlatformUtils.downloadAndInstallFfmpeg(asset, forceDownload, onProgress)
             if (result != null) ffmpegPath = result

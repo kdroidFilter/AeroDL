@@ -34,7 +34,7 @@ object PlatformUtils {
                 arch.contains("32") || (arch.contains("x86") && !arch.contains("64")) -> "yt-dlp_x86.exe"
                 else -> "yt-dlp.exe"
             }
-            OperatingSystem.MACOS -> error("yt-dlp asset should not be fetched for macOS directly.")
+            OperatingSystem.MACOS -> "yt-dlp_macos"
             OperatingSystem.LINUX -> {
                 val isMusl = isMusl()
                 when {
@@ -156,7 +156,7 @@ object PlatformUtils {
             OperatingSystem.LINUX -> if (isArm64) "ffmpeg-master-latest-linuxarm64-gpl.tar.xz"
             else "ffmpeg-master-latest-linux64-gpl.tar.xz"
 
-            OperatingSystem.MACOS -> null
+            OperatingSystem.MACOS -> if (isArm64) "ffmpeg-darwin-arm64" else "ffmpeg-darwin-x64"
             else -> null
         }
     }
@@ -175,20 +175,32 @@ object PlatformUtils {
         }
 
         baseDir.mkdirs(); binDir.mkdirs()
-        val url = "https://github.com/yt-dlp/FFmpeg-Builds/releases/latest/download/$assetName"
+
+        val os = getOperatingSystem()
         val archive = File(baseDir, assetName)
+        val url = when (os) {
+            OperatingSystem.MACOS -> "https://github.com/eugeneware/ffmpeg-static/releases/download/b6.0/$assetName"
+            OperatingSystem.WINDOWS, OperatingSystem.LINUX -> "https://github.com/yt-dlp/FFmpeg-Builds/releases/latest/download/$assetName"
+            else -> "https://github.com/yt-dlp/FFmpeg-Builds/releases/latest/download/$assetName"
+        }
 
         try {
             downloadFile(url, archive, onProgress)
-            if (assetName.endsWith(".zip")) NetAndArchive.extractZip(archive, baseDir)
-            else if (assetName.endsWith(".tar.xz")) NetAndArchive.extractTarXzWithSystemTar(archive, baseDir)
-            else error("Unsupported FFmpeg archive: $assetName")
 
-            val found = baseDir.walkTopDown()
-                .firstOrNull { it.isFile && it.name.startsWith("ffmpeg") && it.canRead() }
-                ?: error("FFmpeg binary not found after extraction")
+            if (os == OperatingSystem.MACOS) {
+                // macOS assets are plain binaries (no archive)
+                archive.copyTo(targetExe, overwrite = true)
+            } else {
+                if (assetName.endsWith(".zip")) NetAndArchive.extractZip(archive, baseDir)
+                else if (assetName.endsWith(".tar.xz")) NetAndArchive.extractTarXzWithSystemTar(archive, baseDir)
+                else error("Unsupported FFmpeg archive: $assetName")
 
-            found.copyTo(targetExe, overwrite = true)
+                val found = baseDir.walkTopDown()
+                    .firstOrNull { it.isFile && it.name.startsWith("ffmpeg") && it.canRead() }
+                    ?: error("FFmpeg binary not found after extraction")
+
+                found.copyTo(targetExe, overwrite = true)
+            }
 
             if (getOperatingSystem() != OperatingSystem.WINDOWS) makeExecutable(targetExe)
 
