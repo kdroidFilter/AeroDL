@@ -30,6 +30,17 @@ import ytdlpgui.composeapp.generated.resources.clipboard_ignore
 import ytdlpgui.composeapp.generated.resources.clipboard_link_detected_message
 import ytdlpgui.composeapp.generated.resources.clipboard_link_detected_title
 import ytdlpgui.composeapp.generated.resources.clipboard_open_in_app
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.toComposeImageBitmap
+import io.github.kdroidfilter.ytdlp.util.YouTubeThumbnailHelper
+import org.jetbrains.skia.Image as SkiaImage
 
 class ClipboardMonitorManager(
     private val navigator: Navigator,
@@ -66,7 +77,7 @@ class ClipboardMonitorManager(
         monitor = ClipboardMonitorFactory.create(listener).also { m ->
             m.start()
             // Initial check
-            runCatching { m.getCurrentContent()?.let { scope.launch { handleContent(it) } } }
+            runCatching { m.getCurrentContent().let { scope.launch { handleContent(it) } } }
         }
     }
 
@@ -90,7 +101,8 @@ class ClipboardMonitorManager(
         val isYouTube = listOf("youtube.com", "youtu.be").any { lower.contains(it) }
         if (!isYouTube) return
         val isPlaylist = lower.contains("list=") || lower.contains("/playlist")
-        val isChannel = lower.contains("/channel/") || lower.contains("/c/") || (isYouTube && lower.contains("youtube.com/@"))
+        val isChannel =
+            lower.contains("/channel/") || lower.contains("/c/") || (isYouTube && lower.contains("youtube.com/@"))
 
         // We only auto-open single video links; bulk (playlist/channel) can be noisy.
         if (isPlaylist || isChannel) return
@@ -104,24 +116,49 @@ class ClipboardMonitorManager(
         val openBtn = getString(Res.string.clipboard_open_in_app, appName)
         val ignoreBtn = getString(Res.string.clipboard_ignore)
 
+        fun action() {
+            scope.launch {
+                trayAppState.setDismissMode(TrayWindowDismissMode.MANUAL)
+                runCatching { trayAppState.show() }
+                navigator.navigate(Destination.SingleDownloadScreen(url))
+                trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
+            }
+        }
+
         // Show a localized notification asking user consent to open in the app
         val notif = notification(
             title = title,
             message = message,
-            onActivated = { /* no-op */ },
+            largeIcon = {
+                val videoId = remember(url) { YouTubeThumbnailHelper.extractVideoId(url) }
+                if (videoId != null) {
+                    val thumbUrl = YouTubeThumbnailHelper.getThumbnailUrl(
+                        videoId,
+                        YouTubeThumbnailHelper.ThumbnailQuality.MEDIUM
+                    )
+                    var imageBitmap by remember(thumbUrl) { mutableStateOf<ImageBitmap?>(null) }
+                    LaunchedEffect(thumbUrl) {
+                        runCatching {
+                            val bytes = java.net.URL(thumbUrl).readBytes()
+                            val skiaImage = SkiaImage.makeFromEncoded(bytes)
+                            imageBitmap = skiaImage.toComposeImageBitmap()
+                        }
+                    }
+                    imageBitmap?.let { img ->
+                        Image(
+                            bitmap = img,
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                }
+            },
+            onActivated = { action() },
             onDismissed = { /* no-op */ },
             onFailed = { /* no-op */ }
         ) {
-            button(title = openBtn) {
-                // Ensure window is visible and navigate on user confirmation
-                scope.launch {
-                    trayAppState.setDismissMode(TrayWindowDismissMode.MANUAL)
-                    runCatching { trayAppState.show() }
-                    navigator.navigate(Destination.SingleDownloadScreen(url))
-                    trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
-
-                }
-            }
+            button(title = openBtn) { action() }
             button(title = ignoreBtn) {
                 // Do nothing, simply dismiss
             }

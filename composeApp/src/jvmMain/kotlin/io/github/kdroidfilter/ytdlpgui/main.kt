@@ -31,11 +31,17 @@ import io.github.composefluent.darkColors
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.filled.PictureInPictureExit
 import io.github.composefluent.lightColors
+import io.github.kdroidfilter.knotify.builder.AppConfig
+import io.github.kdroidfilter.knotify.builder.NotificationInitializer
 import io.github.kdroidfilter.platformtools.darkmodedetector.isSystemInDarkMode
 import io.github.kdroidfilter.ytdlpgui.core.presentation.icons.AeroDlLogoOnly
 import io.github.kdroidfilter.ytdlpgui.di.appModule
+import kotlinx.coroutines.runBlocking
+import org.jetbrains.compose.resources.getString
 import org.koin.compose.KoinApplication
 import org.koin.compose.getKoin
+import ytdlpgui.composeapp.generated.resources.Res
+import ytdlpgui.composeapp.generated.resources.app_name
 
 @OptIn(ExperimentalTrayAppApi::class, ExperimentalFluentApi::class)
 fun main() = application {
@@ -44,7 +50,11 @@ fun main() = application {
     KoinApplication(application = {
         modules(appModule)
     }) {
-
+        NotificationInitializer.configure(
+            AppConfig(
+                appName = runBlocking { getString(Res.string.app_name) },
+            )
+        )
         val koin = getKoin()
         val existingTrayState = remember { runCatching { koin.get<TrayAppState>() }.getOrNull() }
         val trayAppState = existingTrayState ?: rememberTrayAppState(
