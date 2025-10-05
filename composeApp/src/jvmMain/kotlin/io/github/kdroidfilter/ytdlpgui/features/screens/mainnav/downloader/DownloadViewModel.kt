@@ -8,6 +8,8 @@ import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import java.io.File
 
 class DownloadViewModel(
     private val navigator: Navigator,
@@ -20,6 +22,11 @@ class DownloadViewModel(
 
     val items: StateFlow<List<DownloadManager.DownloadItem>> = downloadManager.items
     val history: StateFlow<List<DownloadHistoryRepository.HistoryItem>> = historyRepository.history
+
+    // Availability of output directories by history id (derived from history)
+    val directoryAvailability = history.map { list ->
+        list.associate { it.id to (it.outputPath?.let { path -> File(path).exists() } == true) }
+    }
 
     fun onEvents(event: DownloadEvents) {
         when (event) {

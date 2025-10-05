@@ -112,4 +112,8 @@
     <!-- Download completion notification -->
     <string name="download_completed_title">Download finished</string>
     <string name="download_completed_message">%1$s has been downloaded</string>
+
+    <!-- Directory unavailable notice -->
+    <string name="directory_unavailable">Not available</string>
+    <string name="tooltip_directory_unavailable">This file/folder was moved or deleted and is no longer available</string>
 </resources>

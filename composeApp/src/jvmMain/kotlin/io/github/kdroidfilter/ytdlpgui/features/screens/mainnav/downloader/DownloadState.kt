@@ -9,6 +9,7 @@ data class DownloadState(
     val isLoading: Boolean = false,
     val items: List<DownloadManager.DownloadItem> = emptyList(),
     val history: List<DownloadHistoryRepository.HistoryItem> = emptyList(),
+    val directoryAvailability: Map<String, Boolean> = emptyMap(),
 )
 
 @Composable
@@ -17,4 +18,5 @@ fun collectDownloadState(viewModel: DownloadViewModel): DownloadState =
         isLoading = viewModel.isLoading.collectAsState().value,
         items = viewModel.items.collectAsState().value,
         history = viewModel.history.collectAsState().value,
+        directoryAvailability = viewModel.directoryAvailability.collectAsState(initial = emptyMap()).value,
     )

@@ -38,6 +38,7 @@ import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.Delete
 import io.github.composefluent.icons.regular.Folder
 import io.github.composefluent.icons.regular.Dismiss
+import io.github.composefluent.icons.regular.FolderProhibited
 import io.github.kdroidfilter.ytdlp.util.YouTubeThumbnailHelper
 import io.github.kdroidfilter.ytdlpgui.core.business.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository.HistoryItem
@@ -116,9 +117,19 @@ fun DownloadView(
 
             items(state.history) { h ->
                 HistoryRow(h = h, actions = {
-                    TooltipBox(tooltip = { Text(stringResource(Res.string.tooltip_open_directory)) }) {
-                        Button(iconOnly = true, onClick = { onEvent(DownloadEvents.OpenDirectory(h.id)) }) {
-                            Icon(Icons.Default.Folder, stringResource(Res.string.open_directory))
+                    val dirAvailable = state.directoryAvailability[h.id] == true
+                    if (dirAvailable) {
+                        TooltipBox(tooltip = { Text(stringResource(Res.string.tooltip_open_directory)) }) {
+                            Button(iconOnly = true, onClick = { onEvent(DownloadEvents.OpenDirectory(h.id)) }) {
+                                Icon(Icons.Default.Folder, stringResource(Res.string.open_directory))
+                            }
+                        }
+                    } else {
+                        TooltipBox(tooltip = { Text(stringResource(Res.string.tooltip_directory_unavailable)) }) {
+                            // Disabled/placeholder action when directory no longer exists
+                            Button(iconOnly = true, disabled = true, onClick = { /* no-op: directory unavailable */ }) {
+                                Icon(Icons.Default.FolderProhibited, stringResource(Res.string.directory_unavailable), tint = FluentTheme.colors.system.critical)
+                            }
                         }
                     }
 

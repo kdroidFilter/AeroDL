@@ -101,4 +101,8 @@
     <!-- התראת סיום הורדה -->
     <string name="download_completed_title">ההורדה הסתיימה</string>
     <string name="download_completed_message">%1$s הורד</string>
+
+    <!-- חיווי: תיקייה אינה זמינה -->
+    <string name="directory_unavailable">לא זמין</string>
+    <string name="tooltip_directory_unavailable">הקובץ/התיקייה הועברו או נמחקו ואינם זמינים עוד</string>
 </resources>

@@ -109,4 +109,8 @@
     <!-- Notification de fin de téléchargement -->
     <string name="download_completed_title">Téléchargement terminé</string>
     <string name="download_completed_message">%1$s a été téléchargé</string>
+
+    <!-- Indicateur d’indisponibilité du dossier -->
+    <string name="directory_unavailable">Indisponible</string>
+    <string name="tooltip_directory_unavailable">Le fichier/dossier a été déplacé ou supprimé et n’est plus disponible</string>
 </resources>
