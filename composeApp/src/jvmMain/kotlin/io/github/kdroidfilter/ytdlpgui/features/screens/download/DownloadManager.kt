@@ -96,7 +96,7 @@ class DownloadManager(
         val destRegex = Regex("Destination: (.+)")
         val mergeRegex = Regex("Merging formats into \"(.+)\"")
 
-        val eventHandler = createEventHandler(id, item) { line ->
+        val eventHandler = createEventHandler(id, item, { lastDestPath }) { line ->
             destRegex.find(line)?.let { lastDestPath = it.groupValues[1] }
             mergeRegex.find(line)?.let { lastDestPath = it.groupValues[1] }
         }
@@ -113,6 +113,7 @@ class DownloadManager(
     private fun createEventHandler(
         id: String,
         item: DownloadItem,
+        getOutputPath: () -> String?,
         onLog: (String) -> Unit
     ): (Event) -> Unit = { event ->
         when (event) {
@@ -127,7 +128,14 @@ class DownloadManager(
             is Event.Completed -> {
                 val status = if (event.success) DownloadItem.Status.Completed else DownloadItem.Status.Failed
                 update(id) { it.copy(status = status, message = null) }
-                if (event.success) saveToHistory(id, item)
+                if (event.success) {
+                    val detectedPath = getOutputPath()
+                    val absolutePath = detectedPath?.let { p ->
+                        val f = File(p)
+                        if (f.isAbsolute) f.absolutePath else ytDlpWrapper.downloadDir?.let { dir -> File(dir, p).absolutePath } ?: f.absolutePath
+                    }
+                    saveToHistory(id, item, absolutePath)
+                }
                 maybeStartPending()
             }
 
@@ -190,12 +198,13 @@ class DownloadManager(
         }
     }
 
-    private fun saveToHistory(id: String, item: DownloadItem) {
+    private fun saveToHistory(id: String, item: DownloadItem, outputFilePath: String?) {
+        val finalPath = outputFilePath ?: ytDlpWrapper.downloadDir?.absolutePath
         historyRepository.add(
             id = id,
             url = item.url,
             videoInfo = item.videoInfo,
-            outputPath = ytDlpWrapper.downloadDir?.absolutePath,
+            outputPath = finalPath,
             isAudio = item.preset == null,
             presetHeight = item.preset?.height,
             createdAt = System.currentTimeMillis()

@@ -117,7 +117,7 @@ fun DownloadView(
             items(state.history) { h ->
                 HistoryRow(h = h, actions = {
                     TooltipBox(tooltip = { Text(stringResource(Res.string.tooltip_open_directory)) }) {
-                        Button(iconOnly = true, onClick = { }) {
+                        Button(iconOnly = true, onClick = { onEvent(DownloadEvents.OpenDirectory(h.id)) }) {
                             Icon(Icons.Default.Folder, stringResource(Res.string.open_directory))
                         }
                     }
