@@ -117,22 +117,45 @@ fun Header(
                     Destination.HistoryScreen -> currentDestination is Destination.HistoryScreen
                     else -> false
                 }
-                TopNavItem(
-                    selected = isSelected,
-                    onClick = {
-                        scope.launch {
-                            navigator.navigateAndClearBackStack(destForIndex)
+                run {
+                    val full = stringResource(titleRes)
+                    val display = if (full.length > 8) full.take(8) + "…" else full
+                    if (display != full) {
+                        TooltipBox(
+                            tooltip = { Text(full) }
+                        ) {
+                            TopNavItem(
+                                selected = isSelected,
+                                onClick = {
+                                    scope.launch {
+                                        navigator.navigateAndClearBackStack(destForIndex)
+                                    }
+                                },
+                                text = {
+                                    Text(text = display)
+                                },
+                                icon = {
+                                    Icon(imageVector = icon, contentDescription = null)
+                                }
+                            )
                         }
-                    },
-                    text = {
-                        val full = stringResource(titleRes)
-                        val display = if (full.length > 8) full.take(8) + "…" else full
-                        Text(text = display)
-                    },
-                    icon = {
-                        Icon(imageVector = icon, contentDescription = null)
+                    } else {
+                        TopNavItem(
+                            selected = isSelected,
+                            onClick = {
+                                scope.launch {
+                                    navigator.navigateAndClearBackStack(destForIndex)
+                                }
+                            },
+                            text = {
+                                Text(text = display)
+                            },
+                            icon = {
+                                Icon(imageVector = icon, contentDescription = null)
+                            }
+                        )
                     }
-                )
+                }
             }
             item {
                 MenuFlyoutContainer(
