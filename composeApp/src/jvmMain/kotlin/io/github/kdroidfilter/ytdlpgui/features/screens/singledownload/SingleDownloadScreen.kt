@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -41,6 +42,7 @@ import io.github.composefluent.component.FlyoutPlacement
 import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.*
 import io.github.composefluent.icons.Icons
+import io.github.composefluent.icons.regular.ErrorCircle
 import io.github.composefluent.icons.regular.Pause
 import io.github.composefluent.icons.regular.Play
 import io.github.kdroidfilter.composemediaplayer.VideoPlayerState
@@ -95,8 +97,15 @@ private fun Loader() {
 
 @Composable
 private fun ErrorBox(message: String) {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(text = stringResource(Res.string.error_fetch_video_info, message), color = Color.Red)
+    Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+        Icon(
+            imageVector = Icons.Regular.ErrorCircle,
+            contentDescription = "ErrorCircle",
+            modifier = Modifier.size(144.dp),
+            tint = FluentTheme.colors.system.critical
+        )
+        Spacer(Modifier.size(16.dp))
+        Text(text = stringResource(Res.string.error_fetch_video_info, message), color = FluentTheme.colors.system.critical, textAlign = TextAlign.Center)
     }
 }
 
