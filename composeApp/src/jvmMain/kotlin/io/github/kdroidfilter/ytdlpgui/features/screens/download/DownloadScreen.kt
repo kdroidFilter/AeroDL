@@ -23,6 +23,7 @@ import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
@@ -202,7 +203,7 @@ private fun HistoryRow(
 
         Spacer(Modifier.width(8.dp))
         Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.SpaceBetween) {
-            Text(h.videoInfo?.title ?: h.url, maxLines = 3)
+            Text(h.videoInfo?.title ?: h.url, maxLines = 3, overflow = TextOverflow.Ellipsis)
             Text(whenStr, style = FluentTheme.typography.caption)
         }
         Spacer(Modifier.width(8.dp))
@@ -254,7 +255,7 @@ private fun InProgressRow(item: DownloadManager.DownloadItem, onCancel: (String)
         InProgressThumbnail(item)
         Spacer(Modifier.width(8.dp))
         Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.SpaceBetween) {
-            Text(item.videoInfo?.title ?: item.url, maxLines = 3)
+            Text(item.videoInfo?.title ?: item.url, maxLines = 3, overflow = TextOverflow.Ellipsis)
             val statusText = when (item.status) {
                 DownloadManager.DownloadItem.Status.Pending -> stringResource(Res.string.status_pending)
                 DownloadManager.DownloadItem.Status.Running -> stringResource(Res.string.status_running)
