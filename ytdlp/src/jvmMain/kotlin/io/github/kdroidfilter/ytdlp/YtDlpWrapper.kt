@@ -113,12 +113,9 @@ class YtDlpWrapper {
     }
 
     suspend fun hasUpdate(): Boolean {
-        if (getOperatingSystem() == OperatingSystem.MACOS) {
-            return true // On macOS, we can always attempt an update.
-        }
         val currentVersion = version() ?: return true
-        val latestVersion = ytdlpFetcher.getLatestRelease()?.tag_name ?: return false
-        return currentVersion.removePrefix("v").trim() != latestVersion.removePrefix("v").trim()
+        val latestReleaseTag = ytdlpFetcher.getLatestRelease()?.tag_name ?: return false
+        return currentVersion.removePrefix("v").trim() != latestReleaseTag.removePrefix("v").trim()
     }
 
     suspend fun downloadOrUpdate(onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null): Boolean {

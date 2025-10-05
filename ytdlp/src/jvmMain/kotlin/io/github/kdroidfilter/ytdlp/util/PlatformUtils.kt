@@ -89,7 +89,6 @@ object PlatformUtils {
         }
     }
 
-
     suspend fun makeExecutable(file: File) = withContext(Dispatchers.IO) {
         try {
             val path = file.toPath()
@@ -98,10 +97,22 @@ object PlatformUtils {
             perms.add(PosixFilePermission.GROUP_EXECUTE)
             perms.add(PosixFilePermission.OTHERS_EXECUTE)
             Files.setPosixFilePermissions(path, perms)
+
+            if (getOperatingSystem() == OperatingSystem.MACOS) {
+                try {
+                    ProcessBuilder("xattr", "-d", "com.apple.quarantine", file.absolutePath)
+                        .redirectErrorStream(true)
+                        .start()
+                        .waitFor()
+                } catch (e: Exception) {
+                    debugln { "Could not remove quarantine attribute from ${file.name}: ${e.message}" }
+                }
+            }
+
         } catch (_: UnsupportedOperationException) {
             Runtime.getRuntime().exec(arrayOf("chmod", "+x", file.absolutePath)).waitFor()
         }
-    }!!
+    }
 
     // --- FFmpeg ---
     fun getDefaultFfmpegPath(): String {
