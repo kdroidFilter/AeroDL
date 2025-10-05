@@ -12,7 +12,9 @@ import io.github.kdroidfilter.ytdlp.core.Event
 import io.github.kdroidfilter.ytdlp.core.Handle
 import io.github.kdroidfilter.ytdlp.core.SubtitleOptions
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
+import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Navigator
 import io.github.kdroidfilter.ytdlpgui.core.settings.SettingsKeys
+import io.github.kdroidfilter.ytdlpgui.core.ui.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.util.FileExplorerUtils
 import io.github.kdroidfilter.ytdlpgui.core.util.NotificationThumbUtils
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
@@ -45,7 +47,8 @@ class DownloadManager(
     private val ytDlpWrapper: YtDlpWrapper,
     private val settings: Settings,
     private val historyRepository: DownloadHistoryRepository,
-    private val trayAppState: TrayAppState
+    private val trayAppState: TrayAppState,
+    private val navigator: Navigator,
 ) {
     private val scope = CoroutineScope(Dispatchers.IO)
 
@@ -184,9 +187,8 @@ class DownloadManager(
                     saveToHistory(id, item, absolutePath)
 
                     // Notify when window hidden (kept)
-                    if (settings.getBoolean(SettingsKeys.NOTIFY_ON_DOWNLOAD_COMPLETE, true) &&
-                        !trayAppState.isVisible.value
-                    ) {
+                    if ((settings.getBoolean(SettingsKeys.NOTIFY_ON_DOWNLOAD_COMPLETE, true) && !trayAppState.isVisible.value) ||
+                        (settings.getBoolean(SettingsKeys.NOTIFY_ON_DOWNLOAD_COMPLETE, true) && trayAppState.isVisible.value && navigator.currentDestination.value != Destination.MainNavigation.Downloader)) {
                         scope.launch { sendCompletionNotification(item, absolutePath) }
                     }
                 }
