@@ -100,4 +100,7 @@
     <string name="menu_show_window">Show window</string>
     <string name="menu_hide_window">Hide window</string>
     <string name="quit">Quit</string>
+
+    <!-- App info -->
+    <string name="app_version_label">App version: %1$s</string>
 </resources>

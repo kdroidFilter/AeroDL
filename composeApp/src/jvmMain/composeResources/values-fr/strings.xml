@@ -97,4 +97,7 @@
     <!-- Barre d'état / Menu -->
     <string name="menu_show_window">Afficher la fenêtre</string>
     <string name="menu_hide_window">Cacher la fenêtre</string>
+
+    <!-- Infos application -->
+    <string name="app_version_label">Version de l'application : %1$s</string>
 </resources>

@@ -23,6 +23,7 @@ import io.github.kdroidfilter.ytdlpgui.features.screens.singledownload.SingleDow
 import io.github.vinceglb.autolaunch.AutoLaunch
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
+import kotlin.math.sin
 
 val appModule = module {
 
@@ -46,7 +47,7 @@ val appModule = module {
     viewModel { AboutViewModel(get()) }
     viewModel { BulkDownloadViewModel(get()) }
     viewModel { DownloadViewModel(get(), get(), get<DownloadHistoryRepository>()) }
-    viewModel { SettingsViewModel(get(), get(), get(), get(), get<TrayAppState>(), get<AutoLaunch>()) }
+    single { SettingsViewModel(get(), get(), get(), get(), get<TrayAppState>(), get<AutoLaunch>()) }
     viewModel { SingleDownloadViewModel(get(), get(), get(), get()) }
 
 }

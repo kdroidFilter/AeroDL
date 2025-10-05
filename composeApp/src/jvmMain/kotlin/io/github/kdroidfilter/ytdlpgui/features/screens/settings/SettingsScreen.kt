@@ -25,6 +25,7 @@ import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.filled.DocumentEdit
 import io.github.composefluent.icons.filled.OpenFolder
 import io.github.composefluent.icons.filled.TopSpeed
+import io.github.composefluent.icons.regular.Clipboard
 import io.github.composefluent.icons.regular.Cookies
 import io.github.composefluent.icons.regular.LockShield
 import io.github.composefluent.icons.regular.Power
@@ -273,7 +274,7 @@ fun SettingsView(
                         modifier = Modifier.fillMaxWidth(0.8f)
                     )
                 },
-                icon = { Icon(Icons.Regular.Power, null) },
+                icon = { Icon(Icons.Regular.Clipboard, null) },
                 trailing = {
                     Switcher(
                         checked = state.clipboardMonitoringEnabled,

@@ -89,4 +89,7 @@
     <string name="menu_show_window">הצג חלון</string>
     <string name="menu_hide_window">הסתר חלון</string>
     <string name="quit">יציאה</string>
+
+    <!-- פרטי אפליקציה -->
+    <string name="app_version_label">גרסת אפליקציה: %1$s</string>
 </resources>
