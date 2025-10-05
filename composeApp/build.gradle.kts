@@ -41,6 +41,7 @@ kotlin {
             implementation(libs.koin.compose.viewmodel)
 
             // Platform tools
+            implementation(libs.platformtools.core)
             implementation(libs.platformtools.darkmodedetector)
             implementation(libs.platformtools.clipboardmanager)
             implementation("io.github.vinceglb:auto-launch:0.7.0")

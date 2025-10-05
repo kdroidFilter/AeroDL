@@ -79,7 +79,6 @@ fun main() = application {
                 Item("Quitter", onClick = { exitApplication() }, icon = Icons.Filled.PictureInPictureExit)
             }
         ) {
-            trayAppState.setDismissMode(TrayWindowDismissMode.MANUAL)
             CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                 FluentTheme(colors = if (isSystemInDarkMode()) darkColors() else lightColors()) {
                     Mica(

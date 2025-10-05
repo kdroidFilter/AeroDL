@@ -1,6 +1,8 @@
 package io.github.kdroidfilter.ytdlpgui.features.screens.download
 
 import androidx.lifecycle.ViewModel
+import io.github.kdroidfilter.platformtools.OperatingSystem
+import io.github.kdroidfilter.platformtools.getOperatingSystem
 import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Navigator
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,7 +26,9 @@ class DownloadViewModel(
     fun onEvents(event: DownloadEvents) {
         when (event) {
             is DownloadEvents.Cancel -> downloadManager.cancel(event.id)
-            DownloadEvents.Refresh -> { /* no-op for now */ }
+            DownloadEvents.Refresh -> { /* no-op for now */
+            }
+
             DownloadEvents.ClearHistory -> historyRepository.clear()
             is DownloadEvents.DeleteHistory -> historyRepository.delete(event.id)
             is DownloadEvents.OpenDirectory -> openDirectoryFor(event.id)
@@ -52,7 +56,9 @@ class DownloadViewModel(
         fun runCommand(vararg cmd: String): Boolean = try {
             ProcessBuilder(*cmd).start()
             true
-        } catch (_: Throwable) { false }
+        } catch (_: Throwable) {
+            false
+        }
 
         try {
             val os = System.getProperty("os.name").lowercase()
@@ -60,10 +66,11 @@ class DownloadViewModel(
 
             if (fileToSelect != null) {
                 val abs = fileToSelect.absolutePath
-                handled = when {
-                    os.contains("mac") -> runCommand("open", "-R", abs)
-                    os.contains("win") -> runCommand("explorer.exe", "/select,", abs)
+                handled = when (getOperatingSystem()) {
+                    OperatingSystem.MACOS -> runCommand("open", "-R", abs)
+                    OperatingSystem.WINDOWS -> runCommand("cmd", "/c", "explorer /select,\"$abs\"")
                     else -> {
+
                         // Linux: try common file managers with selection support; fall back to xdg-open on the directory
                         val linuxAttempts: List<Array<String>> = listOf(
                             arrayOf("nautilus", "--select", abs),
@@ -74,7 +81,9 @@ class DownloadViewModel(
                         )
                         var ok = false
                         for (attempt in linuxAttempts) {
-                            if (runCommand(*attempt)) { ok = true; break }
+                            if (runCommand(*attempt)) {
+                                ok = true; break
+                            }
                         }
                         if (!ok) {
                             val dir = dirToOpen
@@ -92,15 +101,16 @@ class DownloadViewModel(
                 if (dir != null && dir.exists()) {
                     // Fallback: open the directory using Desktop or xdg-open
                     if (Desktop.isDesktopSupported()) {
-                        try { Desktop.getDesktop().open(dir); handled = true } catch (_: Throwable) { /* ignore */ }
+                        try {
+                            Desktop.getDesktop().open(dir); handled = true
+                        } catch (_: Throwable) { /* ignore */
+                        }
                     }
                     if (!handled) {
-                        if (os.contains("win")) {
-                            handled = runCommand("explorer.exe", dir.absolutePath)
-                        } else if (os.contains("mac")) {
-                            handled = runCommand("open", dir.absolutePath)
-                        } else {
-                            handled = runCommand("xdg-open", dir.absolutePath)
+                        handled = when (getOperatingSystem()) {
+                            OperatingSystem.WINDOWS -> runCommand("explorer.exe", dir.absolutePath)
+                            OperatingSystem.MACOS -> runCommand("open", dir.absolutePath)
+                            else -> runCommand("xdg-open", dir.absolutePath)
                         }
                     }
                 }
