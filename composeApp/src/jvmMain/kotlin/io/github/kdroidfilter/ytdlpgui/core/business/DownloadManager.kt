@@ -1,5 +1,10 @@
+@file:OptIn(ExperimentalTrayAppApi::class)
+
 package io.github.kdroidfilter.ytdlpgui.core.business
 
+import androidx.compose.ui.window.TrayState
+import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
+import com.kdroid.composetray.tray.api.TrayAppState
 import com.russhwolf.settings.Settings
 import io.github.kdroidfilter.knotify.builder.ExperimentalNotificationsApi
 import io.github.kdroidfilter.knotify.compose.builder.notification
@@ -49,6 +54,7 @@ class DownloadManager(
     private val ytDlpWrapper: YtDlpWrapper,
     private val settings: Settings,
     private val historyRepository: DownloadHistoryRepository,
+    private val trayAppState: TrayAppState
 ) {
     private val scope = CoroutineScope(Dispatchers.IO)
 
@@ -167,10 +173,8 @@ class DownloadManager(
                     }
                     saveToHistory(id, item, absolutePath)
                     // Send completion notification if enabled
-                    if (settings.getBoolean(SettingsKeys.NOTIFY_ON_DOWNLOAD_COMPLETE, true)) {
-                        scope.launch {
-                            sendCompletionNotification(item, absolutePath)
-                        }
+                    if (settings.getBoolean(SettingsKeys.NOTIFY_ON_DOWNLOAD_COMPLETE, true) and !trayAppState.isVisible.value ) {
+                        scope.launch { sendCompletionNotification(item, absolutePath) }
                     }
                 }
                 maybeStartPending()

@@ -35,7 +35,7 @@ val appModule = module {
     single { DownloadHistoryRepository(get()) }
     single { io.github.kdroidfilter.ytdlpgui.data.SupportedSitesRepository(get()) }
 
-    single { DownloadManager(get(), get(), get<DownloadHistoryRepository>()) }
+    single { DownloadManager(get(), get(), get<DownloadHistoryRepository>(), get()) }
     single { ClipboardMonitorManager(get(), get(), get(), get()) }
     single { InitViewModel(get(), get(), get(), get(), get())}
 
