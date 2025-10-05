@@ -269,21 +269,23 @@ private fun InProgressRow(item: DownloadManager.DownloadItem, onCancel: (String)
             val percent = (progressFraction * 100f).roundToInt()
             var hovered by remember { mutableStateOf(false) }
             Box(
-                modifier = Modifier.size(21.dp)
+                modifier = Modifier.size(27.dp)
                     .onPointerEvent(PointerEventType.Enter) { hovered = true }
                     .onPointerEvent(PointerEventType.Exit) { hovered = false },
                 contentAlignment = Alignment.Center
             ) {
                 // Always show the progress ring
-                ProgressRing(progress = progressFraction, modifier = Modifier.fillMaxSize())
+                ProgressRing(progress = progressFraction, modifier = Modifier.fillMaxSize().padding(end = 2.dp))
 
                 if (!hovered) {
                     // Show percentage text centered in the ring
                     Text(
                         "${percent}%",
                         style = FluentTheme.typography.caption,
-                        fontSize = 8.sp,
-                        textAlign = TextAlign.Center
+                        fontSize = 11.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth(),
+                        maxLines = 1
                     )
                 } else {
                     // On hover, show dismiss icon overlaid on the ring
@@ -291,7 +293,7 @@ private fun InProgressRow(item: DownloadManager.DownloadItem, onCancel: (String)
                         SubtleButton(
                             iconOnly = true,
                             onClick = { onCancel(item.id) },
-                            modifier = Modifier.size(14.dp)
+                            modifier = Modifier.size(18.dp)
                         ) {
                             Icon(Icons.Default.Dismiss, "Annuler", modifier = Modifier.size(16.dp))
                         }
