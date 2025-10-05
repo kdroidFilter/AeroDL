@@ -17,6 +17,7 @@ class InitViewModel(
     private val settings : Settings,
     // Injected to force eager initialization of clipboard monitoring
     private val clipboardMonitorManager: ClipboardMonitorManager,
+    private val supportedSitesRepository: io.github.kdroidfilter.ytdlpgui.data.SupportedSitesRepository,
 ) : ViewModel() {
     private val _state = MutableStateFlow(InitState())
     val state = _state.asStateFlow()
@@ -107,6 +108,8 @@ class InitViewModel(
                             initCompleted = event.success
                         )
                         viewModelScope.launch {
+                            // On first initialization, fetch supported sites list from GitHub and store in DB
+                            runCatching { supportedSitesRepository.initializeFromGitHubIfEmpty() }
                             navigator.navigateAndClearBackStack(Destination.HomeScreen)
                         }
                     }

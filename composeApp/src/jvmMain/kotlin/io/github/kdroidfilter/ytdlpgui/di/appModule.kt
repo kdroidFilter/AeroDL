@@ -31,10 +31,11 @@ val appModule = module {
     // Database & repositories
     single { DownloadHistoryRepository.defaultDatabase() }
     single { DownloadHistoryRepository(get()) }
+    single { io.github.kdroidfilter.ytdlpgui.data.SupportedSitesRepository(get()) }
 
     single { DownloadManager(get(), get(), get<DownloadHistoryRepository>()) }
-    single { ClipboardMonitorManager(get(), get(), get()) }
-    single { InitViewModel(get(), get(), get(), get())}
+    single { ClipboardMonitorManager(get(), get(), get(), get()) }
+    single { InitViewModel(get(), get(), get(), get(), get())}
 
 
     viewModel { HomeViewModel(get(), get()) }

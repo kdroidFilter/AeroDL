@@ -46,6 +46,7 @@ class ClipboardMonitorManager(
     private val navigator: Navigator,
     private val settings: Settings,
     private val trayAppState: TrayAppState,
+    private val supportedSitesRepository: io.github.kdroidfilter.ytdlpgui.data.SupportedSitesRepository,
 ) {
     companion object {
         private const val KEY_CLIPBOARD_MONITORING = "clipboard_monitoring_enabled"
@@ -99,13 +100,15 @@ class ClipboardMonitorManager(
 
         val lower = url.lowercase()
         val isYouTube = listOf("youtube.com", "youtu.be").any { lower.contains(it) }
-        if (!isYouTube) return
-        val isPlaylist = lower.contains("list=") || lower.contains("/playlist")
-        val isChannel =
-            lower.contains("/channel/") || lower.contains("/c/") || (isYouTube && lower.contains("youtube.com/@"))
+        val isKnown = supportedSitesRepository.matchesKnownSite(url)
+        if (!isYouTube && !isKnown) return
+        val isPlaylist = if (isYouTube) (lower.contains("list=") || lower.contains("/playlist")) else false
+        val isChannel = if (isYouTube) (
+            lower.contains("/channel/") || lower.contains("/c/") || lower.contains("youtube.com/@")
+        ) else false
 
-        // We only auto-open single video links; bulk (playlist/channel) can be noisy.
-        if (isPlaylist || isChannel) return
+        // For YouTube, avoid bulk (playlist/channel) prompts which can be noisy.
+        if (isYouTube && (isPlaylist || isChannel)) return
 
         // Mark as handled to avoid repeated prompts for the same URL
         lastHandled = url
@@ -130,27 +133,29 @@ class ClipboardMonitorManager(
             title = title,
             message = message,
             largeIcon = {
-                val videoId = remember(url) { YouTubeThumbnailHelper.extractVideoId(url) }
-                if (videoId != null) {
-                    val thumbUrl = YouTubeThumbnailHelper.getThumbnailUrl(
-                        videoId,
-                        YouTubeThumbnailHelper.ThumbnailQuality.MEDIUM
-                    )
-                    var imageBitmap by remember(thumbUrl) { mutableStateOf<ImageBitmap?>(null) }
-                    LaunchedEffect(thumbUrl) {
-                        runCatching {
-                            val bytes = java.net.URL(thumbUrl).readBytes()
-                            val skiaImage = SkiaImage.makeFromEncoded(bytes)
-                            imageBitmap = skiaImage.toComposeImageBitmap()
-                        }
-                    }
-                    imageBitmap?.let { img ->
-                        Image(
-                            bitmap = img,
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
+                if (isYouTube) {
+                    val videoId = remember(url) { YouTubeThumbnailHelper.extractVideoId(url) }
+                    if (videoId != null) {
+                        val thumbUrl = YouTubeThumbnailHelper.getThumbnailUrl(
+                            videoId,
+                            YouTubeThumbnailHelper.ThumbnailQuality.MEDIUM
                         )
+                        var imageBitmap by remember(thumbUrl) { mutableStateOf<ImageBitmap?>(null) }
+                        LaunchedEffect(thumbUrl) {
+                            runCatching {
+                                val bytes = java.net.URL(thumbUrl).readBytes()
+                                val skiaImage = SkiaImage.makeFromEncoded(bytes)
+                                imageBitmap = skiaImage.toComposeImageBitmap()
+                            }
+                        }
+                        imageBitmap?.let { img ->
+                            Image(
+                                bitmap = img,
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
                     }
                 }
             },

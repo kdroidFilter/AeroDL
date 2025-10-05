@@ -25,3 +25,34 @@ DELETE FROM download_history WHERE id = ?;
 -- Clears all history entries
 clearHistory:
 DELETE FROM download_history;
+
+-- Table for supported sites extracted from yt-dlp extractor directory
+CREATE TABLE IF NOT EXISTS supported_sites (
+  id TEXT NOT NULL PRIMARY KEY,            -- base name (without .py)
+  filename TEXT NOT NULL,                  -- e.g., youtube.py
+  download_url TEXT,                       -- raw download URL from GitHub API
+  sha TEXT,                                -- file sha from GitHub API
+  size INTEGER,                            -- file size
+  created_at INTEGER NOT NULL              -- insertion timestamp
+);
+
+-- Insert a supported site row
+insertSupportedSite:
+INSERT INTO supported_sites(id, filename, download_url, sha, size, created_at)
+VALUES (?, ?, ?, ?, ?, ?);
+
+-- Select all supported sites
+selectAllSupportedSites:
+SELECT * FROM supported_sites;
+
+-- Select only supported site ids
+selectAllSupportedSiteIds:
+SELECT id FROM supported_sites;
+
+-- Count supported sites
+countSupportedSites:
+SELECT COUNT(*) FROM supported_sites;
+
+-- Clear supported sites
+clearSupportedSites:
+DELETE FROM supported_sites;
