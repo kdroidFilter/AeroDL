@@ -92,6 +92,13 @@ class HomeViewModel(
 
     private fun checkLink() {
         val current = textFieldContent.value
+        // If empty, show an explicit error when Next is pressed
+        if (current.trim().isEmpty()) {
+            viewModelScope.launch {
+                _errorMessage.value = getString(Res.string.error_url_required)
+            }
+            return
+        }
         val isValid = validateLink(current)
         if (!isValid) return
 

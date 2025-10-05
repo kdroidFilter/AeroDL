@@ -16,6 +16,7 @@
     <string name="next">Suivant</string>
     <string name="error_single_valid_url">Veuillez coller une seule URL valide.</string>
     <string name="error_invalid_url_format">Format d’URL invalide.</string>
+    <string name="error_url_required">Veuillez entrer une URL.</string>
 
     <!-- Messages d'initialisation -->
     <string name="checking_ytdlp">Vérification des mises à jour de yt-dlp…</string>

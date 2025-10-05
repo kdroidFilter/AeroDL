@@ -15,6 +15,7 @@
     <string name="next">הבא</string>
     <string name="error_single_valid_url">יש להדביק כתובת URL אחת תקינה.</string>
     <string name="error_invalid_url_format">תבנית כתובת ה-URL אינה תקינה.</string>
+    <string name="error_url_required">נא להזין כתובת URL.</string>
 
     <!-- הודעות אתחול -->
     <string name="checking_ytdlp">בודק עדכונים עבור yt-dlp…</string>
