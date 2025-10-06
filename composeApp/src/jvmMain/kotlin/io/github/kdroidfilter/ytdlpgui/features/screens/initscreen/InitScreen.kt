@@ -75,7 +75,7 @@ fun InitView(state: InitState) {
                     fontSize = 12.sp,
                     textAlign = TextAlign.Center,
                     maxLines = 1,
-                    modifier = Modifier.offset(x = 2.dp, y = 8.dp)
+                    modifier = Modifier.offset(x = if (percent == 100.0f) 2.dp else 4.dp, y = 8.dp)
                 )
             }
             Spacer(Modifier.size(16.dp))
