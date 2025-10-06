@@ -69,6 +69,15 @@
     <string name="single_no_subtitle">ללא כתוביות</string>
     <string name="error_fetch_video_info">אירעה שגיאה בעת קבלת פרטי הווידאו: %1$s</string>
     <string name="thumbnail_content_desc">תמונה ממוזערת</string>
+    
+    <!-- מסך הורדה יחיד: בחירת פורמט ותיאור -->
+    <string name="single_choose_format">בחרו פורמט להורדה:</string>
+    <string name="single_description">תיאור</string>
+    
+    <!-- תיאורי תוכן (נגישות) -->
+    <string name="cd_error_icon">שגיאה</string>
+    <string name="cd_filmstrip_play">סמל סרט בתצוגת ניגון</string>
+    <string name="cd_textbox">סמל תיבת טקסט</string>
 
     <!-- מסך הורדות (היסטוריה ובתהליך) -->
     <string name="download_clear_history">נקה היסטוריה</string>

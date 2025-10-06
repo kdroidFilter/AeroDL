@@ -73,6 +73,15 @@
     <string name="error_fetch_video_info">Une erreur est survenue lors de la récupération des informations de la vidéo : %1$s</string>
     <string name="thumbnail_content_desc">Miniature</string>
     
+    <!-- Écran de téléchargement unique : sélection de format et description -->
+    <string name="single_choose_format">Choisissez le format à télécharger :</string>
+    <string name="single_description">Description</string>
+    
+    <!-- Descriptions de contenu (accessibilité) -->
+    <string name="cd_error_icon">Erreur</string>
+    <string name="cd_filmstrip_play">Icône pellicule lecture</string>
+    <string name="cd_textbox">Icône zone de texte</string>
+    
     <!-- Notifications de surveillance du presse-papiers -->
     <string name="clipboard_link_detected_title">Lien détecté</string>
     <string name="clipboard_link_detected_message">Voulez-vous ouvrir ce lien dans %1$s ?\n%2$s</string>

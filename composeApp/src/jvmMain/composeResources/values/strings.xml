@@ -71,6 +71,16 @@
     <string name="single_no_subtitle">No subtitles</string>
     <string name="error_fetch_video_info">An error occurred while fetching video info: %1$s</string>
     <string name="thumbnail_content_desc">Thumbnail</string>
+    
+    <!-- Single download: format selection & description -->
+    <string name="single_choose_format">Choose format to download:</string>
+    <string name="single_description">Description</string>
+    
+    <!-- Content descriptions (accessibility) -->
+    <string name="cd_error_icon">Error</string>
+    <string name="cd_filmstrip_play">Filmstrip play icon</string>
+    <string name="cd_textbox">Textbox icon</string>
+    
     <!-- Settings: Clipboard monitoring -->
     <string name="settings_clipboard_monitoring_title">Clipboard monitoring</string>
     <string name="settings_clipboard_monitoring_caption">When enabled, copying a YouTube link will automatically open the single download screen.</string>
