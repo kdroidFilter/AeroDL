@@ -36,8 +36,10 @@ import io.github.composefluent.icons.regular.Info
 import io.github.composefluent.lightColors
 import io.github.kdroidfilter.knotify.builder.AppConfig
 import io.github.kdroidfilter.knotify.builder.NotificationInitializer
+import io.github.kdroidfilter.platformtools.OperatingSystem
 import io.github.kdroidfilter.platformtools.darkmodedetector.isSystemInDarkMode
 import io.github.kdroidfilter.platformtools.getAppVersion
+import io.github.kdroidfilter.platformtools.getOperatingSystem
 import io.github.kdroidfilter.ytdlpgui.core.ui.icons.AeroDlLogoOnly
 import io.github.kdroidfilter.ytdlpgui.core.ui.icons.Exit_to_app
 import io.github.kdroidfilter.ytdlpgui.core.ui.icons.Login
@@ -108,8 +110,8 @@ fun main() = application {
                 iconContent = {
                     Icon(
                         AeroDlLogoOnly,
-                        "",
-                        modifier = Modifier.padding(12.dp).fillMaxSize(),
+                        null,
+                        modifier = Modifier.padding( if (getOperatingSystem() != OperatingSystem.WINDOWS) 12.dp else 4.dp).fillMaxSize(),
                         tint = if (isMenuBarInDarkMode()) Color.White else Color.Black
                     )
                 },
