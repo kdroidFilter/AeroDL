@@ -15,8 +15,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.VerticalScrollbar
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -158,94 +160,99 @@ private fun SingleVideoDownloadView(
         modifier = Modifier
             .fillMaxSize()
     ) {
-        val listState = rememberLazyListState()
-        LazyColumn(
-            state = listState,
-            modifier = Modifier.weight(1f).fillMaxHeight()
+        val scrollState = rememberScrollState()
+
+        Column(
+            modifier = Modifier.weight(1f)
+                .verticalScroll(scrollState)
+                .fillMaxHeight()
         ) {
-            item {
-                Text(
-                    text = videoInfo?.title.orEmpty(),
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Spacer(Modifier.height(8.dp))
-            }
-            item {
-                VideoPlayer(
-                    thumbnailUrl = videoInfo?.thumbnail,
-                    duration = videoInfo?.duration,
-                    videoPlayerState = videoPlayerState,
-                    videoInfo = videoInfo
-                )
+
+            Text(
+                text = videoInfo?.title.orEmpty(),
+                fontSize = 22.sp,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+            Spacer(Modifier.height(8.dp))
+
+
+            VideoPlayer(
+                thumbnailUrl = videoInfo?.thumbnail,
+                duration = videoInfo?.duration,
+                videoPlayerState = videoPlayerState,
+                videoInfo = videoInfo
+            )
+            Spacer(Modifier.height(16.dp))
+
+
+            if (videoInfo?.description?.isNotEmpty() == true) {
+
+                var expanded by remember { mutableStateOf(false) }
+                val degrees by animateFloatAsState(if (expanded) -90f else 90f)
+                Column {
+                    Row(
+                        modifier = Modifier.clip(FluentTheme.shapes.control)
+                            .clickable(indication = null, interactionSource = null) { expanded = expanded.not() }
+                            .fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Regular.Textbox,
+                                contentDescription = "Textbox"
+                            )
+                            Text("Description", style = FluentTheme.typography.body)
+                        }
+                        Icon(
+                            if (isRtl) Icons.Default.ChevronLeft else Icons.Default.ChevronRight,
+                            contentDescription = null,
+                            modifier = Modifier.rotate(degrees),
+                        )
+                    }
+                    AnimatedVisibility(
+                        visible = expanded,
+                        enter = expandVertically(
+                            spring(
+                                stiffness = Spring.StiffnessMediumLow,
+                                visibilityThreshold = IntSize.VisibilityThreshold
+                            )
+                        ),
+                        exit = shrinkVertically()
+                    ) {
+                        Box(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                            Text(
+                                videoInfo.description.orEmpty(),
+                                style = FluentTheme.typography.body
+                            )
+                        }
+                    }
+                    Box(Modifier.fillMaxWidth().height(1.dp))
+                }
                 Spacer(Modifier.height(16.dp))
             }
 
-            if (videoInfo?.description?.isNotEmpty() == true) {
-                item {
-                    var expanded by remember { mutableStateOf(false) }
-                    val degrees by animateFloatAsState(if (expanded) -90f else 90f)
-                    Column {
-                        Row(
-                            modifier = Modifier.clip(FluentTheme.shapes.control)
-                                .clickable(indication = null, interactionSource = null) { expanded = expanded.not() }
-                                .fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
 
-                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Regular.Textbox,
-                                    contentDescription = "Textbox"
-                                )
-                                Text("Description", style = FluentTheme.typography.body)
-                            }
-                            Icon(
-                                if (isRtl) Icons.Default.ChevronLeft else Icons.Default.ChevronRight,
-                                contentDescription = null,
-                                modifier = Modifier.rotate(degrees),
-                            )
-                        }
-                        AnimatedVisibility(
-                            visible = expanded,
-                            enter = expandVertically(
-                                spring(
-                                    stiffness = Spring.StiffnessMediumLow,
-                                    visibilityThreshold = IntSize.VisibilityThreshold
-                                )
-                            ),
-                            exit = shrinkVertically()
-                        ) {
-                            Box(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-                                Text(
-                                    videoInfo.description.orEmpty(),
-                                    style = FluentTheme.typography.body
-                                )
-                            }
-                        }
-                        Box(Modifier.fillMaxWidth().height(1.dp))
-                    }
-                    Spacer(Modifier.height(16.dp))
-                }
-            }
 
-            item {
-                if (availablePresets.isNotEmpty()) {
-                    Text(text = stringResource(Res.string.single_formats))
-                    Spacer(Modifier.height(8.dp))
-                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        items(availablePresets.size) { index ->
-                            val preset = availablePresets[index]
-                            val label = "${preset.height}p"
-                            if (preset == selectedPreset) {
-                                AccentButton(onClick = { onSelectPreset(preset) }) { Text(label) }
-                            } else {
-                                Button(onClick = { onSelectPreset(preset) }) { Text(label) }
-                            }
+            if (availablePresets.isNotEmpty()) {
+                Text(text = stringResource(Res.string.single_formats))
+                Spacer(Modifier.height(8.dp))
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(availablePresets.size) { index ->
+                        val preset = availablePresets[index]
+                        val label = "${preset.height}p"
+                        if (preset == selectedPreset) {
+                            AccentButton(onClick = { onSelectPreset(preset) }) { Text(label) }
+                        } else {
+                            Button(onClick = { onSelectPreset(preset) }) { Text(label) }
                         }
                     }
-                    Spacer(Modifier.height(16.dp))
                 }
+                Spacer(Modifier.height(16.dp))
+
 
                 // Subtitles drop-down
                 Text(text = stringResource(Res.string.single_subtitles))
@@ -303,7 +310,7 @@ private fun SingleVideoDownloadView(
             }
         }
         VerticalScrollbar(
-            adapter = rememberScrollbarAdapter(listState),
+            adapter = rememberScrollbarAdapter(scrollState),
             modifier = Modifier.fillMaxHeight().padding(top = 2.dp, start = 8.dp)
         )
     }
