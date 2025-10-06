@@ -73,7 +73,7 @@ fun SingleDownloadView(
     val videoPlayerState = rememberVideoPlayerState()
     if (state.isLoading) Loader()
     else if (state.errorMessage != null) ErrorBox(state.errorMessage)
-    else VideoInfoSection(
+    else SingleVideoDownloadView(
             videoPlayerState = videoPlayerState,
             videoInfo = state.videoInfo,
             availablePresets = state.availablePresets,
@@ -115,7 +115,7 @@ private fun ErrorBox(message: String) {
  * description on the left.
  */
 @Composable
-private fun VideoInfoSection(
+private fun SingleVideoDownloadView(
     videoPlayerState: VideoPlayerState,
     videoInfo: VideoInfo?,
     availablePresets: List<YtDlpWrapper.Preset>,
@@ -131,126 +131,117 @@ private fun VideoInfoSection(
     Row(
         modifier = Modifier
             .fillMaxSize()
-            .padding(8.dp),
-        verticalAlignment = Alignment.Top
     ) {
-        // Textual info (title + description) with scrollbar
         val listState = rememberLazyListState()
-        Box(
-            modifier = Modifier
-                .fillMaxHeight()
-                .padding(end = 16.dp)
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.weight(1f).fillMaxHeight()
         ) {
-            LazyColumn(
-                state = listState,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                item {
-                    Text(
-                        text = videoInfo?.title.orEmpty(),
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
+            item {
+                Text(
+                    text = videoInfo?.title.orEmpty(),
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(Modifier.height(8.dp))
+            }
+            item {
+                ThumbnailWithDuration(
+                    thumbnailUrl = videoInfo?.thumbnail,
+                    duration = videoInfo?.duration,
+                    videoPlayerState = videoPlayerState,
+                    videoInfo = videoInfo
+                )
+                Spacer(Modifier.height(8.dp))
+            }
+            item {
+                Text(
+                    text = videoInfo?.description.orEmpty(),
+                    fontSize = 14.sp,
+                    maxLines = 8,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(Modifier.height(16.dp))
+            }
+            item {
+                if (availablePresets.isNotEmpty()) {
+                    Text(text = stringResource(Res.string.single_formats))
                     Spacer(Modifier.height(8.dp))
-                }
-                item {
-                    ThumbnailWithDuration(
-                        thumbnailUrl = videoInfo?.thumbnail,
-                        duration = videoInfo?.duration,
-                        videoPlayerState = videoPlayerState,
-                        videoInfo = videoInfo
-                    )
-                    Spacer(Modifier.height(8.dp))
-                }
-                item {
-                    Text(
-                        text = videoInfo?.description.orEmpty(),
-                        fontSize = 14.sp,
-                        maxLines = 8,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Spacer(Modifier.height(16.dp))
-                }
-                item {
-                    if (availablePresets.isNotEmpty()) {
-                        Text(text = stringResource(Res.string.single_formats))
-                        Spacer(Modifier.height(8.dp))
-                        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            items(availablePresets.size) { index ->
-                                val preset = availablePresets[index]
-                                val label = "${preset.height}p"
-                                if (preset == selectedPreset) {
-                                    AccentButton(onClick = { onSelectPreset(preset) }) { Text(label) }
-                                } else {
-                                    Button(onClick = { onSelectPreset(preset) }) { Text(label) }
-                                }
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        items(availablePresets.size) { index ->
+                            val preset = availablePresets[index]
+                            val label = "${preset.height}p"
+                            if (preset == selectedPreset) {
+                                AccentButton(onClick = { onSelectPreset(preset) }) { Text(label) }
+                            } else {
+                                Button(onClick = { onSelectPreset(preset) }) { Text(label) }
                             }
                         }
-                        Spacer(Modifier.height(16.dp))
                     }
-
-                    // Subtitles drop-down
-                    Text(text = stringResource(Res.string.single_subtitles))
-                    Spacer(Modifier.height(8.dp))
-                    val subtitleLabel = if (selectedSubtitles.isEmpty()) stringResource(Res.string.single_no_subtitle) else selectedSubtitles.map { languageCodeToDisplayName(it) }.joinToString(", ")
-                    MenuFlyoutContainer(
-                        flyout = {
-                            // None option (clear all)
-                            MenuFlyoutItem(
-                                text = { Text(stringResource(Res.string.single_no_subtitle)) },
-                                onClick = {
-                                    onClearSubtitles()
-                                    isFlyoutVisible = false
-                                },
-                            )
-                            // Languages (toggle selection) - sorted alphabetically by localized display name
-                            val sortedLanguages = availableSubtitleLanguages
-                                .sortedBy { languageCodeToDisplayName(it).lowercase(Locale.getDefault()) }
-                            sortedLanguages.forEach { lang ->
-                                val checked = selectedSubtitles.contains(lang)
-                                val displayName = languageCodeToDisplayName(lang)
-                                val label = (if (checked) "✓ " else "") + displayName
-                                MenuFlyoutItem(
-                                    text = { Text(label) },
-                                    onClick = {
-                                        onToggleSubtitle(lang)
-                                        isFlyoutVisible = false
-                                    }
-                                )
-                            }
-                        },
-                        content = {
-                            DropDownButton(
-                                modifier = Modifier.fillMaxWidth().padding(horizontal = 1.dp),
-                                onClick = { isFlyoutVisible = !isFlyoutVisible },
-                                content = {
-                                    Text(subtitleLabel)
-                                },
-                            )
-                        },
-                        adaptivePlacement = true,
-                        placement = FlyoutPlacement.Bottom
-                    )
                     Spacer(Modifier.height(16.dp))
+                }
 
-                    AccentButton(onClick = onStartDownload) {
-                        Text(stringResource(Res.string.download))
-                    }
-                    Spacer(Modifier.height(8.dp))
-                    Button(onClick = onStartAudioDownload) {
-                        Text(stringResource(Res.string.download_audio))
-                    }
+                // Subtitles drop-down
+                Text(text = stringResource(Res.string.single_subtitles))
+                Spacer(Modifier.height(8.dp))
+                val subtitleLabel =
+                    if (selectedSubtitles.isEmpty()) stringResource(Res.string.single_no_subtitle)
+                    else selectedSubtitles.joinToString(", ") { languageCodeToDisplayName(it) }
+                MenuFlyoutContainer(
+                    flyout = {
+                        // None option (clear all)
+                        MenuFlyoutItem(
+                            text = { Text(stringResource(Res.string.single_no_subtitle)) },
+                            onClick = {
+                                onClearSubtitles()
+                                isFlyoutVisible = false
+                            },
+                        )
+                        // Languages (toggle selection) - sorted alphabetically by localized display name
+                        val sortedLanguages = availableSubtitleLanguages
+                            .sortedBy { languageCodeToDisplayName(it).lowercase(Locale.getDefault()) }
+                        sortedLanguages.forEach { lang ->
+                            val checked = selectedSubtitles.contains(lang)
+                            val displayName = languageCodeToDisplayName(lang)
+                            val label = (if (checked) "✓ " else "") + displayName
+                            MenuFlyoutItem(
+                                text = { Text(label) },
+                                onClick = {
+                                    onToggleSubtitle(lang)
+                                    isFlyoutVisible = false
+                                }
+                            )
+                        }
+                    },
+                    content = {
+                        DropDownButton(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 1.dp),
+                            onClick = { isFlyoutVisible = !isFlyoutVisible },
+                            content = {
+                                Text(subtitleLabel)
+                            },
+                        )
+                    },
+                    adaptivePlacement = true,
+                    placement = FlyoutPlacement.Bottom
+                )
+                Spacer(Modifier.height(16.dp))
+
+                AccentButton(onClick = onStartDownload) {
+                    Text(stringResource(Res.string.download))
+                }
+                Spacer(Modifier.height(8.dp))
+                Button(onClick = onStartAudioDownload) {
+                    Text(stringResource(Res.string.download_audio))
                 }
             }
-            VerticalScrollbar(
-                adapter = rememberScrollbarAdapter(listState),
-                modifier = Modifier.align(Alignment.CenterEnd)
-            )
         }
-
-
+        VerticalScrollbar(
+            adapter = rememberScrollbarAdapter(listState),
+            modifier = Modifier.fillMaxHeight().padding(top = 2.dp, start = 8.dp)
+        )
     }
 }
 
