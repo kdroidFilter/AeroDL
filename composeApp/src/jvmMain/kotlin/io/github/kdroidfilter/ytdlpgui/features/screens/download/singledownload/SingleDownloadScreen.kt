@@ -148,7 +148,7 @@ private fun SingleVideoDownloadView(
                 Spacer(Modifier.height(8.dp))
             }
             item {
-                ThumbnailWithDuration(
+                VideoPlayer(
                     thumbnailUrl = videoInfo?.thumbnail,
                     duration = videoInfo?.duration,
                     videoPlayerState = videoPlayerState,
@@ -299,7 +299,7 @@ private fun languageCodeToDisplayName(langCode: String, targetLocale: Locale = L
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-private fun ThumbnailWithDuration(
+private fun VideoPlayer(
     thumbnailUrl: String?,
     duration: Duration?,
     videoPlayerState: VideoPlayerState,
@@ -315,7 +315,7 @@ private fun ThumbnailWithDuration(
     ) {
 
         Box(contentAlignment = Alignment.Center) {
-            if (!videoPlayerState.isPlaying) {
+            if (!videoPlayerState.hasMedia) {
                 AsyncImage(
                     model = thumbnailUrl,
                     contentDescription = stringResource(Res.string.thumbnail_content_desc),
@@ -359,12 +359,22 @@ private fun ThumbnailWithDuration(
                             ProgressRing(modifier = Modifier.size(48.dp))
                         }
                         if (isHovered) {
-                            IconButton({videoPlayerState.pause()}) {
-                                Icon(
-                                    imageVector = Icons.Default.Pause,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(48.dp)
-                                )
+                            if (!videoPlayerState.isPlaying) {
+                                IconButton({ videoPlayerState.play() }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Play,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(48.dp)
+                                    )
+                                }
+                            } else {
+                                IconButton({ videoPlayerState.pause() }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Pause,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(48.dp)
+                                    )
+                                }
                             }
                         }
                     }
