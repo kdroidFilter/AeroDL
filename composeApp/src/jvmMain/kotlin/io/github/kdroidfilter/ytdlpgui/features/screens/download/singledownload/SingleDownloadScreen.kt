@@ -1,12 +1,6 @@
 package io.github.kdroidfilter.ytdlpgui.features.screens.download.singledownload
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -31,7 +25,6 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -268,6 +261,7 @@ private fun SingleVideoDownloadView(
                 ) {
 
                     AccentButton(onClick = if (selectedFormatIndex == 0) onStartDownload else onStartAudioDownload) {
+                        Icon(Icons.Default.ArrowDownload, null)
                         Text(stringResource(Res.string.download))
                     }
 
@@ -348,13 +342,18 @@ private fun VideoDescription(videoInfo: VideoInfo?) {
 
     if (videoInfo?.description?.isNotEmpty() == true) {
         var expanded by remember { mutableStateOf(false) }
+        var hasOverflow by remember(videoInfo.description) { mutableStateOf(false) }
         val degrees by animateFloatAsState(if (expanded) -90f else 90f)
 
         Column {
             Row(
                 modifier = Modifier
                     .clip(FluentTheme.shapes.control)
-                    .clickable(indication = null, interactionSource = null) { expanded = !expanded }
+                    .clickable(
+                        enabled = hasOverflow,
+                        indication = null,
+                        interactionSource = null
+                    ) { expanded = !expanded }
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -368,29 +367,27 @@ private fun VideoDescription(videoInfo: VideoInfo?) {
                     )
                     Text(stringResource(Res.string.single_description), style = FluentTheme.typography.body)
                 }
-                Icon(
-                    if (isRtl) Icons.Default.ChevronLeft else Icons.Default.ChevronRight,
-                    contentDescription = null,
-                    modifier = Modifier.rotate(degrees),
-                )
-            }
-
-            AnimatedVisibility(
-                visible = expanded,
-                enter = expandVertically(
-                    spring(
-                        stiffness = Spring.StiffnessMediumLow,
-                        visibilityThreshold = IntSize.VisibilityThreshold
-                    )
-                ),
-                exit = shrinkVertically()
-            ) {
-                Box(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-                    Text(
-                        videoInfo.description.orEmpty(),
-                        style = FluentTheme.typography.body
+                if (hasOverflow) {
+                    Icon(
+                        if (isRtl) Icons.Default.ChevronLeft else Icons.Default.ChevronRight,
+                        contentDescription = null,
+                        modifier = Modifier.rotate(degrees),
                     )
                 }
+            }
+
+            Box(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                Text(
+                    text = videoInfo.description.orEmpty(),
+                    style = FluentTheme.typography.body,
+                    maxLines = if (expanded) Int.MAX_VALUE else 3,
+                    overflow = TextOverflow.Ellipsis,
+                    onTextLayout = { textLayoutResult ->
+                        if (!expanded && textLayoutResult.hasVisualOverflow) {
+                            hasOverflow = true
+                        }
+                    }
+                )
             }
             Box(Modifier.fillMaxWidth().height(1.dp))
         }

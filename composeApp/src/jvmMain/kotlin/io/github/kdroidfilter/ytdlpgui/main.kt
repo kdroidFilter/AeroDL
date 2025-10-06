@@ -63,10 +63,12 @@ import ytdlpgui.composeapp.generated.resources.settings_auto_launch_title
 import ytdlpgui.composeapp.generated.resources.settings_clipboard_monitoring_title
 import ytdlpgui.composeapp.generated.resources.app_version_label
 import java.io.File
+import java.util.Locale
 
 @OptIn(ExperimentalTrayAppApi::class, ExperimentalFluentApi::class)
 fun main() = application {
 //    clearJavaTempDir()
+//    Locale.setDefault(Locale.ENGLISH)
     KoinApplication(application = {
         modules(appModule)
     }) {
