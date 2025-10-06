@@ -1,5 +1,13 @@
 package io.github.kdroidfilter.ytdlpgui.features.screens.download.singledownload
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.VisibilityThreshold
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -19,14 +27,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.input.pointer.onPointerEvent
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
@@ -43,9 +56,13 @@ import io.github.composefluent.component.FlyoutPlacement
 import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.*
 import io.github.composefluent.icons.Icons
+import io.github.composefluent.icons.regular.ChevronDown
+import io.github.composefluent.icons.regular.ChevronLeft
+import io.github.composefluent.icons.regular.ChevronRight
 import io.github.composefluent.icons.regular.ErrorCircle
 import io.github.composefluent.icons.regular.Pause
 import io.github.composefluent.icons.regular.Play
+import io.github.composefluent.icons.regular.Textbox
 import io.github.kdroidfilter.composemediaplayer.VideoPlayerState
 import io.github.kdroidfilter.composemediaplayer.VideoPlayerSurface
 import io.github.kdroidfilter.composemediaplayer.rememberVideoPlayerState
@@ -74,18 +91,18 @@ fun SingleDownloadView(
     if (state.isLoading) Loader()
     else if (state.errorMessage != null) ErrorBox(state.errorMessage)
     else SingleVideoDownloadView(
-            videoPlayerState = videoPlayerState,
-            videoInfo = state.videoInfo,
-            availablePresets = state.availablePresets,
-            selectedPreset = state.selectedPreset,
-            availableSubtitleLanguages = state.availableSubtitleLanguages,
-            selectedSubtitles = state.selectedSubtitles,
-            onSelectPreset = { onEvent(SingleDownloadEvents.SelectPreset(it)) },
-            onToggleSubtitle = { onEvent(SingleDownloadEvents.ToggleSubtitle(it)) },
-            onClearSubtitles = { onEvent(SingleDownloadEvents.ClearSubtitles) },
-            onStartDownload = { onEvent(SingleDownloadEvents.StartDownload) },
-            onStartAudioDownload = { onEvent(SingleDownloadEvents.StartAudioDownload) }
-        )
+        videoPlayerState = videoPlayerState,
+        videoInfo = state.videoInfo,
+        availablePresets = state.availablePresets,
+        selectedPreset = state.selectedPreset,
+        availableSubtitleLanguages = state.availableSubtitleLanguages,
+        selectedSubtitles = state.selectedSubtitles,
+        onSelectPreset = { onEvent(SingleDownloadEvents.SelectPreset(it)) },
+        onToggleSubtitle = { onEvent(SingleDownloadEvents.ToggleSubtitle(it)) },
+        onClearSubtitles = { onEvent(SingleDownloadEvents.ClearSubtitles) },
+        onStartDownload = { onEvent(SingleDownloadEvents.StartDownload) },
+        onStartAudioDownload = { onEvent(SingleDownloadEvents.StartAudioDownload) }
+    )
 
 }
 
@@ -98,7 +115,11 @@ private fun Loader() {
 
 @Composable
 private fun ErrorBox(message: String) {
-    Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Icon(
             imageVector = Icons.Regular.ErrorCircle,
             contentDescription = "ErrorCircle",
@@ -106,7 +127,11 @@ private fun ErrorBox(message: String) {
             tint = FluentTheme.colors.system.critical
         )
         Spacer(Modifier.size(16.dp))
-        Text(text = stringResource(Res.string.error_fetch_video_info, message), color = FluentTheme.colors.system.critical, textAlign = TextAlign.Center)
+        Text(
+            text = stringResource(Res.string.error_fetch_video_info, message),
+            color = FluentTheme.colors.system.critical,
+            textAlign = TextAlign.Center
+        )
     }
 }
 
@@ -128,6 +153,7 @@ private fun SingleVideoDownloadView(
     onStartDownload: () -> Unit,
     onStartAudioDownload: () -> Unit
 ) {
+    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     Row(
         modifier = Modifier
             .fillMaxSize()
@@ -154,17 +180,55 @@ private fun SingleVideoDownloadView(
                     videoPlayerState = videoPlayerState,
                     videoInfo = videoInfo
                 )
-                Spacer(Modifier.height(8.dp))
-            }
-            item {
-                Text(
-                    text = videoInfo?.description.orEmpty(),
-                    fontSize = 14.sp,
-                    maxLines = 8,
-                    overflow = TextOverflow.Ellipsis
-                )
                 Spacer(Modifier.height(16.dp))
             }
+
+            if (videoInfo?.description?.isNotEmpty() == true) {
+                item {
+                    var expanded by remember { mutableStateOf(false) }
+                    val degrees by animateFloatAsState(if (expanded) -90f else 90f)
+                    Column {
+                        Row(
+                            modifier = Modifier.clip(FluentTheme.shapes.control)
+                                .clickable(indication = null, interactionSource = null) { expanded = expanded.not() }
+                                .fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+
+                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Regular.Textbox,
+                                    contentDescription = "Textbox"
+                                )
+                                Text("Description", style = FluentTheme.typography.body)
+                            }
+                            Icon(
+                                if (isRtl) Icons.Default.ChevronLeft else Icons.Default.ChevronRight,
+                                contentDescription = null,
+                                modifier = Modifier.rotate(degrees),
+                            )
+                        }
+                        AnimatedVisibility(
+                            visible = expanded,
+                            enter = expandVertically(
+                                spring(
+                                    stiffness = Spring.StiffnessMediumLow,
+                                    visibilityThreshold = IntSize.VisibilityThreshold
+                                )
+                            ),
+                            exit = shrinkVertically()
+                        ) {
+                            Box(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                                Text(
+                                    videoInfo.description.orEmpty(),
+                                    style = FluentTheme.typography.body
+                                )
+                            }
+                        }
+                        Box(Modifier.fillMaxWidth().height(1.dp))
+                    }
+                    Spacer(Modifier.height(16.dp))
+                }
+            }
+
             item {
                 if (availablePresets.isNotEmpty()) {
                     Text(text = stringResource(Res.string.single_formats))
@@ -364,7 +428,8 @@ private fun VideoPlayer(
                                     Icon(
                                         imageVector = Icons.Default.Play,
                                         contentDescription = null,
-                                        modifier = Modifier.size(48.dp)
+                                        modifier = Modifier.size(48.dp),
+                                        tint = Color.White
                                     )
                                 }
                             } else {
@@ -372,7 +437,8 @@ private fun VideoPlayer(
                                     Icon(
                                         imageVector = Icons.Default.Pause,
                                         contentDescription = null,
-                                        modifier = Modifier.size(48.dp)
+                                        modifier = Modifier.size(48.dp),
+                                        tint = Color.White
                                     )
                                 }
                             }
