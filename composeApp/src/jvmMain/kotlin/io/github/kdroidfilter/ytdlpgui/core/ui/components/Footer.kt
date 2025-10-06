@@ -17,6 +17,10 @@ import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.filled.Heart
 import io.github.kdroidfilter.ytdlpgui.core.ui.icons.Github
 import io.github.kdroidfilter.ytdlpgui.core.util.openUrlInBrowser
+import org.jetbrains.compose.resources.stringResource
+import ytdlpgui.composeapp.generated.resources.Res
+import ytdlpgui.composeapp.generated.resources.tooltip_github
+import ytdlpgui.composeapp.generated.resources.tooltip_support_kofi
 
 @OptIn(ExperimentalFluentApi::class, ExperimentalFoundationApi::class)
 @Composable
@@ -28,7 +32,7 @@ fun Footer(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
-        TooltipBox(tooltip = { Text("Open source project on GitHub") }) {
+        TooltipBox(tooltip = { Text(stringResource(Res.string.tooltip_github)) }) {
             SubtleButton(
                 iconOnly = true,
                 onClick = { openUrlInBrowser("https://github.com/kdroidFilter/ytdlpgui") },
@@ -38,7 +42,7 @@ fun Footer(
             }
         }
         Spacer(Modifier.width(8.dp))
-        TooltipBox(tooltip = { Text("Support me on Ko-fi !") }) {
+        TooltipBox(tooltip = { Text(stringResource(Res.string.tooltip_support_kofi)) }) {
             SubtleButton(
                 iconOnly = true,
                 onClick = { openUrlInBrowser("https://ko-fi.com/lomityaesh") },

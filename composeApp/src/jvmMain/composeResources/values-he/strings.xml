@@ -9,6 +9,8 @@
     <!-- חלוניות מידע (Tooltips) -->
     <string name="tooltip_back">חזור</string>
     <string name="tooltip_home">עבור לדף הבית</string>
+    <string name="tooltip_github">פרויקט קוד פתוח ב-GitHub</string>
+    <string name="tooltip_support_kofi">תמכו בי ב-Ko-fi!</string>
 
     <!-- Home screen -->
     <string name="app_name">אירודיאל</string>

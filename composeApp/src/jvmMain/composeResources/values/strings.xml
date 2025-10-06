@@ -9,6 +9,8 @@
     <!-- Tooltips -->
     <string name="tooltip_back">Go back</string>
     <string name="tooltip_home">Go to Home</string>
+    <string name="tooltip_github">Open source project on GitHub</string>
+    <string name="tooltip_support_kofi">Support me on Ko-fi!</string>
 
     <!-- Home screen -->
     <string name="app_name">AeroDL</string>

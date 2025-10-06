@@ -10,6 +10,8 @@
     <!-- Info-bulles -->
     <string name="tooltip_back">Revenir en arrière</string>
     <string name="tooltip_home">Aller à l'accueil</string>
+    <string name="tooltip_github">Projet open source sur GitHub</string>
+    <string name="tooltip_support_kofi">Soutenez-moi sur Ko-fi !</string>
 
     <!-- Écran d'accueil -->
     <string name="app_name">AeroDL</string>
