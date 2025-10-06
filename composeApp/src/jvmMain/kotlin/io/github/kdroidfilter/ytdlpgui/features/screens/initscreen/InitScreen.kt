@@ -44,25 +44,30 @@ fun InitScreen() {
 @Composable
 fun InitView(state: InitState) {
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
+        modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        val purcent = if (state.downloadingYtDlp && state.downloadYtDlpProgress != null) state.downloadYtDlpProgress
+        val percent = if (state.downloadingYtDlp && state.downloadYtDlpProgress != null) state.downloadYtDlpProgress
         else if (state.downloadingFFmpeg && state.downloadFfmpegProgress != null) state.downloadFfmpegProgress
         else 0.0
 
-        val percentText = "${(purcent.toFloat()).roundToInt()}%"
+        val percentText = if (percent != 0.0) "${(percent.toFloat()).roundToInt()}%" else ""
 
-        Icon(AeroDlLogoOnly, null, modifier = Modifier.height(100.dp))
+        if (percent != 0.0) {
+            Icon(AeroDlLogoOnly, null, modifier = Modifier.height(100.dp))
 
-        Spacer(Modifier.size(32.dp))
+            Spacer(Modifier.size(32.dp))
+        }
 
         if (state.errorMessage == null) {
             Box(
                 modifier = Modifier.size(33.dp)
             ) {
-                ProgressRing(progress = purcent.toFloat() / 100, Modifier.fillMaxSize())
+                if (percent != 0.0) ProgressRing(
+                    progress = percent.toFloat() / 100,
+                    Modifier.fillMaxSize()
+                ) else ProgressRing(Modifier.fillMaxSize())
 
                 Text(
                     percentText,
