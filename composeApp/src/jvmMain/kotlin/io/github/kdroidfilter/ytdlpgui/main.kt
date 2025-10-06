@@ -40,6 +40,7 @@ import io.github.kdroidfilter.platformtools.OperatingSystem
 import io.github.kdroidfilter.platformtools.darkmodedetector.isSystemInDarkMode
 import io.github.kdroidfilter.platformtools.getAppVersion
 import io.github.kdroidfilter.platformtools.getOperatingSystem
+import io.github.kdroidfilter.ytdlpgui.core.business.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.core.ui.icons.AeroDlLogoOnly
 import io.github.kdroidfilter.ytdlpgui.core.ui.icons.Exit_to_app
 import io.github.kdroidfilter.ytdlpgui.core.ui.icons.Login
@@ -101,9 +102,13 @@ fun main() = application {
             )
             if (!isSingleInstance) exitApplication()
 
+            val downloadManager = koinInject<DownloadManager>()
+            val isDownloading by downloadManager.isDownloading.collectAsState()
+
             val settingsVm = koinViewModel<SettingsViewModel>()
             val autoStartEnabled by settingsVm.autoLaunchEnabled.collectAsState()
             val clipboardEnabled by settingsVm.clipboardMonitoring.collectAsState()
+
 
             TrayApp(
                 state = trayAppState,
@@ -111,11 +116,13 @@ fun main() = application {
                     Icon(
                         AeroDlLogoOnly,
                         null,
-                        modifier = Modifier.padding( if (getOperatingSystem() != OperatingSystem.WINDOWS) 12.dp else 4.dp).fillMaxSize(),
-                        tint = if (isMenuBarInDarkMode()) Color.White else Color.Black
+                        modifier = Modifier.padding( if (getOperatingSystem() != OperatingSystem.WINDOWS) 12.dp else 2.dp).fillMaxSize(),
+                        tint = if (isDownloading) FluentTheme.colors.system.success else {
+                            if (isMenuBarInDarkMode()) Color.White else Color.Black
+                        }
                     )
                 },
-                tooltip = runBlocking { getString(Res.string.app_name) },
+                tooltip =  runBlocking { getString(Res.string.app_name) } + if (isDownloading) " - Downloading..." else "",
                 menu = {
                     if (!trayAppState.isVisible.value) Item(
                         label = runBlocking { getString(Res.string.menu_show_window) },

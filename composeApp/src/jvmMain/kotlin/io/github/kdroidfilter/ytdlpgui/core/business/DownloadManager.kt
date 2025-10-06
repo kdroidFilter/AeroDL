@@ -23,6 +23,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import ytdlpgui.composeapp.generated.resources.Res
@@ -69,6 +72,11 @@ class DownloadManager(
 
     private val _items = MutableStateFlow<List<DownloadItem>>(emptyList())
     val items: StateFlow<List<DownloadItem>> = _items.asStateFlow()
+
+    // Reactive global state: true if at least one download is currently running
+    val isDownloading: StateFlow<Boolean> = _items
+        .map { list -> list.any { it.status == DownloadItem.Status.Running } }
+        .stateIn(scope, SharingStarted.Eagerly, false)
 
     private val pendingQueue: ArrayDeque<String> = ArrayDeque()
 
