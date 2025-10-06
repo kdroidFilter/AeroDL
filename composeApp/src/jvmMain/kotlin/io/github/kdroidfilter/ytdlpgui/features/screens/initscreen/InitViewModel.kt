@@ -86,6 +86,7 @@ class InitViewModel(
                         _state.value = _state.value.copy(
                             checkingFFmpeg = false,
                             downloadingFFmpeg = true,
+                            downloadingYtDlp = false,
                             downloadFfmpegProgress = (event.percent ?: 0.0).toFloat()
                         )
                     }

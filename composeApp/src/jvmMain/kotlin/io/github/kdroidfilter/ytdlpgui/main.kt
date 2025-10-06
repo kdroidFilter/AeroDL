@@ -117,10 +117,8 @@ fun main() = application {
                 menu = {
                     if (!trayAppState.isVisible.value) Item(
                         label = runBlocking { getString(Res.string.menu_show_window) },
-                        icon = Icons.Default.Eye
                     ) { trayAppState.show() } else Item(
                         label = runBlocking { getString(Res.string.menu_hide_window) },
-                        icon = Icons.Default.EyeOff
                     ) { trayAppState.hide() }
                     Divider()
                     CheckableItem(
@@ -129,7 +127,6 @@ fun main() = application {
                         onCheckedChange = { checked ->
                             settingsVm.onEvents(SettingsEvents.SetAutoLaunchEnabled(checked))
                         },
-                        icon = Login
                     )
                     CheckableItem(
                         label = runBlocking { getString(Res.string.settings_clipboard_monitoring_title) },
@@ -137,18 +134,15 @@ fun main() = application {
                         onCheckedChange = { checked ->
                             settingsVm.onEvents(SettingsEvents.SetClipboardMonitoring(checked))
                         },
-                        icon = Icons.Regular.Clipboard
                     )
                     Divider()
                     Item(
                         label = runBlocking { getString(Res.string.quit) },
                         onClick = { exitApplication() },
-                        icon = Exit_to_app
                     )
                     Item(
                         label = runBlocking { getString(Res.string.app_version_label, getAppVersion()) },
                         isEnabled = false,
-                        icon = Icons.Default.Info
                     )
                 }
             ) {

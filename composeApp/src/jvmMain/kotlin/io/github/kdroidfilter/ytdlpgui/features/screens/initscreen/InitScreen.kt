@@ -1,21 +1,27 @@
 package io.github.kdroidfilter.ytdlpgui.features.screens.initscreen
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import io.github.composefluent.FluentTheme
+import io.github.composefluent.component.Icon
 import io.github.composefluent.component.ProgressRing
 import io.github.composefluent.component.Text
+import io.github.kdroidfilter.ytdlpgui.core.ui.icons.AeroDlLogoOnly
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import ytdlpgui.composeapp.generated.resources.Res
@@ -36,15 +42,37 @@ fun InitScreen() {
 }
 
 @Composable
-fun InitView(state: InitState){
+fun InitView(state: InitState) {
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        val purcent = if (state.downloadingYtDlp && state.downloadYtDlpProgress != null) state.downloadYtDlpProgress
+        else if (state.downloadingFFmpeg && state.downloadFfmpegProgress != null) state.downloadFfmpegProgress
+        else 0.0
+
+        val percentText = "${(purcent.toFloat()).roundToInt()}%"
+
+        Icon(AeroDlLogoOnly, null, modifier = Modifier.height(100.dp))
+
+        Spacer(Modifier.size(32.dp))
 
         if (state.errorMessage == null) {
-            ProgressRing(Modifier.size(33.dp))
+            Box(
+                modifier = Modifier.size(33.dp)
+            ) {
+                ProgressRing(progress = purcent.toFloat() / 100, Modifier.fillMaxSize())
+
+                Text(
+                    percentText,
+                    style = FluentTheme.typography.caption,
+                    fontSize = 12.sp,
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                    modifier = Modifier.offset(x = 2.dp, y = 8.dp)
+                )
+            }
             Spacer(Modifier.size(16.dp))
         }
 
@@ -64,24 +92,11 @@ fun InitView(state: InitState){
                         Text(text = stringResource(Res.string.error_occurred))
                         Spacer(Modifier.width(8.dp))
                         Text(
-                            text = state.errorMessage,
-                            color = FluentTheme.colors.system.critical
+                            text = state.errorMessage, color = FluentTheme.colors.system.critical
                         )
                     }
                 }
             }
-        }
-        Spacer(Modifier.size(8.dp))
-
-        if (state.downloadingYtDlp && state.downloadYtDlpProgress != null) {
-            Text(text = "${(state.downloadYtDlpProgress).roundToInt()}%")
-        } else {
-            Spacer(Modifier.height(FluentTheme.typography.caption.fontSize.value.dp))
-        }
-        if (state.downloadingFFmpeg && state.downloadFfmpegProgress != null) {
-            Text(text = "${(state.downloadFfmpegProgress).roundToInt()}%")
-        } else {
-            Spacer(Modifier.height(FluentTheme.typography.caption.fontSize.value.dp))
         }
     }
 }
