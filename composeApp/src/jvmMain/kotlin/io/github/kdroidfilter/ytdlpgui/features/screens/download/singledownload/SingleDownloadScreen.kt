@@ -51,20 +51,29 @@ import io.github.composefluent.component.ProgressRing
 import io.github.composefluent.component.Text
 import io.github.composefluent.component.AccentButton
 import io.github.composefluent.component.Button
-import io.github.composefluent.component.DropDownButton
 import io.github.composefluent.component.MenuFlyoutContainer
 import io.github.composefluent.component.MenuFlyoutItem
+import io.github.composefluent.component.MenuFlyoutSeparator
 import io.github.composefluent.component.FlyoutPlacement
+import io.github.composefluent.component.ListItemSelectionType
+import io.github.composefluent.component.ListItemDefaults
+import io.github.composefluent.component.SegmentedButton
+import io.github.composefluent.component.SegmentedControl
+import io.github.composefluent.component.SegmentedItemPosition
 import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.*
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.ChevronDown
 import io.github.composefluent.icons.regular.ChevronLeft
 import io.github.composefluent.icons.regular.ChevronRight
+import io.github.composefluent.icons.regular.Circle
 import io.github.composefluent.icons.regular.ErrorCircle
+import io.github.composefluent.icons.regular.FilmstripPlay
+import io.github.composefluent.icons.regular.MusicNote2
 import io.github.composefluent.icons.regular.Pause
 import io.github.composefluent.icons.regular.Play
 import io.github.composefluent.icons.regular.Textbox
+import io.github.composefluent.icons.regular.Video
 import io.github.kdroidfilter.composemediaplayer.VideoPlayerState
 import io.github.kdroidfilter.composemediaplayer.VideoPlayerSurface
 import io.github.kdroidfilter.composemediaplayer.rememberVideoPlayerState
@@ -137,10 +146,6 @@ private fun ErrorBox(message: String) {
     }
 }
 
-/**
- * Main video section: preview on the right (as in the screenshot), title +
- * description on the left.
- */
 @Composable
 private fun SingleVideoDownloadView(
     videoPlayerState: VideoPlayerState,
@@ -155,28 +160,21 @@ private fun SingleVideoDownloadView(
     onStartDownload: () -> Unit,
     onStartAudioDownload: () -> Unit
 ) {
-    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    var selectedFormatIndex by remember { mutableStateOf(0) } // 0 = Vidéo, 1 = Audio
+
     Row(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = Modifier.fillMaxSize()
     ) {
         val scrollState = rememberScrollState()
 
         Column(
-            modifier = Modifier.weight(1f)
+            modifier = Modifier
+                .weight(1f)
                 .verticalScroll(scrollState)
                 .fillMaxHeight()
         ) {
-
-            Text(
-                text = videoInfo?.title.orEmpty(),
-                fontSize = 22.sp,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
+            VideoTitle(videoInfo)
             Spacer(Modifier.height(8.dp))
-
 
             VideoPlayer(
                 thumbnailUrl = videoInfo?.thumbnail,
@@ -186,129 +184,121 @@ private fun SingleVideoDownloadView(
             )
             Spacer(Modifier.height(16.dp))
 
+            VideoDescription(videoInfo = videoInfo)
 
-            if (videoInfo?.description?.isNotEmpty() == true) {
-
-                var expanded by remember { mutableStateOf(false) }
-                val degrees by animateFloatAsState(if (expanded) -90f else 90f)
-                Column {
-                    Row(
-                        modifier = Modifier.clip(FluentTheme.shapes.control)
-                            .clickable(indication = null, interactionSource = null) { expanded = expanded.not() }
-                            .fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Regular.Textbox,
-                                contentDescription = "Textbox"
-                            )
-                            Text("Description", style = FluentTheme.typography.body)
-                        }
-                        Icon(
-                            if (isRtl) Icons.Default.ChevronLeft else Icons.Default.ChevronRight,
-                            contentDescription = null,
-                            modifier = Modifier.rotate(degrees),
-                        )
-                    }
-                    AnimatedVisibility(
-                        visible = expanded,
-                        enter = expandVertically(
-                            spring(
-                                stiffness = Spring.StiffnessMediumLow,
-                                visibilityThreshold = IntSize.VisibilityThreshold
-                            )
-                        ),
-                        exit = shrinkVertically()
-                    ) {
-                        Box(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-                            Text(
-                                videoInfo.description.orEmpty(),
-                                style = FluentTheme.typography.body
-                            )
-                        }
-                    }
-                    Box(Modifier.fillMaxWidth().height(1.dp))
-                }
-                Spacer(Modifier.height(16.dp))
-            }
-
-
+            FormatSelector(
+                selectedFormatIndex = selectedFormatIndex,
+                onFormatSelected = { selectedFormatIndex = it }
+            )
+            Spacer(Modifier.height(16.dp))
 
             if (availablePresets.isNotEmpty()) {
-                Text(text = stringResource(Res.string.single_formats))
-                Spacer(Modifier.height(8.dp))
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    items(availablePresets.size) { index ->
-                        val preset = availablePresets[index]
-                        val label = "${preset.height}p"
-                        if (preset == selectedPreset) {
-                            AccentButton(onClick = { onSelectPreset(preset) }) { Text(label) }
-                        } else {
-                            Button(onClick = { onSelectPreset(preset) }) { Text(label) }
+                // Afficher les options vidéo seulement si "Vidéo" est sélectionné
+                if (selectedFormatIndex == 0) {
+                    // Sélecteur de résolution avec SegmentedControl
+                    Text(text = stringResource(Res.string.single_formats))
+                    Spacer(Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        SegmentedControl {
+                            availablePresets.forEachIndexed { index, preset ->
+                                SegmentedButton(
+                                    checked = preset == selectedPreset,
+                                    onCheckedChanged = { onSelectPreset(preset) },
+                                    position = when (index) {
+                                        0 -> SegmentedItemPosition.Start
+                                        availablePresets.lastIndex -> SegmentedItemPosition.End
+                                        else -> SegmentedItemPosition.Center
+                                    },
+                                    text = { Text("${preset.height}p") }
+                                )
+                            }
+                        }
+                    }
+                    Spacer(Modifier.height(16.dp))
+
+                    // Sélecteur de sous-titres avec MenuFlyoutContainer
+                    var resetKey by remember { mutableStateOf(0) }
+                    val sortedLanguages = remember(resetKey, availableSubtitleLanguages) {
+                        availableSubtitleLanguages.sortedBy {
+                            languageCodeToDisplayName(it).lowercase(Locale.getDefault())
+                        }
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = stringResource(Res.string.single_subtitles))
+
+                        MenuFlyoutContainer(
+                            flyout = {
+                                MenuFlyoutItem(
+                                    onClick = {
+                                        onClearSubtitles()
+                                        resetKey += 1
+                                        isFlyoutVisible = false
+                                    },
+                                    text = { Text(stringResource(Res.string.single_no_subtitle)) }
+                                )
+                                MenuFlyoutSeparator()
+                                sortedLanguages.forEach { lang ->
+                                    val isSelected = selectedSubtitles.contains(lang)
+                                    val displayName = languageCodeToDisplayName(lang)
+                                    MenuFlyoutItem(
+                                        selected = isSelected,
+                                        onSelectedChanged = {
+                                            onToggleSubtitle(lang)
+                                        },
+                                        selectionType = ListItemSelectionType.Check,
+                                        colors = ListItemDefaults.defaultListItemColors(),
+                                        text = { Text(displayName) }
+                                    )
+                                }
+                            },
+                            content = {
+                                Button(
+                                    onClick = { isFlyoutVisible = !isFlyoutVisible },
+                                    content = {
+                                        Text(
+                                            if (selectedSubtitles.isEmpty())
+                                                stringResource(Res.string.single_no_subtitle)
+                                            else
+                                                selectedSubtitles.joinToString(", ") { languageCodeToDisplayName(it) }
+                                        )
+                                    }
+                                )
+                            },
+                            adaptivePlacement = true,
+                            placement = FlyoutPlacement.Bottom
+                        )
+                    }
+                    Spacer(Modifier.height(16.dp))
+                }
+
+                // Bouton de téléchargement centré
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    if (selectedFormatIndex == 0) {
+                        AccentButton(onClick = onStartDownload) {
+                            Text(stringResource(Res.string.download))
+                        }
+                    } else {
+                        AccentButton(onClick = onStartAudioDownload) {
+                            Text(stringResource(Res.string.download_audio))
                         }
                     }
                 }
                 Spacer(Modifier.height(16.dp))
-
-
-                // Subtitles drop-down
-                Text(text = stringResource(Res.string.single_subtitles))
-                Spacer(Modifier.height(8.dp))
-                val subtitleLabel =
-                    if (selectedSubtitles.isEmpty()) stringResource(Res.string.single_no_subtitle)
-                    else selectedSubtitles.joinToString(", ") { languageCodeToDisplayName(it) }
-                MenuFlyoutContainer(
-                    flyout = {
-                        // None option (clear all)
-                        MenuFlyoutItem(
-                            text = { Text(stringResource(Res.string.single_no_subtitle)) },
-                            onClick = {
-                                onClearSubtitles()
-                                isFlyoutVisible = false
-                            },
-                        )
-                        // Languages (toggle selection) - sorted alphabetically by localized display name
-                        val sortedLanguages = availableSubtitleLanguages
-                            .sortedBy { languageCodeToDisplayName(it).lowercase(Locale.getDefault()) }
-                        sortedLanguages.forEach { lang ->
-                            val checked = selectedSubtitles.contains(lang)
-                            val displayName = languageCodeToDisplayName(lang)
-                            val label = (if (checked) "✓ " else "") + displayName
-                            MenuFlyoutItem(
-                                text = { Text(label) },
-                                onClick = {
-                                    onToggleSubtitle(lang)
-                                    isFlyoutVisible = false
-                                }
-                            )
-                        }
-                    },
-                    content = {
-                        DropDownButton(
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 1.dp),
-                            onClick = { isFlyoutVisible = !isFlyoutVisible },
-                            content = {
-                                Text(subtitleLabel)
-                            },
-                        )
-                    },
-                    adaptivePlacement = true,
-                    placement = FlyoutPlacement.Bottom
-                )
-                Spacer(Modifier.height(16.dp))
-
-                AccentButton(onClick = onStartDownload) {
-                    Text(stringResource(Res.string.download))
-                }
-                Spacer(Modifier.height(8.dp))
-                Button(onClick = onStartAudioDownload) {
-                    Text(stringResource(Res.string.download_audio))
-                }
             }
         }
+
         VerticalScrollbar(
             adapter = rememberScrollbarAdapter(scrollState),
             modifier = Modifier.fillMaxHeight().padding(top = 2.dp, start = 8.dp)
@@ -316,7 +306,119 @@ private fun SingleVideoDownloadView(
     }
 }
 
-/** Small pill for the duration text. */
+@Composable
+private fun FormatSelector(
+    selectedFormatIndex: Int,
+    onFormatSelected: (Int) -> Unit
+) {
+    val options = listOf(
+        "Vidéo" to Icons.Regular.Video,
+        "Audio" to Icons.Regular.MusicNote2
+    )
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Regular.FilmstripPlay,
+                contentDescription = "FilmstripPlay"
+            )
+            Text("Choose format to download:")
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            SegmentedControl {
+                options.forEachIndexed { index, (label, icon) ->
+                    SegmentedButton(
+                        checked = index == selectedFormatIndex,
+                        onCheckedChanged = { onFormatSelected(index) },
+                        position = when (index) {
+                            0 -> SegmentedItemPosition.Start
+                            options.lastIndex -> SegmentedItemPosition.End
+                            else -> SegmentedItemPosition.Center
+                        },
+                        text = { Text(label) },
+                        icon = { Icon(icon, contentDescription = label) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun VideoTitle(videoInfo: VideoInfo?) {
+    Text(
+        text = videoInfo?.title.orEmpty(),
+        fontSize = 22.sp,
+        fontWeight = FontWeight.SemiBold,
+        maxLines = 2,
+        overflow = TextOverflow.Ellipsis
+    )
+}
+
+@Composable
+private fun VideoDescription(videoInfo: VideoInfo?) {
+    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+
+    if (videoInfo?.description?.isNotEmpty() == true) {
+        var expanded by remember { mutableStateOf(false) }
+        val degrees by animateFloatAsState(if (expanded) -90f else 90f)
+
+        Column {
+            Row(
+                modifier = Modifier
+                    .clip(FluentTheme.shapes.control)
+                    .clickable(indication = null, interactionSource = null) { expanded = !expanded }
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Regular.Textbox,
+                        contentDescription = "Textbox"
+                    )
+                    Text("Description", style = FluentTheme.typography.body)
+                }
+                Icon(
+                    if (isRtl) Icons.Default.ChevronLeft else Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    modifier = Modifier.rotate(degrees),
+                )
+            }
+
+            AnimatedVisibility(
+                visible = expanded,
+                enter = expandVertically(
+                    spring(
+                        stiffness = Spring.StiffnessMediumLow,
+                        visibilityThreshold = IntSize.VisibilityThreshold
+                    )
+                ),
+                exit = shrinkVertically()
+            ) {
+                Box(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                    Text(
+                        videoInfo.description.orEmpty(),
+                        style = FluentTheme.typography.body
+                    )
+                }
+            }
+            Box(Modifier.fillMaxWidth().height(1.dp))
+        }
+        Spacer(Modifier.height(16.dp))
+    }
+}
+
 @Composable
 private fun DurationChip(text: String, modifier: Modifier = Modifier) {
     if (text.isEmpty()) return
@@ -330,7 +432,6 @@ private fun DurationChip(text: String, modifier: Modifier = Modifier) {
     }
 }
 
-/** Format java.time.Duration? into H:MM:SS (or MM:SS). */
 private fun formatDuration(d: Duration?): String {
     if (d == null) return ""
     val totalSec = d.seconds.coerceAtLeast(0)
@@ -340,21 +441,15 @@ private fun formatDuration(d: Duration?): String {
     return if (h > 0) "%d:%02d:%02d".format(h, m, s) else "%d:%02d".format(m, s)
 }
 
-/**
- * Convert a BCP-47-like language code (e.g. "en", "en-GB", legacy "iw")
- * into a localized display name (e.g. "anglais" in French UI, "English" in English UI).
- * Falls back to the original code if it can't be resolved.
- */
 private fun languageCodeToDisplayName(langCode: String, targetLocale: Locale = Locale.getDefault()): String {
     val deprecated = mapOf(
-        "iw" to "he", // Hebrew old code
-        "in" to "id", // Indonesian old code
-        "ji" to "yi"  // Yiddish old code
+        "iw" to "he",
+        "in" to "id",
+        "ji" to "yi"
     )
     val trimmed = langCode.trim()
     if (trimmed.isEmpty()) return trimmed
 
-    // Normalize underscores to hyphens and map deprecated primary subtags
     val parts = trimmed.replace('_', '-').split('-', limit = 3).toMutableList()
     if (parts.isNotEmpty()) {
         val primary = parts[0].lowercase()
@@ -366,7 +461,6 @@ private fun languageCodeToDisplayName(langCode: String, targetLocale: Locale = L
     val display = locale.getDisplayLanguage(targetLocale).ifEmpty { trimmed }
     return display
 }
-
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -384,7 +478,6 @@ private fun VideoPlayer(
             .onPointerEvent(PointerEventType.Enter) { isHovered = true }
             .onPointerEvent(PointerEventType.Exit) { isHovered = false }
     ) {
-
         Box(contentAlignment = Alignment.Center) {
             if (!videoPlayerState.hasMedia) {
                 AsyncImage(
@@ -401,9 +494,9 @@ private fun VideoPlayer(
                             if (videoPlayerState.hasMedia) videoPlayerState.play()
                             else videoInfo?.directUrl?.let { videoPlayerState.openUri(it) }
                         }
-                    ))
+                    )
+                )
 
-                // Subtle bottom gradient to improve contrast with the duration badge
                 Box(
                     modifier = Modifier
                         .matchParentSize()
@@ -416,7 +509,6 @@ private fun VideoPlayer(
                         )
                 )
 
-                // Duration badge (bottom-right), similar to YouTube style
                 DurationChip(
                     text = formatDuration(duration),
                     modifier = Modifier
