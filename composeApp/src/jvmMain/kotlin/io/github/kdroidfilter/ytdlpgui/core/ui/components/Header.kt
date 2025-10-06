@@ -146,7 +146,7 @@ fun MainNavigationHeader(
                         MenuFlyoutItem(
                             onClick = {
                                 isFlyoutVisible = false
-                                scope.launch { navigator.navigate(Destination.SecondaryNavigation.Settings) }
+                                scope.launch { navigator.navigate(Destination.SecondaryNavigation.About) }
                             },
                             icon = { Icon(Icons.Default.Info, contentDescription = null) },
                             text = { Text(stringResource(Res.string.about)) }
@@ -171,10 +171,14 @@ fun SecondaryNavigationHeader(
     modifier: Modifier = Modifier,
 ) {
     val previousDestination by navigator.previousDestination.collectAsState()
+    val currentDestination by navigator.currentDestination.collectAsState()
     val scope = rememberCoroutineScope()
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
 
-    Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = modifier.fillMaxWidth().padding(top = 4.dp, start = 4.dp, end = 4.dp)) {
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = modifier.fillMaxWidth().padding(top = 4.dp, start = 4.dp, end = 4.dp)
+    ) {
         TooltipBox(
             tooltip = { Text(stringResource(Res.string.tooltip_back)) }
         ) {
@@ -185,6 +189,25 @@ fun SecondaryNavigationHeader(
                 },
                 modifier = Modifier.padding(top = 12.dp, start = 4.dp)
             ) { Icon(if (isRtl) Icons.Default.ArrowRight else Icons.Default.ArrowLeft, "Back") }
+        }
+        when (currentDestination) {
+            Destination.SecondaryNavigation.Settings -> {
+                Text(
+                    stringResource(Res.string.settings),
+                    style = FluentTheme.typography.subtitle,
+                    modifier = Modifier.padding(top = 12.dp)
+                )
+            }
+
+            Destination.SecondaryNavigation.About -> {
+                Text(
+                    stringResource(Res.string.about),
+                    style = FluentTheme.typography.subtitle,
+                    modifier = Modifier.padding(top = 12.dp)
+                )
+            }
+
+            else -> {}
         }
         if (previousDestination !is Destination.MainNavigation.Home) {
             Spacer(Modifier.width(4.dp))
@@ -199,6 +222,8 @@ fun SecondaryNavigationHeader(
                     modifier = Modifier.padding(top = 12.dp, end = 4.dp)
                 ) { Icon(Icons.Default.Home, "Home") }
             }
+        } else {
+            Spacer(Modifier.width(16.dp).padding(top = 12.dp))
         }
     }
 }
