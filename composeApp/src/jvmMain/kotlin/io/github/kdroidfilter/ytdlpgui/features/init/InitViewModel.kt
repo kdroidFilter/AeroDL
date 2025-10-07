@@ -122,7 +122,7 @@ class InitViewModel(
                             if (onboardingCompleted || alreadyConfigured) {
                                 navigator.navigateAndClearBackStack(Destination.MainNavigation.Home)
                             } else {
-                                navigator.navigateAndClearBackStack(Destination.Onboarding.Graph)
+                                navigator.navigateAndClearBackStack(Destination.Onboarding.Welcome)
                             }
                         }
                     }

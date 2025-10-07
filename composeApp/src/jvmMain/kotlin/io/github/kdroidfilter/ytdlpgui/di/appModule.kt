@@ -20,6 +20,7 @@ import io.github.kdroidfilter.ytdlpgui.features.init.InitViewModel
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.ClipboardMonitorManager
 import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsViewModel
 import io.github.kdroidfilter.ytdlpgui.features.download.single.SingleDownloadViewModel
+import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingViewModel
 import io.github.vinceglb.autolaunch.AutoLaunch
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
@@ -48,5 +49,6 @@ val appModule = module {
     viewModel { DownloadViewModel(get(), get(), get<DownloadHistoryRepository>()) }
     single { SettingsViewModel(get(), get(), get(), get(), get<TrayAppState>(), get<AutoLaunch>()) }
     viewModel { SingleDownloadViewModel(get(), get(), get(), get()) }
+    viewModel { OnboardingViewModel(get(), get()) }
 
 }

@@ -79,6 +79,17 @@
     <string name="cd_filmstrip_play">סמל סרט בתצוגת ניגון</string>
     <string name="cd_textbox">סמל תיבת טקסט</string>
 
+    <!-- מסלול ההגדרה -->
+    <string name="onboarding_progress_label">שלב %1$d מתוך %2$d</string>
+    <string name="onboarding_skip">דלג</string>
+    <string name="onboarding_welcome_title">ברוכים הבאים ל-AeroDL</string>
+    <string name="onboarding_welcome_subtitle">נגדיר כמה אפשרויות לפני שמתחילים.</string>
+    <string name="onboarding_start">התחלה</string>
+    <string name="onboarding_parallel_selected">נבחר: %1$d</string>
+    <string name="onboarding_complete_message">ההגדרה הושלמה…</string>
+    <string name="common_enabled">מופעל</string>
+    <string name="common_disabled">מושבת</string>
+
     <!-- מסך הורדות (היסטוריה ובתהליך) -->
     <string name="download_clear_history">נקה היסטוריה</string>
     <string name="tooltip_clear_history">נקה היסטוריה</string>

@@ -1,0 +1,67 @@
+package io.github.kdroidfilter.ytdlpgui.features.onboarding.welcome
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import io.github.composefluent.component.Button
+import io.github.composefluent.component.Text
+import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents
+import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingProgress
+import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingStep
+import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingViewModel
+import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.compose.viewmodel.koinViewModel
+import ytdlpgui.composeapp.generated.resources.Res
+import ytdlpgui.composeapp.generated.resources.onboarding_start
+import ytdlpgui.composeapp.generated.resources.onboarding_welcome_subtitle
+import ytdlpgui.composeapp.generated.resources.onboarding_welcome_title
+
+@Composable
+fun WelcomeScreen(
+    viewModel: OnboardingViewModel = koinViewModel()
+) {
+    val currentStep by viewModel.currentStep.collectAsState()
+    WelcomeView(
+        onEvent = viewModel::onEvents,
+        currentStep = currentStep
+    )
+}
+
+@Composable
+fun WelcomeView(
+    onEvent: (OnboardingEvents) -> Unit,
+    currentStep: OnboardingStep = OnboardingStep.Welcome
+) {
+    Column(Modifier.fillMaxSize().padding(16.dp)) {
+        OnboardingProgress(step = currentStep)
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(stringResource(Res.string.onboarding_welcome_title))
+            Spacer(Modifier.height(12.dp))
+            Text(stringResource(Res.string.onboarding_welcome_subtitle))
+            Spacer(Modifier.height(24.dp))
+            Button(onClick = { onEvent(OnboardingEvents.OnStart) }) {
+                Text(stringResource(Res.string.onboarding_start))
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+fun WelcomeScreenPreview() {
+    WelcomeView(onEvent = {})
+}

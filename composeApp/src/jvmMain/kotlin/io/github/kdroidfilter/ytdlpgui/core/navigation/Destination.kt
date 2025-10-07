@@ -31,26 +31,33 @@ sealed interface Destination {
         data object About : SecondaryNavigation
     }
 
-    // Type-safe onboarding steps and nested graph
+    // Onboarding flow
     @Serializable
     sealed interface Onboarding : Destination {
-        // Graph container to use with navigation<Destination.Onboarding.Graph>
         @Serializable
         data object Graph : Onboarding
+
         @Serializable
         data object Welcome : Onboarding
+
         @Serializable
         data object DownloadDir : Onboarding
+
         @Serializable
         data object Cookies : Onboarding
+
         @Serializable
         data object IncludePreset : Onboarding
+
         @Serializable
         data object Parallel : Onboarding
+
         @Serializable
         data object NoCheckCert : Onboarding
+
         @Serializable
         data object Clipboard : Onboarding
+
         @Serializable
         data object Finish : Onboarding
     }

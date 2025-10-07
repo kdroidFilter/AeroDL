@@ -84,7 +84,18 @@
     <!-- Settings: Clipboard monitoring -->
     <string name="settings_clipboard_monitoring_title">Clipboard monitoring</string>
     <string name="settings_clipboard_monitoring_caption">When enabled, copying a YouTube link will automatically open the single download screen.</string>
-    
+
+    <!-- Onboarding -->
+    <string name="onboarding_progress_label">Step %1$d of %2$d</string>
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_welcome_title">Welcome to AeroDL</string>
+    <string name="onboarding_welcome_subtitle">Let's configure a few options to get started.</string>
+    <string name="onboarding_start">Get started</string>
+    <string name="onboarding_parallel_selected">Selected: %1$d</string>
+    <string name="onboarding_complete_message">Setup complete…</string>
+    <string name="common_enabled">Enabled</string>
+    <string name="common_disabled">Disabled</string>
+
     <!-- Clipboard monitoring notifications -->
     <string name="clipboard_link_detected_title">Link detected</string>
     <string name="clipboard_link_detected_message">Do you want to open this link in %1$s?\n%2$s</string>

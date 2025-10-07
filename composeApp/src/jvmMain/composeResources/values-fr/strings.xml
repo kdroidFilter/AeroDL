@@ -88,6 +88,17 @@
     <string name="clipboard_open_in_app">Ouvrir dans %1$s</string>
     <string name="clipboard_ignore">Ignorer</string>
 
+    <!-- Parcours d'onboarding -->
+    <string name="onboarding_progress_label">Étape %1$d sur %2$d</string>
+    <string name="onboarding_skip">Ignorer</string>
+    <string name="onboarding_welcome_title">Bienvenue dans AeroDL</string>
+    <string name="onboarding_welcome_subtitle">Configurons quelques réglages pour bien démarrer.</string>
+    <string name="onboarding_start">Commencer</string>
+    <string name="onboarding_parallel_selected">Sélectionné : %1$d</string>
+    <string name="onboarding_complete_message">Configuration terminée…</string>
+    <string name="common_enabled">Activé</string>
+    <string name="common_disabled">Désactivé</string>
+
     <!-- Écran de téléchargement (historique et en cours) -->
     <string name="download_clear_history">Vider l'historique</string>
     <string name="tooltip_clear_history">Vider l'historique</string>

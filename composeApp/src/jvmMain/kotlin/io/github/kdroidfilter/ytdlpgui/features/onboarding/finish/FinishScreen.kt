@@ -1,0 +1,52 @@
+package io.github.kdroidfilter.ytdlpgui.features.onboarding.finish
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import io.github.composefluent.component.Text
+import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents
+import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingProgress
+import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingStep
+import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingViewModel
+import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.compose.viewmodel.koinViewModel
+import ytdlpgui.composeapp.generated.resources.Res
+import ytdlpgui.composeapp.generated.resources.onboarding_complete_message
+
+@Composable
+fun FinishScreen(
+    viewModel: OnboardingViewModel = koinViewModel()
+) {
+    val currentStep by viewModel.currentStep.collectAsState()
+    LaunchedEffect(Unit) { viewModel.onEvents(OnboardingEvents.OnFinish) }
+    FinishView(currentStep = currentStep)
+}
+
+@Composable
+private fun FinishView(
+    currentStep: OnboardingStep = OnboardingStep.Finish
+) {
+    Column(
+        Modifier.fillMaxSize().padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        OnboardingProgress(step = currentStep)
+        Text(stringResource(Res.string.onboarding_complete_message))
+    }
+}
+
+@Preview
+@Composable
+fun FinishScreenPreview() {
+    FinishView()
+}
