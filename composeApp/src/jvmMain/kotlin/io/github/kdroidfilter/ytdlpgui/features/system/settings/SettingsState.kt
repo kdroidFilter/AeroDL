@@ -17,7 +17,55 @@ data class SettingsState(
     val clipboardMonitoringEnabled: Boolean = false,
     val autoLaunchEnabled: Boolean = false,
     val notifyOnComplete: Boolean = true,
-)
+) {
+    companion object {
+        val defaultState = SettingsState()
+
+        val customizedState = SettingsState(
+            noCheckCertificate = true,
+            cookiesFromBrowser = "firefox",
+            includePresetInFilename = true,
+            parallelDownloads = 3,
+            downloadDirPath = "/home/user/Downloads",
+            clipboardMonitoringEnabled = true,
+            autoLaunchEnabled = false,
+            notifyOnComplete = true
+        )
+
+        val chromeUserState = SettingsState(
+            noCheckCertificate = false,
+            cookiesFromBrowser = "chrome",
+            includePresetInFilename = false,
+            parallelDownloads = 5,
+            downloadDirPath = "/home/user/Videos/YouTube",
+            clipboardMonitoringEnabled = true,
+            autoLaunchEnabled = true,
+            notifyOnComplete = false
+        )
+
+        val minimalState = SettingsState(
+            noCheckCertificate = false,
+            cookiesFromBrowser = "",
+            includePresetInFilename = true,
+            parallelDownloads = 1,
+            downloadDirPath = "",
+            clipboardMonitoringEnabled = false,
+            autoLaunchEnabled = false,
+            notifyOnComplete = true
+        )
+
+        val powerUserState = SettingsState(
+            noCheckCertificate = true,
+            cookiesFromBrowser = "firefox",
+            includePresetInFilename = true,
+            parallelDownloads = 5,
+            downloadDirPath = "/media/storage/Downloads/Videos",
+            clipboardMonitoringEnabled = true,
+            autoLaunchEnabled = true,
+            notifyOnComplete = true
+        )
+    }
+}
 
 @Composable
 fun collectSettingsState(viewModel: SettingsViewModel): SettingsState =

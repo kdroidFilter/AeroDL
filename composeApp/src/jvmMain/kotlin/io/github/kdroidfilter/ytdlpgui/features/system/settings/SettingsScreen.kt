@@ -41,6 +41,7 @@ import io.github.kdroidfilter.ytdlpgui.core.design.icons.BrowserChrome
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.BrowserFirefox
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.Cookie_off
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.settings_auto_launch_title
@@ -321,4 +322,34 @@ fun SettingsView(
             modifier = Modifier.fillMaxHeight().padding(top = 2.dp, start = 8.dp)
         )
     }
+}
+
+@Preview
+@Composable
+fun SettingsScreenPreviewDefault() {
+    SettingsView(state = SettingsState.defaultState, onEvent = {})
+}
+
+@Preview
+@Composable
+fun SettingsScreenPreviewCustomized() {
+    SettingsView(state = SettingsState.customizedState, onEvent = {})
+}
+
+@Preview
+@Composable
+fun SettingsScreenPreviewChromeUser() {
+    SettingsView(state = SettingsState.chromeUserState, onEvent = {})
+}
+
+@Preview
+@Composable
+fun SettingsScreenPreviewMinimal() {
+    SettingsView(state = SettingsState.minimalState, onEvent = {})
+}
+
+@Preview
+@Composable
+fun SettingsScreenPreviewPowerUser() {
+    SettingsView(state = SettingsState.powerUserState, onEvent = {})
 }

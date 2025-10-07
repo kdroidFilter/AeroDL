@@ -43,6 +43,7 @@ import io.github.kdroidfilter.ytdlp.util.YouTubeThumbnailHelper
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository.HistoryItem
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import ytdlpgui.composeapp.generated.resources.*
 import org.koin.compose.viewmodel.koinViewModel
 import java.time.Instant
@@ -314,4 +315,28 @@ private fun InProgressRow(item: DownloadManager.DownloadItem, onCancel: (String)
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun DownloadScreenPreviewEmpty() {
+    DownloadView(state = DownloadState.emptyState, onEvent = {})
+}
+
+@Preview
+@Composable
+fun DownloadScreenPreviewWithInProgress() {
+    DownloadView(state = DownloadState.withInProgressState, onEvent = {})
+}
+
+@Preview
+@Composable
+fun DownloadScreenPreviewWithHistory() {
+    DownloadView(state = DownloadState.withHistoryState, onEvent = {})
+}
+
+@Preview
+@Composable
+fun DownloadScreenPreviewMixed() {
+    DownloadView(state = DownloadState.mixedState, onEvent = {})
 }

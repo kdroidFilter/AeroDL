@@ -52,6 +52,7 @@ import io.github.kdroidfilter.composemediaplayer.rememberVideoPlayerState
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import ytdlpgui.composeapp.generated.resources.*
 import java.time.Duration
@@ -523,4 +524,34 @@ private fun VideoPlayer(
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun SingleDownloadScreenPreviewLoading() {
+    SingleDownloadView(state = SingleDownloadState.loadingState, onEvent = {})
+}
+
+@Preview
+@Composable
+fun SingleDownloadScreenPreviewEmpty() {
+    SingleDownloadView(state = SingleDownloadState.emptyState, onEvent = {})
+}
+
+@Preview
+@Composable
+fun SingleDownloadScreenPreviewError() {
+    SingleDownloadView(state = SingleDownloadState.errorState, onEvent = {})
+}
+
+@Preview
+@Composable
+fun SingleDownloadScreenPreviewLoaded() {
+    SingleDownloadView(state = SingleDownloadState.loadedState, onEvent = {})
+}
+
+@Preview
+@Composable
+fun SingleDownloadScreenPreviewWithSubtitles() {
+    SingleDownloadView(state = SingleDownloadState.withSubtitlesState, onEvent = {})
 }
