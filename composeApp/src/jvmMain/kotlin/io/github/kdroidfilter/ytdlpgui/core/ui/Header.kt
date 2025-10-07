@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalFluentApi::class, ExperimentalFoundationApi::class)
 
-package io.github.kdroidfilter.ytdlpgui.core.design.components
+package io.github.kdroidfilter.ytdlpgui.core.ui
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*

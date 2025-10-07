@@ -16,9 +16,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import io.github.composefluent.ExperimentalFluentApi
-import io.github.kdroidfilter.ytdlpgui.core.design.components.Footer
-import io.github.kdroidfilter.ytdlpgui.core.design.components.MainNavigationHeader
-import io.github.kdroidfilter.ytdlpgui.core.design.components.SecondaryNavigationHeader
+import io.github.kdroidfilter.ytdlpgui.core.ui.Footer
+import io.github.kdroidfilter.ytdlpgui.core.ui.MainNavigationHeader
+import io.github.kdroidfilter.ytdlpgui.core.ui.SecondaryNavigationHeader
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.navigation.NavigationAction
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Navigator
