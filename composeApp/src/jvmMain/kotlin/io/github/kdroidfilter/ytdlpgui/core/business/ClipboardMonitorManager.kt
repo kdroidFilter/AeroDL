@@ -5,7 +5,7 @@ package io.github.kdroidfilter.ytdlpgui.core.business
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.russhwolf.settings.Settings
 import io.github.kdroidfilter.ytdlpgui.core.ui.navigation.Destination
-import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Navigator
+import io.github.kdroidfilter.ytdlpgui.core.ui.navigation.Navigator
 import io.github.kdroidfilter.platformtools.clipboardmanager.ClipboardContent
 import io.github.kdroidfilter.platformtools.clipboardmanager.ClipboardListener
 import io.github.kdroidfilter.platformtools.clipboardmanager.ClipboardMonitor

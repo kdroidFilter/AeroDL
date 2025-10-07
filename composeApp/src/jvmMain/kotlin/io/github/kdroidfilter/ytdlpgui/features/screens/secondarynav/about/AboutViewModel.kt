@@ -1,7 +1,7 @@
 package io.github.kdroidfilter.ytdlpgui.features.screens.secondarynav.about
 
 import androidx.lifecycle.ViewModel
-import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Navigator
+import io.github.kdroidfilter.ytdlpgui.core.ui.navigation.Navigator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 

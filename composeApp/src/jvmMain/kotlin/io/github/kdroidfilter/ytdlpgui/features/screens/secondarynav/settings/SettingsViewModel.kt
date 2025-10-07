@@ -10,7 +10,7 @@ import com.kdroid.composetray.tray.api.TrayWindowDismissMode
 import com.russhwolf.settings.Settings
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlpgui.core.business.ClipboardMonitorManager
-import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Navigator
+import io.github.kdroidfilter.ytdlpgui.core.ui.navigation.Navigator
 import io.github.kdroidfilter.ytdlpgui.core.settings.SettingsKeys
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings

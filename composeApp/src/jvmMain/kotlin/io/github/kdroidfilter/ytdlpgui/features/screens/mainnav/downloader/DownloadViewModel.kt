@@ -2,7 +2,7 @@ package io.github.kdroidfilter.ytdlpgui.features.screens.mainnav.downloader
 
 import androidx.lifecycle.ViewModel
 import io.github.kdroidfilter.ytdlpgui.core.business.DownloadManager
-import io.github.kdroidfilter.ytdlpgui.core.presentation.navigation.Navigator
+import io.github.kdroidfilter.ytdlpgui.core.ui.navigation.Navigator
 import io.github.kdroidfilter.ytdlpgui.core.util.FileExplorerUtils
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
 import kotlinx.coroutines.flow.MutableStateFlow

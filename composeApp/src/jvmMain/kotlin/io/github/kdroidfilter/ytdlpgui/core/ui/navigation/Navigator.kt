@@ -1,8 +1,6 @@
-package io.github.kdroidfilter.ytdlpgui.core.presentation.navigation
+package io.github.kdroidfilter.ytdlpgui.core.ui.navigation
 
 import androidx.navigation.NavOptionsBuilder
-import io.github.kdroidfilter.ytdlpgui.core.ui.navigation.Destination
-import io.github.kdroidfilter.ytdlpgui.core.ui.navigation.NavigationAction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
