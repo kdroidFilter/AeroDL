@@ -36,8 +36,8 @@ kotlin {
             implementation(libs.composemediaplayer)
 
             // Coil
-            implementation("io.coil-kt.coil3:coil-compose:3.3.0")
-            implementation("io.coil-kt.coil3:coil-network-okhttp:3.3.0")
+            implementation(libs.coil)
+            implementation(libs.coil.network)
 
             // DI
             implementation(libs.koin.core)
@@ -48,17 +48,18 @@ kotlin {
             implementation(libs.platformtools.core)
             implementation(libs.platformtools.darkmodedetector)
             implementation(libs.platformtools.clipboardmanager)
-            implementation("io.github.vinceglb:auto-launch:0.7.0")
-            implementation("io.github.vinceglb:filekit-core:0.11.0")
-            implementation("io.github.vinceglb:filekit-dialogs:0.11.0")
-            implementation("io.github.vinceglb:filekit-dialogs-compose:0.11.0")
+            implementation(libs.autolaunch)
+            implementation(libs.filekit.core)
+            implementation(libs.filekit.dialogs)
+            implementation(libs.filekit.dialogs.compose)
+
             // Serialization
             implementation(libs.kotlinx.serialization.json)
 
-            implementation("com.russhwolf:multiplatform-settings-no-arg:1.3.0")
-
-            implementation("io.github.kdroidfilter:knotify:0.4.2")
-            implementation("io.github.kdroidfilter:knotify-compose:0.4.2")
+            // Settings & Notifications
+            implementation(libs.multiplatform.settings)
+            implementation(libs.knotify)
+            implementation(libs.knotify.compose)
         }
 
         commonTest.dependencies {

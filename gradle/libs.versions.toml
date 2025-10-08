@@ -28,7 +28,15 @@ metro = "0.6.6"
 # Koin
 koin = "4.1.1"
 
+# Database
 sqlDelight = "2.1.0"
+
+# Additional dependencies
+coil = "3.3.0"
+autolaunch = "0.7.0"
+filekit = "0.12.0"
+multiplatform-settings = "1.3.0"
+knotify = "0.4.2"
 
 hydraulicConveyor = "1.12"
 buildConfig = "5.7.0"
@@ -59,6 +67,17 @@ platformtools-core = { module = "io.github.kdroidfilter:platformtools.core", ver
 platformtools-darkmodedetector = { module = "io.github.kdroidfilter:platformtools.darkmodedetector", version.ref = "platformtools" }
 platformtools-clipboardmanager = { module = "io.github.kdroidfilter:platformtools.clipboardmanager", version.ref = "platformtools" }
 platformtools-releasefetcher = { module = "io.github.kdroidfilter:platformtools.releasefetcher", version.ref = "platformtools" }
+
+# Additional libraries
+coil = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
+coil-network = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
+autolaunch = { module = "io.github.vinceglb:auto-launch", version.ref = "autolaunch" }
+filekit-core = { module = "io.github.vinceglb:filekit-core", version.ref = "filekit" }
+filekit-dialogs = { module = "io.github.vinceglb:filekit-dialogs", version.ref = "filekit" }
+filekit-dialogs-compose = { module = "io.github.vinceglb:filekit-dialogs-compose", version.ref = "filekit" }
+multiplatform-settings = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "multiplatform-settings" }
+knotify = { module = "io.github.kdroidfilter:knotify", version.ref = "knotify" }
+knotify-compose = { module = "io.github.kdroidfilter:knotify-compose", version.ref = "knotify" }
 
 # Ktor
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
