@@ -63,8 +63,6 @@ fun InitView(state: InitState) {
             }
             if (state.updatingYtdlp) Text(text = stringResource(Res.string.updating_ytdlp))
 
-            Spacer(Modifier.height(8.dp))
-
             if (state.checkingFFmpeg) Text(text = stringResource(Res.string.checking_ffmpeg))
             if (state.downloadingFFmpeg) {
                 val progress = (state.downloadFfmpegProgress ?: 0f)

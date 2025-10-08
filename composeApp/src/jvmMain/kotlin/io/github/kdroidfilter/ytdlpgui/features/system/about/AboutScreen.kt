@@ -37,5 +37,6 @@ fun AboutView(
         Spacer(Modifier.height(16.dp))
         Text("Version: ${state.appVersion}")
         Text("yt-dlp version: ${state.ytdlpVersion ?: "Not found"}")
+        Text("FFmpeg version: ${state.ffmpegVersion ?: "Not found"}")
     }
 }

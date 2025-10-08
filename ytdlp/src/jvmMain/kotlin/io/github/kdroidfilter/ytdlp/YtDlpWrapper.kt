@@ -141,6 +141,11 @@ class YtDlpWrapper {
         }
     }
 
+    suspend fun ffmpegVersion(): String? {
+        val path = ffmpegPath ?: return null
+        return PlatformUtils.ffmpegVersion(path)
+    }
+
     suspend fun isAvailable(): Boolean {
         val file = File(ytDlpPath)
         if (!(file.exists() && file.canExecute())) return false

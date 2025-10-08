@@ -21,7 +21,8 @@ class AboutViewModel(
         viewModelScope.launch {
             _state.value = AboutState(
                 appVersion = getAppVersion(),
-                ytdlpVersion = ytDlpWrapper.version()
+                ytdlpVersion = ytDlpWrapper.version(),
+                ffmpegVersion = ytDlpWrapper.ffmpegVersion()
             )
         }
     }
