@@ -65,6 +65,8 @@ import ytdlpgui.composeapp.generated.resources.app_version_label
 import java.io.File
 import java.util.Locale
 import com.russhwolf.settings.Settings
+import io.github.kdroidfilter.ytdlpgui.core.util.errorln
+import io.github.kdroidfilter.ytdlpgui.core.util.infoln
 
 @OptIn(ExperimentalTrayAppApi::class, ExperimentalFluentApi::class)
 fun main() = application {
@@ -188,13 +190,13 @@ fun clearJavaTempDir() {
             if (file.isDirectory) file.deleteRecursively()
             else file.delete()
         } catch (e: Exception) {
-            println("Failed to delete ${file.absolutePath}: ${e.message}")
+            errorln { "Failed to delete ${file.absolutePath}: ${e.message}" }
         }
     }
-    println("Cache cleared: $tmpDir")
+    infoln { "Cache cleared: $tmpDir" }
 }
 
 private fun clearSettings(settings: Settings) {
     settings.clear()
-    println("Settings cleared")
+    infoln { "Settings cleared" }
 }

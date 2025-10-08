@@ -14,6 +14,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import io.github.kdroidfilter.ytdlpgui.core.util.errorln
+import io.github.kdroidfilter.ytdlpgui.core.util.infoln
 
 class SingleDownloadViewModel(
     private val navigator: Navigator,
@@ -47,7 +49,7 @@ class SingleDownloadViewModel(
     init {
         val scope = CoroutineScope(Dispatchers.IO)
         scope.launch {
-            println("Getting video info for $videoUrl")
+            infoln { "Getting video info for $videoUrl" }
             ytDlpWrapper.getVideoInfoWithAllSubtitles(
                 url = videoUrl,
                 includeAutoSubtitles = true
@@ -68,7 +70,7 @@ class SingleDownloadViewModel(
                 }
                 .onFailure {
                     val detail = it.localizedMessage ?: it.message ?: it.toString()
-                    println("Error getting video info: $detail")
+                    errorln { "Error getting video info: $detail" }
                     _errorMessage.value = detail
                     _isLoading.value = false
                 }
