@@ -5,20 +5,23 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.Checkbox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.Icon
 import io.github.composefluent.component.Text
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.LockShield
-import io.github.kdroidfilter.ytdlpgui.core.design.components.Switcher
+import io.github.composefluent.icons.regular.Warning
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.HeaderRow
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.NavigationRow
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents
@@ -29,10 +32,9 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import ytdlpgui.composeapp.generated.resources.Res
-import ytdlpgui.composeapp.generated.resources.common_disabled
-import ytdlpgui.composeapp.generated.resources.common_enabled
-import ytdlpgui.composeapp.generated.resources.settings_no_check_certificate_caption
-import ytdlpgui.composeapp.generated.resources.settings_no_check_certificate_title
+import ytdlpgui.composeapp.generated.resources.onboarding_filtered_network_detected_title
+import ytdlpgui.composeapp.generated.resources.onboarding_filtered_network_detected_message
+import ytdlpgui.composeapp.generated.resources.onboarding_filtered_network_accept
 import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 
 @Composable
@@ -69,30 +71,42 @@ fun NoCheckCertView(
             currentStepIndex = currentStepIndex
         )
         Column(Modifier.weight(1f).fillMaxWidth()) {
-            HeaderRow(
-                title = stringResource(Res.string.settings_no_check_certificate_title),
-                subtitle = stringResource(Res.string.settings_no_check_certificate_caption)
+            // Warning icon and title
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 12.dp)) {
+                Icon(Icons.Regular.Warning, null, modifier = Modifier.size(24.dp))
+                Spacer(Modifier.width(12.dp))
+                Text(
+                    text = stringResource(Res.string.onboarding_filtered_network_detected_title),
+                    style = FluentTheme.typography.subtitle
+                )
+            }
+
+            // Message explaining the situation
+            Text(
+                text = stringResource(Res.string.onboarding_filtered_network_detected_message),
+                modifier = Modifier.padding(bottom = 16.dp)
             )
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Switcher(
+
+            Spacer(Modifier.height(8.dp))
+
+            // Checkbox to accept
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(vertical = 8.dp)
+            ) {
+                Checkbox(
                     checked = state.noCheckCertificate,
-                    onCheckStateChange = { onEvent(OnboardingEvents.OnSetNoCheckCertificate(it)) }
+                    onCheckedChange = { onEvent(OnboardingEvents.OnSetNoCheckCertificate(it)) }
                 )
                 Spacer(Modifier.width(8.dp))
-                Icon(Icons.Regular.LockShield, null, modifier = Modifier.size(16.dp))
-                Spacer(Modifier.width(8.dp))
-                val statusLabel = if (state.noCheckCertificate) {
-                    stringResource(Res.string.common_enabled)
-                } else {
-                    stringResource(Res.string.common_disabled)
-                }
-                Text(statusLabel)
+                Text(stringResource(Res.string.onboarding_filtered_network_accept))
             }
         }
         NavigationRow(
             onNext = { onEvent(OnboardingEvents.OnNext) },
             onPrevious = { onEvent(OnboardingEvents.OnPrevious) },
-            onSkip = { onEvent(OnboardingEvents.OnSkip) }
+            onSkip = null,  // Remove skip button - user must accept
+            nextEnabled = state.noCheckCertificate  // Disable Next until user accepts
         )
     }
 }

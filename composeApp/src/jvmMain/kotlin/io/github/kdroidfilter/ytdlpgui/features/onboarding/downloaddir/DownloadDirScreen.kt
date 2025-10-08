@@ -93,7 +93,8 @@ fun DownloadDirView(
         NavigationRow(
             onNext = { onEvent(OnboardingEvents.OnNext) },
             onPrevious = { onEvent(OnboardingEvents.OnPrevious) },
-            onSkip = { onEvent(OnboardingEvents.OnSkip) }
+            onSkip = null,  // No skip - user must select a directory
+            nextEnabled = state.downloadDirPath.isNotBlank()  // Disable Next until directory selected
         )
     }
 }

@@ -49,6 +49,9 @@
     <!-- הגדרות -->
     <string name="settings_no_check_certificate_title">אי-בדיקת תעודות אבטחה</string>
     <string name="settings_no_check_certificate_caption">דילוג על אימות תעודות אבטחה (SSL) (לשימוש בעת הצורך בלבד)</string>
+    <string name="onboarding_filtered_network_detected_title">זוהתה בעיה בתעודת אבטחה</string>
+    <string name="onboarding_filtered_network_detected_message">זוהתה בעיה בתעודת אבטחה. זה עלול להיות בגלל סינון רשת ארגונית, או גרוע מכך, התקפת MITM. כדי שהתוכנית תפעל, יש צורך לבטל את אימות תעודות האבטחה.</string>
+    <string name="onboarding_filtered_network_accept">אני מבין/ה את הסיכונים ומקבל/ת</string>
     <string name="settings_cookies_from_browser_title">עוגיות מהדפדפן</string>
     <string name="settings_cookies_from_browser_label">בחרו דפדפן לייבוא עוגיות עבור yt-dlp. ניתן להשאיר מושבת אם לא נדרש.</string>
     <string name="settings_browser_select">בחרו דפדפן…</string>
@@ -126,6 +129,10 @@
     <!-- פרטי אפליקציה -->
     <string name="app_version_label">גרסת אפליקציה: %1$s</string>
     
+    <!-- הגדרות: ניטור לוח העריכה -->
+    <string name="settings_clipboard_monitoring_title">ניטור לוח העריכה</string>
+    <string name="settings_clipboard_monitoring_caption">כשמופעל, העתקת קישור וידאו נתמך תשלח התראה השואלת אם ברצונך להוריד אותו.</string>
+
     <!-- הגדרות: התראות -->
     <string name="settings_notify_on_complete_title">התראות על סיום הורדה</string>
     <string name="settings_notify_on_complete_caption">שלח התראה כאשר הורדה מסתיימת</string>

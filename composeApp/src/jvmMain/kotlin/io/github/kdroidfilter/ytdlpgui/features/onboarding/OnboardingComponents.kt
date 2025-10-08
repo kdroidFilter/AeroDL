@@ -113,7 +113,8 @@ internal fun NavigationRow(
     onSkip: (() -> Unit)? = null,
     nextLabel: String? = null,
     previousLabel: String? = null,
-    skipLabel: String? = null
+    skipLabel: String? = null,
+    nextEnabled: Boolean = true
 ) {
     val resolvedNext = nextLabel ?: stringResource(Res.string.next)
     val resolvedPrevious = previousLabel ?: stringResource(Res.string.onboarding_previous)
@@ -138,7 +139,11 @@ internal fun NavigationRow(
                     content = { Text(resolvedSkip) }
                 )
             }
-            Button(onClick = onNext, content = { Text(resolvedNext) })
+            Button(
+                onClick = onNext,
+                disabled = !nextEnabled,
+                content = { Text(resolvedNext) }
+            )
         }
     }
 }

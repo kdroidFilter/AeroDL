@@ -49,6 +49,9 @@
     <!-- Settings screen strings -->
     <string name="settings_no_check_certificate_title">No check certificate</string>
     <string name="settings_no_check_certificate_caption">Skip SSL certificate verification (use only if necessary)</string>
+    <string name="onboarding_filtered_network_detected_title">Certificate Issue Detected</string>
+    <string name="onboarding_filtered_network_detected_message">A certificate problem has been detected. This could be due to corporate network filtering, or worse, a MITM attack. For the program to function, it is necessary to disable certificate verification.</string>
+    <string name="onboarding_filtered_network_accept">I understand the risks and accept</string>
     <string name="settings_cookies_from_browser_title">Cookies from browser</string>
     <string name="settings_cookies_from_browser_label">Choose a browser to import cookies for yt-dlp. Leave disabled if not needed.</string>
     <string name="settings_browser_select">Select browser…</string>
@@ -89,7 +92,7 @@
     
     <!-- Settings: Clipboard monitoring -->
     <string name="settings_clipboard_monitoring_title">Clipboard monitoring</string>
-    <string name="settings_clipboard_monitoring_caption">When enabled, copying a YouTube link will automatically open the single download screen.</string>
+    <string name="settings_clipboard_monitoring_caption">When enabled, copying a supported video link will send a notification asking if you want to download it.</string>
 
     <!-- Onboarding -->
     <string name="onboarding_progress_label">Step %1$d of %2$d</string>
