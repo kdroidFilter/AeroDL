@@ -38,7 +38,9 @@ fun GnomeFocusScreen(
     GnomeFocusView(
         onEvent = viewModel::onEvents,
         currentStep = currentStep,
-        initState = initState
+        initState = initState,
+        totalSteps = viewModel.getTotalSteps(),
+        currentStepIndex = viewModel.getCurrentStepIndex()
     )
 }
 
@@ -47,11 +49,18 @@ fun GnomeFocusView(
     onEvent: (OnboardingEvents) -> Unit,
     currentStep: OnboardingStep = OnboardingStep.GnomeFocus,
     initState: InitState? = null,
+    totalSteps: Int? = null,
+    currentStepIndex: Int? = null,
 ) {
     val uriHandler = LocalUriHandler.current
 
     Column(Modifier.fillMaxSize().padding(16.dp)) {
-        OnboardingProgress(step = currentStep, initState = initState)
+        OnboardingProgress(
+            step = currentStep,
+            initState = initState,
+            totalSteps = totalSteps,
+            currentStepIndex = currentStepIndex
+        )
         Column(Modifier.weight(1f).fillMaxWidth()) {
             HeaderRow(
                 title = stringResource(Res.string.onboarding_gnome_focus_title),

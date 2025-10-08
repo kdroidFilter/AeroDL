@@ -36,7 +36,9 @@ fun WelcomeScreen(
     WelcomeView(
         onEvent = viewModel::onEvents,
         currentStep = currentStep,
-        initState = initState
+        initState = initState,
+        totalSteps = viewModel.getTotalSteps(),
+        currentStepIndex = viewModel.getCurrentStepIndex()
     )
 }
 
@@ -45,9 +47,16 @@ fun WelcomeView(
     onEvent: (OnboardingEvents) -> Unit,
     currentStep: OnboardingStep = OnboardingStep.Welcome,
     initState: InitState? = null,
+    totalSteps: Int? = null,
+    currentStepIndex: Int? = null,
 ) {
     Column(Modifier.fillMaxSize().padding(16.dp)) {
-        OnboardingProgress(step = currentStep, initState = initState)
+        OnboardingProgress(
+            step = currentStep,
+            initState = initState,
+            totalSteps = totalSteps,
+            currentStepIndex = currentStepIndex
+        )
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,

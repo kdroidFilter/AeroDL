@@ -46,11 +46,13 @@ internal fun OnboardingProgress(
     step: OnboardingStep,
     modifier: Modifier = Modifier,
     initState: InitState? = null,
+    totalSteps: Int? = null,
+    currentStepIndex: Int? = null,
 ) {
     val steps = remember { OnboardingStep.entries }
-    val currentIndex = steps.indexOf(step).takeIf { it >= 0 } ?: 0
-    val totalSteps = steps.size
-    val progress = ((currentIndex + 1).toFloat() / totalSteps.toFloat()).coerceIn(0f, 1f)
+    val actualCurrentIndex = currentStepIndex ?: (steps.indexOf(step).takeIf { it >= 0 } ?: 0)
+    val actualTotalSteps = totalSteps ?: steps.size
+    val progress = ((actualCurrentIndex + 1).toFloat() / actualTotalSteps.toFloat()).coerceIn(0f, 1f)
 
     Column(
         modifier = modifier
@@ -58,7 +60,7 @@ internal fun OnboardingProgress(
             .padding(bottom = 12.dp)
     ) {
         Text(
-            text = stringResource(Res.string.onboarding_progress_label, currentIndex + 1, totalSteps),
+            text = stringResource(Res.string.onboarding_progress_label, actualCurrentIndex + 1, actualTotalSteps),
             style = FluentTheme.typography.caption
         )
         Spacer(Modifier.height(6.dp))

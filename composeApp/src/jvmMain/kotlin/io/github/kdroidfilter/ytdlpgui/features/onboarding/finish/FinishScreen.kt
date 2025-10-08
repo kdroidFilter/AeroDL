@@ -30,20 +30,32 @@ fun FinishScreen(
     val currentStep by viewModel.currentStep.collectAsState()
     val initState by viewModel.initState.collectAsState()
     LaunchedEffect(Unit) { viewModel.onEvents(OnboardingEvents.OnFinish) }
-    FinishView(currentStep = currentStep, initState = initState)
+    FinishView(
+        currentStep = currentStep,
+        initState = initState,
+        totalSteps = viewModel.getTotalSteps(),
+        currentStepIndex = viewModel.getCurrentStepIndex()
+    )
 }
 
 @Composable
 private fun FinishView(
     currentStep: OnboardingStep = OnboardingStep.Finish,
     initState: io.github.kdroidfilter.ytdlpgui.features.init.InitState? = null,
+    totalSteps: Int? = null,
+    currentStepIndex: Int? = null,
 ) {
     Column(
         Modifier.fillMaxSize().padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        OnboardingProgress(step = currentStep, initState = initState)
+        OnboardingProgress(
+            step = currentStep,
+            initState = initState,
+            totalSteps = totalSteps,
+            currentStepIndex = currentStepIndex
+        )
         Text(stringResource(Res.string.onboarding_complete_message))
     }
 }

@@ -8,6 +8,7 @@ import io.github.kdroidfilter.platformtools.detectLinuxDesktopEnvironment
 import io.github.kdroidfilter.ytdlpgui.core.config.SettingsKeys
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Navigator
+import io.github.kdroidfilter.ytdlpgui.core.platform.network.CertificateChecker
 import io.github.kdroidfilter.ytdlpgui.features.init.InitViewModel
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
@@ -30,6 +31,9 @@ class OnboardingViewModel(
 
     // Check if user is running GNOME desktop environment
     private val isGnome = detectLinuxDesktopEnvironment() == LinuxDesktopEnvironment.GNOME
+
+    // Check if certificate is from Google Trust Services (if true, no need to show NoCheckCert screen)
+    private val shouldSkipNoCheckCert: Boolean = CertificateChecker.isYouTubeCertificateFromGoogleTrustServices()
 
     init {
         // Start downloading yt-dlp and ffmpeg in background during onboarding
@@ -57,6 +61,27 @@ class OnboardingViewModel(
     private val _clipboardMonitoringEnabled = MutableStateFlow(settings.getBoolean(SettingsKeys.CLIPBOARD_MONITORING_ENABLED, false))
     val clipboardMonitoringEnabled: StateFlow<Boolean> = _clipboardMonitoringEnabled.asStateFlow()
 
+    // Calculate dynamic list of steps based on environment
+    private val enabledSteps: List<OnboardingStep> by lazy {
+        buildList {
+            add(OnboardingStep.Welcome)
+            add(OnboardingStep.DownloadDir)
+            add(OnboardingStep.Cookies)
+            if (!shouldSkipNoCheckCert) {
+                add(OnboardingStep.NoCheckCert)
+            }
+            if (isGnome) {
+                add(OnboardingStep.GnomeFocus)
+            }
+            add(OnboardingStep.Clipboard)
+            add(OnboardingStep.Finish)
+        }
+    }
+
+    fun getTotalSteps(): Int = enabledSteps.size
+
+    fun getCurrentStepIndex(): Int = enabledSteps.indexOf(_currentStep.value).coerceAtLeast(0)
+
     fun onEvents(event: OnboardingEvents) {
         when (event) {
             is OnboardingEvents.OnStart -> handleStart()
@@ -81,7 +106,13 @@ class OnboardingViewModel(
         val nextStep = when (_currentStep.value) {
             OnboardingStep.Welcome -> OnboardingStep.DownloadDir
             OnboardingStep.DownloadDir -> OnboardingStep.Cookies
-            OnboardingStep.Cookies -> OnboardingStep.NoCheckCert
+            OnboardingStep.Cookies -> {
+                if (shouldSkipNoCheckCert) {
+                    if (isGnome) OnboardingStep.GnomeFocus else OnboardingStep.Clipboard
+                } else {
+                    OnboardingStep.NoCheckCert
+                }
+            }
             OnboardingStep.NoCheckCert -> if (isGnome) OnboardingStep.GnomeFocus else OnboardingStep.Clipboard
             OnboardingStep.GnomeFocus -> OnboardingStep.Clipboard
             OnboardingStep.Clipboard -> OnboardingStep.Finish
@@ -101,8 +132,16 @@ class OnboardingViewModel(
             OnboardingStep.DownloadDir -> OnboardingStep.Welcome
             OnboardingStep.Cookies -> OnboardingStep.DownloadDir
             OnboardingStep.NoCheckCert -> OnboardingStep.Cookies
-            OnboardingStep.GnomeFocus -> OnboardingStep.NoCheckCert
-            OnboardingStep.Clipboard -> if (isGnome) OnboardingStep.GnomeFocus else OnboardingStep.NoCheckCert
+            OnboardingStep.GnomeFocus -> {
+                if (shouldSkipNoCheckCert) OnboardingStep.Cookies else OnboardingStep.NoCheckCert
+            }
+            OnboardingStep.Clipboard -> {
+                if (isGnome) {
+                    OnboardingStep.GnomeFocus
+                } else {
+                    if (shouldSkipNoCheckCert) OnboardingStep.Cookies else OnboardingStep.NoCheckCert
+                }
+            }
             OnboardingStep.Finish -> OnboardingStep.Clipboard
         }
 

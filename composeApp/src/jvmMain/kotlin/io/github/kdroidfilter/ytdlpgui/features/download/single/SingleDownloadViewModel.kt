@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
+import io.github.kdroidfilter.ytdlp.model.SubtitleInfo
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
@@ -37,8 +38,8 @@ class SingleDownloadViewModel(
     private val _selectedPreset = MutableStateFlow<YtDlpWrapper.Preset?>(null)
     val selectedPreset = _selectedPreset.asStateFlow()
 
-    private val _availableSubtitleLanguages = MutableStateFlow<List<String>>(emptyList())
-    val availableSubtitleLanguages = _availableSubtitleLanguages.asStateFlow()
+    private val _availableSubtitles = MutableStateFlow<Map<String, SubtitleInfo>>(emptyMap())
+    val availableSubtitles = _availableSubtitles.asStateFlow()
 
     private val _selectedSubtitles = MutableStateFlow<List<String>>(emptyList())
     val selectedSubtitles = _selectedSubtitles.asStateFlow()
@@ -62,9 +63,8 @@ class SingleDownloadViewModel(
                     }.sortedBy { it.height }
                     _availablePresets.value = presets
                     _selectedPreset.value = presets.maxByOrNull { it.height }
-                    // Subtitles
-                    val allLangs = info.getAllSubtitleLanguages()
-                    _availableSubtitleLanguages.value = allLangs.sorted()
+                    // Subtitles - get all subtitles with their info
+                    _availableSubtitles.value = info.getAllSubtitles()
                     _selectedSubtitles.value = emptyList()
                     _isLoading.value = false
                 }

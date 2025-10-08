@@ -46,7 +46,9 @@ fun NoCheckCertScreen(
         state = state,
         onEvent = viewModel::onEvents,
         currentStep = currentStep,
-        initState = initState
+        initState = initState,
+        totalSteps = viewModel.getTotalSteps(),
+        currentStepIndex = viewModel.getCurrentStepIndex()
     )
 }
 
@@ -56,9 +58,16 @@ fun NoCheckCertView(
     onEvent: (OnboardingEvents) -> Unit,
     currentStep: OnboardingStep = OnboardingStep.NoCheckCert,
     initState: io.github.kdroidfilter.ytdlpgui.features.init.InitState? = null,
+    totalSteps: Int? = null,
+    currentStepIndex: Int? = null,
 ) {
     Column(Modifier.fillMaxSize().padding(16.dp)) {
-        OnboardingProgress(step = currentStep, initState = initState)
+        OnboardingProgress(
+            step = currentStep,
+            initState = initState,
+            totalSteps = totalSteps,
+            currentStepIndex = currentStepIndex
+        )
         Column(Modifier.weight(1f).fillMaxWidth()) {
             HeaderRow(
                 title = stringResource(Res.string.settings_no_check_certificate_title),

@@ -39,6 +39,11 @@ data class VideoInfo(
     fun getAllSubtitleLanguages(): Set<String> = availableSubtitles.keys
 
     /**
+     * Helper to get all available subtitles with their info (both manual and automatic)
+     */
+    fun getAllSubtitles(): Map<String, SubtitleInfo> = availableSubtitles + automaticCaptions
+
+    /**
      * Helper to get only manual subtitle languages
      */
     fun getManualSubtitleLanguages(): Set<String> =
