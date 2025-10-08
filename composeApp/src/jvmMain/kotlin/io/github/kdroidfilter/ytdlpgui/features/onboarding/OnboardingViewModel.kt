@@ -3,6 +3,8 @@ package io.github.kdroidfilter.ytdlpgui.features.onboarding
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.russhwolf.settings.Settings
+import io.github.kdroidfilter.platformtools.LinuxDesktopEnvironment
+import io.github.kdroidfilter.platformtools.detectLinuxDesktopEnvironment
 import io.github.kdroidfilter.ytdlpgui.core.config.SettingsKeys
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Navigator
@@ -25,6 +27,9 @@ class OnboardingViewModel(
 
     private val initViewModel: InitViewModel by inject()
     val initState = initViewModel.state
+
+    // Check if user is running GNOME desktop environment
+    private val isGnome = detectLinuxDesktopEnvironment() == LinuxDesktopEnvironment.GNOME
 
     init {
         // Start downloading yt-dlp and ffmpeg in background during onboarding
@@ -56,6 +61,7 @@ class OnboardingViewModel(
         when (event) {
             is OnboardingEvents.OnStart -> handleStart()
             is OnboardingEvents.OnNext -> handleNext()
+            is OnboardingEvents.OnPrevious -> handlePrevious()
             is OnboardingEvents.OnSkip -> handleSkip()
             is OnboardingEvents.OnFinish -> handleFinish()
             is OnboardingEvents.OnPickDownloadDir -> handlePickDownloadDir(event.title)
@@ -75,10 +81,9 @@ class OnboardingViewModel(
         val nextStep = when (_currentStep.value) {
             OnboardingStep.Welcome -> OnboardingStep.DownloadDir
             OnboardingStep.DownloadDir -> OnboardingStep.Cookies
-            OnboardingStep.Cookies -> OnboardingStep.IncludePreset
-            OnboardingStep.IncludePreset -> OnboardingStep.Parallel
-            OnboardingStep.Parallel -> OnboardingStep.NoCheckCert
-            OnboardingStep.NoCheckCert -> OnboardingStep.Clipboard
+            OnboardingStep.Cookies -> OnboardingStep.NoCheckCert
+            OnboardingStep.NoCheckCert -> if (isGnome) OnboardingStep.GnomeFocus else OnboardingStep.Clipboard
+            OnboardingStep.GnomeFocus -> OnboardingStep.Clipboard
             OnboardingStep.Clipboard -> OnboardingStep.Finish
             OnboardingStep.Finish -> OnboardingStep.Finish
         }
@@ -88,6 +93,20 @@ class OnboardingViewModel(
         } else {
             navigateToStep(nextStep)
         }
+    }
+
+    private fun handlePrevious() {
+        val previousStep = when (_currentStep.value) {
+            OnboardingStep.Welcome -> OnboardingStep.Welcome
+            OnboardingStep.DownloadDir -> OnboardingStep.Welcome
+            OnboardingStep.Cookies -> OnboardingStep.DownloadDir
+            OnboardingStep.NoCheckCert -> OnboardingStep.Cookies
+            OnboardingStep.GnomeFocus -> OnboardingStep.NoCheckCert
+            OnboardingStep.Clipboard -> if (isGnome) OnboardingStep.GnomeFocus else OnboardingStep.NoCheckCert
+            OnboardingStep.Finish -> OnboardingStep.Clipboard
+        }
+
+        navigateToStep(previousStep)
     }
 
     private fun handleSkip() {
@@ -158,9 +177,8 @@ class OnboardingViewModel(
         OnboardingStep.Welcome -> Destination.Onboarding.Welcome
         OnboardingStep.DownloadDir -> Destination.Onboarding.DownloadDir
         OnboardingStep.Cookies -> Destination.Onboarding.Cookies
-        OnboardingStep.IncludePreset -> Destination.Onboarding.IncludePreset
-        OnboardingStep.Parallel -> Destination.Onboarding.Parallel
         OnboardingStep.NoCheckCert -> Destination.Onboarding.NoCheckCert
+        OnboardingStep.GnomeFocus -> Destination.Onboarding.GnomeFocus
         OnboardingStep.Clipboard -> Destination.Onboarding.Clipboard
         OnboardingStep.Finish -> Destination.Onboarding.Finish
     }

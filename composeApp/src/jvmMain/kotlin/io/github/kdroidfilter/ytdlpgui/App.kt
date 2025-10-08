@@ -36,9 +36,8 @@ import io.github.kdroidfilter.ytdlpgui.features.onboarding.clipboard.ClipboardSc
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.cookies.CookiesScreen
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.downloaddir.DownloadDirScreen
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.finish.FinishScreen
-import io.github.kdroidfilter.ytdlpgui.features.onboarding.includepreset.IncludePresetScreen
+import io.github.kdroidfilter.ytdlpgui.features.onboarding.gnomefocus.GnomeFocusScreen
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.nocheckcert.NoCheckCertScreen
-import io.github.kdroidfilter.ytdlpgui.features.onboarding.parallel.ParallelScreen
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.welcome.WelcomeScreen
 import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsScreen
 import io.github.kdroidfilter.ytdlpgui.features.download.single.SingleDownloadScreen
@@ -122,14 +121,11 @@ fun App() {
                 noAnimatedComposable<Destination.Onboarding.Cookies> {
                     CookiesScreen(viewModel = onboardingViewModel(navController, it))
                 }
-                noAnimatedComposable<Destination.Onboarding.IncludePreset> {
-                    IncludePresetScreen(viewModel = onboardingViewModel(navController, it))
-                }
-                noAnimatedComposable<Destination.Onboarding.Parallel> {
-                    ParallelScreen(viewModel = onboardingViewModel(navController, it))
-                }
                 noAnimatedComposable<Destination.Onboarding.NoCheckCert> {
                     NoCheckCertScreen(viewModel = onboardingViewModel(navController, it))
+                }
+                noAnimatedComposable<Destination.Onboarding.GnomeFocus> {
+                    GnomeFocusScreen(viewModel = onboardingViewModel(navController, it))
                 }
                 noAnimatedComposable<Destination.Onboarding.Clipboard> {
                     ClipboardScreen(viewModel = onboardingViewModel(navController, it))

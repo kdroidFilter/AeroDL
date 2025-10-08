@@ -3,6 +3,7 @@ package io.github.kdroidfilter.ytdlpgui.features.onboarding
 sealed class OnboardingEvents {
     data object OnStart : OnboardingEvents()
     data object OnNext : OnboardingEvents()
+    data object OnPrevious : OnboardingEvents()
     data object OnSkip : OnboardingEvents()
     data object OnFinish : OnboardingEvents()
 

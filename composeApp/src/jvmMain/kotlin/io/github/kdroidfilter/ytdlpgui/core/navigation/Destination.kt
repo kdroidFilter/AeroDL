@@ -47,13 +47,10 @@ sealed interface Destination {
         data object Cookies : Onboarding
 
         @Serializable
-        data object IncludePreset : Onboarding
-
-        @Serializable
-        data object Parallel : Onboarding
-
-        @Serializable
         data object NoCheckCert : Onboarding
+
+        @Serializable
+        data object GnomeFocus : Onboarding
 
         @Serializable
         data object Clipboard : Onboarding

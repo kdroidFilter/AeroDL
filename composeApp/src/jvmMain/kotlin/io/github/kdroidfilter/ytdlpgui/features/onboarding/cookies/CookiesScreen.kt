@@ -108,6 +108,7 @@ fun CookiesView(
         }
         NavigationRow(
             onNext = { onEvent(OnboardingEvents.OnNext) },
+            onPrevious = { onEvent(OnboardingEvents.OnPrevious) },
             onSkip = { onEvent(OnboardingEvents.OnSkip) }
         )
     }

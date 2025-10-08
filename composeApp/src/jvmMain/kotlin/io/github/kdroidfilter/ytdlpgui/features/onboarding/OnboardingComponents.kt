@@ -20,7 +20,15 @@ import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.onboarding_progress_label
 import ytdlpgui.composeapp.generated.resources.next
+import ytdlpgui.composeapp.generated.resources.onboarding_previous
 import ytdlpgui.composeapp.generated.resources.onboarding_skip
+import ytdlpgui.composeapp.generated.resources.status_checking
+import ytdlpgui.composeapp.generated.resources.status_downloading
+import ytdlpgui.composeapp.generated.resources.status_updating
+import ytdlpgui.composeapp.generated.resources.status_installed
+import ytdlpgui.composeapp.generated.resources.status_pending
+import ytdlpgui.composeapp.generated.resources.status_error
+import ytdlpgui.composeapp.generated.resources.unknown_dependency
 
 @Composable
 internal fun HeaderRow(title: String, subtitle: String? = null) {
@@ -39,7 +47,7 @@ internal fun OnboardingProgress(
     modifier: Modifier = Modifier,
     initState: InitState? = null,
 ) {
-    val steps = remember { OnboardingStep.values().toList() }
+    val steps = remember { OnboardingStep.entries }
     val currentIndex = steps.indexOf(step).takeIf { it >= 0 } ?: 0
     val totalSteps = steps.size
     val progress = ((currentIndex + 1).toFloat() / totalSteps.toFloat()).coerceIn(0f, 1f)
@@ -71,27 +79,27 @@ private fun DependencyStatus(name: String, initState: InitState) {
     val statusText = when (name) {
         "yt-dlp" -> {
             when {
-                initState.checkingYtDlp -> "Checking..."
-                initState.downloadingYtDlp -> "Downloading ${initState.downloadYtDlpProgress?.let { "(${(it * 100).toInt()}%)" } ?: ""}"
-                initState.updatingYtdlp -> "Updating..."
-                initState.errorMessage != null -> "Error: ${initState.errorMessage}"
-                initState.initCompleted -> "Installed"
-                else -> "Unknown"
+                initState.checkingYtDlp -> stringResource(Res.string.status_checking)
+                initState.downloadingYtDlp -> "${stringResource(Res.string.status_downloading)} ${initState.downloadYtDlpProgress?.let { "(${it.toInt()}%)" } ?: ""}"
+                initState.updatingYtdlp -> stringResource(Res.string.status_updating)
+                initState.errorMessage != null -> stringResource(Res.string.status_error, initState.errorMessage)
+                initState.initCompleted -> stringResource(Res.string.status_installed)
+                else -> stringResource(Res.string.status_pending)
             }
         }
 
         "ffmpeg" -> {
             when {
-                initState.checkingFFmpeg -> "Checking..."
-                initState.downloadingFFmpeg -> "Downloading ${initState.downloadFfmpegProgress?.let { "(${(it * 100).toInt()}%)" } ?: ""}"
-                initState.updatingFFmpeg -> "Updating..."
-                initState.errorMessage != null -> "Error: ${initState.errorMessage}"
-                initState.initCompleted -> "Installed"
-                else -> "Unknown"
+                initState.checkingFFmpeg -> stringResource(Res.string.status_checking)
+                initState.downloadingFFmpeg -> "${stringResource(Res.string.status_downloading)} ${initState.downloadFfmpegProgress?.let { "(${it.toInt()}%)" } ?: ""}"
+                initState.updatingFFmpeg -> stringResource(Res.string.status_updating)
+                initState.errorMessage != null -> stringResource(Res.string.status_error, initState.errorMessage)
+                initState.initCompleted -> stringResource(Res.string.status_installed)
+                else -> stringResource(Res.string.status_pending)
             }
         }
 
-        else -> "Unknown dependency"
+        else -> stringResource(Res.string.unknown_dependency)
     }
     Text("$name: $statusText")
 }
@@ -99,23 +107,36 @@ private fun DependencyStatus(name: String, initState: InitState) {
 @Composable
 internal fun NavigationRow(
     onNext: () -> Unit,
+    onPrevious: (() -> Unit)? = null,
     onSkip: (() -> Unit)? = null,
     nextLabel: String? = null,
+    previousLabel: String? = null,
     skipLabel: String? = null
 ) {
     val resolvedNext = nextLabel ?: stringResource(Res.string.next)
+    val resolvedPrevious = previousLabel ?: stringResource(Res.string.onboarding_previous)
     val resolvedSkip = skipLabel ?: stringResource(Res.string.onboarding_skip)
     Row(
         modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
-        horizontalArrangement = Arrangement.End
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        if (onSkip != null) {
-            Button(
-                modifier = Modifier.padding(end = 8.dp),
-                onClick = onSkip,
-                content = { Text(resolvedSkip) }
-            )
+        Row {
+            if (onPrevious != null) {
+                Button(
+                    onClick = onPrevious,
+                    content = { Text(resolvedPrevious) }
+                )
+            }
         }
-        Button(onClick = onNext, content = { Text(resolvedNext) })
+        Row {
+            if (onSkip != null) {
+                Button(
+                    modifier = Modifier.padding(end = 8.dp),
+                    onClick = onSkip,
+                    content = { Text(resolvedSkip) }
+                )
+            }
+            Button(onClick = onNext, content = { Text(resolvedNext) })
+        }
     }
 }

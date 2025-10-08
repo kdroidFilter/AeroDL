@@ -32,6 +32,12 @@
     <string name="downloading_ffmpeg">Téléchargement de FFmpeg…</string>
     <string name="updating_ytdlp">Mise à jour de yt-dlp…</string>
     <string name="updating_ffmpeg">Mise à jour de FFmpeg…</string>
+    <string name="status_checking">Vérification…</string>
+    <string name="status_downloading">Téléchargement</string>
+    <string name="status_updating">Mise à jour…</string>
+    <string name="status_installed">Installé</string>
+    <string name="status_error">Erreur : %1$s</string>
+    <string name="unknown_dependency">Dépendance inconnue</string>
 
     <!-- Messages d’erreur -->
     <string name="error_occurred">Une erreur s’est produite</string>
@@ -90,12 +96,16 @@
 
     <!-- Parcours d'onboarding -->
     <string name="onboarding_progress_label">Étape %1$d sur %2$d</string>
+    <string name="onboarding_previous">Précédent</string>
     <string name="onboarding_skip">Ignorer</string>
     <string name="onboarding_welcome_title">Bienvenue dans AeroDL</string>
     <string name="onboarding_welcome_subtitle">Configurons quelques réglages pour bien démarrer.</string>
     <string name="onboarding_start">Commencer</string>
     <string name="onboarding_parallel_selected">Sélectionné : %1$d</string>
     <string name="onboarding_complete_message">Configuration terminée…</string>
+    <string name="onboarding_gnome_focus_title">Améliorer l'expérience GNOME</string>
+    <string name="onboarding_gnome_focus_caption">GNOME bloque par défaut le focus des fenêtres. Nous recommandons d'installer l'extension "Steal My Focus" pour une meilleure expérience de l'application dans la barre système.</string>
+    <string name="onboarding_gnome_focus_open_extension">Ouvrir la page de l'extension</string>
     <string name="common_enabled">Activé</string>
     <string name="common_disabled">Désactivé</string>
 

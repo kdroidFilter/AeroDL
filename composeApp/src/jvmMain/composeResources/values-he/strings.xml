@@ -31,6 +31,12 @@
     <string name="downloading_ffmpeg">מוריד את FFmpeg…</string>
     <string name="updating_ytdlp">מעדכן את yt-dlp…</string>
     <string name="updating_ffmpeg">מעדכן את FFmpeg…</string>
+    <string name="status_checking">בודק…</string>
+    <string name="status_downloading">מוריד</string>
+    <string name="status_updating">מעדכן…</string>
+    <string name="status_installed">מותקן</string>
+    <string name="status_error">שגיאה: %1$s</string>
+    <string name="unknown_dependency">תלות לא ידועה</string>
 
     <!-- הודעות שגיאה -->
     <string name="error_occurred">אירעה שגיאה</string>
@@ -81,12 +87,16 @@
 
     <!-- מסלול ההגדרה -->
     <string name="onboarding_progress_label">שלב %1$d מתוך %2$d</string>
+    <string name="onboarding_previous">הקודם</string>
     <string name="onboarding_skip">דלג</string>
     <string name="onboarding_welcome_title">ברוכים הבאים ל-AeroDL</string>
     <string name="onboarding_welcome_subtitle">נגדיר כמה אפשרויות לפני שמתחילים.</string>
     <string name="onboarding_start">התחלה</string>
     <string name="onboarding_parallel_selected">נבחר: %1$d</string>
     <string name="onboarding_complete_message">ההגדרה הושלמה…</string>
+    <string name="onboarding_gnome_focus_title">שיפור החוויה ב-GNOME</string>
+    <string name="onboarding_gnome_focus_caption">GNOME חוסם מיקוד חלונות כברירת מחדל. אנו ממליצים להתקין את התוסף "Steal My Focus" לחוויה טובה יותר של אפליקציה במגש המערכת.</string>
+    <string name="onboarding_gnome_focus_open_extension">פתח דף התוסף</string>
     <string name="common_enabled">מופעל</string>
     <string name="common_disabled">מושבת</string>
 

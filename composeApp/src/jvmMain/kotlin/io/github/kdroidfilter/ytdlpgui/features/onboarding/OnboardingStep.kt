@@ -3,9 +3,8 @@ enum class OnboardingStep {
     Welcome,
     DownloadDir,
     Cookies,
-    IncludePreset,
-    Parallel,
     NoCheckCert,
+    GnomeFocus,
     Clipboard,
     Finish
 }
