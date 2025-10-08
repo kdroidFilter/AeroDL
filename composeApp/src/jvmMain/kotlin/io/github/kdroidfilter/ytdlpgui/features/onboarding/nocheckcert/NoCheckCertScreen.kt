@@ -111,7 +111,6 @@ fun NoCheckCertView(
         NavigationRow(
             onNext = { onEvent(OnboardingEvents.OnNext) },
             onPrevious = { onEvent(OnboardingEvents.OnPrevious) },
-            onSkip = null,  // Remove skip button - user must accept
             nextEnabled = state.noCheckCertificate  // Disable Next until user accepts
         )
     }

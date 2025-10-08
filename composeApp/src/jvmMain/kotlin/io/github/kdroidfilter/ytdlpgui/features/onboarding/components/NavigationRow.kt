@@ -22,15 +22,12 @@ import ytdlpgui.composeapp.generated.resources.onboarding_skip
 internal fun NavigationRow(
     onNext: () -> Unit,
     onPrevious: (() -> Unit)? = null,
-    onSkip: (() -> Unit)? = null,
     nextLabel: String? = null,
     previousLabel: String? = null,
-    skipLabel: String? = null,
     nextEnabled: Boolean = true
 ) {
     val resolvedNext = nextLabel ?: stringResource(Res.string.next)
     val resolvedPrevious = previousLabel ?: stringResource(Res.string.onboarding_previous)
-    val resolvedSkip = skipLabel ?: stringResource(Res.string.onboarding_skip)
     Row(
         modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
         horizontalArrangement = Arrangement.SpaceBetween
@@ -44,13 +41,6 @@ internal fun NavigationRow(
             }
         }
         Row {
-            if (onSkip != null) {
-                Button(
-                    modifier = Modifier.padding(end = 8.dp),
-                    onClick = onSkip,
-                    content = { Text(resolvedSkip) }
-                )
-            }
             Button(
                 onClick = onNext,
                 disabled = !nextEnabled,
@@ -68,7 +58,6 @@ private fun NavigationRowFullPreview() {
             NavigationRow(
                 onNext = {},
                 onPrevious = {},
-                onSkip = {},
                 nextEnabled = true
             )
         }
