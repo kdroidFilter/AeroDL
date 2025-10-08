@@ -50,6 +50,6 @@ val appModule = module {
     viewModel { DownloadViewModel(get(), get(), get<DownloadHistoryRepository>()) }
     single { SettingsViewModel(get(), get(), get(), get(), get<TrayAppState>(), get<AutoLaunch>()) }
     viewModel { SingleDownloadViewModel(get(), get(), get(), get()) }
-    viewModel { OnboardingViewModel(get(), get()) }
+    viewModel { OnboardingViewModel(get(), get(), get()) }
 
 }

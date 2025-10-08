@@ -13,6 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.Button
+import io.github.composefluent.component.InfoBar
+import io.github.composefluent.component.InfoBarDefaults
 import io.github.composefluent.component.ProgressBar
 import io.github.composefluent.component.Text
 import io.github.kdroidfilter.ytdlpgui.features.init.InitState
@@ -28,7 +30,6 @@ import ytdlpgui.composeapp.generated.resources.status_updating
 import ytdlpgui.composeapp.generated.resources.status_installed
 import ytdlpgui.composeapp.generated.resources.status_pending
 import ytdlpgui.composeapp.generated.resources.status_error
-import ytdlpgui.composeapp.generated.resources.unknown_dependency
 
 @Composable
 internal fun HeaderRow(title: String, subtitle: String? = null) {
@@ -70,40 +71,46 @@ internal fun OnboardingProgress(
         )
         if (initState != null) {
             Spacer(Modifier.height(12.dp))
-            DependencyStatus("yt-dlp", initState)
-            DependencyStatus("ffmpeg", initState)
+            DependencyInfoBars(initState)
         }
     }
 }
 
 @Composable
-private fun DependencyStatus(name: String, initState: InitState) {
-    val statusText = when (name) {
-        "yt-dlp" -> {
-            when {
-                initState.checkingYtDlp -> stringResource(Res.string.status_checking)
-                initState.downloadingYtDlp -> "${stringResource(Res.string.status_downloading)} ${initState.downloadYtDlpProgress?.let { "(${it.toInt()}%)" } ?: ""}"
-                initState.updatingYtdlp -> stringResource(Res.string.status_updating)
-                initState.errorMessage != null -> stringResource(Res.string.status_error, initState.errorMessage)
-                initState.initCompleted -> stringResource(Res.string.status_installed)
-                else -> stringResource(Res.string.status_pending)
-            }
+private fun DependencyInfoBars(initState: InitState) {
+    val visible = !initState.initCompleted ||
+                  initState.checkingYtDlp || initState.downloadingYtDlp || initState.updatingYtdlp ||
+                  initState.checkingFFmpeg || initState.downloadingFFmpeg || initState.updatingFFmpeg ||
+                  initState.errorMessage != null
+
+    if (visible) {
+        val ytDlpStatus = when {
+            initState.checkingYtDlp -> stringResource(Res.string.status_checking)
+            initState.downloadingYtDlp -> "${stringResource(Res.string.status_downloading)} ${initState.downloadYtDlpProgress?.let { "(${it.toInt()}%)" } ?: ""}"
+            initState.updatingYtdlp -> stringResource(Res.string.status_updating)
+            initState.errorMessage != null -> stringResource(Res.string.status_error, initState.errorMessage)
+            initState.initCompleted -> stringResource(Res.string.status_installed)
+            else -> stringResource(Res.string.status_pending)
         }
 
-        "ffmpeg" -> {
-            when {
-                initState.checkingFFmpeg -> stringResource(Res.string.status_checking)
-                initState.downloadingFFmpeg -> "${stringResource(Res.string.status_downloading)} ${initState.downloadFfmpegProgress?.let { "(${it.toInt()}%)" } ?: ""}"
-                initState.updatingFFmpeg -> stringResource(Res.string.status_updating)
-                initState.errorMessage != null -> stringResource(Res.string.status_error, initState.errorMessage)
-                initState.initCompleted -> stringResource(Res.string.status_installed)
-                else -> stringResource(Res.string.status_pending)
-            }
+        val ffmpegStatus = when {
+            initState.checkingFFmpeg -> stringResource(Res.string.status_checking)
+            initState.downloadingFFmpeg -> "${stringResource(Res.string.status_downloading)} ${initState.downloadFfmpegProgress?.let { "(${it.toInt()}%)" } ?: ""}"
+            initState.updatingFFmpeg -> stringResource(Res.string.status_updating)
+            initState.errorMessage != null -> stringResource(Res.string.status_error, initState.errorMessage)
+            initState.initCompleted -> stringResource(Res.string.status_installed)
+            else -> stringResource(Res.string.status_pending)
         }
 
-        else -> stringResource(Res.string.unknown_dependency)
+        val combinedMessage = "yt-dlp: $ytDlpStatus\nFFmpeg: $ffmpegStatus"
+
+        InfoBar(
+            title = { Text("Dependencies") },
+            message = { Text(combinedMessage) },
+            colors = InfoBarDefaults.colors(),
+            icon = { InfoBarDefaults.Badge() }
+        )
     }
-    Text("$name: $statusText")
 }
 
 @Composable

@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.Checkbox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -20,6 +19,8 @@ import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.Icon
 import io.github.composefluent.component.Text
 import io.github.composefluent.icons.Icons
+import io.github.composefluent.component.CheckBox
+
 import io.github.composefluent.icons.regular.LockShield
 import io.github.composefluent.icons.regular.Warning
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.HeaderRow
@@ -94,10 +95,11 @@ fun NoCheckCertView(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(vertical = 8.dp)
             ) {
-                Checkbox(
-                    checked = state.noCheckCertificate,
-                    onCheckedChange = { onEvent(OnboardingEvents.OnSetNoCheckCertificate(it)) }
+                CheckBox(
+                    state.noCheckCertificate,
+                    onCheckStateChange = { onEvent(OnboardingEvents.OnSetNoCheckCertificate(it)) }
                 )
+
                 Spacer(Modifier.width(8.dp))
                 Text(stringResource(Res.string.onboarding_filtered_network_accept))
             }

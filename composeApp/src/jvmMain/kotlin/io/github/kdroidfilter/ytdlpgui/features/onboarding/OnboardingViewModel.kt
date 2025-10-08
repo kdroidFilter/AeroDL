@@ -1,7 +1,12 @@
+@file:OptIn(ExperimentalTrayAppApi::class)
+
 package io.github.kdroidfilter.ytdlpgui.features.onboarding
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
+import com.kdroid.composetray.tray.api.TrayAppState
+import com.kdroid.composetray.tray.api.TrayWindowDismissMode
 import com.russhwolf.settings.Settings
 import io.github.kdroidfilter.platformtools.LinuxDesktopEnvironment
 import io.github.kdroidfilter.platformtools.detectLinuxDesktopEnvironment
@@ -24,6 +29,7 @@ import org.koin.core.component.inject
 class OnboardingViewModel(
     private val settings: Settings,
     private val navigator: Navigator,
+    private val trayAppState: TrayAppState,
 ) : ViewModel(), KoinComponent {
 
     private val initViewModel: InitViewModel by inject()
@@ -166,6 +172,7 @@ class OnboardingViewModel(
 
     private fun handlePickDownloadDir(title: String) {
         viewModelScope.launch {
+            trayAppState.setDismissMode(TrayWindowDismissMode.MANUAL)
             val dir = FileKit.openDirectoryPicker(
                 title = title,
                 directory = null,
@@ -176,6 +183,7 @@ class OnboardingViewModel(
                 _downloadDirPath.value = path
                 settings.putString(SettingsKeys.DOWNLOAD_DIR, path)
             }
+            trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
         }
     }
 
