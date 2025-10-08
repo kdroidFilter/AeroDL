@@ -1,6 +1,12 @@
 package io.github.kdroidfilter.ytdlpgui.features.system.about
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import io.github.composefluent.component.Text
 import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.*
@@ -17,9 +23,19 @@ fun AboutScreen() {
 }
 
 @Composable
+fun collectAboutState(viewModel: AboutViewModel): AboutState {
+    return viewModel.state.collectAsState().value
+}
+
+@Composable
 fun AboutView(
     state: AboutState,
     onEvent: (AboutEvents) -> Unit,
 ) {
-    Text(stringResource(Res.string.about_screen_title))
+    Column {
+        Text(stringResource(Res.string.about_screen_title))
+        Spacer(Modifier.height(16.dp))
+        Text("Version: ${state.appVersion}")
+        Text("yt-dlp version: ${state.ytdlpVersion ?: "Not found"}")
+    }
 }

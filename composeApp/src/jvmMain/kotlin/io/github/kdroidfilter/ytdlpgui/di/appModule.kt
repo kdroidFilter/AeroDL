@@ -45,7 +45,7 @@ val appModule = module {
     single { AutoLaunch(appPackageName = "io.github.kdroidfilter.ytdlpgui") }
 
     viewModel { HomeViewModel(get(), get()) }
-    viewModel { AboutViewModel(get()) }
+    viewModel { AboutViewModel(get(), get()) }
     viewModel { BulkDownloadViewModel(get()) }
     viewModel { DownloadViewModel(get(), get(), get<DownloadHistoryRepository>()) }
     single { SettingsViewModel(get(), get(), get(), get(), get<TrayAppState>(), get<AutoLaunch>()) }
