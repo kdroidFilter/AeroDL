@@ -70,7 +70,9 @@ import io.github.kdroidfilter.ytdlpgui.core.util.infoln
 
 @OptIn(ExperimentalTrayAppApi::class, ExperimentalFluentApi::class)
 fun main() = application {
-    clearJavaTempDir()
+    val cleanInstall = System.getProperty("cleanInstall", "false").toBoolean()
+
+    if (cleanInstall) { clearJavaTempDir() }
 //    Locale.setDefault(Locale.ENGLISH)
     KoinApplication(application = {
         modules(appModule)
@@ -100,8 +102,7 @@ fun main() = application {
                 runCatching { koin.declare(trayAppState) }
             }
 
-            // Uncomment to clear settings on startup
-             clearSettings(koin.get())
+            if (cleanInstall) { clearSettings(koin.get()) }
 
             val isSingleInstance = SingleInstanceManager.isSingleInstance(
                 onRestoreRequest = {

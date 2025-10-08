@@ -8,7 +8,6 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.sqlDelight)
     alias(libs.plugins.hydraulicConveyor)
-
 }
 
 version = "1.0.0"
@@ -84,6 +83,12 @@ kotlin {
 compose.desktop {
     application {
         mainClass = "io.github.kdroidfilter.ytdlpgui.MainKt"
+
+        // Pass JVM arguments to the application
+        val cleanInstall = project.findProperty("cleanInstall")?.toString()?.toBoolean() ?: false
+        jvmArgs += listOf(
+            "-DcleanInstall=$cleanInstall"
+        )
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)

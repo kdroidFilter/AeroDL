@@ -31,6 +31,7 @@ koin = "4.1.1"
 sqlDelight = "2.1.0"
 
 hydraulicConveyor = "1.12"
+buildConfig = "5.7.0"
 
 
 [libraries]
@@ -86,3 +87,4 @@ metro = { id = "dev.zacsweers.metro", version.ref = "metro" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 sqlDelight = { id = "app.cash.sqldelight", version.ref = "sqlDelight" }
 hydraulicConveyor = { id = "dev.hydraulic.conveyor", version.ref = "hydraulicConveyor" }
+buildConfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildConfig" }
