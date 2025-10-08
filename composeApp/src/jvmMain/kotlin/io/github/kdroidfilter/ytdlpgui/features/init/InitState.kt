@@ -19,7 +19,51 @@ data class InitState(
     val updatingFFmpeg: Boolean = false,
 
     val initCompleted: Boolean = false,
-)
+) {
+    companion object {
+        // Preview States
+        val checkingYtDlpState = InitState(
+            checkingYtDlp = true
+        )
+
+        val downloadingYtDlpState = InitState(
+            downloadingYtDlp = true,
+            downloadYtDlpProgress = 45.5f
+        )
+
+        val updatingYtDlpState = InitState(
+            updatingYtdlp = true
+        )
+
+        val checkingFFmpegState = InitState(
+            checkingFFmpeg = true
+        )
+
+        val downloadingFFmpegState = InitState(
+            downloadingFFmpeg = true,
+            downloadFfmpegProgress = 72.3f
+        )
+
+        val updatingFFmpegState = InitState(
+            updatingFFmpeg = true
+        )
+
+        val errorState = InitState(
+            errorMessage = "Failed to download yt-dlp: Connection timeout"
+        )
+
+        val completedState = InitState(
+            initCompleted = true
+        )
+
+        val downloadingBothState = InitState(
+            downloadingYtDlp = true,
+            downloadYtDlpProgress = 35.0f,
+            downloadingFFmpeg = true,
+            downloadFfmpegProgress = 60.0f
+        )
+    }
+}
 
 @Composable
 fun collectInitState(viewModel: InitViewModel) : InitState {

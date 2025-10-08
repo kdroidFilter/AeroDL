@@ -27,14 +27,10 @@ class InitViewModel(
 
     init {
         viewModelScope.launch {
-//            settings.remove(SettingsKeys.DOWNLOAD_DIR)
-//            settings.remove(SettingsKeys.ONBOARDING_COMPLETED)
-
             // Check if onboarding is completed
             val onboardingCompleted = settings.getBoolean(SettingsKeys.ONBOARDING_COMPLETED, false)
-            val alreadyConfigured = settings.getString(SettingsKeys.DOWNLOAD_DIR, "").isNotBlank()
 
-            if (!onboardingCompleted && !alreadyConfigured) {
+            if (!onboardingCompleted) {
                 // Not configured → go to onboarding
                 navigator.navigateAndClearBackStack(Destination.Onboarding.Graph)
                 return@launch
@@ -98,7 +94,11 @@ class InitViewModel(
                             checkingFFmpeg = true,
                             downloadingFFmpeg = false,
                             downloadFfmpegProgress = null,
-                            errorMessage = null
+                            errorMessage = null,
+                            checkingYtDlp = false,
+                            downloadingYtDlp = false,
+                            updatingYtdlp = false,
+
                         )
                     }
                     is YtDlpWrapper.InitEvent.YtDlpProgress -> {

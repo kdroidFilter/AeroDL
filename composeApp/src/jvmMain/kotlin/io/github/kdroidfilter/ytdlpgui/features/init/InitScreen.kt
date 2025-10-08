@@ -1,28 +1,24 @@
 package io.github.kdroidfilter.ytdlpgui.features.init
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.Icon
 import io.github.composefluent.component.ProgressRing
 import io.github.composefluent.component.Text
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnly
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
 import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.checking_ffmpeg
@@ -32,7 +28,6 @@ import ytdlpgui.composeapp.generated.resources.downloading_ytdlp
 import ytdlpgui.composeapp.generated.resources.error_occurred
 import ytdlpgui.composeapp.generated.resources.updating_ffmpeg
 import ytdlpgui.composeapp.generated.resources.updating_ytdlp
-import kotlin.math.roundToInt
 
 @Composable
 fun InitScreen() {
@@ -52,6 +47,15 @@ fun InitView(state: InitState) {
         Spacer(Modifier.size(32.dp))
 
         if (state.errorMessage == null) {
+            // Show progress ring when any operation is in progress
+            val isInProgress = state.checkingYtDlp || state.downloadingYtDlp || state.updatingYtdlp ||
+                    state.checkingFFmpeg || state.downloadingFFmpeg || state.updatingFFmpeg
+
+            if (isInProgress) {
+                ProgressRing(modifier = Modifier.size(48.dp))
+                Spacer(Modifier.height(16.dp))
+            }
+
             if (state.checkingYtDlp) Text(text = stringResource(Res.string.checking_ytdlp))
             if (state.downloadingYtDlp) {
                 val progress = (state.downloadYtDlpProgress ?: 0f)
@@ -77,4 +81,62 @@ fun InitView(state: InitState) {
             }
         }
     }
+}
+
+// ================================================================================================
+// Preview States & Previews
+// ================================================================================================
+
+@Preview
+@Composable
+fun InitScreenPreviewCheckingYtDlp() {
+    InitView(state = InitState.checkingYtDlpState)
+}
+
+@Preview
+@Composable
+fun InitScreenPreviewDownloadingYtDlp() {
+    InitView(state = InitState.downloadingYtDlpState)
+}
+
+@Preview
+@Composable
+fun InitScreenPreviewUpdatingYtDlp() {
+    InitView(state = InitState.updatingYtDlpState)
+}
+
+@Preview
+@Composable
+fun InitScreenPreviewCheckingFFmpeg() {
+    InitView(state = InitState.checkingFFmpegState)
+}
+
+@Preview
+@Composable
+fun InitScreenPreviewDownloadingFFmpeg() {
+    InitView(state = InitState.downloadingFFmpegState)
+}
+
+@Preview
+@Composable
+fun InitScreenPreviewUpdatingFFmpeg() {
+    InitView(state = InitState.updatingFFmpegState)
+}
+
+@Preview
+@Composable
+fun InitScreenPreviewError() {
+    InitView(state = InitState.errorState)
+}
+
+@Preview
+@Composable
+fun InitScreenPreviewCompleted() {
+    InitView(state = InitState.completedState)
+}
+
+@Preview
+@Composable
+fun InitScreenPreviewDownloadingBoth() {
+    InitView(state = InitState.downloadingBothState)
 }
