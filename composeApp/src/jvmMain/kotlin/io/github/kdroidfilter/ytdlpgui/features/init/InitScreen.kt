@@ -48,59 +48,32 @@ fun InitView(state: InitState) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        val percent = if (state.downloadingYtDlp && state.downloadYtDlpProgress != null) state.downloadYtDlpProgress
-        else if (state.downloadingFFmpeg && state.downloadFfmpegProgress != null) state.downloadFfmpegProgress
-        else 0.0
-
-        val percentText = if (percent != 0.0) "${(percent.toFloat()).roundToInt()}%" else ""
-
-        if (percent != 0.0) {
-            Icon(AeroDlLogoOnly, null, modifier = Modifier.height(100.dp))
-
-            Spacer(Modifier.size(32.dp))
-        }
+        Icon(AeroDlLogoOnly, null, modifier = Modifier.height(100.dp))
+        Spacer(Modifier.size(32.dp))
 
         if (state.errorMessage == null) {
-            Box(
-                modifier = Modifier.size(33.dp)
-            ) {
-                if (percent != 0.0) ProgressRing(
-                    progress = percent.toFloat() / 100,
-                    Modifier.fillMaxSize()
-                ) else ProgressRing(Modifier.fillMaxSize())
-
-                Text(
-                    percentText,
-                    style = FluentTheme.typography.caption,
-                    fontSize = 12.sp,
-                    textAlign = TextAlign.Center,
-                    maxLines = 1,
-                    modifier = Modifier.offset(x = if (percent == 100.0f) 2.dp else 4.dp, y = 8.dp)
-                )
+            if (state.checkingYtDlp) Text(text = stringResource(Res.string.checking_ytdlp))
+            if (state.downloadingYtDlp) {
+                val progress = (state.downloadYtDlpProgress ?: 0f)
+                Text(text = stringResource(Res.string.downloading_ytdlp) + " ${progress.toInt()}%")
             }
-            Spacer(Modifier.size(16.dp))
-        }
+            if (state.updatingYtdlp) Text(text = stringResource(Res.string.updating_ytdlp))
 
-        when {
-            state.checkingYtDlp -> Text(text = stringResource(Res.string.checking_ytdlp))
-            state.checkingFFmpeg -> Text(text = stringResource(Res.string.checking_ffmpeg))
-            state.downloadingYtDlp -> Text(text = stringResource(Res.string.downloading_ytdlp))
-            state.downloadingFFmpeg -> Text(text = stringResource(Res.string.downloading_ffmpeg))
-            state.updatingYtdlp -> Text(text = stringResource(Res.string.updating_ytdlp))
-            state.updatingFFmpeg -> Text(text = stringResource(Res.string.updating_ffmpeg))
-            state.errorMessage != null -> {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
+            Spacer(Modifier.height(8.dp))
 
-                    Row {
-                        Text(text = stringResource(Res.string.error_occurred))
-                        Spacer(Modifier.width(8.dp))
-                        Text(
-                            text = state.errorMessage, color = FluentTheme.colors.system.critical
-                        )
-                    }
-                }
+            if (state.checkingFFmpeg) Text(text = stringResource(Res.string.checking_ffmpeg))
+            if (state.downloadingFFmpeg) {
+                val progress = (state.downloadFfmpegProgress ?: 0f)
+                Text(text = stringResource(Res.string.downloading_ffmpeg) + " ${progress.toInt()}%")
+            }
+            if (state.updatingFFmpeg) Text(text = stringResource(Res.string.updating_ffmpeg))
+        } else {
+            Row {
+                Text(text = stringResource(Res.string.error_occurred))
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = state.errorMessage, color = FluentTheme.colors.system.critical
+                )
             }
         }
     }

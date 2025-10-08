@@ -6,6 +6,7 @@ import com.russhwolf.settings.Settings
 import io.github.kdroidfilter.ytdlpgui.core.config.SettingsKeys
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Navigator
+import io.github.kdroidfilter.ytdlpgui.features.init.InitViewModel
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
 import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
@@ -13,11 +14,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
 class OnboardingViewModel(
     private val settings: Settings,
     private val navigator: Navigator,
-) : ViewModel() {
+) : ViewModel(), KoinComponent {
+
+    private val initViewModel: InitViewModel by inject()
+    val initState = initViewModel.state
+
 
     private val _currentStep = MutableStateFlow(OnboardingStep.Welcome)
     val currentStep: StateFlow<OnboardingStep> = _currentStep.asStateFlow()

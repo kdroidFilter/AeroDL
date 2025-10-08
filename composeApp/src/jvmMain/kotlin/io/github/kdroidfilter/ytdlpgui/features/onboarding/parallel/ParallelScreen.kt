@@ -34,17 +34,20 @@ import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.onboarding_parallel_selected
 import ytdlpgui.composeapp.generated.resources.settings_parallel_downloads_caption
 import ytdlpgui.composeapp.generated.resources.settings_parallel_downloads_title
+import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 
 @Composable
 fun ParallelScreen(
-    viewModel: OnboardingViewModel = koinViewModel()
+    viewModel: OnboardingViewModel = koinViewModel(),
 ) {
     val state = collectParallelState(viewModel)
     val currentStep by viewModel.currentStep.collectAsState()
+    val initState by viewModel.initState.collectAsState()
     ParallelView(
         state = state,
         onEvent = viewModel::onEvents,
-        currentStep = currentStep
+        currentStep = currentStep,
+        initState = initState
     )
 }
 
@@ -52,10 +55,11 @@ fun ParallelScreen(
 fun ParallelView(
     state: ParallelState,
     onEvent: (OnboardingEvents) -> Unit,
-    currentStep: OnboardingStep = OnboardingStep.Parallel
+    currentStep: OnboardingStep = OnboardingStep.Parallel,
+    initState: io.github.kdroidfilter.ytdlpgui.features.init.InitState? = null,
 ) {
     Column(Modifier.fillMaxSize().padding(16.dp)) {
-        OnboardingProgress(step = currentStep)
+        OnboardingProgress(step = currentStep, initState = initState)
         Column(Modifier.weight(1f).fillMaxWidth()) {
             HeaderRow(
                 title = stringResource(Res.string.settings_parallel_downloads_title),
@@ -85,5 +89,9 @@ fun ParallelView(
 @Preview
 @Composable
 fun ParallelScreenPreview() {
-    ParallelView(state = ParallelState.defaultState, onEvent = {})
+    ParallelView(
+        state = ParallelState.defaultState,
+        onEvent = {},
+        initState = InitState(downloadingYtDlp = true)
+    )
 }

@@ -29,17 +29,20 @@ import ytdlpgui.composeapp.generated.resources.common_disabled
 import ytdlpgui.composeapp.generated.resources.common_enabled
 import ytdlpgui.composeapp.generated.resources.settings_include_preset_in_filename_caption
 import ytdlpgui.composeapp.generated.resources.settings_include_preset_in_filename_title
+import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 
 @Composable
 fun IncludePresetScreen(
-    viewModel: OnboardingViewModel = koinViewModel()
+    viewModel: OnboardingViewModel = koinViewModel(),
 ) {
     val state = collectIncludePresetState(viewModel)
     val currentStep by viewModel.currentStep.collectAsState()
+    val initState by viewModel.initState.collectAsState()
     IncludePresetView(
         state = state,
         onEvent = viewModel::onEvents,
-        currentStep = currentStep
+        currentStep = currentStep,
+        initState = initState
     )
 }
 
@@ -47,10 +50,11 @@ fun IncludePresetScreen(
 fun IncludePresetView(
     state: IncludePresetState,
     onEvent: (OnboardingEvents) -> Unit,
-    currentStep: OnboardingStep = OnboardingStep.IncludePreset
+    currentStep: OnboardingStep = OnboardingStep.IncludePreset,
+    initState: io.github.kdroidfilter.ytdlpgui.features.init.InitState? = null,
 ) {
     Column(Modifier.fillMaxSize().padding(16.dp)) {
-        OnboardingProgress(step = currentStep)
+        OnboardingProgress(step = currentStep, initState = initState)
         Column(Modifier.weight(1f).fillMaxWidth()) {
             HeaderRow(
                 title = stringResource(Res.string.settings_include_preset_in_filename_title),
@@ -80,11 +84,19 @@ fun IncludePresetView(
 @Preview
 @Composable
 fun IncludePresetScreenPreviewEnabled() {
-    IncludePresetView(state = IncludePresetState.enabledState, onEvent = {})
+    IncludePresetView(
+        state = IncludePresetState.enabledState,
+        onEvent = {},
+        initState = InitState(downloadingYtDlp = true)
+    )
 }
 
 @Preview
 @Composable
 fun IncludePresetScreenPreviewDisabled() {
-    IncludePresetView(state = IncludePresetState.disabledState, onEvent = {})
+    IncludePresetView(
+        state = IncludePresetState.disabledState,
+        onEvent = {},
+        initState = InitState(downloadingYtDlp = true)
+    )
 }

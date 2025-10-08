@@ -33,17 +33,20 @@ import ytdlpgui.composeapp.generated.resources.common_disabled
 import ytdlpgui.composeapp.generated.resources.common_enabled
 import ytdlpgui.composeapp.generated.resources.settings_no_check_certificate_caption
 import ytdlpgui.composeapp.generated.resources.settings_no_check_certificate_title
+import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 
 @Composable
 fun NoCheckCertScreen(
-    viewModel: OnboardingViewModel = koinViewModel()
+    viewModel: OnboardingViewModel = koinViewModel(),
 ) {
     val state = collectNoCheckCertState(viewModel)
     val currentStep by viewModel.currentStep.collectAsState()
+    val initState by viewModel.initState.collectAsState()
     NoCheckCertView(
         state = state,
         onEvent = viewModel::onEvents,
-        currentStep = currentStep
+        currentStep = currentStep,
+        initState = initState
     )
 }
 
@@ -51,10 +54,11 @@ fun NoCheckCertScreen(
 fun NoCheckCertView(
     state: NoCheckCertState,
     onEvent: (OnboardingEvents) -> Unit,
-    currentStep: OnboardingStep = OnboardingStep.NoCheckCert
+    currentStep: OnboardingStep = OnboardingStep.NoCheckCert,
+    initState: io.github.kdroidfilter.ytdlpgui.features.init.InitState? = null,
 ) {
     Column(Modifier.fillMaxSize().padding(16.dp)) {
-        OnboardingProgress(step = currentStep)
+        OnboardingProgress(step = currentStep, initState = initState)
         Column(Modifier.weight(1f).fillMaxWidth()) {
             HeaderRow(
                 title = stringResource(Res.string.settings_no_check_certificate_title),
@@ -86,11 +90,19 @@ fun NoCheckCertView(
 @Preview
 @Composable
 fun NoCheckCertScreenPreviewEnabled() {
-    NoCheckCertView(state = NoCheckCertState.enabledState, onEvent = {})
+    NoCheckCertView(
+        state = NoCheckCertState.enabledState,
+        onEvent = {},
+        initState = InitState(downloadingYtDlp = true)
+    )
 }
 
 @Preview
 @Composable
 fun NoCheckCertScreenPreviewDisabled() {
-    NoCheckCertView(state = NoCheckCertState.disabledState, onEvent = {})
+    NoCheckCertView(
+        state = NoCheckCertState.disabledState,
+        onEvent = {},
+        initState = InitState(downloadingYtDlp = true)
+    )
 }

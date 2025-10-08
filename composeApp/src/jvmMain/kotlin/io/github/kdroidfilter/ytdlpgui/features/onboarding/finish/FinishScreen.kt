@@ -21,26 +21,29 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.onboarding_complete_message
+import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 
 @Composable
 fun FinishScreen(
-    viewModel: OnboardingViewModel = koinViewModel()
+    viewModel: OnboardingViewModel = koinViewModel(),
 ) {
     val currentStep by viewModel.currentStep.collectAsState()
+    val initState by viewModel.initState.collectAsState()
     LaunchedEffect(Unit) { viewModel.onEvents(OnboardingEvents.OnFinish) }
-    FinishView(currentStep = currentStep)
+    FinishView(currentStep = currentStep, initState = initState)
 }
 
 @Composable
 private fun FinishView(
-    currentStep: OnboardingStep = OnboardingStep.Finish
+    currentStep: OnboardingStep = OnboardingStep.Finish,
+    initState: io.github.kdroidfilter.ytdlpgui.features.init.InitState? = null,
 ) {
     Column(
         Modifier.fillMaxSize().padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        OnboardingProgress(step = currentStep)
+        OnboardingProgress(step = currentStep, initState = initState)
         Text(stringResource(Res.string.onboarding_complete_message))
     }
 }
@@ -48,5 +51,7 @@ private fun FinishView(
 @Preview
 @Composable
 fun FinishScreenPreview() {
-    FinishView()
+    FinishView(
+        initState = InitState(initCompleted = true)
+    )
 }

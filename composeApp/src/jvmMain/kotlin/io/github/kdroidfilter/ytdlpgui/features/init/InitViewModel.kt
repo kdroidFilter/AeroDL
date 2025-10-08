@@ -28,7 +28,17 @@ class InitViewModel(
 //            settings.remove(SettingsKeys.DOWNLOAD_DIR)
 //            settings.remove(SettingsKeys.ONBOARDING_COMPLETED)
 
-            // Load persisted settings for yt-dlp options
+            // Check if onboarding is completed
+            val onboardingCompleted = settings.getBoolean(SettingsKeys.ONBOARDING_COMPLETED, false)
+            val alreadyConfigured = settings.getString(SettingsKeys.DOWNLOAD_DIR, "").isNotBlank()
+
+            if (!onboardingCompleted && !alreadyConfigured) {
+                // Not configured → go to onboarding
+                navigator.navigateAndClearBackStack(Destination.Onboarding.Graph)
+                return@launch
+            }
+
+            // Already configured → initialize yt-dlp and ffmpeg
             val noCheck = settings.getBoolean(SettingsKeys.NO_CHECK_CERTIFICATE, false)
             val cookies = settings.getString(SettingsKeys.COOKIES_FROM_BROWSER, "").ifBlank { null }
 
@@ -116,14 +126,8 @@ class InitViewModel(
                             // On first initialization, fetch supported sites list from GitHub and store in DB
                             runCatching { supportedSitesRepository.initializeFromGitHubIfEmpty() }
 
-                            // Decide whether to go through onboarding
-                            val onboardingCompleted = settings.getBoolean(SettingsKeys.ONBOARDING_COMPLETED, false)
-                            val alreadyConfigured = settings.getString(SettingsKeys.DOWNLOAD_DIR, "").isNotBlank()
-                            if (onboardingCompleted || alreadyConfigured) {
-                                navigator.navigateAndClearBackStack(Destination.MainNavigation.Home)
-                            } else {
-                                navigator.navigateAndClearBackStack(Destination.Onboarding.Welcome)
-                            }
+                            // Navigate to home (onboarding was already checked at startup)
+                            navigator.navigateAndClearBackStack(Destination.MainNavigation.Home)
                         }
                     }
                 }

@@ -64,6 +64,7 @@ import ytdlpgui.composeapp.generated.resources.settings_clipboard_monitoring_tit
 import ytdlpgui.composeapp.generated.resources.app_version_label
 import java.io.File
 import java.util.Locale
+import com.russhwolf.settings.Settings
 
 @OptIn(ExperimentalTrayAppApi::class, ExperimentalFluentApi::class)
 fun main() = application {
@@ -96,6 +97,9 @@ fun main() = application {
                 // Register as a singleton in Koin immediately to make it available to DI consumers
                 runCatching { koin.declare(trayAppState) }
             }
+
+            // Uncomment to clear settings on startup
+//             clearSettings(koin.get())
 
             val isSingleInstance = SingleInstanceManager.isSingleInstance(
                 onRestoreRequest = {
@@ -188,4 +192,9 @@ fun clearJavaTempDir() {
         }
     }
     println("Cache cleared: $tmpDir")
+}
+
+private fun clearSettings(settings: Settings) {
+    settings.clear()
+    println("Settings cleared")
 }

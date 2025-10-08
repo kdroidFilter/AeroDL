@@ -33,17 +33,20 @@ import ytdlpgui.composeapp.generated.resources.common_disabled
 import ytdlpgui.composeapp.generated.resources.common_enabled
 import ytdlpgui.composeapp.generated.resources.settings_clipboard_monitoring_caption
 import ytdlpgui.composeapp.generated.resources.settings_clipboard_monitoring_title
+import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 
 @Composable
 fun ClipboardScreen(
-    viewModel: OnboardingViewModel = koinViewModel()
+    viewModel: OnboardingViewModel = koinViewModel(),
 ) {
     val state = collectClipboardState(viewModel)
     val currentStep by viewModel.currentStep.collectAsState()
+    val initState by viewModel.initState.collectAsState()
     ClipboardView(
         state = state,
         onEvent = viewModel::onEvents,
-        currentStep = currentStep
+        currentStep = currentStep,
+        initState = initState
     )
 }
 
@@ -51,10 +54,11 @@ fun ClipboardScreen(
 fun ClipboardView(
     state: ClipboardState,
     onEvent: (OnboardingEvents) -> Unit,
-    currentStep: OnboardingStep = OnboardingStep.Clipboard
+    currentStep: OnboardingStep = OnboardingStep.Clipboard,
+    initState: io.github.kdroidfilter.ytdlpgui.features.init.InitState? = null,
 ) {
     Column(Modifier.fillMaxSize().padding(16.dp)) {
-        OnboardingProgress(step = currentStep)
+        OnboardingProgress(step = currentStep, initState = initState)
         Column(Modifier.weight(1f).fillMaxWidth()) {
             HeaderRow(
                 title = stringResource(Res.string.settings_clipboard_monitoring_title),
@@ -86,11 +90,19 @@ fun ClipboardView(
 @Preview
 @Composable
 fun ClipboardScreenPreviewEnabled() {
-    ClipboardView(state = ClipboardState.enabledState, onEvent = {})
+    ClipboardView(
+        state = ClipboardState.enabledState,
+        onEvent = {},
+        initState = InitState(downloadingYtDlp = true)
+    )
 }
 
 @Preview
 @Composable
 fun ClipboardScreenPreviewDisabled() {
-    ClipboardView(state = ClipboardState.disabledState, onEvent = {})
+    ClipboardView(
+        state = ClipboardState.disabledState,
+        onEvent = {},
+        initState = InitState(downloadingYtDlp = true)
+    )
 }

@@ -39,17 +39,20 @@ import ytdlpgui.composeapp.generated.resources.settings_browser_disable
 import ytdlpgui.composeapp.generated.resources.settings_browser_firefox
 import ytdlpgui.composeapp.generated.resources.settings_cookies_from_browser_label
 import ytdlpgui.composeapp.generated.resources.settings_cookies_from_browser_title
+import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 
 @Composable
 fun CookiesScreen(
-    viewModel: OnboardingViewModel = koinViewModel()
+    viewModel: OnboardingViewModel = koinViewModel(),
 ) {
     val state = collectCookiesState(viewModel)
     val currentStep by viewModel.currentStep.collectAsState()
+    val initState by viewModel.initState.collectAsState()
     CookiesView(
         state = state,
         onEvent = viewModel::onEvents,
-        currentStep = currentStep
+        currentStep = currentStep,
+        initState = initState
     )
 }
 
@@ -57,10 +60,11 @@ fun CookiesScreen(
 fun CookiesView(
     state: CookiesState,
     onEvent: (OnboardingEvents) -> Unit,
-    currentStep: OnboardingStep = OnboardingStep.Cookies
+    currentStep: OnboardingStep = OnboardingStep.Cookies,
+    initState: io.github.kdroidfilter.ytdlpgui.features.init.InitState? = null,
 ) {
     Column(Modifier.fillMaxSize().padding(16.dp)) {
-        OnboardingProgress(step = currentStep)
+        OnboardingProgress(step = currentStep, initState = initState)
         Column(Modifier.weight(1f).fillMaxWidth()) {
             HeaderRow(
                 title = stringResource(Res.string.settings_cookies_from_browser_title),
@@ -112,17 +116,29 @@ fun CookiesView(
 @Preview
 @Composable
 fun CookiesScreenPreviewEmpty() {
-    CookiesView(state = CookiesState.emptyState, onEvent = {})
+    CookiesView(
+        state = CookiesState.emptyState,
+        onEvent = {},
+        initState = InitState(downloadingYtDlp = true)
+    )
 }
 
 @Preview
 @Composable
 fun CookiesScreenPreviewChrome() {
-    CookiesView(state = CookiesState.chromeState, onEvent = {})
+    CookiesView(
+        state = CookiesState.chromeState,
+        onEvent = {},
+        initState = InitState(downloadingYtDlp = true)
+    )
 }
 
 @Preview
 @Composable
 fun CookiesScreenPreviewFirefox() {
-    CookiesView(state = CookiesState.firefoxState, onEvent = {})
+    CookiesView(
+        state = CookiesState.firefoxState,
+        onEvent = {},
+        initState = InitState(downloadingYtDlp = true)
+    )
 }

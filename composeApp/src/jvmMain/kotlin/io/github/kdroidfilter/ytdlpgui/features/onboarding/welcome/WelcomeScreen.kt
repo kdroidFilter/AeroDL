@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.composefluent.component.Button
 import io.github.composefluent.component.Text
+import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingProgress
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingStep
@@ -28,22 +29,25 @@ import ytdlpgui.composeapp.generated.resources.onboarding_welcome_title
 
 @Composable
 fun WelcomeScreen(
-    viewModel: OnboardingViewModel = koinViewModel()
+    viewModel: OnboardingViewModel = koinViewModel(),
 ) {
     val currentStep by viewModel.currentStep.collectAsState()
+    val initState by viewModel.initState.collectAsState()
     WelcomeView(
         onEvent = viewModel::onEvents,
-        currentStep = currentStep
+        currentStep = currentStep,
+        initState = initState
     )
 }
 
 @Composable
 fun WelcomeView(
     onEvent: (OnboardingEvents) -> Unit,
-    currentStep: OnboardingStep = OnboardingStep.Welcome
+    currentStep: OnboardingStep = OnboardingStep.Welcome,
+    initState: InitState? = null,
 ) {
     Column(Modifier.fillMaxSize().padding(16.dp)) {
-        OnboardingProgress(step = currentStep)
+        OnboardingProgress(step = currentStep, initState = initState)
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
@@ -63,5 +67,8 @@ fun WelcomeView(
 @Preview
 @Composable
 fun WelcomeScreenPreview() {
-    WelcomeView(onEvent = {})
+    WelcomeView(
+        onEvent = {},
+        initState = InitState(checkingYtDlp = true)
+    )
 }

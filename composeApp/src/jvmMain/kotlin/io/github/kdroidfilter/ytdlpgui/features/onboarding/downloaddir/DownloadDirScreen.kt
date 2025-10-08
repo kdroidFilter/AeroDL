@@ -34,17 +34,20 @@ import ytdlpgui.composeapp.generated.resources.settings_download_dir_not_set
 import ytdlpgui.composeapp.generated.resources.settings_download_dir_pick_title
 import ytdlpgui.composeapp.generated.resources.settings_download_dir_title
 import ytdlpgui.composeapp.generated.resources.settings_select
+import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 
 @Composable
 fun DownloadDirScreen(
-    viewModel: OnboardingViewModel = koinViewModel()
+    viewModel: OnboardingViewModel = koinViewModel(),
 ) {
     val state = collectDownloadDirState(viewModel)
     val currentStep by viewModel.currentStep.collectAsState()
+    val initState by viewModel.initState.collectAsState()
     DownloadDirView(
         state = state,
         onEvent = viewModel::onEvents,
-        currentStep = currentStep
+        currentStep = currentStep,
+        initState = initState
     )
 }
 
@@ -52,10 +55,11 @@ fun DownloadDirScreen(
 fun DownloadDirView(
     state: DownloadDirState,
     onEvent: (OnboardingEvents) -> Unit,
-    currentStep: OnboardingStep = OnboardingStep.DownloadDir
+    currentStep: OnboardingStep = OnboardingStep.DownloadDir,
+    initState: InitState? = null,
 ) {
     Column(Modifier.fillMaxSize().padding(16.dp)) {
-        OnboardingProgress(step = currentStep)
+        OnboardingProgress(step = currentStep, initState = initState)
         Column(Modifier.weight(1f).fillMaxWidth()) {
             HeaderRow(
                 title = stringResource(Res.string.settings_download_dir_title),
@@ -87,11 +91,19 @@ fun DownloadDirView(
 @Preview
 @Composable
 fun DownloadDirScreenPreviewEmpty() {
-    DownloadDirView(state = DownloadDirState.emptyState, onEvent = {})
+    DownloadDirView(
+        state = DownloadDirState.emptyState,
+        onEvent = {},
+        initState = InitState(downloadingYtDlp = true)
+    )
 }
 
 @Preview
 @Composable
 fun DownloadDirScreenPreviewConfigured() {
-    DownloadDirView(state = DownloadDirState.configuredState, onEvent = {})
+    DownloadDirView(
+        state = DownloadDirState.configuredState,
+        onEvent = {},
+        initState = InitState(initCompleted = true)
+    )
 }

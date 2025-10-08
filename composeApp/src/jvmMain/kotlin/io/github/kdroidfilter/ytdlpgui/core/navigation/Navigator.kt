@@ -35,7 +35,7 @@ class DefaultNavigator(
 ): Navigator {
 
     private val _navigationActions =
-        MutableSharedFlow<NavigationAction>(extraBufferCapacity = 1)
+        MutableSharedFlow<NavigationAction>(replay = 1, extraBufferCapacity = 10)
     override val navigationActions = _navigationActions.asSharedFlow()
 
     // Internal stack of destinations to mirror what we ask NavController to do
@@ -76,7 +76,9 @@ class DefaultNavigator(
         _navigationActions.emit(
             NavigationAction.Navigate(destination) {
                 // Clear the NavController back stack entirely
-                popUpTo(0)
+                popUpTo(startDestination) {
+                    inclusive = true
+                }
                 launchSingleTop = true
             }
         )

@@ -15,6 +15,7 @@ import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.Button
 import io.github.composefluent.component.ProgressBar
 import io.github.composefluent.component.Text
+import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.onboarding_progress_label
@@ -35,7 +36,8 @@ internal fun HeaderRow(title: String, subtitle: String? = null) {
 @Composable
 internal fun OnboardingProgress(
     step: OnboardingStep,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    initState: InitState? = null,
 ) {
     val steps = remember { OnboardingStep.values().toList() }
     val currentIndex = steps.indexOf(step).takeIf { it >= 0 } ?: 0
@@ -56,7 +58,42 @@ internal fun OnboardingProgress(
             progress = progress,
             modifier = Modifier.fillMaxWidth()
         )
+        if (initState != null) {
+            Spacer(Modifier.height(12.dp))
+            DependencyStatus("yt-dlp", initState)
+            DependencyStatus("ffmpeg", initState)
+        }
     }
+}
+
+@Composable
+private fun DependencyStatus(name: String, initState: InitState) {
+    val statusText = when (name) {
+        "yt-dlp" -> {
+            when {
+                initState.checkingYtDlp -> "Checking..."
+                initState.downloadingYtDlp -> "Downloading ${initState.downloadYtDlpProgress?.let { "(${(it * 100).toInt()}%)" } ?: ""}"
+                initState.updatingYtdlp -> "Updating..."
+                initState.errorMessage != null -> "Error: ${initState.errorMessage}"
+                initState.initCompleted -> "Installed"
+                else -> "Unknown"
+            }
+        }
+
+        "ffmpeg" -> {
+            when {
+                initState.checkingFFmpeg -> "Checking..."
+                initState.downloadingFFmpeg -> "Downloading ${initState.downloadFfmpegProgress?.let { "(${(it * 100).toInt()}%)" } ?: ""}"
+                initState.updatingFFmpeg -> "Updating..."
+                initState.errorMessage != null -> "Error: ${initState.errorMessage}"
+                initState.initCompleted -> "Installed"
+                else -> "Unknown"
+            }
+        }
+
+        else -> "Unknown dependency"
+    }
+    Text("$name: $statusText")
 }
 
 @Composable
