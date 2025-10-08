@@ -8,7 +8,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.composefluent.FluentTheme
@@ -71,19 +74,16 @@ internal fun OnboardingProgress(
         )
         if (initState != null) {
             Spacer(Modifier.height(12.dp))
-            DependencyInfoBars(initState)
+            DependencyInfoBar(initState)
         }
     }
 }
 
 @Composable
-private fun DependencyInfoBars(initState: InitState) {
-    val visible = !initState.initCompleted ||
-                  initState.checkingYtDlp || initState.downloadingYtDlp || initState.updatingYtdlp ||
-                  initState.checkingFFmpeg || initState.downloadingFFmpeg || initState.updatingFFmpeg ||
-                  initState.errorMessage != null
+private fun DependencyInfoBar(initState: InitState) {
+    var isDismissed by remember { mutableStateOf(false) }
 
-    if (visible) {
+    if (!isDismissed) {
         val ytDlpStatus = when {
             initState.checkingYtDlp -> stringResource(Res.string.status_checking)
             initState.downloadingYtDlp -> "${stringResource(Res.string.status_downloading)} ${initState.downloadYtDlpProgress?.let { "(${it.toInt()}%)" } ?: ""}"
@@ -108,7 +108,12 @@ private fun DependencyInfoBars(initState: InitState) {
             title = { Text("Dependencies") },
             message = { Text(combinedMessage) },
             colors = InfoBarDefaults.colors(),
-            icon = { InfoBarDefaults.Badge() }
+            icon = { InfoBarDefaults.Badge() },
+            closeAction = if (initState.initCompleted) {
+                { InfoBarDefaults.CloseActionButton(onClick = { isDismissed = true }) }
+            } else {
+                null
+            }
         )
     }
 }
