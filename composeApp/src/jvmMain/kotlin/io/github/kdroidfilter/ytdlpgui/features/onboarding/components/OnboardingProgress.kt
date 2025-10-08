@@ -46,10 +46,6 @@ internal fun OnboardingProgress(
             progress = progress,
             modifier = Modifier.fillMaxWidth()
         )
-        if (initState != null) {
-            Spacer(Modifier.height(12.dp))
-            DependencyInfoBar(initState)
-        }
     }
 }
 

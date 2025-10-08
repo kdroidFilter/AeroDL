@@ -26,6 +26,7 @@ import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.OnboardingProgress
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingStep
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingViewModel
+import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.DependencyInfoBar
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
@@ -89,6 +90,9 @@ fun DownloadDirView(
                 Text(stringResource(Res.string.settings_select))
             }
 
+        }
+        if (initState != null) {
+            DependencyInfoBar(initState)
         }
         NavigationRow(
             onNext = { onEvent(OnboardingEvents.OnNext) },

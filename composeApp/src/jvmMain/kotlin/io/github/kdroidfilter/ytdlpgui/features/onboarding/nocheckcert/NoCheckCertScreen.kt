@@ -29,6 +29,7 @@ import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.OnboardingProgress
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingStep
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingViewModel
+import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.DependencyInfoBar
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
@@ -103,6 +104,9 @@ fun NoCheckCertView(
                 Spacer(Modifier.width(8.dp))
                 Text(stringResource(Res.string.onboarding_filtered_network_accept))
             }
+        }
+        if (initState != null) {
+            DependencyInfoBar(initState)
         }
         NavigationRow(
             onNext = { onEvent(OnboardingEvents.OnNext) },

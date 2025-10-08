@@ -19,6 +19,7 @@ import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.OnboardingProgress
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingStep
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingViewModel
+import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.DependencyInfoBar
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
@@ -58,7 +59,7 @@ fun WelcomeView(
             currentStepIndex = currentStepIndex
         )
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.weight(1f).fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -69,6 +70,9 @@ fun WelcomeView(
             Button(onClick = { onEvent(OnboardingEvents.OnStart) }) {
                 Text(stringResource(Res.string.onboarding_start))
             }
+        }
+        if (initState != null) {
+            DependencyInfoBar(initState)
         }
     }
 }
