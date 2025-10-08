@@ -13,6 +13,7 @@ import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -25,6 +26,10 @@ class OnboardingViewModel(
     private val initViewModel: InitViewModel by inject()
     val initState = initViewModel.state
 
+    init {
+        // Start downloading yt-dlp and ffmpeg in background during onboarding
+        initViewModel.startInitialization(navigateToHomeWhenDone = false)
+    }
 
     private val _currentStep = MutableStateFlow(OnboardingStep.Welcome)
     val currentStep: StateFlow<OnboardingStep> = _currentStep.asStateFlow()
@@ -93,6 +98,10 @@ class OnboardingViewModel(
         _currentStep.value = OnboardingStep.Finish
         viewModelScope.launch {
             settings.putBoolean(SettingsKeys.ONBOARDING_COMPLETED, true)
+
+            // Wait for yt-dlp/ffmpeg initialization to complete before navigating to home
+            initState.first { it.initCompleted }
+
             navigator.navigateAndClearBackStack(Destination.MainNavigation.Home)
         }
     }

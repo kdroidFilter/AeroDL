@@ -23,7 +23,7 @@ import io.github.composefluent.component.ProgressRing
 import io.github.composefluent.component.Text
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnly
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.checking_ffmpeg
 import ytdlpgui.composeapp.generated.resources.checking_ytdlp
@@ -36,7 +36,7 @@ import kotlin.math.roundToInt
 
 @Composable
 fun InitScreen() {
-    val viewModel = koinViewModel<InitViewModel>()
+    val viewModel = koinInject<InitViewModel>()
     val state = collectInitState(viewModel)
     InitView(state)
 }

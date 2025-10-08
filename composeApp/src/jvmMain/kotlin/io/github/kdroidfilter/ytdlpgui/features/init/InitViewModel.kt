@@ -23,6 +23,8 @@ class InitViewModel(
     private val _state = MutableStateFlow(InitState())
     val state = _state.asStateFlow()
 
+    private var isInitializing = false
+
     init {
         viewModelScope.launch {
 //            settings.remove(SettingsKeys.DOWNLOAD_DIR)
@@ -39,6 +41,19 @@ class InitViewModel(
             }
 
             // Already configured → initialize yt-dlp and ffmpeg
+            startInitialization(navigateToHomeWhenDone = true)
+        }
+    }
+
+    /**
+     * Start yt-dlp and ffmpeg initialization
+     * @param navigateToHomeWhenDone If true, navigate to home screen when initialization is complete
+     */
+    fun startInitialization(navigateToHomeWhenDone: Boolean = false) {
+        if (isInitializing) return
+        isInitializing = true
+
+        viewModelScope.launch {
             val noCheck = settings.getBoolean(SettingsKeys.NO_CHECK_CERTIFICATE, false)
             val cookies = settings.getString(SettingsKeys.COOKIES_FROM_BROWSER, "").ifBlank { null }
 
@@ -126,8 +141,10 @@ class InitViewModel(
                             // On first initialization, fetch supported sites list from GitHub and store in DB
                             runCatching { supportedSitesRepository.initializeFromGitHubIfEmpty() }
 
-                            // Navigate to home (onboarding was already checked at startup)
-                            navigator.navigateAndClearBackStack(Destination.MainNavigation.Home)
+                            // Navigate to home only if requested (when app is already configured)
+                            if (navigateToHomeWhenDone) {
+                                navigator.navigateAndClearBackStack(Destination.MainNavigation.Home)
+                            }
                         }
                     }
                 }

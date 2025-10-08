@@ -68,7 +68,7 @@ import com.russhwolf.settings.Settings
 
 @OptIn(ExperimentalTrayAppApi::class, ExperimentalFluentApi::class)
 fun main() = application {
-//    clearJavaTempDir()
+    clearJavaTempDir()
 //    Locale.setDefault(Locale.ENGLISH)
     KoinApplication(application = {
         modules(appModule)
@@ -99,7 +99,7 @@ fun main() = application {
             }
 
             // Uncomment to clear settings on startup
-//             clearSettings(koin.get())
+             clearSettings(koin.get())
 
             val isSingleInstance = SingleInstanceManager.isSingleInstance(
                 onRestoreRequest = {

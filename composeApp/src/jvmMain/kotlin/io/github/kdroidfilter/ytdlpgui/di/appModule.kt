@@ -39,11 +39,11 @@ val appModule = module {
 
     single { DownloadManager(get(), get(), get<DownloadHistoryRepository>(), get(), get()) }
     single { ClipboardMonitorManager(get(), get(), get(), get()) }
+    single { InitViewModel(get(), get(), get(), get(), get()) }
 
     // System integrations
     single { AutoLaunch(appPackageName = "io.github.kdroidfilter.ytdlpgui") }
 
-    viewModel { InitViewModel(get(), get(), get(), get(), get()) }
     viewModel { HomeViewModel(get(), get()) }
     viewModel { AboutViewModel(get()) }
     viewModel { BulkDownloadViewModel(get()) }
