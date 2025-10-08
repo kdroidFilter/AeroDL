@@ -15,7 +15,7 @@ import io.github.composefluent.component.Text
 @Composable
 internal fun HeaderRow(title: String, subtitle: String? = null) {
     Column(Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
-        Text(title)
+        Text(title, style = FluentTheme.typography.subtitle)
         if (subtitle != null) {
             Spacer(Modifier.height(4.dp))
             Text(subtitle)
