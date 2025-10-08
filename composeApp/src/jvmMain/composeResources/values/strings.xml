@@ -38,6 +38,11 @@
     <string name="status_error">Error: %1$s</string>
     <string name="unknown_dependency">Unknown dependency</string>
 
+    <!-- Dependency Info Bar -->
+    <string name="dependency_info_title">While you configure AeroDL settings, we are downloading the necessary dependencies for the app to work properly.</string>
+    <string name="dependency_ytdlp_tooltip">yt-dlp is the core tool that downloads videos from supported websites. It handles all the heavy lifting of fetching your content.</string>
+    <string name="dependency_ffmpeg_tooltip">FFmpeg is a multimedia framework used to convert and process audio/video files. It ensures your downloads are in the format you want.</string>
+
     <!-- Error messages -->
     <string name="error_occurred">An error occurred</string>
 

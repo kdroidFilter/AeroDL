@@ -38,6 +38,11 @@
     <string name="status_error">שגיאה: %1$s</string>
     <string name="unknown_dependency">תלות לא ידועה</string>
 
+    <!-- סרגל מידע על תלויות -->
+    <string name="dependency_info_title">בזמן שאתה מגדיר את הגדרות AeroDL, אנחנו מורידים את התלויות הדרושות לפעולה תקינה של האפליקציה.</string>
+    <string name="dependency_ytdlp_tooltip">yt-dlp הוא הכלי המרכזי שמוריד סרטונים מאתרים נתמכים. הוא מטפל בכל העבודה הקשה של הורדת התוכן שלך.</string>
+    <string name="dependency_ffmpeg_tooltip">FFmpeg הוא מסגרת מולטימדיה המשמשת להמרה ועיבוד של קבצי אודיו/וידאו. הוא מבטיח שההורדות שלך יהיו בפורמט הרצוי.</string>
+
     <!-- הודעות שגיאה -->
     <string name="error_occurred">אירעה שגיאה</string>
 

@@ -39,7 +39,12 @@
     <string name="status_error">Erreur : %1$s</string>
     <string name="unknown_dependency">Dépendance inconnue</string>
 
-    <!-- Messages d’erreur -->
+    <!-- Barre d'info des dépendances -->
+    <string name="dependency_info_title">Pendant que vous configurez les paramètres d'AeroDL, nous téléchargeons les dépendances nécessaires au bon fonctionnement de l'application.</string>
+    <string name="dependency_ytdlp_tooltip">yt-dlp est l'outil principal qui télécharge les vidéos depuis les sites supportés. Il s'occupe de tout le travail difficile pour récupérer votre contenu.</string>
+    <string name="dependency_ffmpeg_tooltip">FFmpeg est un framework multimédia utilisé pour convertir et traiter les fichiers audio/vidéo. Il garantit que vos téléchargements sont dans le format souhaité.</string>
+
+    <!-- Messages d'erreur -->
     <string name="error_occurred">Une erreur s’est produite</string>
 
     <!-- Titres d’écran temporaires -->

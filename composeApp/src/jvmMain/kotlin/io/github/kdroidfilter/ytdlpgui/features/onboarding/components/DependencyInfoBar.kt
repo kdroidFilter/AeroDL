@@ -36,6 +36,9 @@ import io.github.composefluent.icons.regular.Info
 import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.Res
+import ytdlpgui.composeapp.generated.resources.dependency_ffmpeg_tooltip
+import ytdlpgui.composeapp.generated.resources.dependency_info_title
+import ytdlpgui.composeapp.generated.resources.dependency_ytdlp_tooltip
 import ytdlpgui.composeapp.generated.resources.status_checking
 import ytdlpgui.composeapp.generated.resources.status_downloading
 import ytdlpgui.composeapp.generated.resources.status_error
@@ -68,7 +71,7 @@ internal fun DependencyInfoBar(initState: InitState) {
         }
 
         InfoBar(
-            title = { Text("Dependencies") },
+            title = { Text(stringResource(Res.string.dependency_info_title)) },
             message = {
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -82,7 +85,7 @@ internal fun DependencyInfoBar(initState: InitState) {
                                     shape = RoundedCornerShape(4.dp)
                                 ) {
                                     Text(
-                                        text = "TODO: Write tooltip text here",
+                                        text = stringResource(Res.string.dependency_ytdlp_tooltip),
                                         modifier = Modifier.padding(8.dp),
                                         color = Color.White
                                     )
@@ -108,7 +111,7 @@ internal fun DependencyInfoBar(initState: InitState) {
                                     shape = RoundedCornerShape(4.dp)
                                 ) {
                                     Text(
-                                        text = "TODO: Write tooltip text here",
+                                        text = stringResource(Res.string.dependency_ffmpeg_tooltip),
                                         modifier = Modifier.padding(8.dp),
                                         color = Color.White
                                     )
