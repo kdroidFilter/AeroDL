@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.composefluent.component.Text
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents
-import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingProgress
+import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.OnboardingProgress
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingStep
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingViewModel
 import org.jetbrains.compose.resources.stringResource

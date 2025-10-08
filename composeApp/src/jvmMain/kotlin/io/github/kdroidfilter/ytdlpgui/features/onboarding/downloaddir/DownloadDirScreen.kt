@@ -19,10 +19,10 @@ import io.github.composefluent.component.Icon
 import io.github.composefluent.component.Text
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.filled.OpenFolder
-import io.github.kdroidfilter.ytdlpgui.features.onboarding.HeaderRow
-import io.github.kdroidfilter.ytdlpgui.features.onboarding.NavigationRow
+import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.HeaderRow
+import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.NavigationRow
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents
-import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingProgress
+import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.OnboardingProgress
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingStep
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingViewModel
 import org.jetbrains.compose.resources.stringResource
