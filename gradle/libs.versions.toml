@@ -1,7 +1,7 @@
 [versions]
 # Kotlin & Compose
 kotlin = "2.2.20"
-composeMultiplatform = "1.9.0"
+composeMultiplatform = "1.10.0-alpha02"
 composeHotReload = "1.0.0-beta07"
 
 # AndroidX

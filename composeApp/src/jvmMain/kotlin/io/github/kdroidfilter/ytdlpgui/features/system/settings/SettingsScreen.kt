@@ -1,5 +1,6 @@
 package io.github.kdroidfilter.ytdlpgui.features.system.settings
 
+import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -41,7 +42,6 @@ import io.github.kdroidfilter.ytdlpgui.core.design.icons.BrowserChrome
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.BrowserFirefox
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.Cookie_off
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.settings_auto_launch_title
@@ -92,11 +92,16 @@ fun SettingsView(
             item {
                 // Cookies-from-browser selection using CardExpanderItem with a flyout
                 CardExpanderItem(
-                    heading = { Text(stringResource(Res.string.settings_cookies_from_browser_title)) },
+                    heading = {
+                        Text(
+                            stringResource(Res.string.settings_cookies_from_browser_title),
+                            modifier = Modifier.fillMaxWidth(0.60f)
+                        )
+                    },
                     caption = {
                         Text(
                             stringResource(Res.string.settings_cookies_from_browser_label),
-                            modifier = Modifier.fillMaxWidth(0.5f)
+                            modifier = Modifier.fillMaxWidth(0.60f)
                         )
                     },
                     icon = {
@@ -108,7 +113,7 @@ fun SettingsView(
                     trailing = {
                         // Define options to reduce duplication and drive label/icon selection
 
-                        val chrome =  Triple("chrome", BrowserChrome, Res.string.settings_browser_chrome)
+                        val chrome = Triple("chrome", BrowserChrome, Res.string.settings_browser_chrome)
                         val firefox = Triple("firefox", BrowserFirefox, Res.string.settings_browser_firefox)
                         val safari = Triple("safari", BrowserChrome, Res.string.settings_browser_safari)
                         val disabled = Triple("", Cookie_off, Res.string.settings_browser_disable)
