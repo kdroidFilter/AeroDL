@@ -133,7 +133,8 @@ class SettingsRepository(
         val current = _autoLaunchEnabled.value
         val detected = try {
             autoLaunch.isEnabled()
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            println("Failed to check auto launch state: ${e.message}")
             current
         }
         _autoLaunchEnabled.value = detected
@@ -143,15 +144,13 @@ class SettingsRepository(
     suspend fun setAutoLaunchEnabled(enabled: Boolean) {
         _autoLaunchEnabled.value = enabled
         settings.putBoolean(SettingsKeys.AUTO_LAUNCH_ENABLED, enabled)
-        try {
+
             if (enabled) {
                 autoLaunch.enable()
             } else {
                 autoLaunch.disable()
             }
-        } catch (_: Exception) {
-            // Optimistic update; confirmation below reconciles state when possible.
-        }
+
         val confirmed = try {
             autoLaunch.isEnabled()
         } catch (_: Exception) {

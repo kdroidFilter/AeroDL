@@ -97,12 +97,6 @@ compose.desktop {
     application {
         mainClass = "io.github.kdroidfilter.ytdlpgui.MainKt"
 
-        // Pass JVM arguments to the application
-        val cleanInstall = project.findProperty("cleanInstall")?.toString()?.toBoolean() ?: false
-        jvmArgs += listOf(
-            "-DcleanInstall=$cleanInstall"
-        )
-
         nativeDistributions {
             vendor = "KDroidFilter"
             targetFormats(TargetFormat.Pkg, TargetFormat.Msi, TargetFormat.Deb)
