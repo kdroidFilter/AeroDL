@@ -176,7 +176,7 @@ fun SecondaryNavigationHeader(
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
 
     Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.SpaceEvenly,
         modifier = modifier.fillMaxWidth().padding(top = 4.dp, start = 4.dp, end = 4.dp)
     ) {
         TooltipBox(

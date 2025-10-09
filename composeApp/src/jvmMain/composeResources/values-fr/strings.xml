@@ -51,6 +51,18 @@
     <string name="about_screen_title">Écran À propos</string>
     <string name="bulk_download_screen_title">Écran Téléchargement en lot</string>
     <string name="settings_screen_title">Écran Paramètres</string>
+    <string name="bulk_download_support_notice">Le téléchargement de playlists et de chaînes YouTube n&#39;est pas encore pris en charge. Si vous aimez AeroDL, vous pouvez contribuer via Ko-fi.</string>
+    <string name="support_on_kofi">Soutenir sur Ko-fi</string>
+    <string name="about_credits_title">Crédits</string>
+    <string name="credits_made_by">Réalisé par Elie Gambache</string>
+    <string name="credits_thank_jetbrains">Un immense merci à JetBrains pour avoir conçu Kotlin et Compose Multiplatform : sans leur travail passionné, cette application n’aurait tout simplement pas vu le jour.</string>
+    <string name="credits_thank_oss">Je tiens également à exprimer ma profonde gratitude à toutes les développeuses et à tous les développeurs qui publient et maintiennent les bibliothèques open-source que j’utilise : votre générosité et votre savoir-faire nourrissent chaque ligne de code de ce projet.</string>
+    <string name="credits_github_prompt">Découvrez mes autres projets sur GitHub</string>
+    <string name="about_versions_title">Versions des outils</string>
+    <string name="ytdlp_version_label">yt-dlp : %1$s</string>
+    <string name="ytdlp_version_missing">yt-dlp : introuvable</string>
+    <string name="ffmpeg_version_label">FFmpeg : %1$s</string>
+    <string name="ffmpeg_version_missing">FFmpeg : introuvable</string>
 
     <!-- Paramètres -->
     <string name="settings_no_check_certificate_title">Ne pas vérifier le certificat</string>

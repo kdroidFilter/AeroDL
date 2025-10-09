@@ -10,7 +10,7 @@ plugins {
     alias(libs.plugins.hydraulicConveyor)
 }
 
-version = "1.0.0"
+version = "0.1.0"
 
 kotlin {
     jvm()
@@ -62,7 +62,7 @@ kotlin {
             implementation(libs.knotify)
             implementation(libs.knotify.compose)
 
-            implementation("io.github.vinceglb:confettikit:0.6.0")
+            implementation(libs.confettikit)
 
         }
 

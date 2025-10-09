@@ -50,6 +50,18 @@
     <string name="about_screen_title">About Screen</string>
     <string name="bulk_download_screen_title">Bulk Download Screen</string>
     <string name="settings_screen_title">Settings Screen</string>
+    <string name="bulk_download_support_notice">Playlist and channel downloads aren&#39;t supported yet. If you enjoy AeroDL, you can support the project on Ko-fi.</string>
+    <string name="support_on_kofi">Support on Ko-fi</string>
+    <string name="about_credits_title">Credits</string>
+    <string name="credits_made_by">Crafted by Elie Gambache</string>
+    <string name="credits_thank_jetbrains">Huge thanks to JetBrains for creating Kotlin and Compose Multiplatform—without their passionate work, this app simply wouldn&#39;t exist.</string>
+    <string name="credits_thank_oss">I am deeply grateful to every developer who publishes and maintains the open-source libraries I rely on; your generosity and expertise power every line of this project.</string>
+    <string name="credits_github_prompt">Explore my other projects on GitHub</string>
+    <string name="about_versions_title">Tool versions</string>
+    <string name="ytdlp_version_label">yt-dlp: %1$s</string>
+    <string name="ytdlp_version_missing">yt-dlp: Not found</string>
+    <string name="ffmpeg_version_label">FFmpeg: %1$s</string>
+    <string name="ffmpeg_version_missing">FFmpeg: Not found</string>
 
     <!-- Settings screen strings -->
     <string name="settings_no_check_certificate_title">No check certificate</string>
