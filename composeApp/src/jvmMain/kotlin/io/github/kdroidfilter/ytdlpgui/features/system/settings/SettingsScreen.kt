@@ -107,6 +107,7 @@ fun SettingsView(
                             onBrowserSelected = { browser ->
                                 onEvent(SettingsEvents.SetCookiesFromBrowser(browser))
                             },
+                            header = null,
                             useDefaultPlaceholder = true
                         )
                     })

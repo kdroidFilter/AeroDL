@@ -24,7 +24,7 @@ import ytdlpgui.composeapp.generated.resources.settings_cookies_from_browser_tit
  *
  * @param currentBrowser The currently selected browser value (e.g., "firefox", "chrome", "")
  * @param onBrowserSelected Callback invoked when a browser is selected
- * @param header Optional header text for the ComboBox
+ * @param header Header text for the ComboBox (null = no header, not provided = default header)
  * @param placeholder Optional placeholder text for the ComboBox
  * @param useDefaultPlaceholder If true, uses the default "Select browser" placeholder
  */
@@ -32,7 +32,7 @@ import ytdlpgui.composeapp.generated.resources.settings_cookies_from_browser_tit
 fun BrowserSelector(
     currentBrowser: String,
     onBrowserSelected: (String) -> Unit,
-    header: String? = null,
+    header: String? = stringResource(Res.string.settings_cookies_from_browser_title),
     placeholder: String? = null,
     useDefaultPlaceholder: Boolean = false,
 ) {
@@ -53,7 +53,7 @@ fun BrowserSelector(
     }
 
     ComboBox(
-        header = header ?: stringResource(Res.string.settings_cookies_from_browser_title),
+        header = header,
         placeholder = actualPlaceholder,
         selected = selected,
         items = browserLabels,
