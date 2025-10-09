@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -35,20 +34,12 @@ import io.github.composefluent.icons.regular.Clipboard
 import io.github.composefluent.icons.regular.Cookies
 import io.github.composefluent.icons.regular.LockShield
 import io.github.composefluent.icons.regular.Power
-import io.github.kdroidfilter.platformtools.OperatingSystem
-import io.github.kdroidfilter.platformtools.getOperatingSystem
+import io.github.kdroidfilter.ytdlpgui.core.design.components.BrowserSelector
 import io.github.kdroidfilter.ytdlpgui.core.design.components.Switcher
-import io.github.kdroidfilter.ytdlpgui.core.design.icons.BrowserChrome
-import io.github.kdroidfilter.ytdlpgui.core.design.icons.BrowserFirefox
-import io.github.kdroidfilter.ytdlpgui.core.design.icons.Cookie_off
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.settings_auto_launch_title
-import ytdlpgui.composeapp.generated.resources.settings_browser_chrome
-import ytdlpgui.composeapp.generated.resources.settings_browser_disable
-import ytdlpgui.composeapp.generated.resources.settings_browser_firefox
-import ytdlpgui.composeapp.generated.resources.settings_browser_select
 import ytdlpgui.composeapp.generated.resources.settings_clipboard_monitoring_caption
 import ytdlpgui.composeapp.generated.resources.settings_clipboard_monitoring_title
 import ytdlpgui.composeapp.generated.resources.settings_cookies_from_browser_label
@@ -90,7 +81,7 @@ fun SettingsView(
             modifier = Modifier.weight(1f).fillMaxHeight()
         ) {
             item {
-                // Cookies-from-browser selection using CardExpanderItem with a flyout
+                // Cookies-from-browser selection using CardExpanderItem with BrowserSelector
                 CardExpanderItem(
                     heading = {
                         Text(
@@ -111,55 +102,12 @@ fun SettingsView(
                         )
                     },
                     trailing = {
-                        // Define options to reduce duplication and drive label/icon selection
-
-                        val chrome = Triple("chrome", BrowserChrome, Res.string.settings_browser_chrome)
-                        val firefox = Triple("firefox", BrowserFirefox, Res.string.settings_browser_firefox)
-                        val safari = Triple("safari", BrowserChrome, Res.string.settings_browser_safari)
-                        val disabled = Triple("", Cookie_off, Res.string.settings_browser_disable)
-
-                        val linuxOptions = listOf(chrome, firefox, disabled)
-                        val windowsOptions = listOf(firefox, disabled)
-                        val macOptions = listOf(firefox, safari, disabled)
-
-                        val options = when (getOperatingSystem()) {
-                            OperatingSystem.WINDOWS -> windowsOptions
-                            OperatingSystem.MACOS -> macOptions
-                            else -> linuxOptions
-                        }
-
-                        val selectedOption =
-                            options.firstOrNull { (id, _, _) -> id.equals(state.cookiesFromBrowser, ignoreCase = true) }
-                        val selectionLabel = selectedOption?.third?.let { stringResource(it) }
-                            ?: state.cookiesFromBrowser.ifBlank { stringResource(Res.string.settings_browser_disable) }
-                        val selectionIcon =
-                            selectedOption?.second ?: if (state.cookiesFromBrowser.isBlank()) Cookie_off else Cookie_off
-
-                        MenuFlyoutContainer(
-                            flyout = {
-                                options.forEach { (id, iconVec, labelRes) ->
-                                    MenuFlyoutItem(text = { Text(stringResource(labelRes)) }, onClick = {
-                                        onEvent(SettingsEvents.SetCookiesFromBrowser(id))
-                                        isFlyoutVisible = false
-                                    }, icon = { Icon(iconVec, stringResource(labelRes)) })
-                                }
-                            }, content = {
-                                DropDownButton(
-                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 1.dp),
-                                    onClick = { isFlyoutVisible = !isFlyoutVisible },
-                                    content = {
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(1f),
-                                            horizontalArrangement = Arrangement.SpaceEvenly
-                                        ) {
-                                            Icon(
-                                                selectionIcon, selectionLabel, modifier = Modifier.size(16.dp)
-                                            )
-                                            Text(selectionLabel.ifBlank { stringResource(Res.string.settings_browser_select) })
-                                        }
-                                    },
-                                )
-                            }, adaptivePlacement = true, placement = FlyoutPlacement.Bottom
+                        BrowserSelector(
+                            currentBrowser = state.cookiesFromBrowser,
+                            onBrowserSelected = { browser ->
+                                onEvent(SettingsEvents.SetCookiesFromBrowser(browser))
+                            },
+                            useDefaultPlaceholder = true
                         )
                     })
             }
