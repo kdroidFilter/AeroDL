@@ -12,8 +12,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.Button
+import io.github.composefluent.component.Icon
 import io.github.composefluent.component.Text
+import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnly
 import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.OnboardingProgress
@@ -63,13 +67,15 @@ fun WelcomeView(
         )
         Column(
             modifier = Modifier.weight(1f).fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            verticalArrangement = Arrangement.SpaceEvenly,
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(stringResource(Res.string.onboarding_welcome_title))
-            Spacer(Modifier.height(12.dp))
+            Text(
+                text = stringResource(Res.string.onboarding_welcome_title),
+                style = FluentTheme.typography.subtitle
+            )
+            Icon(AeroDlLogoOnly, null, modifier = Modifier.height(96.dp), tint = FluentTheme.colors.system.neutral)
             Text(stringResource(Res.string.onboarding_welcome_subtitle))
-            Spacer(Modifier.height(24.dp))
             Button(onClick = { onEvent(OnboardingEvents.OnStart) }) {
                 Text(stringResource(Res.string.onboarding_start))
             }
