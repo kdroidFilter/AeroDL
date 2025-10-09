@@ -118,6 +118,12 @@ compose.desktop {
             linux {
                 iconFile.set(project.file("icons/logo.png"))
             }
+            buildTypes.release.proguard {
+                isEnabled = true
+                obfuscate.set(false)
+                optimize.set(true)
+                configurationFiles.from(project.file("proguard-rules.pro"))
+            }
         }
     }
 }
