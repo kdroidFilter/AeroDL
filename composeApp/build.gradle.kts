@@ -11,7 +11,11 @@ plugins {
     id("io.github.kdroidfilter.compose.linux.packagedeps") version "0.2.2"
 }
 
-version = "0.1.0"
+val ref = System.getenv("GITHUB_REF") ?: ""
+val version = if (ref.startsWith("refs/tags/")) {
+    val tag = ref.removePrefix("refs/tags/")
+    if (tag.startsWith("v")) tag.substring(1) else tag
+} else "1.0.0"
 
 kotlin {
     jvm()
@@ -100,23 +104,26 @@ compose.desktop {
         )
 
         nativeDistributions {
-
             vendor = "KDroidFilter"
             targetFormats(TargetFormat.Pkg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "AeroDl"
-            packageVersion = "1.0.0"
+            packageVersion = version
+            description = "An awesome GUI for yt-dlp!"
             modules("jdk.accessibility", "java.sql", "jdk.security.auth")
             windows {
                 dirChooser = true
                 perUserInstall = true
                 menuGroup = "start-menu-group"
+                iconFile.set(project.file("icons/logo.ico"))
             }
             macOS {
                 bundleID = "io.github.kdroidfilter.ytdlpgui"
                 dockName = "AeroDl"
+                iconFile.set(project.file("icons/logo.icns"))
             }
-            description = "An awesome GUI for yt-dlp!"
-
+            linux {
+                iconFile.set(project.file("icons./logo.png"))
+            }
         }
     }
 }
@@ -136,3 +143,4 @@ linuxDebConfig {
     startupWMClass.set("io.github.kdroidfilter.ytdlpgui.MainKt")
     enableT64AlternativeDeps.set(true)
 }
+
