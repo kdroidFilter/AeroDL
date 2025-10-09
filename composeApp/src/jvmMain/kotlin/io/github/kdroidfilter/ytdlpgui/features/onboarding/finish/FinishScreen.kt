@@ -1,31 +1,33 @@
 package io.github.kdroidfilter.ytdlpgui.features.onboarding.finish
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import io.github.composefluent.component.Button
+import io.github.composefluent.FluentTheme
+import io.github.composefluent.component.AccentButton
 import io.github.composefluent.component.ProgressBar
 import io.github.composefluent.component.Text
+import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents
-import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.OnboardingProgress
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingStep
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingViewModel
+import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.OnboardingProgress
+import io.github.vinceglb.confettikit.compose.ConfettiKit
+import io.github.vinceglb.confettikit.core.Party
+import io.github.vinceglb.confettikit.core.emitter.Emitter
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
-import ytdlpgui.composeapp.generated.resources.Res
-import ytdlpgui.composeapp.generated.resources.onboarding_complete_message
-import io.github.kdroidfilter.ytdlpgui.features.init.InitState
+import ytdlpgui.composeapp.generated.resources.*
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun FinishScreen(
@@ -46,15 +48,13 @@ fun FinishScreen(
 @Composable
 private fun FinishView(
     currentStep: OnboardingStep = OnboardingStep.Finish,
-    initState: io.github.kdroidfilter.ytdlpgui.features.init.InitState? = null,
+    initState: InitState? = null,
     totalSteps: Int? = null,
     currentStepIndex: Int? = null,
     onComplete: () -> Unit = {}
 ) {
     Column(
         Modifier.fillMaxSize().padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
     ) {
         OnboardingProgress(
             step = currentStep,
@@ -62,44 +62,98 @@ private fun FinishView(
             totalSteps = totalSteps,
             currentStepIndex = currentStepIndex
         )
-        Text(stringResource(Res.string.onboarding_complete_message))
 
         Spacer(Modifier.height(32.dp))
 
         if (initState?.initCompleted == true) {
-            Button(onClick = onComplete) {
-                Text("C'est parti !")
-            }
+            ReadyToGoScreen(onComplete = onComplete)
         } else {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Préparation en cours...")
-                Spacer(Modifier.height(16.dp))
+            LoadingResourcesScreen(initState = initState)
+        }
+    }
+}
 
-                // Show progress bars for yt-dlp
-                if (initState?.checkingYtDlp == true || initState?.downloadingYtDlp == true || initState?.updatingYtdlp == true) {
-                    Text("yt-dlp")
-                    Spacer(Modifier.height(8.dp))
-                    if (initState.downloadYtDlpProgress != null) {
-                        ProgressBar(progress = initState.downloadYtDlpProgress)
-                    } else {
-                        ProgressBar()
-                    }
-                    Spacer(Modifier.height(16.dp))
-                }
+@Composable
+private fun LoadingResourcesScreen(
+    initState: InitState? = null
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text(
+            text = stringResource(Res.string.onboarding_finish_loading_title),
+            style = FluentTheme.typography.subtitle
+        )
 
-                // Show progress bars for FFmpeg
-                if (initState?.checkingFFmpeg == true || initState?.downloadingFFmpeg == true || initState?.updatingFFmpeg == true) {
-                    Text("FFmpeg")
-                    Spacer(Modifier.height(8.dp))
-                    if (initState.downloadFfmpegProgress != null) {
-                        ProgressBar(progress = initState.downloadFfmpegProgress)
-                    } else {
-                        ProgressBar()
-                    }
-                }
+        Text(
+            text = stringResource(Res.string.onboarding_finish_loading_message),
+            style = FluentTheme.typography.bodyStrong
+        )
+
+        Spacer(Modifier.height(16.dp))
+
+        // Show progress bars for yt-dlp
+        if (initState?.checkingYtDlp == true || initState?.downloadingYtDlp == true || initState?.updatingYtdlp == true) {
+            Text("yt-dlp")
+            if (initState.downloadYtDlpProgress != null) {
+                ProgressBar(
+                    progress = initState.downloadYtDlpProgress.div(100f),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            } else {
+                ProgressBar(modifier = Modifier.fillMaxWidth())
+            }
+        }
+
+        // Show progress bars for FFmpeg
+        if (initState?.checkingFFmpeg == true || initState?.downloadingFFmpeg == true || initState?.updatingFFmpeg == true) {
+            Text("FFmpeg")
+            if (initState.downloadFfmpegProgress != null) {
+                ProgressBar(
+                    progress = initState.downloadFfmpegProgress.div(100f),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            } else {
+                ProgressBar(modifier = Modifier.fillMaxWidth())
             }
         }
     }
+}
+
+@Composable
+private fun ReadyToGoScreen(
+    onComplete: () -> Unit = {}
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text(
+            text = stringResource(Res.string.onboarding_finish_ready_title),
+            style = FluentTheme.typography.subtitle
+        )
+
+        Text(
+            text = stringResource(Res.string.onboarding_finish_ready_message),
+            style = FluentTheme.typography.bodyStrong,
+            textAlign = TextAlign.Center
+        )
+
+        Image(painterResource( Res.drawable.Rocket), null, Modifier.size(148.dp).padding(vertical = 16.dp))
+
+        AccentButton(onClick = onComplete) {
+            Text(stringResource(Res.string.onboarding_finish_ready_button))
+        }
+    }
+    ConfettiKit(
+        modifier = Modifier.fillMaxSize(),
+        parties = listOf(
+            Party(emitter = Emitter(duration = 5.seconds).perSecond(30))
+        )
+    )
 }
 
 @Preview
@@ -108,4 +162,34 @@ fun FinishScreenPreview() {
     FinishView(
         initState = InitState(initCompleted = true)
     )
+}
+
+@Preview
+@Composable
+fun LoadingResourcesScreenPreview() {
+    LoadingResourcesScreen(
+        initState = InitState(
+            downloadingYtDlp = true,
+            downloadYtDlpProgress = 45.5f,
+            downloadingFFmpeg = true,
+            downloadFfmpegProgress = 72.3f
+        )
+    )
+}
+
+@Preview
+@Composable
+fun LoadingResourcesScreenCheckingPreview() {
+    LoadingResourcesScreen(
+        initState = InitState(
+            checkingYtDlp = true,
+            checkingFFmpeg = true
+        )
+    )
+}
+
+@Preview
+@Composable
+fun ReadyToGoScreenPreview() {
+    ReadyToGoScreen()
 }

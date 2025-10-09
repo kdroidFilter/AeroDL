@@ -1,14 +1,6 @@
 package io.github.kdroidfilter.ytdlpgui.features.onboarding.clipboard
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -18,24 +10,20 @@ import androidx.compose.ui.unit.dp
 import io.github.composefluent.component.Icon
 import io.github.composefluent.component.Text
 import io.github.composefluent.icons.Icons
-import io.github.composefluent.icons.filled.Clipboard
-import io.github.kdroidfilter.ytdlpgui.features.init.InitState
+import io.github.composefluent.icons.regular.Clipboard
 import io.github.kdroidfilter.ytdlpgui.core.design.components.Switcher
-import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.HeaderRow
-import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.NavigationRow
+import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents
-import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.OnboardingProgress
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingStep
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingViewModel
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.DependencyInfoBar
+import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.HeaderRow
+import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.NavigationRow
+import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.OnboardingProgress
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
-import ytdlpgui.composeapp.generated.resources.Res
-import ytdlpgui.composeapp.generated.resources.common_disabled
-import ytdlpgui.composeapp.generated.resources.common_enabled
-import ytdlpgui.composeapp.generated.resources.settings_clipboard_monitoring_caption
-import ytdlpgui.composeapp.generated.resources.settings_clipboard_monitoring_title
+import ytdlpgui.composeapp.generated.resources.*
 
 @Composable
 fun ClipboardScreen(
@@ -79,7 +67,7 @@ fun ClipboardView(
                 subtitle = stringResource(Res.string.settings_clipboard_monitoring_caption)
             )
             Spacer(Modifier.height(12.dp))
-            Icon(Icons.Filled.Clipboard, null, modifier = Modifier.size(48.dp))
+            Icon(Icons.Regular.Clipboard, null, modifier = Modifier.size(48.dp))
             Spacer(Modifier.height(12.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Switcher(

@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.composefluent.FluentTheme
+import io.github.composefluent.component.AccentButton
 import io.github.composefluent.component.Button
 import io.github.composefluent.component.Icon
 import io.github.composefluent.component.Text
@@ -79,7 +80,7 @@ fun WelcomeView(
                 description = stringResource(Res.string.onboarding_welcome_subtitle),
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
-            Button(onClick = { onEvent(OnboardingEvents.OnStart) }) {
+            AccentButton(onClick = { onEvent(OnboardingEvents.OnStart) }) {
                 Text(stringResource(Res.string.onboarding_start))
             }
         }

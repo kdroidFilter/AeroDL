@@ -15,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import io.github.composefluent.component.AccentButton
 import io.github.composefluent.component.Button
 import io.github.composefluent.component.Icon
 import io.github.composefluent.component.Text
@@ -89,7 +90,7 @@ fun DownloadDirView(
             }
             Spacer(Modifier.height(12.dp))
             val pickFolderTitle = stringResource(Res.string.settings_download_dir_pick_title)
-            Button(onClick = { onEvent(OnboardingEvents.OnPickDownloadDir(pickFolderTitle)) }) {
+            AccentButton(onClick = { onEvent(OnboardingEvents.OnPickDownloadDir(pickFolderTitle)) }) {
                 Text(stringResource(Res.string.settings_select))
             }
 

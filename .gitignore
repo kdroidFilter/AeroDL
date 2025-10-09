@@ -19,3 +19,4 @@ captures
 node_modules/
 output
 network/build
+.claude/ 

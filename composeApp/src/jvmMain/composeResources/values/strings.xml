@@ -112,6 +112,11 @@
     <string name="onboarding_start">Get started</string>
     <string name="onboarding_parallel_selected">Selected: %1$d</string>
     <string name="onboarding_complete_message">Setup complete…</string>
+    <string name="onboarding_finish_loading_title">Just a few more moments…</string>
+    <string name="onboarding_finish_loading_message">We are still downloading the necessary resources for the program to work properly.</string>
+    <string name="onboarding_finish_ready_title">Let\'s go!</string>
+    <string name="onboarding_finish_ready_message">Everything is ready. You can now start using AeroDL.</string>
+    <string name="onboarding_finish_ready_button">Get started</string>
     <string name="onboarding_gnome_focus_title">Improve GNOME Experience</string>
     <string name="onboarding_gnome_focus_caption">GNOME blocks window focus by default. We recommend installing the "Steal My Focus" extension for a better system tray experience.</string>
     <string name="onboarding_gnome_focus_open_extension">Open Extension Page</string>

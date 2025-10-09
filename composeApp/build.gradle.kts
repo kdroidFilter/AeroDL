@@ -61,6 +61,9 @@ kotlin {
             implementation(libs.multiplatform.settings)
             implementation(libs.knotify)
             implementation(libs.knotify.compose)
+
+            implementation("io.github.vinceglb:confettikit:0.6.0")
+
         }
 
         commonTest.dependencies {
