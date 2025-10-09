@@ -36,12 +36,14 @@ fun GnomeFocusScreen(
 ) {
     val currentStep by viewModel.currentStep.collectAsState()
     val initState by viewModel.initState.collectAsState()
+    val dependencyInfoBarDismissed by viewModel.dependencyInfoBarDismissed.collectAsState()
     GnomeFocusView(
         onEvent = viewModel::onEvents,
         currentStep = currentStep,
         initState = initState,
         totalSteps = viewModel.getTotalSteps(),
-        currentStepIndex = viewModel.getCurrentStepIndex()
+        currentStepIndex = viewModel.getCurrentStepIndex(),
+        dependencyInfoBarDismissed = dependencyInfoBarDismissed
     )
 }
 
@@ -52,6 +54,7 @@ fun GnomeFocusView(
     initState: InitState? = null,
     totalSteps: Int? = null,
     currentStepIndex: Int? = null,
+    dependencyInfoBarDismissed: Boolean = false,
 ) {
     val uriHandler = LocalUriHandler.current
 
@@ -78,7 +81,11 @@ fun GnomeFocusView(
             }
         }
         if (initState != null) {
-            DependencyInfoBar(initState)
+            DependencyInfoBar(
+                initState = initState,
+                isDismissed = dependencyInfoBarDismissed,
+                onDismiss = { onEvent(OnboardingEvents.OnDismissDependencyInfoBar) }
+            )
         }
         NavigationRow(
             onNext = { onEvent(OnboardingEvents.OnNext) },

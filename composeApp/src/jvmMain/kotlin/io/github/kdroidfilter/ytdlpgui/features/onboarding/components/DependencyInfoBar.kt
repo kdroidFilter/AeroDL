@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Surface
@@ -29,6 +30,7 @@ import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.InfoBar
 import io.github.composefluent.component.InfoBarDefaults
+import io.github.composefluent.component.ProgressBar
 import io.github.composefluent.component.Text
 import io.github.composefluent.component.TooltipBox
 import io.github.composefluent.icons.Icons
@@ -48,13 +50,15 @@ import ytdlpgui.composeapp.generated.resources.status_updating
 
 @OptIn(ExperimentalFluentApi::class)
 @Composable
-internal fun DependencyInfoBar(initState: InitState) {
-    var isDismissed by remember { mutableStateOf(false) }
-
+internal fun DependencyInfoBar(
+    initState: InitState,
+    isDismissed: Boolean = false,
+    onDismiss: () -> Unit = {}
+) {
     if (!isDismissed) {
         val ytDlpStatus = when {
             initState.checkingYtDlp -> stringResource(Res.string.status_checking)
-            initState.downloadingYtDlp -> "${stringResource(Res.string.status_downloading)} ${initState.downloadYtDlpProgress?.let { "(${it.toInt()}%)" } ?: ""}"
+            initState.downloadingYtDlp -> stringResource(Res.string.status_downloading)
             initState.updatingYtdlp -> stringResource(Res.string.status_updating)
             initState.errorMessage != null -> stringResource(Res.string.status_error, initState.errorMessage)
             initState.initCompleted -> stringResource(Res.string.status_installed)
@@ -63,11 +67,22 @@ internal fun DependencyInfoBar(initState: InitState) {
 
         val ffmpegStatus = when {
             initState.checkingFFmpeg -> stringResource(Res.string.status_checking)
-            initState.downloadingFFmpeg -> "${stringResource(Res.string.status_downloading)} ${initState.downloadFfmpegProgress?.let { "(${it.toInt()}%)" } ?: ""}"
+            initState.downloadingFFmpeg -> stringResource(Res.string.status_downloading)
             initState.updatingFFmpeg -> stringResource(Res.string.status_updating)
             initState.errorMessage != null -> stringResource(Res.string.status_error, initState.errorMessage)
             initState.initCompleted -> stringResource(Res.string.status_installed)
             else -> stringResource(Res.string.status_pending)
+        }
+
+        val ytDlpProgress = when {
+            initState.downloadYtDlpProgress != null -> initState.downloadYtDlpProgress.div(100f)
+            initState.initCompleted -> 1f
+            else -> null
+        }
+        val ffmpegProgress = when {
+            initState.downloadFfmpegProgress != null -> initState.downloadFfmpegProgress.div(100f)
+            initState.initCompleted -> 1f
+            else -> null
         }
 
         InfoBar(
@@ -77,6 +92,13 @@ internal fun DependencyInfoBar(initState: InitState) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("yt-dlp: $ytDlpStatus")
                         Spacer(Modifier.width(8.dp))
+                        if (ytDlpProgress != null) {
+                            ProgressBar(
+                                progress = ytDlpProgress,
+                                modifier = Modifier.widthIn(max = 150.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                        }
                         TooltipBox(
                             tooltip = {
                                 Surface(
@@ -103,6 +125,13 @@ internal fun DependencyInfoBar(initState: InitState) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("FFmpeg: $ffmpegStatus")
                         Spacer(Modifier.width(8.dp))
+                        if (ffmpegProgress != null) {
+                            ProgressBar(
+                                progress = ffmpegProgress,
+                                modifier = Modifier.widthIn(max = 150.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                        }
                         TooltipArea(
                             tooltip = {
                                 Surface(
@@ -132,7 +161,7 @@ internal fun DependencyInfoBar(initState: InitState) {
             colors = InfoBarDefaults.colors(),
             icon = { InfoBarDefaults.Badge() },
             closeAction = if (initState.initCompleted) {
-                { InfoBarDefaults.CloseActionButton(onClick = { isDismissed = true }) }
+                { InfoBarDefaults.CloseActionButton(onClick = onDismiss) }
             } else {
                 null
             }

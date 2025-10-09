@@ -67,6 +67,9 @@ class OnboardingViewModel(
     private val _clipboardMonitoringEnabled = MutableStateFlow(settings.getBoolean(SettingsKeys.CLIPBOARD_MONITORING_ENABLED, false))
     val clipboardMonitoringEnabled: StateFlow<Boolean> = _clipboardMonitoringEnabled.asStateFlow()
 
+    private val _dependencyInfoBarDismissed = MutableStateFlow(false)
+    val dependencyInfoBarDismissed: StateFlow<Boolean> = _dependencyInfoBarDismissed.asStateFlow()
+
     // Calculate dynamic list of steps based on environment
     private val enabledSteps: List<OnboardingStep> by lazy {
         buildList {
@@ -101,6 +104,7 @@ class OnboardingViewModel(
             is OnboardingEvents.OnSetParallelDownloads -> handleSetParallelDownloads(event.count)
             is OnboardingEvents.OnSetNoCheckCertificate -> handleSetNoCheckCertificate(event.enabled)
             is OnboardingEvents.OnSetClipboardMonitoring -> handleSetClipboardMonitoring(event.enabled)
+            is OnboardingEvents.OnDismissDependencyInfoBar -> handleDismissDependencyInfoBar()
         }
     }
 
@@ -210,6 +214,10 @@ class OnboardingViewModel(
     private fun handleSetClipboardMonitoring(enabled: Boolean) {
         _clipboardMonitoringEnabled.value = enabled
         settings.putBoolean(SettingsKeys.CLIPBOARD_MONITORING_ENABLED, enabled)
+    }
+
+    private fun handleDismissDependencyInfoBar() {
+        _dependencyInfoBarDismissed.value = true
     }
 
     private fun navigateToStep(step: OnboardingStep) {

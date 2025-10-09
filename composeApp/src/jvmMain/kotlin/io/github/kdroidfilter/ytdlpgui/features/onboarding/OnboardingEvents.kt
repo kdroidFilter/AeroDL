@@ -13,4 +13,5 @@ sealed class OnboardingEvents {
     data class OnSetParallelDownloads(val count: Int) : OnboardingEvents()
     data class OnSetNoCheckCertificate(val enabled: Boolean) : OnboardingEvents()
     data class OnSetClipboardMonitoring(val enabled: Boolean) : OnboardingEvents()
+    data object OnDismissDependencyInfoBar : OnboardingEvents()
 }

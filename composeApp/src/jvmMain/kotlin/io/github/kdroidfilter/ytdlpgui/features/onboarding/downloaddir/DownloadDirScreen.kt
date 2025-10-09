@@ -45,13 +45,15 @@ fun DownloadDirScreen(
     val state = collectDownloadDirState(viewModel)
     val currentStep by viewModel.currentStep.collectAsState()
     val initState by viewModel.initState.collectAsState()
+    val dependencyInfoBarDismissed by viewModel.dependencyInfoBarDismissed.collectAsState()
     DownloadDirView(
         state = state,
         onEvent = viewModel::onEvents,
         currentStep = currentStep,
         initState = initState,
         totalSteps = viewModel.getTotalSteps(),
-        currentStepIndex = viewModel.getCurrentStepIndex()
+        currentStepIndex = viewModel.getCurrentStepIndex(),
+        dependencyInfoBarDismissed = dependencyInfoBarDismissed
     )
 }
 
@@ -63,6 +65,7 @@ fun DownloadDirView(
     initState: InitState? = null,
     totalSteps: Int? = null,
     currentStepIndex: Int? = null,
+    dependencyInfoBarDismissed: Boolean = false,
 ) {
     Column(Modifier.fillMaxSize().padding(16.dp)) {
         OnboardingProgress(
@@ -92,7 +95,11 @@ fun DownloadDirView(
 
         }
         if (initState != null) {
-            DependencyInfoBar(initState)
+            DependencyInfoBar(
+                initState = initState,
+                isDismissed = dependencyInfoBarDismissed,
+                onDismiss = { onEvent(OnboardingEvents.OnDismissDependencyInfoBar) }
+            )
         }
         NavigationRow(
             onNext = { onEvent(OnboardingEvents.OnNext) },
