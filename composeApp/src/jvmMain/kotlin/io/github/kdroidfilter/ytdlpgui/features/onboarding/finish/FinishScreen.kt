@@ -12,8 +12,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.AccentButton
-import io.github.composefluent.component.ProgressBar
 import io.github.composefluent.component.Text
+import io.github.kdroidfilter.ytdlpgui.core.design.components.ProgressBar
 import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingStep
@@ -126,34 +126,38 @@ private fun LoadingResourcesScreen(
 private fun ReadyToGoScreen(
     onComplete: () -> Unit = {}
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Text(
-            text = stringResource(Res.string.onboarding_finish_ready_title),
-            style = FluentTheme.typography.subtitle
+    Box(Modifier.fillMaxSize()) {
+        ConfettiKit(
+            modifier = Modifier.fillMaxSize(),
+            parties = listOf(
+                Party(emitter = Emitter(duration = 5.seconds).perSecond(30))
+            )
         )
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
 
-        Text(
-            text = stringResource(Res.string.onboarding_finish_ready_message),
-            style = FluentTheme.typography.bodyStrong,
-            textAlign = TextAlign.Center
-        )
+            Text(
+                text = stringResource(Res.string.onboarding_finish_ready_title),
+                style = FluentTheme.typography.subtitle
+            )
 
-        Image(painterResource( Res.drawable.Rocket), null, Modifier.size(148.dp).padding(vertical = 16.dp))
+            Text(
+                text = stringResource(Res.string.onboarding_finish_ready_message),
+                style = FluentTheme.typography.bodyStrong,
+                textAlign = TextAlign.Center
+            )
 
-        AccentButton(onClick = onComplete) {
-            Text(stringResource(Res.string.onboarding_finish_ready_button))
+            Image(painterResource(Res.drawable.Rocket), null, Modifier.size(148.dp).padding(vertical = 16.dp))
+
+            AccentButton(onClick = onComplete) {
+                Text(stringResource(Res.string.onboarding_finish_ready_button))
+            }
         }
     }
-    ConfettiKit(
-        modifier = Modifier.fillMaxSize(),
-        parties = listOf(
-            Party(emitter = Emitter(duration = 5.seconds).perSecond(30))
-        )
-    )
+
 }
 
 @Preview

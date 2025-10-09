@@ -58,7 +58,7 @@ fun ExpandableDescription(
             if (hasOverflow) {
                 Spacer(Modifier.width(8.dp))
                 Icon(
-                    if (isRtl) Icons.Regular.ChevronLeft else Icons.Regular.ChevronRight,
+                    Icons.Regular.ChevronRight,
                     contentDescription = null,
                     modifier = Modifier.rotate(degrees)
                 )

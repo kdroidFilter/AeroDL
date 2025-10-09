@@ -32,12 +32,11 @@ import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.InfoBar
 import io.github.composefluent.component.InfoBarDefaults
-import io.github.composefluent.component.InfoBarSeverity
-import io.github.composefluent.component.ProgressBar
 import io.github.composefluent.component.Text
 import io.github.composefluent.component.TooltipBox
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.Info
+import io.github.kdroidfilter.ytdlpgui.core.design.components.ProgressBar
 import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.Res

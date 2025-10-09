@@ -155,6 +155,13 @@
     <string name="download_completed_title">ההורדה הסתיימה</string>
     <string name="download_completed_message">%1$s הורד</string>
 
+    <!-- התראות ניטור לוח העריכה -->
+    <string name="clipboard_link_detected_title">זוהה קישור</string>
+    <string name="clipboard_link_detected_message">האם לפתוח את הקישור ב-%1$s?‎
+%2$s</string>
+    <string name="clipboard_open_in_app">פתח ב-%1$s</string>
+    <string name="clipboard_ignore">התעלם</string>
+
     <!-- חיווי: תיקייה אינה זמינה -->
     <string name="directory_unavailable">לא זמין</string>
     <string name="tooltip_directory_unavailable">הקובץ/התיקייה הועברו או נמחקו ואינם זמינים עוד</string>

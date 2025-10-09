@@ -11,8 +11,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.ProgressBar
+
 import io.github.composefluent.component.Text
+import io.github.kdroidfilter.ytdlpgui.core.design.components.ProgressBar
 import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingStep
 import org.jetbrains.compose.resources.stringResource
