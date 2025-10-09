@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.sqlDelight)
     alias(libs.plugins.hydraulicConveyor)
+    id("io.github.kdroidfilter.compose.linux.packagedeps") version "0.2.2"
 }
 
 version = "0.1.0"
@@ -99,10 +100,22 @@ compose.desktop {
         )
 
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "io.github.kdroidfilter.ytdlpgui"
+
+            vendor = "KDroidFilter"
+            targetFormats(TargetFormat.Pkg, TargetFormat.Msi, TargetFormat.Deb)
+            packageName = "AeroDl"
             packageVersion = "1.0.0"
             modules("jdk.accessibility", "java.sql", "jdk.security.auth")
+            windows {
+                dirChooser = true
+                perUserInstall = true
+                menuGroup = "start-menu-group"
+            }
+            macOS {
+                bundleID = "io.github.kdroidfilter.ytdlpgui"
+                dockName = "AeroDl"
+            }
+            description = "An awesome GUI for yt-dlp!"
 
         }
     }
@@ -117,4 +130,9 @@ sqldelight {
             dialect("app.cash.sqldelight:sqlite-3-24-dialect:${libs.versions.sqlDelight.get()}")
         }
     }
+}
+
+linuxDebConfig {
+    startupWMClass.set("io.github.kdroidfilter.ytdlpgui.MainKt")
+    enableT64AlternativeDeps.set(true)
 }
