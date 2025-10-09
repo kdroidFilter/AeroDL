@@ -12,12 +12,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.application
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import coil3.ImageLoader
+import coil3.SingletonImageLoader
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.kdroid.composetray.tray.api.TrayApp
 import com.kdroid.composetray.tray.api.TrayAppState
@@ -66,6 +70,7 @@ import ytdlpgui.composeapp.generated.resources.app_version_label
 import java.io.File
 import java.util.Locale
 import com.russhwolf.settings.Settings
+import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnlyRtl
 import io.github.kdroidfilter.ytdlpgui.core.util.errorln
 import io.github.kdroidfilter.ytdlpgui.core.util.infoln
 
@@ -74,8 +79,10 @@ fun main() = application {
     allowComposeNativeTrayLogging = true
     val cleanInstall = System.getProperty("cleanInstall", "false").toBoolean()
 
-    if (cleanInstall) { clearJavaTempDir() }
-//    Locale.setDefault(Locale.ENGLISH)
+    if (cleanInstall) {
+        clearJavaTempDir()
+    }
+//    Locale.setDefault(Locale("en"))
     KoinApplication(application = {
         modules(appModule)
     }) {
@@ -104,11 +111,17 @@ fun main() = application {
                 runCatching { koin.declare(trayAppState) }
             }
 
-            if (cleanInstall) { clearSettings(koin.get()) }
+            // Initialize Coil with native trusted roots
+            val imageLoader = koinInject<ImageLoader>()
+            SingletonImageLoader.setSafe { imageLoader }
+
+            if (cleanInstall) {
+                clearSettings(koin.get())
+            }
 
             val isSingleInstance = SingleInstanceManager.isSingleInstance(
                 onRestoreRequest = {
-                   trayAppState.show()
+                    trayAppState.show()
                 }
             )
             if (!isSingleInstance) exitApplication()
@@ -120,20 +133,24 @@ fun main() = application {
             val autoStartEnabled by settingsVm.autoLaunchEnabled.collectAsState()
             val clipboardEnabled by settingsVm.clipboardMonitoring.collectAsState()
 
+            val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
 
             TrayApp(
                 state = trayAppState,
                 iconContent = {
+
                     Icon(
-                        AeroDlLogoOnly,
+                        if (!isRtl) AeroDlLogoOnly else AeroDlLogoOnlyRtl,
                         null,
-                        modifier = Modifier.padding( if (getOperatingSystem() != OperatingSystem.WINDOWS) 12.dp else 2.dp).fillMaxSize(),
+                        modifier = Modifier
+                            .padding(if (getOperatingSystem() != OperatingSystem.WINDOWS) 12.dp else 2.dp)
+                            .fillMaxSize(),
                         tint = if (isDownloading) FluentTheme.colors.system.success else {
                             if (isMenuBarInDarkMode()) Color.White else Color.Black
                         }
                     )
                 },
-                tooltip =  runBlocking { getString(Res.string.app_name) } + if (isDownloading) " - Downloading..." else "",
+                tooltip = runBlocking { getString(Res.string.app_name) } + if (isDownloading) " - Downloading..." else "",
                 menu = {
                     if (!trayAppState.isVisible.value) Item(
                         label = runBlocking { getString(Res.string.menu_show_window) },
@@ -182,6 +199,7 @@ fun main() = application {
                 }
             }
         }
+
     }
 }
 

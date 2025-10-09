@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.composefluent.FluentTheme
+import io.github.composefluent.component.AccentButton
 import io.github.composefluent.component.Button
 import io.github.composefluent.component.Text
 import org.jetbrains.compose.resources.stringResource
@@ -41,7 +42,7 @@ internal fun NavigationRow(
             }
         }
         Row {
-            Button(
+            AccentButton(
                 onClick = onNext,
                 disabled = !nextEnabled,
                 content = { Text(resolvedNext) }

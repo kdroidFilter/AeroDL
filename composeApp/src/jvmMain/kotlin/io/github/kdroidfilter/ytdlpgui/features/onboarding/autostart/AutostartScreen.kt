@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -73,18 +74,19 @@ fun AutostartView(
             totalSteps = totalSteps,
             currentStepIndex = currentStepIndex
         )
-        Column(Modifier.weight(1f).fillMaxWidth()) {
+        Column(Modifier.weight(1f).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
             HeaderRow(
                 title = stringResource(Res.string.settings_auto_launch_title),
                 subtitle = stringResource(Res.string.settings_auto_launch_caption)
             )
+            Spacer(Modifier.height(12.dp))
+            Icon(Icons.Regular.Power, null, modifier = Modifier.size(48.dp))
+            Spacer(Modifier.height(12.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Switcher(
                     checked = state.autoLaunchEnabled,
                     onCheckStateChange = { onEvent(OnboardingEvents.OnSetAutoLaunchEnabled(it)) }
                 )
-                Spacer(Modifier.width(8.dp))
-                Icon(Icons.Regular.Power, null, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(8.dp))
                 val statusLabel = if (state.autoLaunchEnabled) {
                     stringResource(Res.string.common_enabled)

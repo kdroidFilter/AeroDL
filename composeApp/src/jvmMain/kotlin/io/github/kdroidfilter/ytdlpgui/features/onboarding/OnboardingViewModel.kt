@@ -7,11 +7,11 @@ import androidx.lifecycle.viewModelScope
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.kdroid.composetray.tray.api.TrayAppState
 import com.kdroid.composetray.tray.api.TrayWindowDismissMode
+import io.github.kdroidfilter.network.CertificateValidator
 import io.github.kdroidfilter.platformtools.LinuxDesktopEnvironment
 import io.github.kdroidfilter.platformtools.detectLinuxDesktopEnvironment
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Navigator
-import io.github.kdroidfilter.ytdlpgui.core.platform.network.CertificateChecker
 import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
 import io.github.kdroidfilter.ytdlpgui.features.init.InitViewModel
 import io.github.vinceglb.filekit.FileKit
@@ -37,13 +37,21 @@ class OnboardingViewModel(
     // Check if user is running GNOME desktop environment
     private val isGnome = detectLinuxDesktopEnvironment() == LinuxDesktopEnvironment.GNOME
 
-    // Check if certificate is from Google Trust Services (if true, no need to show NoCheckCert screen)
-    private val shouldSkipNoCheckCert: Boolean = CertificateChecker.isYouTubeCertificateFromGoogleTrustServices()
+    // Check if YouTube certificate is valid (to detect filtered networks/SSL inspection)
+    private val _shouldSkipNoCheckCert = MutableStateFlow(true)
+    private val shouldSkipNoCheckCert: Boolean
+        get() = _shouldSkipNoCheckCert.value
 
     init {
         // Start downloading yt-dlp and ffmpeg in background during onboarding
         initViewModel.startInitialization(navigateToHomeWhenDone = false)
         viewModelScope.launch { settingsRepository.refreshAutoLaunchState() }
+
+        // Check YouTube certificate validity in background
+        viewModelScope.launch {
+            val isValid = CertificateValidator.isYouTubeCertificateValid()
+            _shouldSkipNoCheckCert.value = isValid
+        }
     }
 
     private val _currentStep = MutableStateFlow(OnboardingStep.Welcome)
@@ -62,8 +70,8 @@ class OnboardingViewModel(
     val dependencyInfoBarDismissed: StateFlow<Boolean> = _dependencyInfoBarDismissed.asStateFlow()
 
     // Calculate dynamic list of steps based on environment
-    private val enabledSteps: List<OnboardingStep> by lazy {
-        buildList {
+    private fun getEnabledSteps(): List<OnboardingStep> {
+        return buildList {
             add(OnboardingStep.Welcome)
             add(OnboardingStep.DownloadDir)
             add(OnboardingStep.Cookies)
@@ -79,9 +87,9 @@ class OnboardingViewModel(
         }
     }
 
-    fun getTotalSteps(): Int = enabledSteps.size
+    fun getTotalSteps(): Int = getEnabledSteps().size
 
-    fun getCurrentStepIndex(): Int = enabledSteps.indexOf(_currentStep.value).coerceAtLeast(0)
+    fun getCurrentStepIndex(): Int = getEnabledSteps().indexOf(_currentStep.value).coerceAtLeast(0)
 
     fun onEvents(event: OnboardingEvents) {
         when (event) {
@@ -159,12 +167,11 @@ class OnboardingViewModel(
 
     private fun handleFinish() {
         _currentStep.value = OnboardingStep.Finish
+    }
+
+    fun completeOnboarding() {
         viewModelScope.launch {
             settingsRepository.setOnboardingCompleted(true)
-
-            // Wait for yt-dlp/ffmpeg initialization to complete before navigating to home
-            initState.first { it.initCompleted }
-
             navigator.navigateAndClearBackStack(Destination.MainNavigation.Home)
         }
     }

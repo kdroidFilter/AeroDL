@@ -1,5 +1,6 @@
 package io.github.kdroidfilter.ytdlp
 
+import io.github.kdroidfilter.network.KtorConfig
 import io.github.kdroidfilter.platformtools.OperatingSystem
 import io.github.kdroidfilter.platformtools.getOperatingSystem
 import io.github.kdroidfilter.platformtools.releasefetcher.github.GitHubReleaseFetcher
@@ -74,7 +75,8 @@ class YtDlpWrapper {
      */
     var embedThumbnailInMp3: Boolean = true
 
-    private val ytdlpFetcher = GitHubReleaseFetcher(owner = "yt-dlp", repo = "yt-dlp")
+    private val httpClient = KtorConfig.createHttpClient()
+    private val ytdlpFetcher = GitHubReleaseFetcher(owner = "yt-dlp", repo = "yt-dlp", httpClient = httpClient)
 
     private data class ProcessResult(val exitCode: Int, val stdout: List<String>, val stderr: String)
 

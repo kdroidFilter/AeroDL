@@ -1,5 +1,6 @@
 package io.github.kdroidfilter.ytdlp.util
 
+import io.github.kdroidfilter.network.HttpsConnectionFactory
 import io.github.kdroidfilter.ytdlp.core.Options
 import io.github.kdroidfilter.ytdlp.core.SubtitleOptions
 import java.io.BufferedInputStream
@@ -40,30 +41,30 @@ object NetAndArchive {
                 return Result.failure(IllegalStateException("DNS resolution failed for ${url.host}", e))
             }
 
-            (url.openConnection() as URLConnection).apply {
-                if (this is HttpURLConnection) {
-                    requestMethod = "HEAD"
-                    instanceFollowRedirects = true
-                    connectTimeout = connectTimeoutMs
-                    readTimeout = readTimeoutMs
-                    setRequestProperty("User-Agent", "Mozilla/5.0 (YtDlpWrapper)")
-                    connect()
-                    if (responseCode in 200..399) {
-                        disconnect()
-                        return Result.success(Unit)
-                    }
-                }
+            val conn = HttpsConnectionFactory.openConnection(url) {
+                requestMethod = "HEAD"
+                instanceFollowRedirects = true
+                connectTimeout = connectTimeoutMs
+                readTimeout = readTimeoutMs
+                setRequestProperty("User-Agent", "Mozilla/5.0 (YtDlpWrapper)")
             }
+            conn.connect()
+            if (conn.responseCode in 200..399) {
+                conn.disconnect()
+                return Result.success(Unit)
+            }
+            conn.disconnect()
 
             // Fallback check to a known reliable host if the target host fails, to distinguish
             // between a general network problem and a specific host being down.
             val fallback = URI("https://www.gstatic.com/generate_204").toURL()
-            (fallback.openConnection() as HttpURLConnection).apply {
+            val fallbackConn = HttpsConnectionFactory.openConnection(fallback) {
                 requestMethod = "GET"
                 connectTimeout = connectTimeoutMs
                 readTimeout = readTimeoutMs
-                connect(); disconnect()
             }
+            fallbackConn.connect()
+            fallbackConn.disconnect()
             Result.success(Unit)
         } catch (e: SocketTimeoutException) {
             Result.failure(IllegalStateException("Network timeout", e))

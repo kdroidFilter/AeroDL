@@ -18,7 +18,7 @@ internal fun HeaderRow(title: String, subtitle: String? = null) {
         Text(title, style = FluentTheme.typography.subtitle)
         if (subtitle != null) {
             Spacer(Modifier.height(4.dp))
-            Text(subtitle)
+            ExpandableDescription(description = subtitle)
         }
     }
 }

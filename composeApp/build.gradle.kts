@@ -1,4 +1,5 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import java.util.Locale
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -10,7 +11,11 @@ plugins {
     alias(libs.plugins.hydraulicConveyor)
 }
 
-version = "1.0.0"
+val ref = System.getenv("GITHUB_REF") ?: ""
+val version = if (ref.startsWith("refs/tags/")) {
+    val tag = ref.removePrefix("refs/tags/")
+    if (tag.startsWith("v")) tag.substring(1) else tag
+} else "1.0.0"
 
 kotlin {
     jvm()
@@ -61,6 +66,9 @@ kotlin {
             implementation(libs.multiplatform.settings)
             implementation(libs.knotify)
             implementation(libs.knotify.compose)
+
+            implementation(libs.confettikit)
+
         }
 
         commonTest.dependencies {
@@ -75,6 +83,7 @@ kotlin {
 
             // Project dependencies
             implementation(project(":ytdlp"))
+            implementation(project(":network"))
 
             // SQLDelight driver
             implementation(libs.sqlDelight.driver.sqlite)
@@ -82,22 +91,33 @@ kotlin {
     }
 }
 
+
+
 compose.desktop {
     application {
         mainClass = "io.github.kdroidfilter.ytdlpgui.MainKt"
 
-        // Pass JVM arguments to the application
-        val cleanInstall = project.findProperty("cleanInstall")?.toString()?.toBoolean() ?: false
-        jvmArgs += listOf(
-            "-DcleanInstall=$cleanInstall"
-        )
-
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "io.github.kdroidfilter.ytdlpgui"
-            packageVersion = "1.0.0"
-            modules("jdk.accessibility", "java.sql")
-
+            vendor = "KDroidFilter"
+            targetFormats(TargetFormat.Pkg, TargetFormat.Msi, TargetFormat.Deb)
+            packageName = "AeroDl"
+            packageVersion = version
+            description = "An awesome GUI for yt-dlp!"
+            modules("jdk.accessibility", "java.sql", "jdk.security.auth")
+            windows {
+                dirChooser = true
+                perUserInstall = true
+                menuGroup = "start-menu-group"
+                iconFile.set(project.file("icons/logo.ico"))
+            }
+            macOS {
+                bundleID = "io.github.kdroidfilter.ytdlpgui"
+                dockName = "AeroDl"
+                iconFile.set(project.file("icons/logo.icns"))
+            }
+            linux {
+                iconFile.set(project.file("icons/logo.png"))
+            }
         }
     }
 }
@@ -112,3 +132,5 @@ sqldelight {
         }
     }
 }
+
+

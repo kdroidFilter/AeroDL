@@ -1,21 +1,27 @@
 package io.github.kdroidfilter.ytdlpgui.features.system.about
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import io.github.composefluent.FluentTheme
+import io.github.composefluent.component.HyperlinkButton
 import io.github.composefluent.component.Text
+import io.github.kdroidfilter.ytdlpgui.core.platform.browser.openUrlInBrowser
 import org.jetbrains.compose.resources.stringResource
-import ytdlpgui.composeapp.generated.resources.*
 import org.koin.compose.viewmodel.koinViewModel
+import ytdlpgui.composeapp.generated.resources.*
 
 @Composable
 fun AboutScreen() {
     val viewModel = koinViewModel<AboutViewModel>()
-    val state = collectAboutState(viewModel)
+    val state = viewModel.state.collectAsState().value
     AboutView(
         state = state,
         onEvent = viewModel::onEvents,
@@ -23,20 +29,84 @@ fun AboutScreen() {
 }
 
 @Composable
-fun collectAboutState(viewModel: AboutViewModel): AboutState {
-    return viewModel.state.collectAsState().value
-}
-
-@Composable
 fun AboutView(
     state: AboutState,
     onEvent: (AboutEvents) -> Unit,
 ) {
-    Column {
-        Text(stringResource(Res.string.about_screen_title))
-        Spacer(Modifier.height(16.dp))
-        Text("Version: ${state.appVersion}")
-        Text("yt-dlp version: ${state.ytdlpVersion ?: "Not found"}")
-        Text("FFmpeg version: ${state.ffmpegVersion ?: "Not found"}")
+    val appVersion = state.appVersion.takeIf { it.isNotBlank() }
+        ?.let { stringResource(Res.string.app_version_label, it) }
+        ?: stringResource(Res.string.app_version_label, "—")
+
+    val ytdlpVersion = state.ytdlpVersion?.takeIf { it.isNotBlank() }
+        ?.let { stringResource(Res.string.ytdlp_version_label, it) }
+        ?: stringResource(Res.string.ytdlp_version_missing)
+
+    val ffmpegVersion = state.ffmpegVersion?.takeIf { it.isNotBlank() }
+        ?.let { stringResource(Res.string.ffmpeg_version_label, it) }
+        ?: stringResource(Res.string.ffmpeg_version_missing)
+
+    val scrollState = rememberScrollState()
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(scrollState)
+            .padding(horizontal = 24.dp, vertical = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .widthIn(max = 720.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = stringResource(Res.string.about_credits_title),
+                style = FluentTheme.typography.subtitle,
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = stringResource(Res.string.credits_made_by),
+                style = FluentTheme.typography.body,
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = stringResource(Res.string.credits_thank_jetbrains),
+                style = FluentTheme.typography.body,
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = stringResource(Res.string.credits_thank_oss),
+                style = FluentTheme.typography.body,
+                textAlign = TextAlign.Center
+            )
+            HyperlinkButton(
+                onClick = { openUrlInBrowser("https://github.com/kdroidFilter") },
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                Text(stringResource(Res.string.credits_github_prompt))
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .widthIn(max = 480.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Divider()
+            Text(
+                text = stringResource(Res.string.about_versions_title),
+                style = FluentTheme.typography.bodyStrong,
+                textAlign = TextAlign.Center
+            )
+            Text(text = appVersion, style = FluentTheme.typography.body, textAlign = TextAlign.Center)
+            Text(text = ytdlpVersion, style = FluentTheme.typography.body, textAlign = TextAlign.Center)
+            Text(text = ffmpegVersion, style = FluentTheme.typography.body, textAlign = TextAlign.Center)
+            Spacer(Modifier.height(8.dp))
+        }
     }
 }

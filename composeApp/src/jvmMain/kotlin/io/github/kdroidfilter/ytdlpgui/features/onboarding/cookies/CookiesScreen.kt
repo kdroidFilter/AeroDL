@@ -6,11 +6,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import io.github.composefluent.component.Icon
+import io.github.composefluent.icons.Icons
+import io.github.composefluent.icons.filled.Cookies
 import io.github.kdroidfilter.ytdlpgui.core.design.components.BrowserSelector
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.HeaderRow
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.NavigationRow
@@ -51,23 +56,26 @@ fun CookiesView(
     state: CookiesState,
     onEvent: (OnboardingEvents) -> Unit,
     currentStep: OnboardingStep = OnboardingStep.Cookies,
-    initState: io.github.kdroidfilter.ytdlpgui.features.init.InitState? = null,
+    initState: InitState? = null,
     totalSteps: Int? = null,
     currentStepIndex: Int? = null,
     dependencyInfoBarDismissed: Boolean = false,
 ) {
-    Column(Modifier.fillMaxSize().padding(16.dp)) {
+    Column(
+        Modifier.fillMaxSize().padding(16.dp),
+    ) {
         OnboardingProgress(
             step = currentStep,
             initState = initState,
             totalSteps = totalSteps,
             currentStepIndex = currentStepIndex
         )
-        Column(Modifier.weight(1f).fillMaxWidth()) {
+        Column(Modifier.weight(1f).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
             HeaderRow(
                 title = stringResource(Res.string.settings_cookies_from_browser_title),
                 subtitle = stringResource(Res.string.settings_cookies_from_browser_label)
             )
+            Icon(Icons.Filled.Cookies, null, modifier = Modifier.size(48.dp))
             Spacer(Modifier.height(8.dp))
             BrowserSelector(
                 currentBrowser = state.cookiesFromBrowser,

@@ -50,6 +50,18 @@
     <string name="about_screen_title">About Screen</string>
     <string name="bulk_download_screen_title">Bulk Download Screen</string>
     <string name="settings_screen_title">Settings Screen</string>
+    <string name="bulk_download_support_notice">Playlist and channel downloads aren&#39;t supported yet. If you enjoy AeroDL, you can support the project on Ko-fi.</string>
+    <string name="support_on_kofi">Support on Ko-fi</string>
+    <string name="about_credits_title">Credits</string>
+    <string name="credits_made_by">Crafted by Elie Gambache</string>
+    <string name="credits_thank_jetbrains">Huge thanks to JetBrains for creating Kotlin and Compose Multiplatform—without their passionate work, this app simply wouldn&#39;t exist.</string>
+    <string name="credits_thank_oss">I am deeply grateful to every developer who publishes and maintains the open-source libraries I rely on; your generosity and expertise power every line of this project.</string>
+    <string name="credits_github_prompt">Explore my other projects on GitHub</string>
+    <string name="about_versions_title">Tool versions</string>
+    <string name="ytdlp_version_label">yt-dlp: %1$s</string>
+    <string name="ytdlp_version_missing">yt-dlp: Not found</string>
+    <string name="ffmpeg_version_label">FFmpeg: %1$s</string>
+    <string name="ffmpeg_version_missing">FFmpeg: Not found</string>
 
     <!-- Settings screen strings -->
     <string name="settings_no_check_certificate_title">No check certificate</string>
@@ -58,7 +70,7 @@
     <string name="onboarding_filtered_network_detected_message">A certificate problem has been detected. This could be due to corporate network filtering, or worse, a MITM attack. For the program to function, it is necessary to disable certificate verification.</string>
     <string name="onboarding_filtered_network_accept">I understand the risks and accept</string>
     <string name="settings_cookies_from_browser_title">Cookies from browser</string>
-    <string name="settings_cookies_from_browser_label">Choose a browser to import cookies for yt-dlp. Leave disabled if not needed.</string>
+    <string name="settings_cookies_from_browser_label">Allows using your browser\'s cookies to access content that requires you to be logged in, such as private YouTube videos. Warning: using this feature may result in your account being banned.</string>
     <string name="settings_browser_select">Select browser…</string>
     <string name="settings_browser_disable">Disabled</string>
     <string name="settings_browser_chrome">Chrome</string>
@@ -112,6 +124,11 @@
     <string name="onboarding_start">Get started</string>
     <string name="onboarding_parallel_selected">Selected: %1$d</string>
     <string name="onboarding_complete_message">Setup complete…</string>
+    <string name="onboarding_finish_loading_title">Just a few more moments…</string>
+    <string name="onboarding_finish_loading_message">We are still downloading the necessary resources for the program to work properly.</string>
+    <string name="onboarding_finish_ready_title">Let\'s go!</string>
+    <string name="onboarding_finish_ready_message">Everything is ready. You can now start using AeroDL.</string>
+    <string name="onboarding_finish_ready_button">Get started</string>
     <string name="onboarding_gnome_focus_title">Improve GNOME Experience</string>
     <string name="onboarding_gnome_focus_caption">GNOME blocks window focus by default. We recommend installing the "Steal My Focus" extension for a better system tray experience.</string>
     <string name="onboarding_gnome_focus_open_extension">Open Extension Page</string>
@@ -140,7 +157,7 @@
     <string name="status_cancelled">Cancelled</string>
     <!-- Settings: Auto-launch -->
     <string name="settings_auto_launch_title">Launch at startup</string>
-    <string name="settings_auto_launch_caption">Automatically start the app when the system boots</string>
+    <string name="settings_auto_launch_caption">Recommended when you use AeroDL often: it launches with your system so you never have to think about starting it. Pair it with clipboard monitoring to begin downloads as soon as you copy a link.</string>
 
     <!-- Tray / Menu -->
     <string name="menu_show_window">Show window</string>

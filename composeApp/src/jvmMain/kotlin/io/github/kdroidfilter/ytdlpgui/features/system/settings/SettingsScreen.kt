@@ -28,6 +28,7 @@ import io.github.composefluent.component.MenuFlyoutItem
 import io.github.composefluent.component.Text
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.filled.DocumentEdit
+import io.github.composefluent.icons.filled.MusicNote1
 import io.github.composefluent.icons.filled.OpenFolder
 import io.github.composefluent.icons.filled.TopSpeed
 import io.github.composefluent.icons.regular.Clipboard
@@ -35,26 +36,11 @@ import io.github.composefluent.icons.regular.Cookies
 import io.github.composefluent.icons.regular.LockShield
 import io.github.composefluent.icons.regular.Power
 import io.github.kdroidfilter.ytdlpgui.core.design.components.BrowserSelector
+import io.github.kdroidfilter.ytdlpgui.core.design.components.EllipsizedTextWithTooltip
 import io.github.kdroidfilter.ytdlpgui.core.design.components.Switcher
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import ytdlpgui.composeapp.generated.resources.Res
-import ytdlpgui.composeapp.generated.resources.settings_auto_launch_title
-import ytdlpgui.composeapp.generated.resources.settings_clipboard_monitoring_caption
-import ytdlpgui.composeapp.generated.resources.settings_clipboard_monitoring_title
-import ytdlpgui.composeapp.generated.resources.settings_cookies_from_browser_label
-import ytdlpgui.composeapp.generated.resources.settings_cookies_from_browser_title
-import ytdlpgui.composeapp.generated.resources.settings_download_dir_caption
-import ytdlpgui.composeapp.generated.resources.settings_download_dir_not_set
-import ytdlpgui.composeapp.generated.resources.settings_download_dir_pick_title
-import ytdlpgui.composeapp.generated.resources.settings_download_dir_title
-import ytdlpgui.composeapp.generated.resources.settings_include_preset_in_filename_caption
-import ytdlpgui.composeapp.generated.resources.settings_include_preset_in_filename_title
-import ytdlpgui.composeapp.generated.resources.settings_no_check_certificate_caption
-import ytdlpgui.composeapp.generated.resources.settings_no_check_certificate_title
-import ytdlpgui.composeapp.generated.resources.settings_parallel_downloads_caption
-import ytdlpgui.composeapp.generated.resources.settings_parallel_downloads_title
-import ytdlpgui.composeapp.generated.resources.settings_auto_launch_caption
 import ytdlpgui.composeapp.generated.resources.*
 
 @Composable
@@ -81,212 +67,60 @@ fun SettingsView(
             modifier = Modifier.weight(1f).fillMaxHeight()
         ) {
             item {
-                // Cookies-from-browser selection using CardExpanderItem with BrowserSelector
-                CardExpanderItem(
-                    heading = {
-                        Text(
-                            stringResource(Res.string.settings_cookies_from_browser_title),
-                            modifier = Modifier.fillMaxWidth(0.60f)
-                        )
+                CookiesFromBrowserSetting(
+                    currentBrowser = state.cookiesFromBrowser,
+                    onBrowserSelected = { browser ->
+                        onEvent(SettingsEvents.SetCookiesFromBrowser(browser))
                     },
-                    caption = {
-                        Text(
-                            stringResource(Res.string.settings_cookies_from_browser_label),
-                            modifier = Modifier.fillMaxWidth(0.60f)
-                        )
-                    },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Regular.Cookies,
-                            contentDescription = stringResource(Res.string.settings_cookies_from_browser_title)
-                        )
-                    },
-                    trailing = {
-                        BrowserSelector(
-                            currentBrowser = state.cookiesFromBrowser,
-                            onBrowserSelected = { browser ->
-                                onEvent(SettingsEvents.SetCookiesFromBrowser(browser))
-                            },
-                            useDefaultPlaceholder = true
-                        )
-                    })
+                )
             }
             item {
-                // Toggle for including preset in file name
-                CardExpanderItem(heading = {
-                    Text(
-                        stringResource(Res.string.settings_include_preset_in_filename_title),
-                        modifier = Modifier.fillMaxWidth(0.8f)
-                    )
-                }, caption = {
-                    Text(
-                        stringResource(Res.string.settings_include_preset_in_filename_caption),
-                        modifier = Modifier.fillMaxWidth(0.8f)
-                    )
-                }, icon = { Icon(Icons.Filled.DocumentEdit, null) }, trailing = {
-                    Switcher(
-                        checked = state.includePresetInFilename,
-                        onCheckStateChange = { onEvent(SettingsEvents.SetIncludePresetInFilename(it)) },
-                    )
-                })
+                IncludePresetInFilenameSetting(
+                    includePreset = state.includePresetInFilename,
+                    onIncludePresetChange = { onEvent(SettingsEvents.SetIncludePresetInFilename(it)) },
+                )
             }
             item {
-                // Toggle for embedding thumbnail into MP3
-                CardExpanderItem(heading = {
-                    Text(
-                        stringResource(Res.string.settings_embed_thumbnail_mp3_title),
-                        modifier = Modifier.fillMaxWidth(0.8f)
-                    )
-                }, caption = {
-                    Text(
-                        stringResource(Res.string.settings_embed_thumbnail_mp3_caption),
-                        modifier = Modifier.fillMaxWidth(0.8f)
-                    )
-                }, icon = { Icon(Icons.Filled.DocumentEdit, null) }, trailing = {
-                    Switcher(
-                        checked = state.embedThumbnailInMp3,
-                        onCheckStateChange = { onEvent(SettingsEvents.SetEmbedThumbnailInMp3(it)) },
-                    )
-                })
+                EmbedThumbnailInMp3Setting(
+                    embedThumbnailInMp3 = state.embedThumbnailInMp3,
+                    onEmbedThumbnailChange = { onEvent(SettingsEvents.SetEmbedThumbnailInMp3(it)) },
+                )
             }
             item {
-                // Selector for parallel downloads
-                CardExpanderItem(
-                    heading = { Text(stringResource(Res.string.settings_parallel_downloads_title)) },
-                    caption = {
-                        Text(
-                            stringResource(Res.string.settings_parallel_downloads_caption),
-                            modifier = Modifier.fillMaxWidth(0.8f)
-                        )
-                    },
-                    icon = { Icon(Icons.Filled.TopSpeed, null) },
-                    trailing = {
-                        val options = (1..5).toList()
-                        val selectionLabel = state.parallelDownloads.toString()
-                        MenuFlyoutContainer(
-                            flyout = {
-                                options.forEach { count ->
-                                    MenuFlyoutItem(
-                                        modifier = Modifier.width(56.dp),
-                                        text = { Text(count.toString()) },
-                                        onClick = {
-                                            onEvent(SettingsEvents.SetParallelDownloads(count))
-                                            isFlyoutVisible = false
-                                        })
-                                }
-                            }, content = {
-                                DropDownButton(
-                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 1.dp),
-                                    onClick = { isFlyoutVisible = !isFlyoutVisible },
-                                    content = {
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(0.9f),
-                                            horizontalArrangement = Arrangement.SpaceEvenly
-                                        ) {
-                                            Text(selectionLabel)
-                                        }
-                                    },
-                                )
-                            }, placement = FlyoutPlacement.Bottom
-                        )
-                    })
+                ParallelDownloadsSetting(
+                    parallelDownloads = state.parallelDownloads,
+                    onParallelDownloadsSelected = { onEvent(SettingsEvents.SetParallelDownloads(it)) },
+                )
             }
             item {
-                // Download directory picker
-                val pickTitle = stringResource(Res.string.settings_download_dir_pick_title)
-                CardExpanderItem(heading = { Text(stringResource(Res.string.settings_download_dir_title)) }, caption = {
-                    Column(Modifier.fillMaxWidth(0.6f)) {
-                        Text(stringResource(Res.string.settings_download_dir_caption))
-                        Spacer(Modifier.height(8.dp))
-                        Text(
-                            (state.downloadDirPath.ifBlank { stringResource(Res.string.settings_download_dir_not_set) }),
-                        )
-                    }
-                }, icon = { Icon(Icons.Regular.Power, null) }, trailing = {
-                    Button(
-                        iconOnly = true,
-                        onClick = { onEvent(SettingsEvents.PickDownloadDir(pickTitle)) },
-                        content = {
-                            Icon(Icons.Filled.OpenFolder, stringResource(Res.string.open_directory))
-                        },
-                    )
-                })
+                DownloadDirectorySetting(
+                    downloadDirPath = state.downloadDirPath,
+                    onPickDownloadDir = { title -> onEvent(SettingsEvents.PickDownloadDir(title)) },
+                )
             }
             item {
-                // Toggle for no-check-certificate
-                CardExpanderItem(heading = {
-                    Text(
-                        stringResource(Res.string.settings_no_check_certificate_title),
-                        modifier = Modifier.fillMaxWidth(0.75f)
-                    )
-                }, caption = {
-                    Text(
-                        stringResource(Res.string.settings_no_check_certificate_caption),
-                        modifier = Modifier.fillMaxWidth(0.75f)
-                    )
-                }, icon = { Icon(Icons.Default.LockShield, null) }, trailing = {
-                    Switcher(
-                        checked = state.noCheckCertificate,
-                        onCheckStateChange = { onEvent(SettingsEvents.SetNoCheckCertificate(it)) },
-                    )
-                })
+                NoCheckCertificateSetting(
+                    noCheckCertificate = state.noCheckCertificate,
+                    onNoCheckCertificateChange = { onEvent(SettingsEvents.SetNoCheckCertificate(it)) },
+                )
             }
             item {
-                // Toggle for clipboard monitoring
-                CardExpanderItem(heading = {
-                    Text(
-                        stringResource(Res.string.settings_clipboard_monitoring_title),
-                        modifier = Modifier.fillMaxWidth(0.75f)
-                    )
-                }, caption = {
-                    Text(
-                        stringResource(Res.string.settings_clipboard_monitoring_caption),
-                        modifier = Modifier.fillMaxWidth(0.75f)
-                    )
-                }, icon = { Icon(Icons.Regular.Clipboard, null) }, trailing = {
-                    Switcher(
-                        checked = state.clipboardMonitoringEnabled,
-                        onCheckStateChange = { onEvent(SettingsEvents.SetClipboardMonitoring(it)) },
-                    )
-                })
+                ClipboardMonitoringSetting(
+                    clipboardMonitoringEnabled = state.clipboardMonitoringEnabled,
+                    onClipboardMonitoringChange = { onEvent(SettingsEvents.SetClipboardMonitoring(it)) },
+                )
             }
             item {
-                // Toggle for download completion notifications
-                CardExpanderItem(heading = {
-                    Text(
-                        stringResource(Res.string.settings_notify_on_complete_title),
-                        modifier = Modifier.fillMaxWidth(0.75f)
-                    )
-                }, caption = {
-                    Text(
-                        stringResource(Res.string.settings_notify_on_complete_caption),
-                        modifier = Modifier.fillMaxWidth(0.75f)
-                    )
-                }, icon = { Icon(Icons.Filled.TopSpeed, null) }, trailing = {
-                    Switcher(
-                        checked = state.notifyOnComplete,
-                        onCheckStateChange = { onEvent(SettingsEvents.SetNotifyOnComplete(it)) },
-                    )
-                })
+                NotifyOnCompleteSetting(
+                    notifyOnComplete = state.notifyOnComplete,
+                    onNotifyOnCompleteChange = { onEvent(SettingsEvents.SetNotifyOnComplete(it)) },
+                )
             }
             item {
-                // Toggle for auto-launch at system startup
-                CardExpanderItem(heading = {
-                    Text(
-                        stringResource(Res.string.settings_auto_launch_title),
-                        modifier = Modifier.fillMaxWidth(0.75f)
-                    )
-                }, caption = {
-                    Text(
-                        stringResource(Res.string.settings_auto_launch_caption),
-                        modifier = Modifier.fillMaxWidth(0.75f)
-                    )
-                }, icon = { Icon(Icons.Regular.Power, null) }, trailing = {
-                    Switcher(
-                        checked = state.autoLaunchEnabled,
-                        onCheckStateChange = { onEvent(SettingsEvents.SetAutoLaunchEnabled(it)) },
-                    )
-                })
+                AutoLaunchSetting(
+                    autoLaunchEnabled = state.autoLaunchEnabled,
+                    onAutoLaunchChange = { onEvent(SettingsEvents.SetAutoLaunchEnabled(it)) },
+                )
             }
         }
         VerticalScrollbar(
@@ -294,6 +128,345 @@ fun SettingsView(
             modifier = Modifier.fillMaxHeight().padding(top = 2.dp, start = 8.dp)
         )
     }
+}
+
+@Composable
+private fun CookiesFromBrowserSetting(
+    currentBrowser: String,
+    onBrowserSelected: (String) -> Unit,
+) {
+    CardExpanderItem(
+        heading = {
+            Text(
+                stringResource(Res.string.settings_cookies_from_browser_title),
+                modifier = Modifier.fillMaxWidth(0.50f)
+            )
+        },
+        caption = {
+            EllipsizedTextWithTooltip(
+                text = stringResource(Res.string.settings_cookies_from_browser_label),
+                modifier = Modifier.fillMaxWidth(0.50f)
+            )
+        },
+        icon = {
+            Icon(
+                imageVector = Icons.Regular.Cookies,
+                contentDescription = stringResource(Res.string.settings_cookies_from_browser_title)
+            )
+        },
+        trailing = {
+            BrowserSelector(
+                currentBrowser = currentBrowser,
+                onBrowserSelected = onBrowserSelected,
+                header = null,
+                useDefaultPlaceholder = true
+            )
+        }
+    )
+}
+
+@Preview
+@Composable
+fun CookiesFromBrowserSettingPreview() {
+    CookiesFromBrowserSetting(currentBrowser = "firefox", onBrowserSelected = {})
+}
+
+@Composable
+private fun IncludePresetInFilenameSetting(
+    includePreset: Boolean,
+    onIncludePresetChange: (Boolean) -> Unit,
+) {
+    CardExpanderItem(
+        heading = {
+            Text(
+                stringResource(Res.string.settings_include_preset_in_filename_title),
+                modifier = Modifier.fillMaxWidth(0.8f)
+            )
+        },
+        caption = {
+            EllipsizedTextWithTooltip(
+                text = stringResource(Res.string.settings_include_preset_in_filename_caption),
+                modifier = Modifier.fillMaxWidth(0.8f)
+            )
+        },
+        icon = { Icon(Icons.Filled.DocumentEdit, null) },
+        trailing = {
+            Switcher(
+                checked = includePreset,
+                onCheckStateChange = onIncludePresetChange,
+            )
+        }
+    )
+}
+
+@Preview
+@Composable
+fun IncludePresetInFilenameSettingPreview() {
+    IncludePresetInFilenameSetting(includePreset = true, onIncludePresetChange = {})
+}
+
+@Composable
+private fun EmbedThumbnailInMp3Setting(
+    embedThumbnailInMp3: Boolean,
+    onEmbedThumbnailChange: (Boolean) -> Unit,
+) {
+    CardExpanderItem(
+        heading = {
+            Text(
+                stringResource(Res.string.settings_embed_thumbnail_mp3_title),
+                modifier = Modifier.fillMaxWidth(0.8f)
+            )
+        },
+        caption = {
+            EllipsizedTextWithTooltip(
+                text = stringResource(Res.string.settings_embed_thumbnail_mp3_caption),
+                modifier = Modifier.fillMaxWidth(0.8f)
+            )
+        },
+            icon = { Icon(Icons.Filled.MusicNote1, null) },
+        trailing = {
+            Switcher(
+                checked = embedThumbnailInMp3,
+                onCheckStateChange = onEmbedThumbnailChange,
+            )
+        }
+    )
+}
+
+@Preview
+@Composable
+fun EmbedThumbnailInMp3SettingPreview() {
+    EmbedThumbnailInMp3Setting(embedThumbnailInMp3 = true, onEmbedThumbnailChange = {})
+}
+
+@Composable
+private fun ParallelDownloadsSetting(
+    parallelDownloads: Int,
+    onParallelDownloadsSelected: (Int) -> Unit,
+) {
+    val options = (1..5).toList()
+    val selectionLabel = parallelDownloads.toString()
+
+    CardExpanderItem(
+        heading = { Text(stringResource(Res.string.settings_parallel_downloads_title)) },
+        caption = {
+            EllipsizedTextWithTooltip(
+                text = stringResource(Res.string.settings_parallel_downloads_caption),
+                modifier = Modifier.fillMaxWidth(0.8f)
+            )
+        },
+        icon = { Icon(Icons.Filled.TopSpeed, null) },
+        trailing = {
+            MenuFlyoutContainer(
+                flyout = {
+                    options.forEach { count ->
+                        MenuFlyoutItem(
+                            modifier = Modifier.width(56.dp),
+                            text = { Text(count.toString()) },
+                            onClick = {
+                                onParallelDownloadsSelected(count)
+                                isFlyoutVisible = false
+                            }
+                        )
+                    }
+                },
+                content = {
+                    DropDownButton(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 1.dp),
+                        onClick = { isFlyoutVisible = !isFlyoutVisible },
+                        content = {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(0.9f),
+                                horizontalArrangement = Arrangement.SpaceEvenly
+                            ) {
+                                Text(selectionLabel)
+                            }
+                        },
+                    )
+                },
+                placement = FlyoutPlacement.Bottom
+            )
+        }
+    )
+}
+
+@Preview
+@Composable
+fun ParallelDownloadsSettingPreview() {
+    ParallelDownloadsSetting(parallelDownloads = 3, onParallelDownloadsSelected = {})
+}
+
+@Composable
+private fun DownloadDirectorySetting(
+    downloadDirPath: String,
+    onPickDownloadDir: (String) -> Unit,
+) {
+    val pickTitle = stringResource(Res.string.settings_download_dir_pick_title)
+
+    CardExpanderItem(
+        heading = { Text(stringResource(Res.string.settings_download_dir_title)) },
+        caption = {
+            Column(Modifier.fillMaxWidth(0.6f)) {
+                Text(stringResource(Res.string.settings_download_dir_caption))
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    downloadDirPath.ifBlank { stringResource(Res.string.settings_download_dir_not_set) },
+                )
+            }
+        },
+        icon = { Icon(Icons.Regular.Power, null) },
+        trailing = {
+            Button(
+                iconOnly = true,
+                onClick = { onPickDownloadDir(pickTitle) },
+                content = {
+                    Icon(Icons.Filled.OpenFolder, stringResource(Res.string.open_directory))
+                },
+            )
+        }
+    )
+}
+
+@Preview
+@Composable
+fun DownloadDirectorySettingPreview() {
+    DownloadDirectorySetting(downloadDirPath = "/home/user/Downloads", onPickDownloadDir = {})
+}
+
+@Composable
+private fun NoCheckCertificateSetting(
+    noCheckCertificate: Boolean,
+    onNoCheckCertificateChange: (Boolean) -> Unit,
+) {
+    CardExpanderItem(
+        heading = {
+            Text(
+                stringResource(Res.string.settings_no_check_certificate_title),
+                modifier = Modifier.fillMaxWidth(0.75f)
+            )
+        },
+        caption = {
+            EllipsizedTextWithTooltip(
+                text = stringResource(Res.string.settings_no_check_certificate_caption),
+                modifier = Modifier.fillMaxWidth(0.75f)
+            )
+        },
+        icon = { Icon(Icons.Default.LockShield, null) },
+        trailing = {
+            Switcher(
+                checked = noCheckCertificate,
+                onCheckStateChange = onNoCheckCertificateChange,
+            )
+        }
+    )
+}
+
+@Preview
+@Composable
+fun NoCheckCertificateSettingPreview() {
+    NoCheckCertificateSetting(noCheckCertificate = true, onNoCheckCertificateChange = {})
+}
+
+@Composable
+private fun ClipboardMonitoringSetting(
+    clipboardMonitoringEnabled: Boolean,
+    onClipboardMonitoringChange: (Boolean) -> Unit,
+) {
+    CardExpanderItem(
+        heading = {
+            Text(
+                stringResource(Res.string.settings_clipboard_monitoring_title),
+                modifier = Modifier.fillMaxWidth(0.75f)
+            )
+        },
+        caption = {
+            EllipsizedTextWithTooltip(
+                text = stringResource(Res.string.settings_clipboard_monitoring_caption),
+                modifier = Modifier.fillMaxWidth(0.75f)
+            )
+        },
+        icon = { Icon(Icons.Regular.Clipboard, null) },
+        trailing = {
+            Switcher(
+                checked = clipboardMonitoringEnabled,
+                onCheckStateChange = onClipboardMonitoringChange,
+            )
+        }
+    )
+}
+
+@Preview
+@Composable
+fun ClipboardMonitoringSettingPreview() {
+    ClipboardMonitoringSetting(clipboardMonitoringEnabled = true, onClipboardMonitoringChange = {})
+}
+
+@Composable
+private fun NotifyOnCompleteSetting(
+    notifyOnComplete: Boolean,
+    onNotifyOnCompleteChange: (Boolean) -> Unit,
+) {
+    CardExpanderItem(
+        heading = {
+            Text(
+                stringResource(Res.string.settings_notify_on_complete_title),
+                modifier = Modifier.fillMaxWidth(0.75f)
+            )
+        },
+        caption = {
+            EllipsizedTextWithTooltip(
+                text = stringResource(Res.string.settings_notify_on_complete_caption),
+                modifier = Modifier.fillMaxWidth(0.75f)
+            )
+        },
+        icon = { Icon(Icons.Filled.TopSpeed, null) },
+        trailing = {
+            Switcher(
+                checked = notifyOnComplete,
+                onCheckStateChange = onNotifyOnCompleteChange,
+            )
+        }
+    )
+}
+
+@Preview
+@Composable
+fun NotifyOnCompleteSettingPreview() {
+    NotifyOnCompleteSetting(notifyOnComplete = true, onNotifyOnCompleteChange = {})
+}
+
+@Composable
+private fun AutoLaunchSetting(
+    autoLaunchEnabled: Boolean,
+    onAutoLaunchChange: (Boolean) -> Unit,
+) {
+    CardExpanderItem(
+        heading = {
+            Text(
+                stringResource(Res.string.settings_auto_launch_title),
+                modifier = Modifier.fillMaxWidth(0.75f)
+            )
+        },
+        caption = {
+            EllipsizedTextWithTooltip(
+                text = stringResource(Res.string.settings_auto_launch_caption),
+                modifier = Modifier.fillMaxWidth(0.75f)
+            )
+        },
+        icon = { Icon(Icons.Regular.Power, null) },
+        trailing = {
+            Switcher(
+                checked = autoLaunchEnabled,
+                onCheckStateChange = onAutoLaunchChange,
+            )
+        }
+    )
+}
+
+@Preview
+@Composable
+fun AutoLaunchSettingPreview() {
+    AutoLaunchSetting(autoLaunchEnabled = true, onAutoLaunchChange = {})
 }
 
 @Preview

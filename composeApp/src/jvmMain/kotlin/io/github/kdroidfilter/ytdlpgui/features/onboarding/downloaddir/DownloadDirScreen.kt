@@ -15,11 +15,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import io.github.composefluent.component.AccentButton
 import io.github.composefluent.component.Button
 import io.github.composefluent.component.Icon
 import io.github.composefluent.component.Text
 import io.github.composefluent.icons.Icons
-import io.github.composefluent.icons.filled.OpenFolder
+import io.github.composefluent.icons.filled.FolderOpen
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.HeaderRow
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.NavigationRow
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents
@@ -74,13 +75,13 @@ fun DownloadDirView(
             totalSteps = totalSteps,
             currentStepIndex = currentStepIndex
         )
-        Column(Modifier.weight(1f).fillMaxWidth()) {
+        Column(Modifier.weight(1f).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
             HeaderRow(
                 title = stringResource(Res.string.settings_download_dir_title),
                 subtitle = stringResource(Res.string.settings_download_dir_caption)
             )
+            Icon(Icons.Filled.FolderOpen, null, modifier = Modifier.size(48.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Filled.OpenFolder, null, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(8.dp))
                 val directoryLabel = state.downloadDirPath.ifBlank {
                     stringResource(Res.string.settings_download_dir_not_set)
@@ -89,7 +90,7 @@ fun DownloadDirView(
             }
             Spacer(Modifier.height(12.dp))
             val pickFolderTitle = stringResource(Res.string.settings_download_dir_pick_title)
-            Button(onClick = { onEvent(OnboardingEvents.OnPickDownloadDir(pickFolderTitle)) }) {
+            AccentButton(onClick = { onEvent(OnboardingEvents.OnPickDownloadDir(pickFolderTitle)) }) {
                 Text(stringResource(Res.string.settings_select))
             }
 

@@ -3,9 +3,12 @@
 package io.github.kdroidfilter.ytdlpgui.di
 
 
+import coil3.ImageLoader
+import coil3.SingletonImageLoader
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.kdroid.composetray.tray.api.TrayAppState
 import com.russhwolf.settings.Settings
+import io.github.kdroidfilter.network.CoilConfig
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlpgui.core.navigation.DefaultNavigator
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
@@ -25,6 +28,8 @@ import io.github.vinceglb.autolaunch.AutoLaunch
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 import io.github.kdroidfilter.ytdlpgui.core.config.SettingsKeys
+import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
+import io.github.kdroidfilter.ytdlpgui.data.SupportedSitesRepository
 
 val appModule = module {
 
@@ -32,24 +37,34 @@ val appModule = module {
     single<Navigator> { DefaultNavigator(startDestination = Destination.InitScreen) }
     single { Settings() }
 
+    // Configure Coil with native trusted roots
+    single<ImageLoader> {
+        CoilConfig.createImageLoader()
+    }
+    // System integrations
+    single { AutoLaunch(appPackageName = "AeroDl") }
     // Database & repositories
     single { DownloadHistoryRepository.defaultDatabase() }
     single { DownloadHistoryRepository(get()) }
-    single { io.github.kdroidfilter.ytdlpgui.data.SupportedSitesRepository(get()) }
-    single { io.github.kdroidfilter.ytdlpgui.data.SettingsRepository(get(), get(), get(), get()) }
+    single { SupportedSitesRepository(get()) }
+    single { SettingsRepository(
+        settings = get(),
+        ytDlpWrapper = get(),
+        clipboardMonitorManager = get(),
+        autoLaunch = get()
+    ) }
 
     single { DownloadManager(get(), get(), get<DownloadHistoryRepository>(), get(), get()) }
     single { ClipboardMonitorManager(get(), get(), get(), get()) }
     single { InitViewModel(get(), get(), get(), get(), get()) }
 
-    // System integrations
-    single { AutoLaunch(appPackageName = "io.github.kdroidfilter.ytdlpgui") }
+
 
     viewModel { HomeViewModel(get(), get()) }
     viewModel { AboutViewModel(get(), get()) }
     viewModel { BulkDownloadViewModel(get()) }
     viewModel { DownloadViewModel(get(), get(), get<DownloadHistoryRepository>()) }
-    single { SettingsViewModel(get(), get(), get<TrayAppState>()) }
+    single { SettingsViewModel(navigator = get(), settingsRepository = get(), trayAppState = get<TrayAppState>()) }
     viewModel { SingleDownloadViewModel(get(), get(), get(), get()) }
     viewModel { OnboardingViewModel(get(), get(), get()) }
 

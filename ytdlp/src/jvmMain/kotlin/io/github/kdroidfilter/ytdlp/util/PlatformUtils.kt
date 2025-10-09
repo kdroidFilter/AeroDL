@@ -1,5 +1,6 @@
 package io.github.kdroidfilter.ytdlp.util
 
+import io.github.kdroidfilter.network.HttpsConnectionFactory
 import io.github.kdroidfilter.platformtools.OperatingSystem
 import io.github.kdroidfilter.platformtools.getCacheDir
 import io.github.kdroidfilter.platformtools.getOperatingSystem
@@ -87,7 +88,7 @@ object PlatformUtils {
         dest.parentFile?.mkdirs()
 
         val uri = java.net.URI.create(url)
-        val conn = (uri.toURL().openConnection() as HttpURLConnection).apply {
+        val conn = HttpsConnectionFactory.openConnection(uri.toURL()) {
             connectTimeout = 12_000
             readTimeout = 24_000
             setRequestProperty("User-Agent", "kdroidFilter-ytdlp/1.0")

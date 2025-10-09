@@ -378,7 +378,7 @@ private fun VideoDescription(videoInfo: VideoInfo?) {
                 }
                 if (hasOverflow) {
                     Icon(
-                        if (isRtl) Icons.Default.ChevronLeft else Icons.Default.ChevronRight,
+                        Icons.Default.ChevronRight,
                         contentDescription = null,
                         modifier = Modifier.rotate(degrees),
                     )

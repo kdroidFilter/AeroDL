@@ -4,7 +4,7 @@
 
 AeroDL is a modern and fluent graphical user interface for the powerful yt-dlp command-line tool. It is designed to be simple, user-friendly, and always available when you need it, without being intrusive.
 
-![AeroDL Screenshot](https://via.placeholder.com/800x600.png?text=AeroDL+Screenshot)
+![AeroDL Screenshot](/Art/SC01.png)
 
 ## ✨ Features
 
@@ -13,7 +13,7 @@ AeroDL is a modern and fluent graphical user interface for the powerful yt-dlp c
 *   📋 **Simple Copy-Paste:** No need for browser extensions. Just copy a video URL to your clipboard, and AeroDL will automatically detect it and prepare the download. It's that simple!
 *   💪 **Powerful and Flexible:** Based on the powerful yt-dlp, AeroDL supports downloading from hundreds of websites. You can choose from various formats and qualities to get the perfect download.
 *   🖥️ **Cross-Platform:** AeroDL is available for Windows, macOS, and Linux. Use it on all your devices!
-*   🎞️ **Multiple Downloads:** Download multiple videos at once, or even a whole playlist.
+*   🎞️ **Multiple Downloads:** Download multiple videos at once, or even a whole playlist (not yet available).
 *   字幕 **Subtitles:** Download subtitles for your videos in any language.
 *   ⚙️ **Advanced Options:** For advanced users, AeroDL provides access to many of yt-dlp's options to customize your downloads.
 
