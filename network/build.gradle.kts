@@ -16,14 +16,14 @@ kotlin {
 
             // Kotlinx serialization - using API so it's exposed to dependent modules
             api(libs.kotlinx.serialization.json)
-            implementation("io.ktor:ktor-serialization-kotlinx-json:3.3.0")
+            implementation(libs.ktor.serialization.kotlinx.json)
 
             // Coil (OkHttp for network fetching)
             implementation(libs.coil)
             implementation(libs.coil.network)
 
             // Security - Native trusted roots
-            implementation("org.jetbrains.nativecerts:jvm-native-trusted-roots:1.1.7")
+            implementation(libs.jvm.native.trusted.roots)
         }
     }
 }

@@ -24,7 +24,7 @@ composenativetray = "1.0.4"
 ktor = "3.3.0"
 platformtools = "0.7.2"
 metro = "0.6.6"
-jvmNativeTrustedRoots = "1.0.3"
+jvmNativeTrustedRoots = "1.1.7"
 
 # Koin
 koin = "4.1.1"
@@ -86,6 +86,7 @@ ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negoti
 ktor-client-serialization = { module = "io.ktor:ktor-client-serialization", version.ref = "ktor" }
 ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
+ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 
 # Koin
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
@@ -99,7 +100,7 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 sqlDelight-driver-sqlite = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "sqlDelight" }
 
 # Security
-jvm-native-trusted-roots = { module = "org.jetbrains:jvm-native-trusted-roots", version.ref = "jvmNativeTrustedRoots" }
+jvm-native-trusted-roots = { module = "org.jetbrains.nativecerts:jvm-native-trusted-roots", version.ref = "jvmNativeTrustedRoots" }
 
 [plugins]
 composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }
