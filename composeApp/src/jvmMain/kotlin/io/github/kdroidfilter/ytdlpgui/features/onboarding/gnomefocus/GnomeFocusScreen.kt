@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import io.github.composefluent.component.AccentButton
+import io.github.composefluent.component.HyperlinkButton
 import io.github.composefluent.component.Text
 import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.HeaderRow
@@ -71,7 +72,7 @@ fun GnomeFocusView(
                 subtitle = stringResource(Res.string.onboarding_gnome_focus_caption)
             )
             Spacer(Modifier.height(16.dp))
-            AccentButton(
+            HyperlinkButton(
                 onClick = {
                     uriHandler.openUri("https://extensions.gnome.org/extension/6385/steal-my-focus-window/")
                 },

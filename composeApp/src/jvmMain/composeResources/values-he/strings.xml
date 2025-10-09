@@ -58,7 +58,7 @@
     <string name="onboarding_filtered_network_detected_message">זוהתה בעיה בתעודת אבטחה. זה עלול להיות בגלל סינון רשת ארגונית, או גרוע מכך, התקפת MITM. כדי שהתוכנית תפעל, יש צורך לבטל את אימות תעודות האבטחה.</string>
     <string name="onboarding_filtered_network_accept">אני מבין/ה את הסיכונים ומקבל/ת</string>
     <string name="settings_cookies_from_browser_title">עוגיות מהדפדפן</string>
-    <string name="settings_cookies_from_browser_label">בחרו דפדפן לייבוא עוגיות עבור yt-dlp. ניתן להשאיר מושבת אם לא נדרש.</string>
+    <string name="settings_cookies_from_browser_label">מאפשר שימוש בקובצי ה-Cookie של הדפדפן שלך כדי לגשת לתוכן הדורש התחברות, כגון סרטוני YouTube פרטיים. אזהרה: שימוש בתכונה זו עלול לגרום לחסימת חשבונך.</string>
     <string name="settings_browser_select">בחרו דפדפן…</string>
     <string name="settings_browser_disable">מושבת</string>
     <string name="settings_browser_chrome">כרום</string>
@@ -128,7 +128,7 @@
     <string name="status_cancelled">בוטל</string>
     <!-- הגדרות: הפעלה אוטומטית -->
     <string name="settings_auto_launch_title">הפעל בעת עליית המערכת</string>
-    <string name="settings_auto_launch_caption">הפעלת האפליקציה באופן אוטומטי עם עליית המערכת</string>
+    <string name="settings_auto_launch_caption">מומלץ אם אתם משתמשים הרבה ב-AeroDL: הוא יופעל יחד עם המערכת ולא תצטרכו לזכור לפתוח אותו. בשילוב עם ניטור לוח העריכה תוכלו להתחיל הורדות מיד כשאתם מעתיקים קישור.</string>
 
     <!-- מגש/תפריט -->
     <string name="menu_show_window">הצג חלון</string>

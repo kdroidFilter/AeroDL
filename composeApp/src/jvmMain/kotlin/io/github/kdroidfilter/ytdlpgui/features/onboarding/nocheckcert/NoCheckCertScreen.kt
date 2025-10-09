@@ -87,8 +87,8 @@ fun NoCheckCertView(
             }
 
             // Message explaining the situation
-            Text(
-                text = stringResource(Res.string.onboarding_filtered_network_detected_message),
+            io.github.kdroidfilter.ytdlpgui.features.onboarding.components.ExpandableDescription(
+                description = stringResource(Res.string.onboarding_filtered_network_detected_message),
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 

@@ -75,7 +75,10 @@ fun WelcomeView(
                 style = FluentTheme.typography.subtitle
             )
             Icon(AeroDlLogoOnly, null, modifier = Modifier.height(96.dp), tint = FluentTheme.colors.system.neutral)
-            Text(stringResource(Res.string.onboarding_welcome_subtitle))
+            io.github.kdroidfilter.ytdlpgui.features.onboarding.components.ExpandableDescription(
+                description = stringResource(Res.string.onboarding_welcome_subtitle),
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
             Button(onClick = { onEvent(OnboardingEvents.OnStart) }) {
                 Text(stringResource(Res.string.onboarding_start))
             }

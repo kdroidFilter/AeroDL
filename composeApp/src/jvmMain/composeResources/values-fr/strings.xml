@@ -56,10 +56,10 @@
     <string name="settings_no_check_certificate_title">Ne pas vérifier le certificat</string>
     <string name="settings_no_check_certificate_caption">Ignorer la vérification du certificat SSL (à utiliser uniquement si nécessaire)</string>
     <string name="onboarding_filtered_network_detected_title">Problème de Certificat Détecté</string>
-    <string name="onboarding_filtered_network_detected_message">Un problème de certificat a été détecté. Cela pourrait être dû à un filtrage de réseau d\'entreprise, ou pire, à une attaque MITM. Pour que le programme fonctionne, il est nécessaire de désactiver la vérification des certificats.</string>
-    <string name="onboarding_filtered_network_accept">Je comprends les risques et j\'accepte</string>
+    <string name="onboarding_filtered_network_detected_message">Un problème de certificat a été détecté. Cela pourrait être dû à un filtrage de réseau d'entreprise, ou pire, à une attaque MITM. Pour que le programme fonctionne, il est nécessaire de désactiver la vérification des certificats.</string>
+    <string name="onboarding_filtered_network_accept">Je comprends les risques et j'accepte</string>
     <string name="settings_cookies_from_browser_title">Cookies du navigateur</string>
-    <string name="settings_cookies_from_browser_label">Choisissez un navigateur pour importer les cookies pour yt-dlp. Laissez désactivé si inutile.</string>
+    <string name="settings_cookies_from_browser_label">Permet d'utiliser les cookies de votre navigateur pour accéder à des contenus qui nécessitent d'être connecté, comme des vidéos privées sur YouTube. Attention : l'utilisation de cette fonctionnalité peut entraîner le bannissement de votre compte.</string>
     <string name="settings_browser_select">Sélectionner un navigateur…</string>
     <string name="settings_browser_disable">Désactivé</string>
     <string name="settings_browser_chrome">Chrome</string>
@@ -137,7 +137,7 @@
     <string name="status_cancelled">Annulé</string>
     <!-- Paramètres : Lancement automatique -->
     <string name="settings_auto_launch_title">Lancer au démarrage</string>
-    <string name="settings_auto_launch_caption">Démarrer automatiquement l'application au démarrage du système</string>
+    <string name="settings_auto_launch_caption">Conseillé si vous utilisez souvent AeroDL : il se lance avec votre système et vous n'avez plus à vous en soucier. Couplé à la surveillance du presse-papiers, vous pouvez lancer vos téléchargements dès que vous copiez un lien.</string>
 
     <!-- Barre d'état / Menu -->
     <string name="menu_show_window">Afficher la fenêtre</string>

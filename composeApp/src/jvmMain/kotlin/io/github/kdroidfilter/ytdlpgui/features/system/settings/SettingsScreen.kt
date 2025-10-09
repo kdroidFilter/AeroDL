@@ -36,6 +36,7 @@ import io.github.composefluent.icons.regular.Cookies
 import io.github.composefluent.icons.regular.LockShield
 import io.github.composefluent.icons.regular.Power
 import io.github.kdroidfilter.ytdlpgui.core.design.components.BrowserSelector
+import io.github.kdroidfilter.ytdlpgui.core.design.components.EllipsizedTextWithTooltip
 import io.github.kdroidfilter.ytdlpgui.core.design.components.Switcher
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -142,8 +143,8 @@ private fun CookiesFromBrowserSetting(
             )
         },
         caption = {
-            Text(
-                stringResource(Res.string.settings_cookies_from_browser_label),
+            EllipsizedTextWithTooltip(
+                text = stringResource(Res.string.settings_cookies_from_browser_label),
                 modifier = Modifier.fillMaxWidth(0.50f)
             )
         },
@@ -183,8 +184,8 @@ private fun IncludePresetInFilenameSetting(
             )
         },
         caption = {
-            Text(
-                stringResource(Res.string.settings_include_preset_in_filename_caption),
+            EllipsizedTextWithTooltip(
+                text = stringResource(Res.string.settings_include_preset_in_filename_caption),
                 modifier = Modifier.fillMaxWidth(0.8f)
             )
         },
@@ -217,8 +218,8 @@ private fun EmbedThumbnailInMp3Setting(
             )
         },
         caption = {
-            Text(
-                stringResource(Res.string.settings_embed_thumbnail_mp3_caption),
+            EllipsizedTextWithTooltip(
+                text = stringResource(Res.string.settings_embed_thumbnail_mp3_caption),
                 modifier = Modifier.fillMaxWidth(0.8f)
             )
         },
@@ -249,8 +250,8 @@ private fun ParallelDownloadsSetting(
     CardExpanderItem(
         heading = { Text(stringResource(Res.string.settings_parallel_downloads_title)) },
         caption = {
-            Text(
-                stringResource(Res.string.settings_parallel_downloads_caption),
+            EllipsizedTextWithTooltip(
+                text = stringResource(Res.string.settings_parallel_downloads_caption),
                 modifier = Modifier.fillMaxWidth(0.8f)
             )
         },
@@ -345,8 +346,8 @@ private fun NoCheckCertificateSetting(
             )
         },
         caption = {
-            Text(
-                stringResource(Res.string.settings_no_check_certificate_caption),
+            EllipsizedTextWithTooltip(
+                text = stringResource(Res.string.settings_no_check_certificate_caption),
                 modifier = Modifier.fillMaxWidth(0.75f)
             )
         },
@@ -379,8 +380,8 @@ private fun ClipboardMonitoringSetting(
             )
         },
         caption = {
-            Text(
-                stringResource(Res.string.settings_clipboard_monitoring_caption),
+            EllipsizedTextWithTooltip(
+                text = stringResource(Res.string.settings_clipboard_monitoring_caption),
                 modifier = Modifier.fillMaxWidth(0.75f)
             )
         },
@@ -413,8 +414,8 @@ private fun NotifyOnCompleteSetting(
             )
         },
         caption = {
-            Text(
-                stringResource(Res.string.settings_notify_on_complete_caption),
+            EllipsizedTextWithTooltip(
+                text = stringResource(Res.string.settings_notify_on_complete_caption),
                 modifier = Modifier.fillMaxWidth(0.75f)
             )
         },
@@ -447,8 +448,8 @@ private fun AutoLaunchSetting(
             )
         },
         caption = {
-            Text(
-                stringResource(Res.string.settings_auto_launch_caption),
+            EllipsizedTextWithTooltip(
+                text = stringResource(Res.string.settings_auto_launch_caption),
                 modifier = Modifier.fillMaxWidth(0.75f)
             )
         },

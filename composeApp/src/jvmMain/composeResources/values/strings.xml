@@ -58,7 +58,7 @@
     <string name="onboarding_filtered_network_detected_message">A certificate problem has been detected. This could be due to corporate network filtering, or worse, a MITM attack. For the program to function, it is necessary to disable certificate verification.</string>
     <string name="onboarding_filtered_network_accept">I understand the risks and accept</string>
     <string name="settings_cookies_from_browser_title">Cookies from browser</string>
-    <string name="settings_cookies_from_browser_label">Choose a browser to import cookies for yt-dlp. Leave disabled if not needed.</string>
+    <string name="settings_cookies_from_browser_label">Allows using your browser\'s cookies to access content that requires you to be logged in, such as private YouTube videos. Warning: using this feature may result in your account being banned.</string>
     <string name="settings_browser_select">Select browser…</string>
     <string name="settings_browser_disable">Disabled</string>
     <string name="settings_browser_chrome">Chrome</string>
@@ -140,7 +140,7 @@
     <string name="status_cancelled">Cancelled</string>
     <!-- Settings: Auto-launch -->
     <string name="settings_auto_launch_title">Launch at startup</string>
-    <string name="settings_auto_launch_caption">Automatically start the app when the system boots</string>
+    <string name="settings_auto_launch_caption">Recommended when you use AeroDL often: it launches with your system so you never have to think about starting it. Pair it with clipboard monitoring to begin downloads as soon as you copy a link.</string>
 
     <!-- Tray / Menu -->
     <string name="menu_show_window">Show window</string>
