@@ -106,9 +106,9 @@ compose.desktop {
             modules("jdk.accessibility", "java.sql", "jdk.security.auth")
             windows {
                 dirChooser = true
-                perUserInstall = true
                 menuGroup = "start-menu-group"
                 iconFile.set(project.file("icons/logo.ico"))
+                shortcut = true
             }
             macOS {
                 bundleID = "io.github.kdroidfilter.ytdlpgui"
