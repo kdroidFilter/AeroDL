@@ -122,7 +122,7 @@ compose.desktop {
                 iconFile.set(project.file("icons/logo.icns"))
             }
             linux {
-                iconFile.set(project.file("icons./logo.png"))
+                iconFile.set(project.file("icons/logo.png"))
             }
         }
     }
