@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -165,6 +167,70 @@ fun MainNavigationHeader(
     }
 }
 
+
+@Composable
+private fun CenterHeaderBar(
+    modifier: Modifier = Modifier,
+    navigationIcon: (@Composable () -> Unit)?,
+    title: @Composable () -> Unit,
+    actions: (@Composable () -> Unit)?
+) {
+    // Custom layout: title is measured after knowing side widths,
+    // centered when possible, and shifted just enough to avoid overlap.
+    SubcomposeLayout(modifier = modifier) { constraints ->
+        val loose = constraints.copy(minWidth = 0, minHeight = 0)
+
+        val navPlaceables = navigationIcon
+            ?.let { subcompose("nav", it).map { it.measure(loose) } }
+            ?: emptyList()
+        val actionsPlaceables = actions
+            ?.let { subcompose("actions", it).map { it.measure(loose) } }
+            ?: emptyList()
+
+        val navWidth = navPlaceables.maxOfOrNull { it.width } ?: 0
+        val actionsWidth = actionsPlaceables.maxOfOrNull { it.width } ?: 0
+
+        val titleMaxWidth = (constraints.maxWidth - navWidth - actionsWidth).coerceAtLeast(0)
+        val titlePlaceables = subcompose("title", title).map {
+            it.measure(loose.copy(maxWidth = titleMaxWidth))
+        }
+
+        val width = constraints.maxWidth
+        val height = maxOf(
+            constraints.minHeight,
+            navPlaceables.maxOfOrNull { it.height } ?: 0,
+            actionsPlaceables.maxOfOrNull { it.height } ?: 0,
+            titlePlaceables.maxOfOrNull { it.height } ?: 0
+        )
+
+        layout(width, height) {
+            // Left (nav)
+            var x = 0
+            navPlaceables.forEach {
+                it.placeRelative(x, (height - it.height) / 2)
+                x += it.width
+            }
+
+            // Right (actions)
+            var rightX = width
+            actionsPlaceables.forEach { p ->
+                rightX -= p.width
+                p.placeRelative(rightX, (height - p.height) / 2)
+            }
+
+            // Title (centered, but clamped to avoid overlap with sides)
+            val tW = titlePlaceables.maxOfOrNull { it.width } ?: 0
+            var titleX = (width - tW) / 2
+            if (titleX < navWidth) titleX = navWidth
+            if (titleX + tW > width - actionsWidth) titleX = (width - actionsWidth) - tW
+
+            titlePlaceables.forEach {
+                it.placeRelative(titleX, (height - it.height) / 2)
+            }
+        }
+    }
+}
+
 @Composable
 fun SecondaryNavigationHeader(
     navigator: Navigator = koinInject(),
@@ -175,55 +241,56 @@ fun SecondaryNavigationHeader(
     val scope = rememberCoroutineScope()
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
 
-    Row(
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        modifier = modifier.fillMaxWidth().padding(top = 4.dp, start = 4.dp, end = 4.dp)
-    ) {
-        TooltipBox(
-            tooltip = { Text(stringResource(Res.string.tooltip_back)) }
-        ) {
-            SubtleButton(
-                iconOnly = true,
-                onClick = {
-                    scope.launch { navigator.navigateUp() }
-                },
-                modifier = Modifier.padding(top = 12.dp, start = 4.dp)
-            ) { Icon(if (isRtl) Icons.Default.ArrowRight else Icons.Default.ArrowLeft, "Back") }
-        }
-        when (currentDestination) {
-            Destination.SecondaryNavigation.Settings -> {
-                Text(
-                    stringResource(Res.string.settings),
-                    style = FluentTheme.typography.subtitle,
-                    modifier = Modifier.padding(top = 12.dp)
-                )
-            }
-
-            Destination.SecondaryNavigation.About -> {
-                Text(
-                    stringResource(Res.string.about),
-                    style = FluentTheme.typography.subtitle,
-                    modifier = Modifier.padding(top = 12.dp)
-                )
-            }
-
-            else -> {}
-        }
-        if (previousDestination !is Destination.MainNavigation.Home) {
-            Spacer(Modifier.width(4.dp))
-            TooltipBox(
-                tooltip = { Text(stringResource(Res.string.tooltip_home)) }
-            ) {
+    CenterHeaderBar(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(top = 4.dp, start = 4.dp, end = 4.dp),
+        navigationIcon = {
+            TooltipBox(tooltip = { Text(stringResource(Res.string.tooltip_back)) }) {
                 SubtleButton(
                     iconOnly = true,
-                    onClick = {
-                        scope.launch { navigator.navigateAndClearBackStack(Destination.MainNavigation.Home) }
-                    },
-                    modifier = Modifier.padding(top = 12.dp, end = 4.dp)
-                ) { Icon(Icons.Default.Home, "Home") }
+                    onClick = { scope.launch { navigator.navigateUp() } },
+                    modifier = Modifier.padding(top = 12.dp, start = 4.dp)
+                ) {
+                    Icon(if (isRtl) Icons.Default.ArrowRight else Icons.Default.ArrowLeft, "Back")
+                }
             }
-        } else {
-            Spacer(Modifier.width(16.dp).padding(top = 12.dp))
+        },
+        title = {
+            when (currentDestination) {
+                Destination.SecondaryNavigation.Settings ->
+                    Text(
+                        stringResource(Res.string.settings),
+                        style = FluentTheme.typography.subtitle,
+                        modifier = Modifier.padding(top = 12.dp),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                Destination.SecondaryNavigation.About ->
+                    Text(
+                        stringResource(Res.string.about),
+                        style = FluentTheme.typography.subtitle,
+                        modifier = Modifier.padding(top = 12.dp),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                else -> {}
+            }
+        },
+        actions = {
+            if (previousDestination !is Destination.MainNavigation.Home) {
+                TooltipBox(tooltip = { Text(stringResource(Res.string.tooltip_home)) }) {
+                    SubtleButton(
+                        iconOnly = true,
+                        onClick = {
+                            scope.launch {
+                                navigator.navigateAndClearBackStack(Destination.MainNavigation.Home)
+                            }
+                        },
+                        modifier = Modifier.padding(top = 12.dp, end = 4.dp)
+                    ) { Icon(Icons.Default.Home, "Home") }
+                }
+            }
         }
-    }
+    )
 }
