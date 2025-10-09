@@ -69,6 +69,10 @@
     <string name="settings_parallel_downloads_title">Parallel downloads</string>
     <string name="settings_parallel_downloads_caption">Limit how many downloads can run simultaneously</string>
 
+    <!-- Settings: Audio thumbnail embedding -->
+    <string name="settings_embed_thumbnail_mp3_title">Embed thumbnail in MP3</string>
+    <string name="settings_embed_thumbnail_mp3_caption">When enabled, embed the video thumbnail as MP3 cover art</string>
+
     <!-- Settings: Download directory section -->
     <string name="settings_download_dir_title">Download directory</string>
     <string name="settings_download_dir_caption">Choose the folder where downloads will be saved by default.</string>

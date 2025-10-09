@@ -67,6 +67,10 @@
     <string name="settings_include_preset_in_filename_title">הצגת פריסט בשם הקובץ</string>
     <string name="settings_include_preset_in_filename_caption">הוספת איכות הבחירה (למשל 720p) לשם הקובץ המורד</string>
 
+    <!-- הגדרות: הטמעת תמונת ממוזערת לאודיו MP3 -->
+    <string name="settings_embed_thumbnail_mp3_title">הטמעת תמונת ממוזערת בקובץ MP3</string>
+    <string name="settings_embed_thumbnail_mp3_caption">כאשר מופעל, הטמעת תמונת הווידאו כעטיפת MP3</string>
+
     <!-- הגדרות: סעיף תיקיית הורדות -->
     <string name="settings_download_dir_title">תיקיית ההורדות</string>
     <string name="settings_download_dir_caption">בחרו את התיקייה שבה ישמרו ההורדות כברירת מחדל.</string>

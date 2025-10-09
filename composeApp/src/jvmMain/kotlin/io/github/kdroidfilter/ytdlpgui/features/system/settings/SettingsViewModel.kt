@@ -30,6 +30,7 @@ class SettingsViewModel(
     val noCheckCertificate: StateFlow<Boolean> = settingsRepository.noCheckCertificate
     val cookiesFromBrowser: StateFlow<String> = settingsRepository.cookiesFromBrowser
     val includePresetInFilename: StateFlow<Boolean> = settingsRepository.includePresetInFilename
+    val embedThumbnailInMp3: StateFlow<Boolean> = settingsRepository.embedThumbnailInMp3
     val parallelDownloads: StateFlow<Int> = settingsRepository.parallelDownloads
     val downloadDirPath: StateFlow<String> = settingsRepository.downloadDirPath
     val clipboardMonitoring: StateFlow<Boolean> = settingsRepository.clipboardMonitoringEnabled
@@ -59,6 +60,9 @@ class SettingsViewModel(
             }
             is SettingsEvents.SetIncludePresetInFilename -> {
                 settingsRepository.setIncludePresetInFilename(event.enabled)
+            }
+            is SettingsEvents.SetEmbedThumbnailInMp3 -> {
+                settingsRepository.setEmbedThumbnailInMp3(event.enabled)
             }
             is SettingsEvents.SetParallelDownloads -> {
                 settingsRepository.setParallelDownloads(event.count)

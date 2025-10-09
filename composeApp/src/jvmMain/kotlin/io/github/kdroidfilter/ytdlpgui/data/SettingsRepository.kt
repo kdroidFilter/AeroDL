@@ -30,6 +30,9 @@ class SettingsRepository(
     private val _includePresetInFilename = MutableStateFlow(settings.getBoolean(SettingsKeys.INCLUDE_PRESET_IN_FILENAME, true))
     val includePresetInFilename: StateFlow<Boolean> = _includePresetInFilename.asStateFlow()
 
+    private val _embedThumbnailInMp3 = MutableStateFlow(settings.getBoolean(SettingsKeys.EMBED_THUMBNAIL_IN_MP3, true))
+    val embedThumbnailInMp3: StateFlow<Boolean> = _embedThumbnailInMp3.asStateFlow()
+
     private val _parallelDownloads = MutableStateFlow(settings.getInt(SettingsKeys.PARALLEL_DOWNLOADS, 2).coerceIn(1, 10))
     val parallelDownloads: StateFlow<Int> = _parallelDownloads.asStateFlow()
 
@@ -67,6 +70,12 @@ class SettingsRepository(
     fun setIncludePresetInFilename(include: Boolean) {
         _includePresetInFilename.value = include
         settings.putBoolean(SettingsKeys.INCLUDE_PRESET_IN_FILENAME, include)
+    }
+
+    fun setEmbedThumbnailInMp3(enabled: Boolean) {
+        _embedThumbnailInMp3.value = enabled
+        settings.putBoolean(SettingsKeys.EMBED_THUMBNAIL_IN_MP3, enabled)
+        ytDlpWrapper.embedThumbnailInMp3 = enabled
     }
 
     fun setParallelDownloads(count: Int) {
@@ -109,6 +118,7 @@ class SettingsRepository(
         _noCheckCertificate.value = settings.getBoolean(SettingsKeys.NO_CHECK_CERTIFICATE, false)
         _cookiesFromBrowser.value = settings.getString(SettingsKeys.COOKIES_FROM_BROWSER, "")
         _includePresetInFilename.value = settings.getBoolean(SettingsKeys.INCLUDE_PRESET_IN_FILENAME, true)
+        _embedThumbnailInMp3.value = settings.getBoolean(SettingsKeys.EMBED_THUMBNAIL_IN_MP3, true)
         _parallelDownloads.value = settings.getInt(SettingsKeys.PARALLEL_DOWNLOADS, 2).coerceIn(1, 10)
         _downloadDirPath.value = settings.getString(SettingsKeys.DOWNLOAD_DIR, "")
         _clipboardMonitoringEnabled.value = settings.getBoolean(SettingsKeys.CLIPBOARD_MONITORING_ENABLED, true)
@@ -156,6 +166,7 @@ class SettingsRepository(
         ytDlpWrapper.cookiesFromBrowser = _cookiesFromBrowser.value.ifBlank { null }
         val path = _downloadDirPath.value
         ytDlpWrapper.downloadDir = path.takeIf { it.isNotBlank() }?.let { File(it) }
+        ytDlpWrapper.embedThumbnailInMp3 = _embedThumbnailInMp3.value
     }
 
     private fun applyToClipboardMonitor() {

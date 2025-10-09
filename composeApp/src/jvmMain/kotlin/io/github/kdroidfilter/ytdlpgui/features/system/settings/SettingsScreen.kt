@@ -131,6 +131,25 @@ fun SettingsView(
                 })
             }
             item {
+                // Toggle for embedding thumbnail into MP3
+                CardExpanderItem(heading = {
+                    Text(
+                        stringResource(Res.string.settings_embed_thumbnail_mp3_title),
+                        modifier = Modifier.fillMaxWidth(0.8f)
+                    )
+                }, caption = {
+                    Text(
+                        stringResource(Res.string.settings_embed_thumbnail_mp3_caption),
+                        modifier = Modifier.fillMaxWidth(0.8f)
+                    )
+                }, icon = { Icon(Icons.Filled.DocumentEdit, null) }, trailing = {
+                    Switcher(
+                        checked = state.embedThumbnailInMp3,
+                        onCheckStateChange = { onEvent(SettingsEvents.SetEmbedThumbnailInMp3(it)) },
+                    )
+                })
+            }
+            item {
                 // Selector for parallel downloads
                 CardExpanderItem(
                     heading = { Text(stringResource(Res.string.settings_parallel_downloads_title)) },

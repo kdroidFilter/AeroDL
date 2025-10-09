@@ -70,6 +70,10 @@
     <string name="settings_parallel_downloads_title">Téléchargements parallèles</string>
     <string name="settings_parallel_downloads_caption">Limiter le nombre de téléchargements simultanés</string>
 
+    <!-- Paramètres : Intégration de la miniature dans le MP3 -->
+    <string name="settings_embed_thumbnail_mp3_title">Intégrer la miniature dans le MP3</string>
+    <string name="settings_embed_thumbnail_mp3_caption">Si activé, intégrer la miniature de la vidéo comme pochette du MP3</string>
+
     <!-- Paramètres : section Dossier de téléchargement -->
     <string name="settings_download_dir_title">Dossier de téléchargement</string>
     <string name="settings_download_dir_caption">Choisissez le dossier où les téléchargements seront enregistrés par défaut.</string>

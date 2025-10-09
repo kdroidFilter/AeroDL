@@ -8,6 +8,7 @@ object SettingsKeys {
     const val NO_CHECK_CERTIFICATE = "no_check_certificate"
     const val COOKIES_FROM_BROWSER = "cookies_from_browser"
     const val INCLUDE_PRESET_IN_FILENAME = "include_preset_in_filename"
+    const val EMBED_THUMBNAIL_IN_MP3 = "embed_thumbnail_in_mp3"
     const val PARALLEL_DOWNLOADS = "parallel_downloads"
     const val DOWNLOAD_DIR = "download_dir"
     const val CLIPBOARD_MONITORING_ENABLED = "clipboard_monitoring_enabled"

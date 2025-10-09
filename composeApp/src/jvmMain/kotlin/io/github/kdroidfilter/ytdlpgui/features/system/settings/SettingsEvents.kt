@@ -8,6 +8,7 @@ sealed class SettingsEvents {
     data class SetNoCheckCertificate(val enabled: Boolean) : SettingsEvents()
     data class SetCookiesFromBrowser(val browser: String) : SettingsEvents()
     data class SetIncludePresetInFilename(val enabled: Boolean) : SettingsEvents()
+    data class SetEmbedThumbnailInMp3(val enabled: Boolean) : SettingsEvents()
     data class SetParallelDownloads(val count: Int) : SettingsEvents()
     data class SetDownloadDir(val path: String) : SettingsEvents()
     data class SetClipboardMonitoring(val enabled: Boolean) : SettingsEvents()

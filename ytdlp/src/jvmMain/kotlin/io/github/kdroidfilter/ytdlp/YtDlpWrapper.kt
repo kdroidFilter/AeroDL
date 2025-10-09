@@ -68,6 +68,12 @@ class YtDlpWrapper {
      */
     var cookiesFromBrowser: String? = null
 
+    /**
+     * Controls whether to embed the video thumbnail into MP3 audio downloads.
+     * When true, yt-dlp is invoked with "--embed-thumbnail" for MP3 downloads.
+     */
+    var embedThumbnailInMp3: Boolean = true
+
     private val ytdlpFetcher = GitHubReleaseFetcher(owner = "yt-dlp", repo = "yt-dlp")
 
     private data class ProcessResult(val exitCode: Int, val stdout: List<String>, val stderr: String)
@@ -429,14 +435,16 @@ class YtDlpWrapper {
         timeout: Duration? = Duration.ofMinutes(30),
         onEvent: (Event) -> Unit
     ): Handle {
-        val args = listOf(
-            "--extract-audio",
-            "--audio-format", "mp3",
-            "--audio-quality", audioQuality.coerceIn(0, 10).toString(),
-            "--add-metadata",
-            "--embed-thumbnail",
-            "-f", "bestaudio/best"
-        )
+        val args = buildList {
+            addAll(listOf(
+                "--extract-audio",
+                "--audio-format", "mp3",
+                "--audio-quality", audioQuality.coerceIn(0, 10).toString(),
+                "--add-metadata"
+            ))
+            if (embedThumbnailInMp3) add("--embed-thumbnail")
+            addAll(listOf("-f", "bestaudio/best"))
+        }
         return downloadAudioInternal(url, outputTemplate, noCheckCertificate, extraArgs, timeout, args, onEvent)
     }
 
@@ -464,14 +472,18 @@ class YtDlpWrapper {
             AudioQualityPreset.VERY_HIGH -> 1
             AudioQualityPreset.MAXIMUM -> 0
         }
-        val args = listOf(
-            "--extract-audio",
-            "--audio-format", "mp3",
-            "--add-metadata",
-            "--embed-thumbnail",
-            "-f", "bestaudio/best",
-            "--postprocessor-args", postprocessorArg
-        )
+        val args = buildList {
+            addAll(listOf(
+                "--extract-audio",
+                "--audio-format", "mp3",
+                "--add-metadata"
+            ))
+            if (embedThumbnailInMp3) add("--embed-thumbnail")
+            addAll(listOf(
+                "-f", "bestaudio/best",
+                "--postprocessor-args", postprocessorArg
+            ))
+        }
         return downloadAudioInternal(url, outputTemplate, noCheckCertificate, extraArgs, timeout, args, onEvent)
     }
 
