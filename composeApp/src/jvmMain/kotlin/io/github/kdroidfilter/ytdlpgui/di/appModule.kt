@@ -3,6 +3,8 @@
 package io.github.kdroidfilter.ytdlpgui.di
 
 
+import coil3.ImageLoader
+import coil3.SingletonImageLoader
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.kdroid.composetray.tray.api.TrayAppState
 import com.russhwolf.settings.Settings
@@ -10,6 +12,7 @@ import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlpgui.core.navigation.DefaultNavigator
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Navigator
+import io.github.kdroidfilter.ytdlpgui.core.platform.network.CoilConfig
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
 import io.github.kdroidfilter.ytdlpgui.features.home.HomeViewModel
 import io.github.kdroidfilter.ytdlpgui.features.system.about.AboutViewModel
@@ -31,6 +34,11 @@ val appModule = module {
     single { YtDlpWrapper() }
     single<Navigator> { DefaultNavigator(startDestination = Destination.InitScreen) }
     single { Settings() }
+
+    // Configure Coil with native trusted roots
+    single<ImageLoader> {
+        CoilConfig.createImageLoader()
+    }
 
     // Database & repositories
     single { DownloadHistoryRepository.defaultDatabase() }

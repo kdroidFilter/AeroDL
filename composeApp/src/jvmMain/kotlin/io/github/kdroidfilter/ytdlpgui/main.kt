@@ -18,6 +18,8 @@ import androidx.compose.ui.window.application
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import coil3.ImageLoader
+import coil3.SingletonImageLoader
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.kdroid.composetray.tray.api.TrayApp
 import com.kdroid.composetray.tray.api.TrayAppState
@@ -103,6 +105,10 @@ fun main() = application {
                 // Register as a singleton in Koin immediately to make it available to DI consumers
                 runCatching { koin.declare(trayAppState) }
             }
+
+            // Initialize Coil with native trusted roots
+            val imageLoader = koinInject<ImageLoader>()
+            SingletonImageLoader.setSafe { imageLoader }
 
             if (cleanInstall) { clearSettings(koin.get()) }
 

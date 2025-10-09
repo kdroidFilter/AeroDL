@@ -2,11 +2,13 @@ package io.github.kdroidfilter.ytdlp.util
 
 import io.github.kdroidfilter.ytdlp.core.Options
 import io.github.kdroidfilter.ytdlp.core.SubtitleOptions
+import io.github.kdroidfilter.ytdlp.core.platform.TrustedRootsSSL
 import java.io.BufferedInputStream
 import java.io.File
 import java.net.*
 import java.security.MessageDigest
 import java.util.zip.ZipInputStream
+import javax.net.ssl.HttpsURLConnection
 
 object NetAndArchive {
 
@@ -41,6 +43,9 @@ object NetAndArchive {
             }
 
             (url.openConnection() as URLConnection).apply {
+                if (this is HttpsURLConnection) {
+                    sslSocketFactory = TrustedRootsSSL.socketFactory
+                }
                 if (this is HttpURLConnection) {
                     requestMethod = "HEAD"
                     instanceFollowRedirects = true
@@ -58,7 +63,8 @@ object NetAndArchive {
             // Fallback check to a known reliable host if the target host fails, to distinguish
             // between a general network problem and a specific host being down.
             val fallback = URI("https://www.gstatic.com/generate_204").toURL()
-            (fallback.openConnection() as HttpURLConnection).apply {
+            (fallback.openConnection() as HttpsURLConnection).apply {
+                sslSocketFactory = TrustedRootsSSL.socketFactory
                 requestMethod = "GET"
                 connectTimeout = connectTimeoutMs
                 readTimeout = readTimeoutMs

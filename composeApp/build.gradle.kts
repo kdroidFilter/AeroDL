@@ -78,6 +78,9 @@ kotlin {
 
             // SQLDelight driver
             implementation(libs.sqlDelight.driver.sqlite)
+
+            // Security
+            implementation("org.jetbrains.nativecerts:jvm-native-trusted-roots:1.1.7")
         }
     }
 }

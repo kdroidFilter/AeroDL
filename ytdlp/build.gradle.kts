@@ -20,6 +20,11 @@ kotlin {
             implementation(libs.ktor.client.serialization)
             implementation(libs.ktor.client.logging)
             implementation(libs.ktor.client.cio)
+
+            implementation(libs.kotlinx.serialization.json)
+            implementation("io.ktor:ktor-serialization-kotlinx-json:3.3.0")
+            // Security
+            implementation("org.jetbrains.nativecerts:jvm-native-trusted-roots:1.1.7")
         }
     }
 }
