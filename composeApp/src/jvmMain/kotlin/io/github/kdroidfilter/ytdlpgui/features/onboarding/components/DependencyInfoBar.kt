@@ -4,7 +4,7 @@ package io.github.kdroidfilter.ytdlpgui.features.onboarding.components
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.TooltipArea
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,11 +25,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.InfoBar
 import io.github.composefluent.component.InfoBarDefaults
+import io.github.composefluent.component.InfoBarSeverity
 import io.github.composefluent.component.ProgressBar
 import io.github.composefluent.component.Text
 import io.github.composefluent.component.TooltipBox
@@ -86,86 +89,135 @@ internal fun DependencyInfoBar(
         }
 
         InfoBar(
-            title = { Text(stringResource(Res.string.dependency_info_title)) },
+            title = {
+                DependencyInfoTitle(
+                    text = stringResource(Res.string.dependency_info_title),
+                )
+            },
             message = {
-                Column {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("yt-dlp: $ytDlpStatus")
-                        Spacer(Modifier.width(8.dp))
-                        if (ytDlpProgress != null) {
-                            ProgressBar(
-                                progress = ytDlpProgress,
-                                modifier = Modifier.widthIn(max = 150.dp)
-                            )
-                            Spacer(Modifier.width(8.dp))
-                        }
-                        TooltipBox(
-                            tooltip = {
-                                Surface(
-                                    modifier = Modifier.padding(4.dp),
-                                    color = Color(0xFF323232),
-                                    shape = RoundedCornerShape(4.dp)
-                                ) {
-                                    Text(
-                                        text = stringResource(Res.string.dependency_ytdlp_tooltip),
-                                        modifier = Modifier.padding(8.dp),
-                                        color = Color.White
-                                    )
-                                }
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = "Info",
-                                modifier = Modifier.size(16.dp),
-                                tint = Color.Gray
-                            )
-                        }
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("FFmpeg: $ffmpegStatus")
-                        Spacer(Modifier.width(8.dp))
-                        if (ffmpegProgress != null) {
-                            ProgressBar(
-                                progress = ffmpegProgress,
-                                modifier = Modifier.widthIn(max = 150.dp)
-                            )
-                            Spacer(Modifier.width(8.dp))
-                        }
-                        TooltipArea(
-                            tooltip = {
-                                Surface(
-                                    modifier = Modifier.padding(4.dp),
-                                    color = Color(0xFF323232),
-                                    shape = RoundedCornerShape(4.dp)
-                                ) {
-                                    Text(
-                                        text = stringResource(Res.string.dependency_ffmpeg_tooltip),
-                                        modifier = Modifier.padding(8.dp),
-                                        color = Color.White
-                                    )
-                                }
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = "Info",
-                                modifier = Modifier.size(16.dp),
-                                tint = Color.Gray
-                            )
-                        }
-                    }
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    DependencyInfoRow(
+                        tooltipText = stringResource(Res.string.dependency_ytdlp_tooltip),
+                        label = "Yt-dlp",
+                        status = ytDlpStatus,
+                        progress = ytDlpProgress
+                    )
+                    DependencyInfoRow(
+                        tooltipText = stringResource(Res.string.dependency_ffmpeg_tooltip),
+                        label = "FFmpeg",
+                        status = ffmpegStatus,
+                        progress = ffmpegProgress
+                    )
                 }
             },
             modifier = Modifier.fillMaxWidth(),
             colors = InfoBarDefaults.colors(),
             icon = { InfoBarDefaults.Badge() },
-            closeAction = if (initState.initCompleted) {
-                { InfoBarDefaults.CloseActionButton(onClick = onDismiss) }
-            } else {
-                null
-            }
+            closeAction = { InfoBarDefaults.CloseActionButton(onClick = onDismiss) },
         )
+    }
+}
+
+@OptIn(ExperimentalFluentApi::class)
+@Composable
+private fun DependencyInfoTitle(
+    text: String
+) {
+    var isOverflow by remember { mutableStateOf(false) }
+
+    val titleText: @Composable () -> Unit = {
+        Text(
+            text = text,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            onTextLayout = { layoutResult ->
+                if (isOverflow != layoutResult.hasVisualOverflow) {
+                    isOverflow = layoutResult.hasVisualOverflow
+                }
+            },
+            style = FluentTheme.typography.caption
+        )
+    }
+
+    if (isOverflow) {
+        TooltipBox(
+            tooltip = {
+                Surface(
+                    modifier = Modifier.padding(4.dp),
+                    color = Color(0xFF323232),
+                    shape = RoundedCornerShape(4.dp)
+                ) {
+                    Text(
+                        text = text,
+                        modifier = Modifier.padding(8.dp),
+                        color = Color.White
+                    )
+                }
+            }
+        ) {
+            titleText()
+        }
+    } else {
+        titleText()
+    }
+}
+
+@OptIn(ExperimentalFluentApi::class)
+@Composable
+private fun DependencyInfoTooltip(
+    tooltipText: String
+) {
+    TooltipBox(
+        tooltip = {
+            Surface(
+                modifier = Modifier.padding(4.dp),
+                color = Color(0xFF323232),
+                shape = RoundedCornerShape(4.dp)
+            ) {
+                Text(
+                    text = tooltipText,
+                    modifier = Modifier.padding(8.dp),
+                    color = Color.White
+                )
+            }
+        }
+    ) {
+        Icon(
+            imageVector = Icons.Default.Info,
+            contentDescription = "Info",
+            modifier = Modifier.size(16.dp),
+            tint = Color.Gray
+        )
+    }
+}
+
+@Composable
+private fun DependencyInfoRow(
+    tooltipText: String,
+    label: String,
+    status: String,
+    progress: Float?
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        DependencyInfoTooltip(
+            tooltipText = tooltipText
+        )
+        Text("$label: $status", style = FluentTheme.typography.caption, fontSize = 8.sp)
+        if (progress != null) {
+            ProgressBar(
+                progress = progress,
+                modifier = Modifier.widthIn(max = 150.dp)
+            )
+        }
     }
 }
 
