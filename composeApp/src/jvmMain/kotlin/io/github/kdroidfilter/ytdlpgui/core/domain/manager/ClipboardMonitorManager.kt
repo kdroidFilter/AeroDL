@@ -67,7 +67,7 @@ class ClipboardMonitorManager(
 
     init {
         // Start immediately if enabled in persisted settings
-        val enabled = settings.getBoolean(SettingsKeys.CLIPBOARD_MONITORING_ENABLED, false)
+        val enabled = settings.getBoolean(SettingsKeys.CLIPBOARD_MONITORING_ENABLED, true)
         if (enabled) start()
     }
 

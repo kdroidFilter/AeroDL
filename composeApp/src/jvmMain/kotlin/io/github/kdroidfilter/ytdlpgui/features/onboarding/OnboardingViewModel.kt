@@ -14,6 +14,7 @@ import io.github.kdroidfilter.ytdlpgui.core.config.SettingsKeys
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Navigator
 import io.github.kdroidfilter.ytdlpgui.core.platform.network.CertificateChecker
+import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
 import io.github.kdroidfilter.ytdlpgui.features.init.InitViewModel
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
@@ -27,7 +28,7 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 class OnboardingViewModel(
-    private val settings: Settings,
+    private val settingsRepository: SettingsRepository,
     private val navigator: Navigator,
     private val trayAppState: TrayAppState,
 ) : ViewModel(), KoinComponent {
@@ -49,23 +50,13 @@ class OnboardingViewModel(
     private val _currentStep = MutableStateFlow(OnboardingStep.Welcome)
     val currentStep: StateFlow<OnboardingStep> = _currentStep.asStateFlow()
 
-    private val _downloadDirPath = MutableStateFlow(settings.getString(SettingsKeys.DOWNLOAD_DIR, ""))
-    val downloadDirPath: StateFlow<String> = _downloadDirPath.asStateFlow()
-
-    private val _cookiesFromBrowser = MutableStateFlow(settings.getString(SettingsKeys.COOKIES_FROM_BROWSER, ""))
-    val cookiesFromBrowser: StateFlow<String> = _cookiesFromBrowser.asStateFlow()
-
-    private val _includePresetInFilename = MutableStateFlow(settings.getBoolean(SettingsKeys.INCLUDE_PRESET_IN_FILENAME, true))
-    val includePresetInFilename: StateFlow<Boolean> = _includePresetInFilename.asStateFlow()
-
-    private val _parallelDownloads = MutableStateFlow(settings.getInt(SettingsKeys.PARALLEL_DOWNLOADS, 2))
-    val parallelDownloads: StateFlow<Int> = _parallelDownloads.asStateFlow()
-
-    private val _noCheckCertificate = MutableStateFlow(settings.getBoolean(SettingsKeys.NO_CHECK_CERTIFICATE, false))
-    val noCheckCertificate: StateFlow<Boolean> = _noCheckCertificate.asStateFlow()
-
-    private val _clipboardMonitoringEnabled = MutableStateFlow(settings.getBoolean(SettingsKeys.CLIPBOARD_MONITORING_ENABLED, false))
-    val clipboardMonitoringEnabled: StateFlow<Boolean> = _clipboardMonitoringEnabled.asStateFlow()
+    // Expose settings from repository
+    val downloadDirPath: StateFlow<String> = settingsRepository.downloadDirPath
+    val cookiesFromBrowser: StateFlow<String> = settingsRepository.cookiesFromBrowser
+    val includePresetInFilename: StateFlow<Boolean> = settingsRepository.includePresetInFilename
+    val parallelDownloads: StateFlow<Int> = settingsRepository.parallelDownloads
+    val noCheckCertificate: StateFlow<Boolean> = settingsRepository.noCheckCertificate
+    val clipboardMonitoringEnabled: StateFlow<Boolean> = settingsRepository.clipboardMonitoringEnabled
 
     private val _dependencyInfoBarDismissed = MutableStateFlow(false)
     val dependencyInfoBarDismissed: StateFlow<Boolean> = _dependencyInfoBarDismissed.asStateFlow()
@@ -165,7 +156,7 @@ class OnboardingViewModel(
     private fun handleFinish() {
         _currentStep.value = OnboardingStep.Finish
         viewModelScope.launch {
-            settings.putBoolean(SettingsKeys.ONBOARDING_COMPLETED, true)
+            settingsRepository.setOnboardingCompleted(true)
 
             // Wait for yt-dlp/ffmpeg initialization to complete before navigating to home
             initState.first { it.initCompleted }
@@ -183,37 +174,30 @@ class OnboardingViewModel(
                 dialogSettings = FileKitDialogSettings()
             )
             dir?.let {
-                val path = it.file.absolutePath
-                _downloadDirPath.value = path
-                settings.putString(SettingsKeys.DOWNLOAD_DIR, path)
+                settingsRepository.setDownloadDir(it.file.absolutePath)
             }
             trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
         }
     }
 
     private fun handleSetCookiesFromBrowser(browser: String) {
-        _cookiesFromBrowser.value = browser
-        settings.putString(SettingsKeys.COOKIES_FROM_BROWSER, browser)
+        settingsRepository.setCookiesFromBrowser(browser)
     }
 
     private fun handleSetIncludePresetInFilename(include: Boolean) {
-        _includePresetInFilename.value = include
-        settings.putBoolean(SettingsKeys.INCLUDE_PRESET_IN_FILENAME, include)
+        settingsRepository.setIncludePresetInFilename(include)
     }
 
     private fun handleSetParallelDownloads(count: Int) {
-        _parallelDownloads.value = count
-        settings.putInt(SettingsKeys.PARALLEL_DOWNLOADS, count)
+        settingsRepository.setParallelDownloads(count)
     }
 
     private fun handleSetNoCheckCertificate(enabled: Boolean) {
-        _noCheckCertificate.value = enabled
-        settings.putBoolean(SettingsKeys.NO_CHECK_CERTIFICATE, enabled)
+        settingsRepository.setNoCheckCertificate(enabled)
     }
 
     private fun handleSetClipboardMonitoring(enabled: Boolean) {
-        _clipboardMonitoringEnabled.value = enabled
-        settings.putBoolean(SettingsKeys.CLIPBOARD_MONITORING_ENABLED, enabled)
+        settingsRepository.setClipboardMonitoringEnabled(enabled)
     }
 
     private fun handleDismissDependencyInfoBar() {

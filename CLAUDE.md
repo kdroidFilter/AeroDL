@@ -59,7 +59,10 @@ This is a **Kotlin Multiplatform** desktop application (JVM target) that provide
       - `filesystem/`: File system utilities (FileExplorerUtils)
       - `notifications/`: Notification helpers (NotificationThumbUtils)
     - `config/`: Application configuration (SettingsKeys)
-  - `data/`: Data layer (repositories for download history and supported sites)
+  - `data/`: Data layer (repositories for download history, supported sites, and settings)
+    - `SettingsRepository`: Single source of truth for all app settings (manages persistence, in-memory state, and sync with YtDlpWrapper/ClipboardMonitorManager)
+    - `DownloadHistoryRepository`: Manages download history
+    - `SupportedSitesRepository`: Caches yt-dlp extractor information
   - `di/`: Dependency injection setup (Koin modules)
   - `features/`: Feature-based organization by domain
     - `init/`: Initial yt-dlp/FFmpeg setup (InitScreen, InitViewModel, InitState)
@@ -106,7 +109,11 @@ The app uses a custom Navigator abstraction (`DefaultNavigator`) with type-safe 
 - SQLDelight generates type-safe database queries from `.sq` files
 - DownloadHistoryRepository manages download history
 - SupportedSitesRepository caches yt-dlp extractor information
-- Settings stored via `multiplatform-settings` library
+- **SettingsRepository** is the single source of truth for all application settings
+  - Manages persistence via `multiplatform-settings` library
+  - Exposes reactive StateFlows for UI
+  - Automatically synchronizes settings with YtDlpWrapper and ClipboardMonitorManager
+  - Used by both OnboardingViewModel and SettingsViewModel to ensure consistency
 
 ## Browser Cookies Support
 
