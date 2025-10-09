@@ -9,7 +9,6 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.sqlDelight)
     alias(libs.plugins.hydraulicConveyor)
-    id("io.github.kdroidfilter.compose.linux.packagedeps") version "0.2.2"
 }
 
 val ref = System.getenv("GITHUB_REF") ?: ""
