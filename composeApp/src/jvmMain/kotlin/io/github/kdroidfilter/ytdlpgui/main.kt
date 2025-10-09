@@ -82,7 +82,7 @@ fun main() = application {
     if (cleanInstall) {
         clearJavaTempDir()
     }
-//    Locale.setDefault(Locale("he"))
+//    Locale.setDefault(Locale("en"))
     KoinApplication(application = {
         modules(appModule)
     }) {
