@@ -12,11 +12,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import io.github.kdroidfilter.network.HttpsConnectionFactory
 import io.github.kdroidfilter.ytdlp.util.YouTubeThumbnailHelper
-import io.github.kdroidfilter.ytdlpgui.core.platform.network.TrustedRootsSSL
 import org.jetbrains.skia.Image as SkiaImage
-import java.net.URL
-import javax.net.ssl.HttpsURLConnection
 
 object NotificationThumbUtils {
     /**
@@ -39,14 +37,7 @@ object NotificationThumbUtils {
             var imageBitmap by remember(thumbUrl) { mutableStateOf<ImageBitmap?>(null) }
             LaunchedEffect(thumbUrl) {
                 runCatching {
-                    val url = URL(thumbUrl)
-                    val bytes = if (url.protocol.equals("https", ignoreCase = true)) {
-                        val connection = url.openConnection() as HttpsURLConnection
-                        connection.sslSocketFactory = TrustedRootsSSL.socketFactory
-                        connection.inputStream.readBytes()
-                    } else {
-                        url.readBytes()
-                    }
+                    val bytes = HttpsConnectionFactory.openConnection(thumbUrl).inputStream.readBytes()
                     val skiaImage = SkiaImage.makeFromEncoded(bytes)
                     imageBitmap = skiaImage.toComposeImageBitmap()
                 }

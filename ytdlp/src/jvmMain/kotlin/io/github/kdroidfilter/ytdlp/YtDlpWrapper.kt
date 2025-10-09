@@ -1,10 +1,10 @@
 package io.github.kdroidfilter.ytdlp
 
+import io.github.kdroidfilter.network.KtorConfig
 import io.github.kdroidfilter.platformtools.OperatingSystem
 import io.github.kdroidfilter.platformtools.getOperatingSystem
 import io.github.kdroidfilter.platformtools.releasefetcher.github.GitHubReleaseFetcher
 import io.github.kdroidfilter.ytdlp.core.*
-import io.github.kdroidfilter.ytdlp.core.platform.KtorConfig
 import io.github.kdroidfilter.ytdlp.model.PlaylistInfo
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
 import io.github.kdroidfilter.ytdlp.util.NetAndArchive

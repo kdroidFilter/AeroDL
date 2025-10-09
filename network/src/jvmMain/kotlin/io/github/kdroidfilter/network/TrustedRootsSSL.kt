@@ -1,17 +1,21 @@
-package io.github.kdroidfilter.ytdlp.core.platform
+package io.github.kdroidfilter.network
 
 import org.jetbrains.nativecerts.NativeTrustedCertificates
 import java.security.KeyStore
 import java.security.SecureRandom
 import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLSocketFactory
 import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509TrustManager
 
 /**
  * Provides SSL/TLS configuration that uses native OS certificate stores.
  * This ensures all network calls respect system root certificates.
+ *
+ * This is particularly useful in enterprise environments with custom root certificates
+ * or when using corporate proxies with HTTPS inspection.
  */
-internal object TrustedRootsSSL {
+object TrustedRootsSSL {
 
     /**
      * Trust manager that uses OS native trusted roots
@@ -42,7 +46,7 @@ internal object TrustedRootsSSL {
     /**
      * SSLSocketFactory configured with native trusted roots
      */
-    val socketFactory by lazy {
+    val socketFactory: SSLSocketFactory by lazy {
         sslContext.socketFactory
     }
 }

@@ -1,9 +1,9 @@
 package io.github.kdroidfilter.ytdlp.util
 
+import io.github.kdroidfilter.network.HttpsConnectionFactory
 import io.github.kdroidfilter.platformtools.OperatingSystem
 import io.github.kdroidfilter.platformtools.getCacheDir
 import io.github.kdroidfilter.platformtools.getOperatingSystem
-import io.github.kdroidfilter.ytdlp.core.platform.TrustedRootsSSL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
@@ -13,7 +13,6 @@ import java.nio.ByteBuffer
 import java.nio.channels.Channels
 import java.nio.file.Files
 import java.nio.file.attribute.PosixFilePermission
-import javax.net.ssl.HttpsURLConnection
 
 object PlatformUtils {
 
@@ -89,10 +88,7 @@ object PlatformUtils {
         dest.parentFile?.mkdirs()
 
         val uri = java.net.URI.create(url)
-        val conn = (uri.toURL().openConnection() as HttpURLConnection).apply {
-            if (this is HttpsURLConnection) {
-                sslSocketFactory = TrustedRootsSSL.socketFactory
-            }
+        val conn = HttpsConnectionFactory.openConnection(uri.toURL()) {
             connectTimeout = 12_000
             readTimeout = 24_000
             setRequestProperty("User-Agent", "kdroidFilter-ytdlp/1.0")

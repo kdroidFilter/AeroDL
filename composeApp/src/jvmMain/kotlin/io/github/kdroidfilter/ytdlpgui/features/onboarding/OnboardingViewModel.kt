@@ -11,7 +11,6 @@ import io.github.kdroidfilter.platformtools.LinuxDesktopEnvironment
 import io.github.kdroidfilter.platformtools.detectLinuxDesktopEnvironment
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Navigator
-import io.github.kdroidfilter.ytdlpgui.core.platform.network.CertificateChecker
 import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
 import io.github.kdroidfilter.ytdlpgui.features.init.InitViewModel
 import io.github.vinceglb.filekit.FileKit
@@ -37,8 +36,9 @@ class OnboardingViewModel(
     // Check if user is running GNOME desktop environment
     private val isGnome = detectLinuxDesktopEnvironment() == LinuxDesktopEnvironment.GNOME
 
-    // Check if certificate is from Google Trust Services (if true, no need to show NoCheckCert screen)
-    private val shouldSkipNoCheckCert: Boolean = CertificateChecker.isYouTubeCertificateFromGoogleTrustServices()
+    // Since we use jvm-native-trusted-roots which leverages OS certificate stores,
+    // we can assume certificates are properly configured (skip NoCheckCert screen)
+    private val shouldSkipNoCheckCert: Boolean = true
 
     init {
         // Start downloading yt-dlp and ffmpeg in background during onboarding
