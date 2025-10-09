@@ -167,12 +167,11 @@ class OnboardingViewModel(
 
     private fun handleFinish() {
         _currentStep.value = OnboardingStep.Finish
+    }
+
+    fun completeOnboarding() {
         viewModelScope.launch {
             settingsRepository.setOnboardingCompleted(true)
-
-            // Wait for yt-dlp/ffmpeg initialization to complete before navigating to home
-            initState.first { it.initCompleted }
-
             navigator.navigateAndClearBackStack(Destination.MainNavigation.Home)
         }
     }

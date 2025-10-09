@@ -2,7 +2,9 @@ package io.github.kdroidfilter.ytdlpgui.features.onboarding.finish
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -11,6 +13,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import io.github.composefluent.component.Button
+import io.github.composefluent.component.ProgressBar
 import io.github.composefluent.component.Text
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.OnboardingProgress
@@ -34,7 +38,8 @@ fun FinishScreen(
         currentStep = currentStep,
         initState = initState,
         totalSteps = viewModel.getTotalSteps(),
-        currentStepIndex = viewModel.getCurrentStepIndex()
+        currentStepIndex = viewModel.getCurrentStepIndex(),
+        onComplete = { viewModel.completeOnboarding() }
     )
 }
 
@@ -44,6 +49,7 @@ private fun FinishView(
     initState: io.github.kdroidfilter.ytdlpgui.features.init.InitState? = null,
     totalSteps: Int? = null,
     currentStepIndex: Int? = null,
+    onComplete: () -> Unit = {}
 ) {
     Column(
         Modifier.fillMaxSize().padding(16.dp),
@@ -57,6 +63,42 @@ private fun FinishView(
             currentStepIndex = currentStepIndex
         )
         Text(stringResource(Res.string.onboarding_complete_message))
+
+        Spacer(Modifier.height(32.dp))
+
+        if (initState?.initCompleted == true) {
+            Button(onClick = onComplete) {
+                Text("C'est parti !")
+            }
+        } else {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("Préparation en cours...")
+                Spacer(Modifier.height(16.dp))
+
+                // Show progress bars for yt-dlp
+                if (initState?.checkingYtDlp == true || initState?.downloadingYtDlp == true || initState?.updatingYtdlp == true) {
+                    Text("yt-dlp")
+                    Spacer(Modifier.height(8.dp))
+                    if (initState.downloadYtDlpProgress != null) {
+                        ProgressBar(progress = initState.downloadYtDlpProgress)
+                    } else {
+                        ProgressBar()
+                    }
+                    Spacer(Modifier.height(16.dp))
+                }
+
+                // Show progress bars for FFmpeg
+                if (initState?.checkingFFmpeg == true || initState?.downloadingFFmpeg == true || initState?.updatingFFmpeg == true) {
+                    Text("FFmpeg")
+                    Spacer(Modifier.height(8.dp))
+                    if (initState.downloadFfmpegProgress != null) {
+                        ProgressBar(progress = initState.downloadFfmpegProgress)
+                    } else {
+                        ProgressBar()
+                    }
+                }
+            }
+        }
     }
 }
 
