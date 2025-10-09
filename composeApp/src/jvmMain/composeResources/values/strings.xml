@@ -1,6 +1,164 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_tooltip">YTDLP GUI</string>
-    <string name="greeting">Bonjour ! Ceci est une fenêtre d'exemple.</string>
-    <string name="quit">Quitter</string>
+    <!-- Navigation -->
+    <string name="home">Home</string>
+    <string name="download">Download</string>
+    <string name="about">About</string>
+    <string name="settings">Settings</string>
+
+    <!-- Tooltips -->
+    <string name="tooltip_back">Go back</string>
+    <string name="tooltip_home">Go to Home</string>
+    <string name="tooltip_github">Open source project on GitHub</string>
+    <string name="tooltip_support_kofi">Support me on Ko-fi!</string>
+
+    <!-- Home screen -->
+    <string name="app_name">AeroDL</string>
+    <string name="logo_content_desc">Logo</string>
+    <string name="placeholder_link_example">https://youtu.be/XXXXXXXXX</string>
+    <string name="paste_video_link_header">Paste a Video link</string>
+    <string name="paste_link_content_desc">Paste Link</string>
+    <string name="loading">Loading…</string>
+    <string name="next">Next</string>
+    <string name="error_single_valid_url">Please paste a single valid URL.</string>
+    <string name="error_invalid_url_format">Invalid URL format.</string>
+    <string name="error_url_required">Please enter a URL.</string>
+
+    <!-- Initialization messages -->
+    <string name="checking_ytdlp">Checking for yt-dlp updates…</string>
+    <string name="checking_ffmpeg">Checking FFmpeg installation…</string>
+    <string name="downloading_ytdlp">Downloading yt-dlp…</string>
+    <string name="downloading_ffmpeg">Downloading FFmpeg…</string>
+    <string name="updating_ytdlp">Updating yt-dlp…</string>
+    <string name="updating_ffmpeg">Updating FFmpeg…</string>
+    <string name="status_checking">Checking…</string>
+    <string name="status_downloading">Downloading</string>
+    <string name="status_updating">Updating…</string>
+    <string name="status_installed">Installed</string>
+    <string name="status_error">Error: %1$s</string>
+    <string name="unknown_dependency">Unknown dependency</string>
+
+    <!-- Dependency Info Bar -->
+    <string name="dependency_info_title">While you configure AeroDL settings, we are downloading the necessary dependencies for the app to work properly.</string>
+    <string name="dependency_ytdlp_tooltip">yt-dlp is the core tool that downloads videos from supported websites. It handles all the heavy lifting of fetching your content.</string>
+    <string name="dependency_ffmpeg_tooltip">FFmpeg is a multimedia framework used to convert and process audio/video files. It ensures your downloads are in the format you want.</string>
+
+    <!-- Error messages -->
+    <string name="error_occurred">An error occurred</string>
+
+    <!-- Placeholder screen titles -->
+    <string name="about_screen_title">About Screen</string>
+    <string name="bulk_download_screen_title">Bulk Download Screen</string>
+    <string name="settings_screen_title">Settings Screen</string>
+
+    <!-- Settings screen strings -->
+    <string name="settings_no_check_certificate_title">No check certificate</string>
+    <string name="settings_no_check_certificate_caption">Skip SSL certificate verification (use only if necessary)</string>
+    <string name="onboarding_filtered_network_detected_title">Certificate Issue Detected</string>
+    <string name="onboarding_filtered_network_detected_message">A certificate problem has been detected. This could be due to corporate network filtering, or worse, a MITM attack. For the program to function, it is necessary to disable certificate verification.</string>
+    <string name="onboarding_filtered_network_accept">I understand the risks and accept</string>
+    <string name="settings_cookies_from_browser_title">Cookies from browser</string>
+    <string name="settings_cookies_from_browser_label">Choose a browser to import cookies for yt-dlp. Leave disabled if not needed.</string>
+    <string name="settings_browser_select">Select browser…</string>
+    <string name="settings_browser_disable">Disabled</string>
+    <string name="settings_browser_chrome">Chrome</string>
+    <string name="settings_browser_firefox">Firefox</string>
+    <string name="settings_browser_safari">Safari</string>
+    <string name="settings_include_preset_in_filename_title">Include preset in filename</string>
+    <string name="settings_include_preset_in_filename_caption">Append the selected quality (e.g., 720p) to the downloaded file name</string>
+    <string name="settings_parallel_downloads_title">Parallel downloads</string>
+    <string name="settings_parallel_downloads_caption">Limit how many downloads can run simultaneously</string>
+
+    <!-- Settings: Audio thumbnail embedding -->
+    <string name="settings_embed_thumbnail_mp3_title">Embed thumbnail in MP3</string>
+    <string name="settings_embed_thumbnail_mp3_caption">When enabled, embed the video thumbnail as MP3 cover art</string>
+
+    <!-- Settings: Download directory section -->
+    <string name="settings_download_dir_title">Download directory</string>
+    <string name="settings_download_dir_caption">Choose the folder where downloads will be saved by default.</string>
+    <string name="settings_download_dir_not_set">Not set</string>
+    <string name="settings_download_dir_pick_title">Select download folder</string>
+    <string name="settings_select">Select…</string>
+
+    <string name="download_audio">Download audio</string>
+    <!-- Ces chaînes appartiennent à l'écran Download (Download screen) -->
+    <string name="download_type_video">Video</string>
+    <string name="download_type_audio">Audio</string>
+    <string name="single_formats">Formats</string>
+    <string name="single_subtitles">Subtitles</string>
+    <string name="single_no_subtitle">No subtitles</string>
+    <string name="error_fetch_video_info">An error occurred while fetching video info: %1$s</string>
+    <string name="thumbnail_content_desc">Thumbnail</string>
+    
+    <!-- Single download: format selection & description -->
+    <string name="single_choose_format">Choose format to download:</string>
+    <string name="single_description">Description</string>
+    
+    <!-- Content descriptions (accessibility) -->
+    <string name="cd_error_icon">Error</string>
+    <string name="cd_filmstrip_play">Filmstrip play icon</string>
+    <string name="cd_textbox">Textbox icon</string>
+    
+    <!-- Settings: Clipboard monitoring -->
+    <string name="settings_clipboard_monitoring_title">Clipboard monitoring</string>
+    <string name="settings_clipboard_monitoring_caption">When enabled, copying a supported video link will send a notification asking if you want to download it.</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_progress_label">Step %1$d of %2$d</string>
+    <string name="onboarding_previous">Previous</string>
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_welcome_title">Welcome to AeroDL</string>
+    <string name="onboarding_welcome_subtitle">Let's configure a few options to get started.</string>
+    <string name="onboarding_start">Get started</string>
+    <string name="onboarding_parallel_selected">Selected: %1$d</string>
+    <string name="onboarding_complete_message">Setup complete…</string>
+    <string name="onboarding_gnome_focus_title">Improve GNOME Experience</string>
+    <string name="onboarding_gnome_focus_caption">GNOME blocks window focus by default. We recommend installing the "Steal My Focus" extension for a better system tray experience.</string>
+    <string name="onboarding_gnome_focus_open_extension">Open Extension Page</string>
+    <string name="common_enabled">Enabled</string>
+    <string name="common_disabled">Disabled</string>
+
+    <!-- Clipboard monitoring notifications -->
+    <string name="clipboard_link_detected_title">Link detected</string>
+    <string name="clipboard_link_detected_message">Do you want to open this link in %1$s?\n%2$s</string>
+    <string name="clipboard_open_in_app">Open in %1$s</string>
+    <string name="clipboard_ignore">Ignore</string>
+
+    <!-- Download screen (history and in-progress) -->
+    <string name="download_clear_history">Clear history</string>
+    <string name="tooltip_clear_history">Clear history</string>
+    <string name="open_directory">Open directory</string>
+    <string name="tooltip_open_directory">Open directory</string>
+    <string name="delete_element">Delete this item</string>
+    <string name="tooltip_delete_element">Delete this item</string>
+    <string name="no_downloads">No downloads</string>
+    <string name="cancel">Cancel</string>
+    <string name="status_pending">Pending</string>
+    <string name="status_running">Running</string>
+    <string name="status_completed">Completed</string>
+    <string name="status_failed">Failed</string>
+    <string name="status_cancelled">Cancelled</string>
+    <!-- Settings: Auto-launch -->
+    <string name="settings_auto_launch_title">Launch at startup</string>
+    <string name="settings_auto_launch_caption">Automatically start the app when the system boots</string>
+
+    <!-- Tray / Menu -->
+    <string name="menu_show_window">Show window</string>
+    <string name="menu_hide_window">Hide window</string>
+    <string name="quit">Quit</string>
+
+    <!-- App info -->
+    <string name="app_version_label">App version: %1$s</string>
+    
+    <!-- Settings: Notifications -->
+    <string name="settings_notify_on_complete_title">Download completion notifications</string>
+    <string name="settings_notify_on_complete_caption">Send a notification when a download finishes</string>
+
+    <!-- Download completion notification -->
+    <string name="download_completed_title">Download finished</string>
+    <string name="download_completed_message">%1$s has been downloaded</string>
+
+    <!-- Directory unavailable notice -->
+    <string name="directory_unavailable">Not available</string>
+    <string name="tooltip_directory_unavailable">This file/folder was moved or deleted and is no longer available</string>
 </resources>

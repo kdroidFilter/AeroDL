@@ -2,9 +2,10 @@ package io.github.kdroidfilter.ytdlp.demos
 
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlp.core.Event
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.io.File
-import java.util.concurrent.CompletableFuture
 
 fun main() {
     println("🚀 Starting download demo...")
@@ -66,11 +67,10 @@ fun main() {
         }
         println("\n🎬 Starting download for ${desiredPreset.height}p version...")
 
+        // Use a Channel to receive the final result of the download
+        val resultChannel = Channel<Boolean>()
 
-        // A CompletableFuture is used to wait for the asynchronous download to finish
-        val downloadFuture = CompletableFuture<Boolean>()
-
-        ytDlpWrapper.downloadMp4At(
+        val downloadHandle = ytDlpWrapper.downloadMp4At(
             url = videoUrl,
             preset = desiredPreset,
             onEvent = { event ->
@@ -85,31 +85,31 @@ fun main() {
                         println("\n    -> Download finished.")
                         if (event.success) {
                             println("🎉 Success!")
-                            downloadFuture.complete(true)
+                            launch { resultChannel.send(true) }
                         } else {
                             System.err.println("    -> The download finished but failed (exit code: ${event.exitCode}).")
-                            downloadFuture.complete(false)
+                            launch { resultChannel.send(false) }
                         }
                     }
                     is Event.Error -> {
                         System.err.println("\n❌ Download error: ${event.message}")
-                        downloadFuture.complete(false)
+                        launch { resultChannel.send(false) }
                     }
                     is Event.Cancelled -> {
                         println("\n C Cancelled.")
-                        downloadFuture.complete(false)
+                        launch { resultChannel.send(false) }
                     }
                     is Event.NetworkProblem -> {
                         System.err.println("\n🌐 Network problem: ${event.detail}")
-                        downloadFuture.complete(false)
+                        launch { resultChannel.send(false) }
                     }
                     else -> {} // Ignore log events for this demo
                 }
             }
         )
 
-        // 5. Wait for the result
-        val success = downloadFuture.get() // Blocks the main thread until the future is completed
+        // 5. Wait for the result from the channel
+        val success = resultChannel.receive()
 
         if (success) {
             println("\n👍 The file was downloaded successfully.")

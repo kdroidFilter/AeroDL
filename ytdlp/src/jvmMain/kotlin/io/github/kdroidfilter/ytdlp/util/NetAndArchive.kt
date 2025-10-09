@@ -1,9 +1,11 @@
 package io.github.kdroidfilter.ytdlp.util
 
 import io.github.kdroidfilter.ytdlp.core.Options
+import io.github.kdroidfilter.ytdlp.core.SubtitleOptions
 import java.io.BufferedInputStream
 import java.io.File
 import java.net.*
+import java.security.MessageDigest
 import java.util.zip.ZipInputStream
 
 object NetAndArchive {
@@ -86,7 +88,9 @@ object NetAndArchive {
 
         ffmpegPath?.takeIf { it.isNotBlank() }?.let { cmd.addAll(listOf("--ffmpeg-location", it)) }
         if (options.noCheckCertificate) cmd.add("--no-check-certificate")
+        options.cookiesFromBrowser?.takeIf { it.isNotBlank() }?.let { cmd.addAll(listOf("--cookies-from-browser", it)) }
 
+        // Output template (kept as-is)
         downloadDir?.let { dir ->
             if (!dir.exists()) dir.mkdirs()
             val tpl = options.outputTemplate ?: "%(title)s.%(ext)s"
@@ -97,26 +101,95 @@ object NetAndArchive {
 
         options.format?.let { cmd.addAll(listOf("-f", it)) }
 
-        // Post-processing to enforce a container if requested
+        // Subtitles
+        options.subtitles?.let { subOpts -> handleSubtitleOptions(cmd, subOpts) }
+
+        // Container enforcement (kept)
         options.targetContainer?.let { container ->
             if (container.equals("mp4", ignoreCase = true)) {
-                if (options.allowRecode) {
-                    // Slow but guaranteed: re-encode to MP4 if remuxing is impossible
-                    cmd.addAll(listOf("--recode-video", "mp4"))
-                } else {
-                    // Fast: remux only (no quality loss). Will fail if codecs are incompatible with mp4.
-                    cmd.addAll(listOf("--remux-video", "mp4"))
-                }
+                if (options.allowRecode) cmd.addAll(listOf("--recode-video", "mp4"))
+                else cmd.addAll(listOf("--remux-video", "mp4"))
             } else {
-                // For other containers
                 if (options.allowRecode) cmd.addAll(listOf("--recode-video", container))
                 else cmd.addAll(listOf("--remux-video", container))
             }
         }
 
+        // --- NEW: Write the final absolute path to a temp file (no shell redirection)
+        // File path is deterministic: %TEMP%/ytdlp-finalpath-<md5(url)>.txt
+        val sinkFile = File(System.getProperty("java.io.tmpdir"),
+            "ytdlp-finalpath-${md5(url)}.txt"
+        )
+        // Ensure we are not in simulate mode so after_move actually runs
+        cmd.add("--no-simulate")
+        // Append final path to sink file (UTF-8/locale handled by Python; avoids console codepage)
+        // Syntax: --print-to-file [WHEN:]TEMPLATE FILE
+        cmd.addAll(listOf(
+            "--print-to-file", "after_move:%(filepath)s", sinkFile.absolutePath
+        ))
+
+        // Extra args passthrough
         if (options.extraArgs.isNotEmpty()) cmd.addAll(options.extraArgs)
+
         cmd.add(url)
         return cmd
+    }
+
+    private fun md5(s: String): String {
+        val d = MessageDigest.getInstance("MD5").digest(s.toByteArray())
+        return d.joinToString("") { "%02x".format(it) }
+    }
+
+    /**
+     * Add subtitle-related arguments to the command
+     */
+    private fun handleSubtitleOptions(cmd: MutableList<String>, subOpts: SubtitleOptions) {
+        when {
+            // Download all subtitles
+            subOpts.allSubtitles -> {
+                if (subOpts.writeSubtitles || !subOpts.embedSubtitles) {
+                    cmd.add("--all-subs")
+                } else {
+                    // Embed only - download temporarily without keeping files
+                    cmd.add("--all-subs")
+                }
+                if (subOpts.writeAutoSubtitles) {
+                    cmd.add("--write-auto-subs")
+                }
+            }
+            // Download specific languages
+            subOpts.languages.isNotEmpty() -> {
+                // Only add --write-subs if we want to keep separate files
+                if (subOpts.writeSubtitles || !subOpts.embedSubtitles) {
+                    cmd.add("--write-subs")
+                }
+                cmd.addAll(listOf("--sub-langs", subOpts.languages.joinToString(",")))
+                if (subOpts.writeAutoSubtitles) {
+                    cmd.add("--write-auto-subs")
+                }
+            }
+            // Only auto-subs requested without specific languages
+            subOpts.writeAutoSubtitles -> {
+                if (subOpts.writeSubtitles || !subOpts.embedSubtitles) {
+                    cmd.add("--write-auto-subs")
+                }
+            }
+        }
+
+        // Embed subtitles in the video file (requires ffmpeg)
+        if (subOpts.embedSubtitles) {
+            cmd.add("--embed-subs")
+        }
+
+        // Specify subtitle format preference
+        subOpts.subFormat?.let {
+            cmd.addAll(listOf("--sub-format", it))
+        }
+
+        // Convert subtitles to a specific format after download
+        subOpts.convertSubtitles?.let {
+            cmd.addAll(listOf("--convert-subs", it))
+        }
     }
 
     // --- Progress Parsing ---

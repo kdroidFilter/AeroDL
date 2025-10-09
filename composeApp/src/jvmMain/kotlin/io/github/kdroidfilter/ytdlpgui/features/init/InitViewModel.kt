@@ -1,0 +1,154 @@
+package io.github.kdroidfilter.ytdlpgui.features.init
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.russhwolf.settings.Settings
+import io.github.kdroidfilter.ytdlp.YtDlpWrapper
+import io.github.kdroidfilter.ytdlpgui.core.domain.manager.ClipboardMonitorManager
+import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
+import io.github.kdroidfilter.ytdlpgui.core.navigation.Navigator
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import io.github.kdroidfilter.ytdlpgui.core.config.SettingsKeys
+
+class InitViewModel(
+    private val ytDlpWrapper: YtDlpWrapper,
+    private val navigator: Navigator,
+    private val settings : Settings,
+    // Injected to force eager initialization of clipboard monitoring
+    private val clipboardMonitorManager: ClipboardMonitorManager,
+    private val supportedSitesRepository: io.github.kdroidfilter.ytdlpgui.data.SupportedSitesRepository,
+) : ViewModel() {
+    private val _state = MutableStateFlow(InitState())
+    val state = _state.asStateFlow()
+
+    private var isInitializing = false
+
+    init {
+        viewModelScope.launch {
+            // Check if onboarding is completed
+            val onboardingCompleted = settings.getBoolean(SettingsKeys.ONBOARDING_COMPLETED, false)
+
+            if (!onboardingCompleted) {
+                // Not configured → go to onboarding
+                navigator.navigateAndClearBackStack(Destination.Onboarding.Graph)
+                return@launch
+            }
+
+            // Already configured → initialize yt-dlp and ffmpeg
+            startInitialization(navigateToHomeWhenDone = true)
+        }
+    }
+
+    /**
+     * Start yt-dlp and ffmpeg initialization
+     * @param navigateToHomeWhenDone If true, navigate to home screen when initialization is complete
+     */
+    fun startInitialization(navigateToHomeWhenDone: Boolean = false) {
+        if (isInitializing) return
+        isInitializing = true
+
+        viewModelScope.launch {
+            val noCheck = settings.getBoolean(SettingsKeys.NO_CHECK_CERTIFICATE, false)
+            val cookies = settings.getString(SettingsKeys.COOKIES_FROM_BROWSER, "").ifBlank { null }
+
+            ytDlpWrapper.apply {
+                noCheckCertificate = noCheck
+                cookiesFromBrowser = cookies
+            }.initialize { event ->
+                when (event) {
+                    YtDlpWrapper.InitEvent.CheckingYtDlp -> {
+                        _state.value = _state.value.copy(
+                            checkingYtDlp = true,
+                            downloadingYtDlp = false,
+                            downloadYtDlpProgress = null,
+                            checkingFFmpeg = false,
+                            downloadingFFmpeg = false,
+                            downloadFfmpegProgress = null,
+                            updatingYtdlp = false,
+                            updatingFFmpeg = false,
+                            errorMessage = null,
+                            initCompleted = false,
+                        )
+                    }
+                    YtDlpWrapper.InitEvent.DownloadingYtDlp -> {
+                        _state.value = _state.value.copy(
+                            checkingYtDlp = false,
+                            downloadingYtDlp = true,
+                            downloadYtDlpProgress = null,
+                            errorMessage = null
+                        )
+                    }
+                    YtDlpWrapper.InitEvent.UpdatingYtDlp -> {
+                        _state.value = _state.value.copy(
+                            checkingYtDlp = false,
+                            updatingYtdlp = true,
+                            downloadingYtDlp = false,
+                            downloadYtDlpProgress = null,
+                            errorMessage = null
+                        )
+                    }
+                    YtDlpWrapper.InitEvent.EnsuringFfmpeg -> {
+                        _state.value = _state.value.copy(
+                            checkingFFmpeg = true,
+                            downloadingFFmpeg = false,
+                            downloadFfmpegProgress = null,
+                            errorMessage = null,
+                            checkingYtDlp = false,
+                            downloadingYtDlp = false,
+                            updatingYtdlp = false,
+
+                        )
+                    }
+                    is YtDlpWrapper.InitEvent.YtDlpProgress -> {
+                        _state.value = _state.value.copy(
+                            downloadingYtDlp = true,
+                            downloadYtDlpProgress = (event.percent ?: 0.0).toFloat()
+                        )
+                    }
+                    is YtDlpWrapper.InitEvent.FfmpegProgress -> {
+                        _state.value = _state.value.copy(
+                            checkingFFmpeg = false,
+                            downloadingFFmpeg = true,
+                            downloadingYtDlp = false,
+                            downloadFfmpegProgress = (event.percent ?: 0.0).toFloat()
+                        )
+                    }
+                    is YtDlpWrapper.InitEvent.Error -> {
+                        _state.value = _state.value.copy(
+                            errorMessage = event.message,
+                            checkingYtDlp = false,
+                            checkingFFmpeg = false,
+                            downloadingYtDlp = false,
+                            downloadingFFmpeg = false,
+                            updatingYtdlp = false,
+                            updatingFFmpeg = false,
+                            initCompleted = false
+                        )
+                    }
+                    is YtDlpWrapper.InitEvent.Completed -> {
+                        _state.value = _state.value.copy(
+                            checkingYtDlp = false,
+                            checkingFFmpeg = false,
+                            downloadingYtDlp = false,
+                            downloadingFFmpeg = false,
+                            updatingYtdlp = false,
+                            updatingFFmpeg = false,
+                            initCompleted = event.success
+                        )
+                        viewModelScope.launch {
+                            // On first initialization, fetch supported sites list from GitHub and store in DB
+                            runCatching { supportedSitesRepository.initializeFromGitHubIfEmpty() }
+
+                            // Navigate to home only if requested (when app is already configured)
+                            if (navigateToHomeWhenDone) {
+                                navigator.navigateAndClearBackStack(Destination.MainNavigation.Home)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

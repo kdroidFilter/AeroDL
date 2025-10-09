@@ -1,6 +1,6 @@
 package io.github.kdroidfilter.ytdlp.core
 
-import java.util.concurrent.atomic.AtomicBoolean
+import kotlinx.coroutines.Job
 
 /**
  * Represents the various events that can be emitted during a download process.
@@ -30,19 +30,15 @@ sealed class Event {
 
 /**
  * A handle to a running download process, allowing for cancellation.
- * @property process The underlying Java [Process].
- * @property cancelled An atomic boolean to track the cancellation state.
+ * @property job The underlying coroutine [Job] controlling the download lifecycle.
  */
 data class Handle(
-    val process: Process,
-    val cancelled: AtomicBoolean
+    val job: Job
 ) {
     /**
-     * Cancels the running download process.
+     * Cancels the running download process by cancelling its coroutine job.
      */
     fun cancel() {
-        if (!cancelled.getAndSet(true)) {
-            process.destroy()
-        }
+        job.cancel()
     }
 }
