@@ -37,6 +37,7 @@ import io.github.kdroidfilter.ytdlpgui.features.onboarding.cookies.CookiesScreen
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.downloaddir.DownloadDirScreen
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.finish.FinishScreen
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.gnomefocus.GnomeFocusScreen
+import io.github.kdroidfilter.ytdlpgui.features.onboarding.autostart.AutostartScreen
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.nocheckcert.NoCheckCertScreen
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.welcome.WelcomeScreen
 import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsScreen
@@ -129,6 +130,9 @@ fun App() {
                 }
                 noAnimatedComposable<Destination.Onboarding.Clipboard> {
                     ClipboardScreen(viewModel = onboardingViewModel(navController, it))
+                }
+                noAnimatedComposable<Destination.Onboarding.Autostart> {
+                    AutostartScreen(viewModel = onboardingViewModel(navController, it))
                 }
                 noAnimatedComposable<Destination.Onboarding.Finish> {
                     FinishScreen(viewModel = onboardingViewModel(navController, it))

@@ -57,7 +57,7 @@ private fun OnboardingProgressFirstStepPreview() {
             OnboardingProgress(
                 step = OnboardingStep.Welcome,
                 currentStepIndex = 0,
-                totalSteps = 7
+                totalSteps = 8
             )
         }
     }
@@ -71,7 +71,7 @@ private fun OnboardingProgressMiddleStepPreview() {
             OnboardingProgress(
                 step = OnboardingStep.Cookies,
                 currentStepIndex = 3,
-                totalSteps = 7
+                totalSteps = 8
             )
         }
     }
@@ -91,7 +91,7 @@ private fun OnboardingProgressWithInitStateDownloadingPreview() {
                     initCompleted = false
                 ),
                 currentStepIndex = 0,
-                totalSteps = 7
+                totalSteps = 8
             )
         }
     }
@@ -106,7 +106,7 @@ private fun OnboardingProgressWithInitStateCompletedPreview() {
                 step = OnboardingStep.Welcome,
                 initState = InitState(initCompleted = true),
                 currentStepIndex = 0,
-                totalSteps = 7
+                totalSteps = 8
             )
         }
     }

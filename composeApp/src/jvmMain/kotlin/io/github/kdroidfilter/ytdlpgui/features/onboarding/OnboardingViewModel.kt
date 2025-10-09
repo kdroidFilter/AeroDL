@@ -7,10 +7,8 @@ import androidx.lifecycle.viewModelScope
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.kdroid.composetray.tray.api.TrayAppState
 import com.kdroid.composetray.tray.api.TrayWindowDismissMode
-import com.russhwolf.settings.Settings
 import io.github.kdroidfilter.platformtools.LinuxDesktopEnvironment
 import io.github.kdroidfilter.platformtools.detectLinuxDesktopEnvironment
-import io.github.kdroidfilter.ytdlpgui.core.config.SettingsKeys
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Navigator
 import io.github.kdroidfilter.ytdlpgui.core.platform.network.CertificateChecker
@@ -45,6 +43,7 @@ class OnboardingViewModel(
     init {
         // Start downloading yt-dlp and ffmpeg in background during onboarding
         initViewModel.startInitialization(navigateToHomeWhenDone = false)
+        viewModelScope.launch { settingsRepository.refreshAutoLaunchState() }
     }
 
     private val _currentStep = MutableStateFlow(OnboardingStep.Welcome)
@@ -57,6 +56,7 @@ class OnboardingViewModel(
     val parallelDownloads: StateFlow<Int> = settingsRepository.parallelDownloads
     val noCheckCertificate: StateFlow<Boolean> = settingsRepository.noCheckCertificate
     val clipboardMonitoringEnabled: StateFlow<Boolean> = settingsRepository.clipboardMonitoringEnabled
+    val autoLaunchEnabled: StateFlow<Boolean> = settingsRepository.autoLaunchEnabled
 
     private val _dependencyInfoBarDismissed = MutableStateFlow(false)
     val dependencyInfoBarDismissed: StateFlow<Boolean> = _dependencyInfoBarDismissed.asStateFlow()
@@ -74,6 +74,7 @@ class OnboardingViewModel(
                 add(OnboardingStep.GnomeFocus)
             }
             add(OnboardingStep.Clipboard)
+            add(OnboardingStep.Autostart)
             add(OnboardingStep.Finish)
         }
     }
@@ -95,6 +96,7 @@ class OnboardingViewModel(
             is OnboardingEvents.OnSetParallelDownloads -> handleSetParallelDownloads(event.count)
             is OnboardingEvents.OnSetNoCheckCertificate -> handleSetNoCheckCertificate(event.enabled)
             is OnboardingEvents.OnSetClipboardMonitoring -> handleSetClipboardMonitoring(event.enabled)
+            is OnboardingEvents.OnSetAutoLaunchEnabled -> handleSetAutoLaunchEnabled(event.enabled)
             is OnboardingEvents.OnDismissDependencyInfoBar -> handleDismissDependencyInfoBar()
         }
     }
@@ -116,7 +118,8 @@ class OnboardingViewModel(
             }
             OnboardingStep.NoCheckCert -> if (isGnome) OnboardingStep.GnomeFocus else OnboardingStep.Clipboard
             OnboardingStep.GnomeFocus -> OnboardingStep.Clipboard
-            OnboardingStep.Clipboard -> OnboardingStep.Finish
+            OnboardingStep.Clipboard -> OnboardingStep.Autostart
+            OnboardingStep.Autostart -> OnboardingStep.Finish
             OnboardingStep.Finish -> OnboardingStep.Finish
         }
 
@@ -143,7 +146,8 @@ class OnboardingViewModel(
                     if (shouldSkipNoCheckCert) OnboardingStep.Cookies else OnboardingStep.NoCheckCert
                 }
             }
-            OnboardingStep.Finish -> OnboardingStep.Clipboard
+            OnboardingStep.Autostart -> OnboardingStep.Clipboard
+            OnboardingStep.Finish -> OnboardingStep.Autostart
         }
 
         navigateToStep(previousStep)
@@ -200,6 +204,12 @@ class OnboardingViewModel(
         settingsRepository.setClipboardMonitoringEnabled(enabled)
     }
 
+    private fun handleSetAutoLaunchEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setAutoLaunchEnabled(enabled)
+        }
+    }
+
     private fun handleDismissDependencyInfoBar() {
         _dependencyInfoBarDismissed.value = true
     }
@@ -219,6 +229,7 @@ class OnboardingViewModel(
         OnboardingStep.NoCheckCert -> Destination.Onboarding.NoCheckCert
         OnboardingStep.GnomeFocus -> Destination.Onboarding.GnomeFocus
         OnboardingStep.Clipboard -> Destination.Onboarding.Clipboard
+        OnboardingStep.Autostart -> Destination.Onboarding.Autostart
         OnboardingStep.Finish -> Destination.Onboarding.Finish
     }
 }

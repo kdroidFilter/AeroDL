@@ -36,7 +36,7 @@ val appModule = module {
     single { DownloadHistoryRepository.defaultDatabase() }
     single { DownloadHistoryRepository(get()) }
     single { io.github.kdroidfilter.ytdlpgui.data.SupportedSitesRepository(get()) }
-    single { io.github.kdroidfilter.ytdlpgui.data.SettingsRepository(get(), get(), get()) }
+    single { io.github.kdroidfilter.ytdlpgui.data.SettingsRepository(get(), get(), get(), get()) }
 
     single { DownloadManager(get(), get(), get<DownloadHistoryRepository>(), get(), get()) }
     single { ClipboardMonitorManager(get(), get(), get(), get()) }
@@ -49,7 +49,7 @@ val appModule = module {
     viewModel { AboutViewModel(get(), get()) }
     viewModel { BulkDownloadViewModel(get()) }
     viewModel { DownloadViewModel(get(), get(), get<DownloadHistoryRepository>()) }
-    single { SettingsViewModel(get(), get(), get(), get<TrayAppState>(), get<AutoLaunch>()) }
+    single { SettingsViewModel(get(), get(), get<TrayAppState>()) }
     viewModel { SingleDownloadViewModel(get(), get(), get(), get()) }
     viewModel { OnboardingViewModel(get(), get(), get()) }
 

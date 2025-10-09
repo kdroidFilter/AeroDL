@@ -6,5 +6,6 @@ enum class OnboardingStep {
     NoCheckCert,
     GnomeFocus,
     Clipboard,
+    Autostart,
     Finish
 }

@@ -23,6 +23,7 @@ import com.kdroid.composetray.tray.api.TrayApp
 import com.kdroid.composetray.tray.api.TrayAppState
 import com.kdroid.composetray.tray.api.rememberTrayAppState
 import com.kdroid.composetray.utils.SingleInstanceManager
+import com.kdroid.composetray.utils.allowComposeNativeTrayLogging
 import com.kdroid.composetray.utils.isMenuBarInDarkMode
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.FluentTheme
@@ -70,6 +71,7 @@ import io.github.kdroidfilter.ytdlpgui.core.util.infoln
 
 @OptIn(ExperimentalTrayAppApi::class, ExperimentalFluentApi::class)
 fun main() = application {
+    allowComposeNativeTrayLogging = true
     val cleanInstall = System.getProperty("cleanInstall", "false").toBoolean()
 
     if (cleanInstall) { clearJavaTempDir() }

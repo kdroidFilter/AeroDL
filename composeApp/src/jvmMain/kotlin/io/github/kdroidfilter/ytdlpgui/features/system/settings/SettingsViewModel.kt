@@ -7,28 +7,21 @@ import androidx.lifecycle.viewModelScope
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.kdroid.composetray.tray.api.TrayAppState
 import com.kdroid.composetray.tray.api.TrayWindowDismissMode
-import com.russhwolf.settings.Settings
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Navigator
-import io.github.kdroidfilter.ytdlpgui.core.config.SettingsKeys
 import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
 import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
-import io.github.vinceglb.autolaunch.AutoLaunch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.io.File
 
 class SettingsViewModel(
     private val navigator: Navigator,
     private val settingsRepository: SettingsRepository,
-    private val settings: Settings,
     private val trayAppState: TrayAppState,
-    private val autoLaunch: AutoLaunch,
-    ) : ViewModel() {
+) : ViewModel() {
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
@@ -41,16 +34,11 @@ class SettingsViewModel(
     val downloadDirPath: StateFlow<String> = settingsRepository.downloadDirPath
     val clipboardMonitoring: StateFlow<Boolean> = settingsRepository.clipboardMonitoringEnabled
     val notifyOnComplete: StateFlow<Boolean> = settingsRepository.notifyOnComplete
-
-    private val _autoLaunchEnabled = MutableStateFlow(false)
-    val autoLaunchEnabled = _autoLaunchEnabled.asStateFlow()
+    val autoLaunchEnabled: StateFlow<Boolean> = settingsRepository.autoLaunchEnabled
 
     init {
         // Query system autostart state at startup asynchronously
-        viewModelScope.launch {
-            val enabled = runCatching { autoLaunch.isEnabled() }.getOrDefault(false)
-            _autoLaunchEnabled.value = enabled
-        }
+        viewModelScope.launch { settingsRepository.refreshAutoLaunchState() }
     }
 
     fun onEvents(event: SettingsEvents) {
@@ -58,11 +46,7 @@ class SettingsViewModel(
             SettingsEvents.Refresh -> {
                 settingsRepository.refresh()
                 // Refresh autostart status from system
-                viewModelScope.launch {
-                    val enabled = runCatching { autoLaunch.isEnabled() }.getOrElse { settings.getBoolean(SettingsKeys.AUTO_LAUNCH_ENABLED, false) }
-                    _autoLaunchEnabled.value = enabled
-                    settings.putBoolean(SettingsKeys.AUTO_LAUNCH_ENABLED, enabled)
-                }
+                viewModelScope.launch { settingsRepository.refreshAutoLaunchState() }
             }
             is SettingsEvents.SetNotifyOnComplete -> {
                 settingsRepository.setNotifyOnComplete(event.enabled)
@@ -86,14 +70,7 @@ class SettingsViewModel(
                 settingsRepository.setClipboardMonitoringEnabled(event.enabled)
             }
             is SettingsEvents.SetAutoLaunchEnabled -> {
-                _autoLaunchEnabled.value = event.enabled
-                settings.putBoolean(SettingsKeys.AUTO_LAUNCH_ENABLED, event.enabled)
-                viewModelScope.launch {
-                    runCatching { if (event.enabled) autoLaunch.enable() else autoLaunch.disable() }
-                    val confirmed = runCatching { autoLaunch.isEnabled() }.getOrDefault(event.enabled)
-                    _autoLaunchEnabled.value = confirmed
-                    settings.putBoolean(SettingsKeys.AUTO_LAUNCH_ENABLED, confirmed)
-                }
+                viewModelScope.launch { settingsRepository.setAutoLaunchEnabled(event.enabled) }
             }
             is SettingsEvents.PickDownloadDir -> {
                 viewModelScope.launch {

@@ -4,6 +4,7 @@ import com.russhwolf.settings.Settings
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlpgui.core.config.SettingsKeys
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.ClipboardMonitorManager
+import io.github.vinceglb.autolaunch.AutoLaunch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,6 +18,7 @@ class SettingsRepository(
     private val settings: Settings,
     private val ytDlpWrapper: YtDlpWrapper,
     private val clipboardMonitorManager: ClipboardMonitorManager,
+    private val autoLaunch: AutoLaunch,
 ) {
     // StateFlows for reactive UI
     private val _noCheckCertificate = MutableStateFlow(settings.getBoolean(SettingsKeys.NO_CHECK_CERTIFICATE, false))
@@ -39,6 +41,9 @@ class SettingsRepository(
 
     private val _notifyOnComplete = MutableStateFlow(settings.getBoolean(SettingsKeys.NOTIFY_ON_DOWNLOAD_COMPLETE, true))
     val notifyOnComplete: StateFlow<Boolean> = _notifyOnComplete.asStateFlow()
+
+    private val _autoLaunchEnabled = MutableStateFlow(settings.getBoolean(SettingsKeys.AUTO_LAUNCH_ENABLED, false))
+    val autoLaunchEnabled: StateFlow<Boolean> = _autoLaunchEnabled.asStateFlow()
 
     init {
         // Apply initial settings to dependencies
@@ -108,9 +113,42 @@ class SettingsRepository(
         _downloadDirPath.value = settings.getString(SettingsKeys.DOWNLOAD_DIR, "")
         _clipboardMonitoringEnabled.value = settings.getBoolean(SettingsKeys.CLIPBOARD_MONITORING_ENABLED, true)
         _notifyOnComplete.value = settings.getBoolean(SettingsKeys.NOTIFY_ON_DOWNLOAD_COMPLETE, true)
+        _autoLaunchEnabled.value = settings.getBoolean(SettingsKeys.AUTO_LAUNCH_ENABLED, false)
 
         applyToYtDlpWrapper()
         applyToClipboardMonitor()
+    }
+
+    suspend fun refreshAutoLaunchState() {
+        val current = _autoLaunchEnabled.value
+        val detected = try {
+            autoLaunch.isEnabled()
+        } catch (_: Exception) {
+            current
+        }
+        _autoLaunchEnabled.value = detected
+        settings.putBoolean(SettingsKeys.AUTO_LAUNCH_ENABLED, detected)
+    }
+
+    suspend fun setAutoLaunchEnabled(enabled: Boolean) {
+        _autoLaunchEnabled.value = enabled
+        settings.putBoolean(SettingsKeys.AUTO_LAUNCH_ENABLED, enabled)
+        try {
+            if (enabled) {
+                autoLaunch.enable()
+            } else {
+                autoLaunch.disable()
+            }
+        } catch (_: Exception) {
+            // Optimistic update; confirmation below reconciles state when possible.
+        }
+        val confirmed = try {
+            autoLaunch.isEnabled()
+        } catch (_: Exception) {
+            enabled
+        }
+        _autoLaunchEnabled.value = confirmed
+        settings.putBoolean(SettingsKeys.AUTO_LAUNCH_ENABLED, confirmed)
     }
 
     private fun applyToYtDlpWrapper() {

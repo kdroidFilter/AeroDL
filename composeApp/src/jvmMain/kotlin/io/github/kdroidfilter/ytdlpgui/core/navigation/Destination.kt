@@ -56,6 +56,9 @@ sealed interface Destination {
         data object Clipboard : Onboarding
 
         @Serializable
+        data object Autostart : Onboarding
+
+        @Serializable
         data object Finish : Onboarding
     }
 
