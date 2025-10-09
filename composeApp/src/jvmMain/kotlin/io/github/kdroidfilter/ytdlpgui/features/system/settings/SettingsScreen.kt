@@ -138,13 +138,13 @@ private fun CookiesFromBrowserSetting(
         heading = {
             Text(
                 stringResource(Res.string.settings_cookies_from_browser_title),
-                modifier = Modifier.fillMaxWidth(0.60f)
+                modifier = Modifier.fillMaxWidth(0.50f)
             )
         },
         caption = {
             Text(
                 stringResource(Res.string.settings_cookies_from_browser_label),
-                modifier = Modifier.fillMaxWidth(0.60f)
+                modifier = Modifier.fillMaxWidth(0.50f)
             )
         },
         icon = {

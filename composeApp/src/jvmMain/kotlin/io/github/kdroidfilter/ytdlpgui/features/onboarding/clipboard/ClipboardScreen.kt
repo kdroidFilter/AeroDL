@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -17,7 +18,8 @@ import androidx.compose.ui.unit.dp
 import io.github.composefluent.component.Icon
 import io.github.composefluent.component.Text
 import io.github.composefluent.icons.Icons
-import io.github.composefluent.icons.regular.Power
+import io.github.composefluent.icons.filled.Clipboard
+import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 import io.github.kdroidfilter.ytdlpgui.core.design.components.Switcher
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.HeaderRow
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.NavigationRow
@@ -34,7 +36,6 @@ import ytdlpgui.composeapp.generated.resources.common_disabled
 import ytdlpgui.composeapp.generated.resources.common_enabled
 import ytdlpgui.composeapp.generated.resources.settings_clipboard_monitoring_caption
 import ytdlpgui.composeapp.generated.resources.settings_clipboard_monitoring_title
-import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 
 @Composable
 fun ClipboardScreen(
@@ -60,7 +61,7 @@ fun ClipboardView(
     state: ClipboardState,
     onEvent: (OnboardingEvents) -> Unit,
     currentStep: OnboardingStep = OnboardingStep.Clipboard,
-    initState: io.github.kdroidfilter.ytdlpgui.features.init.InitState? = null,
+    initState: InitState? = null,
     totalSteps: Int? = null,
     currentStepIndex: Int? = null,
     dependencyInfoBarDismissed: Boolean = false,
@@ -72,18 +73,19 @@ fun ClipboardView(
             totalSteps = totalSteps,
             currentStepIndex = currentStepIndex
         )
-        Column(Modifier.weight(1f).fillMaxWidth()) {
+        Column(Modifier.weight(1f).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
             HeaderRow(
                 title = stringResource(Res.string.settings_clipboard_monitoring_title),
                 subtitle = stringResource(Res.string.settings_clipboard_monitoring_caption)
             )
+            Spacer(Modifier.height(12.dp))
+            Icon(Icons.Filled.Clipboard, null, modifier = Modifier.size(48.dp))
+            Spacer(Modifier.height(12.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Switcher(
                     checked = state.clipboardMonitoringEnabled,
                     onCheckStateChange = { onEvent(OnboardingEvents.OnSetClipboardMonitoring(it)) }
                 )
-                Spacer(Modifier.width(8.dp))
-                Icon(Icons.Regular.Power, null, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(8.dp))
                 val statusLabel = if (state.clipboardMonitoringEnabled) {
                     stringResource(Res.string.common_enabled)
