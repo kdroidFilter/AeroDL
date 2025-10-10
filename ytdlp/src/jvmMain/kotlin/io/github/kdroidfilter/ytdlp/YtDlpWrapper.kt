@@ -325,11 +325,33 @@ class YtDlpWrapper {
                     if (exitCode != 0) {
                         val lines = mutableListOf<String>().also { tail.drainTo(it) }
                         val diagnostic = NetAndArchive.diagnose(lines)
-                        val tailPreview = if (lines.isEmpty()) "(no output captured)" else lines.takeLast(min(15, lines.size)).joinToString("\n")
-                        val errorMsg = "yt-dlp failed (exit $exitCode). ${diagnostic ?: ""}".trim() + "\n--- Last output ---\n$tailPreview"
+
+                        // Extract all ERROR lines
+                        val errorLines = lines.filter { it.trim().startsWith("ERROR:", ignoreCase = true) }
+
+                        // Build error message
+                        val errorMsg = buildString {
+                            append("yt-dlp failed (exit $exitCode). ${diagnostic ?: ""}".trim())
+
+                            if (errorLines.isNotEmpty()) {
+                                append("\n\n")
+                                append("Errors:\n")
+                                errorLines.forEach { errorLine ->
+                                    append("• ${errorLine.removePrefix("ERROR:").trim()}\n")
+                                }
+                            }
+
+                            append("\n--- Last output ---\n")
+                            val tailPreview = if (lines.isEmpty()) "(no output captured)" else lines.takeLast(min(15, lines.size)).joinToString("\n")
+                            append(tailPreview)
+                        }
+
                         errorln { "[YtDlpWrapper] Download failed with exit code $exitCode" }
                         errorln { "[YtDlpWrapper] Diagnostic: ${diagnostic ?: "none"}" }
-                        errorln { "[YtDlpWrapper] Last output:\n$tailPreview" }
+                        if (errorLines.isNotEmpty()) {
+                            errorln { "[YtDlpWrapper] ERROR lines found: ${errorLines.joinToString("; ")}" }
+                        }
+                        errorln { "[YtDlpWrapper] Last output:\n${lines.takeLast(min(15, lines.size)).joinToString("\n")}" }
                         onEvent(Event.Error(errorMsg))
                     } else {
                         infoln { "[YtDlpWrapper] Download completed successfully" }

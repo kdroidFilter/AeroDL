@@ -190,7 +190,14 @@ class DownloadManager(
             is Event.Completed -> {
                 val status = if (event.success) DownloadItem.Status.Completed else DownloadItem.Status.Failed
                 infoln { "[DownloadManager] Download completed for item $id, success=${event.success}" }
-                update(id) { it.copy(status = status, message = null) }
+                // Only clear message on success - preserve error message on failure
+                update(id) {
+                    if (event.success) {
+                        it.copy(status = status, message = null)
+                    } else {
+                        it.copy(status = status)
+                    }
+                }
 
                 if (event.success) {
                     infoln { "[DownloadManager] Reading final path from sink: ${finalPathSink.absolutePath}" }
@@ -371,7 +378,15 @@ class DownloadManager(
     }
 
     private fun update(id: String, transform: (DownloadItem) -> DownloadItem) {
-        _items.value = _items.value.map { if (it.id == id) transform(it) else it }
+        _items.value = _items.value.map {
+            if (it.id == id) {
+                val updated = transform(it)
+                if (updated.status == DownloadItem.Status.Failed) {
+                    infoln { "[DownloadManager] Updating item $id to Failed status with message: ${updated.message}" }
+                }
+                updated
+            } else it
+        }
     }
 
     private  fun sanitizeFilename(name: String): String = name.replace(Regex("[\\\\/:*?\"<>|]"), "_")

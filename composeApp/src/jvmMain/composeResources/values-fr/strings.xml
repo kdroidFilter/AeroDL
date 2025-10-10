@@ -175,7 +175,16 @@
     <string name="download_completed_title">Téléchargement terminé</string>
     <string name="download_completed_message">%1$s a été téléchargé</string>
 
-    <!-- Indicateur d’indisponibilité du dossier -->
+    <!-- Indicateur d'indisponibilité du dossier -->
     <string name="directory_unavailable">Indisponible</string>
-    <string name="tooltip_directory_unavailable">Le fichier/dossier a été déplacé ou supprimé et n’est plus disponible</string>
+    <string name="tooltip_directory_unavailable">Le fichier/dossier a été déplacé ou supprimé et n'est plus disponible</string>
+
+    <!-- Dialogue d'erreur de téléchargement -->
+    <string name="download_error_title">Erreur de téléchargement</string>
+    <string name="download_failed_for">Le téléchargement a échoué pour :</string>
+    <string name="error_details">Détails de l'erreur :</string>
+    <string name="unknown_error">Erreur inconnue</string>
+    <string name="ok">OK</string>
+    <string name="view_error_details">Voir les détails de l'erreur</string>
+    <string name="copy_error">Copier l'erreur dans le presse-papiers</string>
 </resources>

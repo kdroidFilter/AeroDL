@@ -177,4 +177,13 @@
     <!-- חיווי: תיקייה אינה זמינה -->
     <string name="directory_unavailable">לא זמין</string>
     <string name="tooltip_directory_unavailable">הקובץ/התיקייה הועברו או נמחקו ואינם זמינים עוד</string>
+
+    <!-- דיאלוג שגיאת הורדה -->
+    <string name="download_error_title">שגיאת הורדה</string>
+    <string name="download_failed_for">ההורדה נכשלה עבור:</string>
+    <string name="error_details">פרטי השגיאה:</string>
+    <string name="unknown_error">שגיאה לא ידועה</string>
+    <string name="ok">אישור</string>
+    <string name="view_error_details">הצג פרטי שגיאה</string>
+    <string name="copy_error">העתק שגיאה ללוח</string>
 </resources>

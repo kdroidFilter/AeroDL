@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Navigator
 import io.github.kdroidfilter.ytdlpgui.core.platform.filesystem.FileExplorerUtils
+import io.github.kdroidfilter.ytdlpgui.core.util.infoln
+import io.github.kdroidfilter.ytdlpgui.core.util.warnln
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,6 +21,9 @@ class DownloadViewModel(
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
+
+    private val _errorDialogItem = MutableStateFlow<DownloadManager.DownloadItem?>(null)
+    val errorDialogItem = _errorDialogItem.asStateFlow()
 
     val items: StateFlow<List<DownloadManager.DownloadItem>> = downloadManager.items
     val history: StateFlow<List<DownloadHistoryRepository.HistoryItem>> = historyRepository.history
@@ -37,6 +42,19 @@ class DownloadViewModel(
             DownloadEvents.ClearHistory -> historyRepository.clear()
             is DownloadEvents.DeleteHistory -> historyRepository.delete(event.id)
             is DownloadEvents.OpenDirectory -> openDirectoryFor(event.id)
+            is DownloadEvents.ShowErrorDialog -> {
+                val item = items.value.firstOrNull { it.id == event.id }
+                if (item != null) {
+                    infoln { "[DownloadViewModel] Showing error dialog for item ${item.id}" }
+                    infoln { "[DownloadViewModel] Error message: ${item.message ?: "null"}" }
+                } else {
+                    warnln { "[DownloadViewModel] Item not found for id ${event.id}" }
+                }
+                _errorDialogItem.value = item
+            }
+            DownloadEvents.DismissErrorDialog -> {
+                _errorDialogItem.value = null
+            }
         }
     }
 
