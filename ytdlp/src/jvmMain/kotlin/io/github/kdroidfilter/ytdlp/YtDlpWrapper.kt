@@ -77,6 +77,8 @@ class YtDlpWrapper {
 
     private val httpClient = KtorConfig.createHttpClient()
     private val ytdlpFetcher = GitHubReleaseFetcher(owner = "yt-dlp", repo = "yt-dlp", httpClient = httpClient)
+    private val ffmpegFetcher = GitHubReleaseFetcher(owner = "yt-dlp", repo = "FFmpeg-Builds", httpClient = httpClient)
+    private val ffmpegMacOsFetcher = GitHubReleaseFetcher(owner = "eugeneware", repo = "ffmpeg-static", httpClient = httpClient)
 
     private data class ProcessResult(val exitCode: Int, val stdout: List<String>, val stderr: String)
 
@@ -224,8 +226,9 @@ class YtDlpWrapper {
             return true
         }
         if (getOperatingSystem() in listOf(OperatingSystem.WINDOWS, OperatingSystem.LINUX, OperatingSystem.MACOS)) {
-            val asset = PlatformUtils.getFfmpegAssetNameForSystem() ?: return false
-            val result = PlatformUtils.downloadAndInstallFfmpeg(asset, forceDownload, onProgress)
+            val assetPattern = PlatformUtils.getFfmpegAssetPatternForSystem() ?: return false
+            val fetcher = if (getOperatingSystem() == OperatingSystem.MACOS) ffmpegMacOsFetcher else ffmpegFetcher
+            val result = PlatformUtils.downloadAndInstallFfmpeg(assetPattern, forceDownload, fetcher, onProgress)
             if (result != null) ffmpegPath = result
             return result != null
         }
