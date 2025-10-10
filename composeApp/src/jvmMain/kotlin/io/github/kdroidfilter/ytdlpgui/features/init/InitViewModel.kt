@@ -3,6 +3,7 @@ package io.github.kdroidfilter.ytdlpgui.features.init
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.russhwolf.settings.Settings
+import io.github.kdroidfilter.network.KtorConfig
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.ClipboardMonitorManager
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
@@ -14,6 +15,7 @@ import io.github.kdroidfilter.ytdlpgui.core.config.SettingsKeys
 import io.github.kdroidfilter.platformtools.getAppVersion
 import io.github.kdroidfilter.platformtools.getOperatingSystem
 import io.github.kdroidfilter.platformtools.OperatingSystem
+import io.github.kdroidfilter.platformtools.releasefetcher.config.client
 import io.github.kdroidfilter.platformtools.releasefetcher.github.GitHubReleaseFetcher
 import io.github.kdroidfilter.platformtools.releasefetcher.github.model.Asset
 
@@ -57,7 +59,8 @@ class InitViewModel(
             val currentVersion = getAppVersion()
             val fetcher = GitHubReleaseFetcher(
                 owner = "kdroidFilter",
-                repo = "AeroDl"
+                repo = "AeroDl",
+                KtorConfig.createHttpClient()
             )
 
             val latestRelease = fetcher.getLatestRelease() ?: return@runCatching
