@@ -17,6 +17,9 @@ import io.github.kdroidfilter.ytdlpgui.core.config.SettingsKeys
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.platform.filesystem.FileExplorerUtils
 import io.github.kdroidfilter.ytdlpgui.core.platform.notifications.NotificationThumbUtils
+import io.github.kdroidfilter.ytdlpgui.core.util.errorln
+import io.github.kdroidfilter.ytdlpgui.core.util.infoln
+import io.github.kdroidfilter.ytdlpgui.core.util.warnln
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -173,6 +176,7 @@ class DownloadManager(
     ): (Event) -> Unit = { event ->
         when (event) {
             is Event.Started -> {
+                infoln { "[DownloadManager] Download started for item $id" }
                 update(id) { it.copy(status = DownloadItem.Status.Running, message = null) }
             }
 
@@ -185,12 +189,27 @@ class DownloadManager(
 
             is Event.Completed -> {
                 val status = if (event.success) DownloadItem.Status.Completed else DownloadItem.Status.Failed
-                update(id) { it.copy(status = status, message = null) }
+                infoln { "[DownloadManager] Download completed for item $id, success=${event.success}" }
+                // Only clear message on success - preserve error message on failure
+                update(id) {
+                    if (event.success) {
+                        it.copy(status = status, message = null)
+                    } else {
+                        it.copy(status = status)
+                    }
+                }
 
                 if (event.success) {
+                    infoln { "[DownloadManager] Reading final path from sink: ${finalPathSink.absolutePath}" }
                     val absolutePath =
                         readFinalPathFromSink(finalPathSink)
                             ?: computeAbsoluteFromFallbacks(item, getOutputPath())
+
+                    if (absolutePath != null) {
+                        infoln { "[DownloadManager] Final output path: $absolutePath" }
+                    } else {
+                        warnln { "[DownloadManager] Could not determine final output path for item $id" }
+                    }
 
                     saveToHistory(id, item, absolutePath)
 
@@ -208,18 +227,22 @@ class DownloadManager(
             }
 
             is Event.Error -> {
+                errorln { "[DownloadManager] Download error for item $id: ${event.message}" }
+                event.cause?.let { errorln { "[DownloadManager] Error cause: ${it.message}" } }
                 update(id) { it.copy(status = DownloadItem.Status.Failed, message = event.message) }
                 runCatching { if (finalPathSink.exists()) finalPathSink.delete() }
                 maybeStartPending()
             }
 
             is Event.Cancelled -> {
+                infoln { "[DownloadManager] Download cancelled for item $id" }
                 update(id) { it.copy(status = DownloadItem.Status.Cancelled, message = null) }
                 runCatching { if (finalPathSink.exists()) finalPathSink.delete() }
                 maybeStartPending()
             }
 
             is Event.NetworkProblem -> {
+                errorln { "[DownloadManager] Network problem for item $id: ${event.detail}" }
                 update(id) { it.copy(status = DownloadItem.Status.Failed, message = event.detail) }
                 runCatching { if (finalPathSink.exists()) finalPathSink.delete() }
                 maybeStartPending()
@@ -282,20 +305,29 @@ class DownloadManager(
             onEvent = onEvent
         )
 
-    private fun downloadVideoWithSubtitles(item: DownloadItem, onEvent: (Event) -> Unit): Handle =
-        ytDlpWrapper.downloadMp4At(
+    private fun downloadVideoWithSubtitles(item: DownloadItem, onEvent: (Event) -> Unit): Handle {
+        infoln { "[DownloadManager] Initiating video download with subtitles for: ${item.url}" }
+        infoln { "[DownloadManager] Requested subtitle languages: ${item.subtitleLanguages?.joinToString(",") ?: "none"}" }
+        infoln { "[DownloadManager] Preset: ${item.preset?.height}p" }
+
+        val subtitleOptions = SubtitleOptions(
+            languages = item.subtitleLanguages ?: emptyList(),
+            writeAutoSubtitles = true,
+            embedSubtitles = true,
+            writeSubtitles = false,
+            subFormat = "srt"
+        )
+
+        infoln { "[DownloadManager] SubtitleOptions: embed=${subtitleOptions.embedSubtitles}, writeAuto=${subtitleOptions.writeAutoSubtitles}, write=${subtitleOptions.writeSubtitles}" }
+
+        return ytDlpWrapper.downloadMp4At(
             url = item.url,
             preset = item.preset ?: YtDlpWrapper.Preset.P720,
             outputTemplate = buildOutputTemplate(item.preset),
-            subtitles = SubtitleOptions(
-                languages = item.subtitleLanguages ?: emptyList(),
-                writeAutoSubtitles = true,
-                embedSubtitles = true,
-                writeSubtitles = false,
-                subFormat = "srt"
-            ),
+            subtitles = subtitleOptions,
             onEvent = onEvent
         )
+    }
 
     private fun buildOutputTemplate(preset: YtDlpWrapper.Preset?): String {
         val includePreset = settings.getBoolean(SettingsKeys.INCLUDE_PRESET_IN_FILENAME, true)
@@ -346,7 +378,15 @@ class DownloadManager(
     }
 
     private fun update(id: String, transform: (DownloadItem) -> DownloadItem) {
-        _items.value = _items.value.map { if (it.id == id) transform(it) else it }
+        _items.value = _items.value.map {
+            if (it.id == id) {
+                val updated = transform(it)
+                if (updated.status == DownloadItem.Status.Failed) {
+                    infoln { "[DownloadManager] Updating item $id to Failed status with message: ${updated.message}" }
+                }
+                updated
+            } else it
+        }
     }
 
     private  fun sanitizeFilename(name: String): String = name.replace(Regex("[\\\\/:*?\"<>|]"), "_")

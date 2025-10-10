@@ -46,6 +46,11 @@
     <!-- Error messages -->
     <string name="error_occurred">An error occurred</string>
 
+    <!-- Update notification -->
+    <string name="update_available">New version available: %1$s</string>
+    <string name="download_update">Download</string>
+    <string name="ignore_update">Ignore</string>
+
     <!-- Placeholder screen titles -->
     <string name="about_screen_title">About Screen</string>
     <string name="bulk_download_screen_title">Bulk Download Screen</string>
@@ -178,4 +183,13 @@
     <!-- Directory unavailable notice -->
     <string name="directory_unavailable">Not available</string>
     <string name="tooltip_directory_unavailable">This file/folder was moved or deleted and is no longer available</string>
+
+    <!-- Download error dialog -->
+    <string name="download_error_title">Download Error</string>
+    <string name="download_failed_for">Download failed for:</string>
+    <string name="error_details">Error details:</string>
+    <string name="unknown_error">Unknown error</string>
+    <string name="ok">OK</string>
+    <string name="view_error_details">View error details</string>
+    <string name="copy_error">Copy error to clipboard</string>
 </resources>

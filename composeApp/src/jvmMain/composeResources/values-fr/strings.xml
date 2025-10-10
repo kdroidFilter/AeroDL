@@ -45,7 +45,12 @@
     <string name="dependency_ffmpeg_tooltip">FFmpeg est un framework multimédia utilisé pour convertir et traiter les fichiers audio/vidéo. Il garantit que vos téléchargements sont dans le format souhaité.</string>
 
     <!-- Messages d'erreur -->
-    <string name="error_occurred">Une erreur s’est produite</string>
+    <string name="error_occurred">Une erreur s'est produite</string>
+
+    <!-- Notification de mise à jour -->
+    <string name="update_available">Nouvelle version disponible : %1$s</string>
+    <string name="download_update">Télécharger</string>
+    <string name="ignore_update">Ignorer</string>
 
     <!-- Titres d’écran temporaires -->
     <string name="about_screen_title">Écran À propos</string>
@@ -175,7 +180,16 @@
     <string name="download_completed_title">Téléchargement terminé</string>
     <string name="download_completed_message">%1$s a été téléchargé</string>
 
-    <!-- Indicateur d’indisponibilité du dossier -->
+    <!-- Indicateur d'indisponibilité du dossier -->
     <string name="directory_unavailable">Indisponible</string>
-    <string name="tooltip_directory_unavailable">Le fichier/dossier a été déplacé ou supprimé et n’est plus disponible</string>
+    <string name="tooltip_directory_unavailable">Le fichier/dossier a été déplacé ou supprimé et n'est plus disponible</string>
+
+    <!-- Dialogue d'erreur de téléchargement -->
+    <string name="download_error_title">Erreur de téléchargement</string>
+    <string name="download_failed_for">Le téléchargement a échoué pour :</string>
+    <string name="error_details">Détails de l'erreur :</string>
+    <string name="unknown_error">Erreur inconnue</string>
+    <string name="ok">OK</string>
+    <string name="view_error_details">Voir les détails de l'erreur</string>
+    <string name="copy_error">Copier l'erreur dans le presse-papiers</string>
 </resources>

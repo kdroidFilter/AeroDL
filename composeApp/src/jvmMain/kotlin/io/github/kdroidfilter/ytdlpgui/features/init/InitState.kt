@@ -19,6 +19,11 @@ data class InitState(
     val updatingFFmpeg: Boolean = false,
 
     val initCompleted: Boolean = false,
+
+    // Update check
+    val updateAvailable: Boolean = false,
+    val latestVersion: String? = null,
+    val downloadUrl: String? = null,
 ) {
     companion object {
         // Preview States

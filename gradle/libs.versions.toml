@@ -22,7 +22,7 @@ composenativetray = "1.0.4"
 
 # Network & Tools
 ktor = "3.3.0"
-platformtools = "0.7.2"
+platformtools = "0.7.3"
 metro = "0.6.6"
 jvmNativeTrustedRoots = "1.1.7"
 
