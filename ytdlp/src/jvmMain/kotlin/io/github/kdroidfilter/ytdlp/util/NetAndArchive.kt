@@ -145,9 +145,12 @@ object NetAndArchive {
      * Add subtitle-related arguments to the command
      */
     private fun handleSubtitleOptions(cmd: MutableList<String>, subOpts: SubtitleOptions) {
+        infoln { "[SubtitleOptions] Processing subtitle configuration: languages=${subOpts.languages}, allSubtitles=${subOpts.allSubtitles}, embed=${subOpts.embedSubtitles}, write=${subOpts.writeSubtitles}, writeAuto=${subOpts.writeAutoSubtitles}" }
+
         when {
             // Download all subtitles
             subOpts.allSubtitles -> {
+                infoln { "[SubtitleOptions] Requesting all available subtitles" }
                 if (subOpts.writeSubtitles || !subOpts.embedSubtitles) {
                     cmd.add("--all-subs")
                 } else {
@@ -155,22 +158,27 @@ object NetAndArchive {
                     cmd.add("--all-subs")
                 }
                 if (subOpts.writeAutoSubtitles) {
+                    infoln { "[SubtitleOptions] Including auto-generated subtitles" }
                     cmd.add("--write-auto-subs")
                 }
             }
             // Download specific languages
             subOpts.languages.isNotEmpty() -> {
+                infoln { "[SubtitleOptions] Requesting specific subtitle languages: ${subOpts.languages.joinToString(",")}" }
                 // Only add --write-subs if we want to keep separate files
                 if (subOpts.writeSubtitles || !subOpts.embedSubtitles) {
                     cmd.add("--write-subs")
+                    infoln { "[SubtitleOptions] Added --write-subs flag" }
                 }
                 cmd.addAll(listOf("--sub-langs", subOpts.languages.joinToString(",")))
                 if (subOpts.writeAutoSubtitles) {
+                    infoln { "[SubtitleOptions] Including auto-generated subtitles for specified languages" }
                     cmd.add("--write-auto-subs")
                 }
             }
             // Only auto-subs requested without specific languages
             subOpts.writeAutoSubtitles -> {
+                infoln { "[SubtitleOptions] Requesting auto-generated subtitles only" }
                 if (subOpts.writeSubtitles || !subOpts.embedSubtitles) {
                     cmd.add("--write-auto-subs")
                 }
@@ -179,16 +187,19 @@ object NetAndArchive {
 
         // Embed subtitles in the video file (requires ffmpeg)
         if (subOpts.embedSubtitles) {
+            infoln { "[SubtitleOptions] Embedding subtitles into video file (requires ffmpeg)" }
             cmd.add("--embed-subs")
         }
 
         // Specify subtitle format preference
         subOpts.subFormat?.let {
+            infoln { "[SubtitleOptions] Subtitle format preference: $it" }
             cmd.addAll(listOf("--sub-format", it))
         }
 
         // Convert subtitles to a specific format after download
         subOpts.convertSubtitles?.let {
+            infoln { "[SubtitleOptions] Will convert subtitles to: $it" }
             cmd.addAll(listOf("--convert-subs", it))
         }
     }

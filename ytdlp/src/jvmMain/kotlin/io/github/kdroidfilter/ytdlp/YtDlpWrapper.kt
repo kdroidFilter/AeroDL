@@ -10,6 +10,8 @@ import io.github.kdroidfilter.ytdlp.model.VideoInfo
 import io.github.kdroidfilter.ytdlp.util.NetAndArchive
 import io.github.kdroidfilter.ytdlp.util.PlatformUtils
 import io.github.kdroidfilter.ytdlp.util.errorln
+import io.github.kdroidfilter.ytdlp.util.infoln
+import io.github.kdroidfilter.ytdlp.util.debugln
 import kotlinx.coroutines.*
 import java.io.File
 import java.nio.charset.StandardCharsets
@@ -248,29 +250,48 @@ class YtDlpWrapper {
 
     fun download(url: String, options: Options = Options(), onEvent: (Event) -> Unit): Handle {
         val job = scope.launch {
+            infoln { "[YtDlpWrapper] Starting download for URL: $url" }
             if (!isAvailable()) {
-                onEvent(Event.Error("yt-dlp is not available. Please call initialize() first."))
+                val error = "yt-dlp is not available. Please call initialize() first."
+                errorln { "[YtDlpWrapper] $error" }
+                onEvent(Event.Error(error))
                 return@launch
             }
 
+            infoln { "[YtDlpWrapper] Checking network connectivity..." }
             checkNetwork(url, 5000, 5000).getOrElse {
-                onEvent(Event.NetworkProblem(it.message ?: "Network unavailable"))
+                val networkError = it.message ?: "Network unavailable"
+                errorln { "[YtDlpWrapper] Network pre-check failed: $networkError" }
+                onEvent(Event.NetworkProblem(networkError))
                 onEvent(Event.Error("Network pre-check failed."))
                 return@launch
             }
+            infoln { "[YtDlpWrapper] Network check passed" }
 
             val finalOptions = options.copy(
                 noCheckCertificate = if (options.noCheckCertificate) true else this@YtDlpWrapper.noCheckCertificate,
                 cookiesFromBrowser = options.cookiesFromBrowser ?: this@YtDlpWrapper.cookiesFromBrowser
             )
+
+            options.subtitles?.let { subOpts ->
+                infoln { "[YtDlpWrapper] Subtitle options provided: languages=${subOpts.languages}, embed=${subOpts.embedSubtitles}, writeAuto=${subOpts.writeAutoSubtitles}" }
+            }
+
             val cmd = NetAndArchive.buildCommand(ytDlpPath, ffmpegPath, url, finalOptions, downloadDir)
+            infoln { "[YtDlpWrapper] Built command with ${cmd.size} arguments" }
+            debugln { "[YtDlpWrapper] Full command: ${cmd.joinToString(" ")}" }
+
             val process: Process = try {
                 ProcessBuilder(cmd).directory(downloadDir).redirectErrorStream(true).start()
             } catch (t: Throwable) {
-                onEvent(Event.Error("Failed to start the yt-dlp process.", t))
+                val error = "Failed to start the yt-dlp process: ${t.message}"
+                errorln { "[YtDlpWrapper] $error" }
+                errorln { "[YtDlpWrapper] Stack trace: ${t.stackTraceToString()}" }
+                onEvent(Event.Error(error, t))
                 return@launch
             }
 
+            infoln { "[YtDlpWrapper] Process started successfully" }
             onEvent(Event.Started)
             val tail = ArrayBlockingQueue<String>(120)
 
@@ -290,7 +311,10 @@ class YtDlpWrapper {
                             }
                         } catch (e: Exception) {
                             if (isActive) {
-                                onEvent(Event.Error("I/O error while reading yt-dlp output", e))
+                                val error = "I/O error while reading yt-dlp output: ${e.message}"
+                                errorln { "[YtDlpWrapper] $error" }
+                                errorln { "[YtDlpWrapper] Stack trace: ${e.stackTraceToString()}" }
+                                onEvent(Event.Error(error, e))
                             }
                         }
                     }
@@ -302,11 +326,13 @@ class YtDlpWrapper {
                         val lines = mutableListOf<String>().also { tail.drainTo(it) }
                         val diagnostic = NetAndArchive.diagnose(lines)
                         val tailPreview = if (lines.isEmpty()) "(no output captured)" else lines.takeLast(min(15, lines.size)).joinToString("\n")
-                        onEvent(
-                            Event.Error(
-                                "yt-dlp failed (exit $exitCode). ${diagnostic ?: ""}".trim() + "\n--- Last output ---\n$tailPreview"
-                            )
-                        )
+                        val errorMsg = "yt-dlp failed (exit $exitCode). ${diagnostic ?: ""}".trim() + "\n--- Last output ---\n$tailPreview"
+                        errorln { "[YtDlpWrapper] Download failed with exit code $exitCode" }
+                        errorln { "[YtDlpWrapper] Diagnostic: ${diagnostic ?: "none"}" }
+                        errorln { "[YtDlpWrapper] Last output:\n$tailPreview" }
+                        onEvent(Event.Error(errorMsg))
+                    } else {
+                        infoln { "[YtDlpWrapper] Download completed successfully" }
                     }
                     onEvent(Event.Completed(exitCode, exitCode == 0))
                 }

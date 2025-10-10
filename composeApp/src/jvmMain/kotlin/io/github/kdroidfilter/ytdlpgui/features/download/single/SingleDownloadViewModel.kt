@@ -81,23 +81,29 @@ class SingleDownloadViewModel(
         when (event) {
             SingleDownloadEvents.Refresh -> { /* TODO */ }
             is SingleDownloadEvents.SelectPreset -> {
+                infoln { "[SingleDownloadViewModel] Preset selected: ${event.preset.height}p" }
                 _selectedPreset.value = event.preset
             }
             is SingleDownloadEvents.ToggleSubtitle -> {
                 val current = _selectedSubtitles.value
                 _selectedSubtitles.value = if (current.contains(event.language)) {
+                    infoln { "[SingleDownloadViewModel] Subtitle deselected: ${event.language}" }
                     current.filterNot { it == event.language }
                 } else {
+                    infoln { "[SingleDownloadViewModel] Subtitle selected: ${event.language}" }
                     current + event.language
                 }
+                infoln { "[SingleDownloadViewModel] Current selected subtitles: ${_selectedSubtitles.value.joinToString(",")}" }
             }
             SingleDownloadEvents.ClearSubtitles -> {
+                infoln { "[SingleDownloadViewModel] Clearing all subtitle selections" }
                 _selectedSubtitles.value = emptyList()
             }
             SingleDownloadEvents.StartDownload -> {
                 val preset = selectedPreset.value
                 val subtitles = selectedSubtitles.value
                 if (subtitles.isNotEmpty()) {
+                    infoln { "[SingleDownloadViewModel] Starting download with subtitles: ${subtitles.joinToString(",")}, preset: ${preset?.height}p" }
                     downloadManager.startWithSubtitles(
                         url = videoUrl,
                         videoInfo = videoInfo.value,
@@ -105,6 +111,7 @@ class SingleDownloadViewModel(
                         languages = subtitles
                     )
                 } else {
+                    infoln { "[SingleDownloadViewModel] Starting download without subtitles, preset: ${preset?.height}p" }
                     downloadManager.start(videoUrl, videoInfo.value, preset)
                 }
                 viewModelScope.launch {
@@ -112,6 +119,7 @@ class SingleDownloadViewModel(
                 }
             }
             SingleDownloadEvents.StartAudioDownload -> {
+                infoln { "[SingleDownloadViewModel] Starting audio download" }
                 downloadManager.startAudio(videoUrl, videoInfo.value)
                 viewModelScope.launch {
                     navigator.navigateAndClearBackStack(Destination.MainNavigation.Downloader)
