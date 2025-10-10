@@ -97,6 +97,12 @@ compose.desktop {
     application {
         mainClass = "io.github.kdroidfilter.ytdlpgui.MainKt"
 
+        val cleanInstall = project.findProperty("cleanInstall")?.toString()?.toBoolean() ?: false
+        jvmArgs += listOf(
+            "-DcleanInstall=$cleanInstall"
+        )
+
+
         nativeDistributions {
             vendor = "KDroidFilter"
             targetFormats(TargetFormat.Pkg, TargetFormat.Msi, TargetFormat.Deb)
@@ -109,6 +115,7 @@ compose.desktop {
                 menuGroup = "start-menu-group"
                 iconFile.set(project.file("icons/logo.ico"))
                 shortcut = true
+                upgradeUuid = "ada57c09-11e1-4d56-9d5d-0c480f6968ec"
             }
             macOS {
                 bundleID = "io.github.kdroidfilter.ytdlpgui"
@@ -117,6 +124,12 @@ compose.desktop {
             }
             linux {
                 iconFile.set(project.file("icons/logo.png"))
+            }
+            buildTypes.release.proguard {
+                isEnabled = true
+                obfuscate.set(false)
+                optimize.set(true)
+                configurationFiles.from(project.file("proguard-rules.pro"))
             }
         }
     }
