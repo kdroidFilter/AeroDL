@@ -71,11 +71,14 @@ class InitViewModel(
                 // Determine the appropriate download URL based on OS
                 val downloadUrl = getDownloadUrlForPlatform(latestRelease.assets)
 
-                _state.value = _state.value.copy(
-                    updateAvailable = true,
-                    latestVersion = latestVersion,
-                    downloadUrl = downloadUrl
-                )
+                // Only show update if there's an asset available for this platform
+                if (downloadUrl != null) {
+                    _state.value = _state.value.copy(
+                        updateAvailable = true,
+                        latestVersion = latestVersion,
+                        downloadUrl = downloadUrl
+                    )
+                }
             }
         }
     }
