@@ -425,12 +425,16 @@ class YtDlpWrapper {
         P144(144),   // YouTube very low quality
         P226(226),   // Common in HLS/m3u8 streams
         P240(240),   // YouTube low quality
+        P270(270),   // Common in some streams
         P340(340),   // Common in HLS/m3u8 streams
         P360(360),   // Standard definition
+        P406(406),   // Common in some streams
         P454(454),   // Common in HLS/m3u8 streams
         P480(480),   // Standard definition
+        P540(540),   // Common in some streams
         P680(680),   // Common in HLS/m3u8 streams
         P720(720),   // HD
+        P810(810),   // Common in some streams
         P1020(1020), // Common in HLS/m3u8 streams
         P1080(1080), // Full HD
         P1360(1360), // Common in HLS/m3u8 streams
