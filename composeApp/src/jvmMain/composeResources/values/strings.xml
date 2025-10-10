@@ -46,6 +46,11 @@
     <!-- Error messages -->
     <string name="error_occurred">An error occurred</string>
 
+    <!-- Update notification -->
+    <string name="update_available">New version available: %1$s</string>
+    <string name="download_update">Download</string>
+    <string name="ignore_update">Ignore</string>
+
     <!-- Placeholder screen titles -->
     <string name="about_screen_title">About Screen</string>
     <string name="bulk_download_screen_title">Bulk Download Screen</string>

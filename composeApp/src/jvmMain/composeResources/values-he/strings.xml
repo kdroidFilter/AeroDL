@@ -46,6 +46,11 @@
     <!-- הודעות שגיאה -->
     <string name="error_occurred">אירעה שגיאה</string>
 
+    <!-- הודעת עדכון -->
+    <string name="update_available">גרסה חדשה זמינה: %1$s</string>
+    <string name="download_update">הורד</string>
+    <string name="ignore_update">התעלם</string>
+
     <!-- כותרות מסך זמניות -->
     <string name="about_screen_title">מסך אודות</string>
     <string name="bulk_download_screen_title">מסך הורדה מרובה</string>

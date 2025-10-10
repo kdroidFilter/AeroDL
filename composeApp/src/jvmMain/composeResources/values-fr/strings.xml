@@ -45,7 +45,12 @@
     <string name="dependency_ffmpeg_tooltip">FFmpeg est un framework multimédia utilisé pour convertir et traiter les fichiers audio/vidéo. Il garantit que vos téléchargements sont dans le format souhaité.</string>
 
     <!-- Messages d'erreur -->
-    <string name="error_occurred">Une erreur s’est produite</string>
+    <string name="error_occurred">Une erreur s'est produite</string>
+
+    <!-- Notification de mise à jour -->
+    <string name="update_available">Nouvelle version disponible : %1$s</string>
+    <string name="download_update">Télécharger</string>
+    <string name="ignore_update">Ignorer</string>
 
     <!-- Titres d’écran temporaires -->
     <string name="about_screen_title">Écran À propos</string>
