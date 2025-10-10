@@ -420,7 +420,24 @@ class YtDlpWrapper {
 
     // --- Simple Resolution Presets ---
 
-    enum class Preset(val height: Int) { P360(360), P480(480), P720(720), P1080(1080), P1440(1440), P2160(2160) }
+    enum class Preset(val height: Int) {
+        P136(136),   // Common in HLS/m3u8 streams
+        P144(144),   // YouTube very low quality
+        P226(226),   // Common in HLS/m3u8 streams
+        P240(240),   // YouTube low quality
+        P340(340),   // Common in HLS/m3u8 streams
+        P360(360),   // Standard definition
+        P454(454),   // Common in HLS/m3u8 streams
+        P480(480),   // Standard definition
+        P680(680),   // Common in HLS/m3u8 streams
+        P720(720),   // HD
+        P1020(1020), // Common in HLS/m3u8 streams
+        P1080(1080), // Full HD
+        P1360(1360), // Common in HLS/m3u8 streams
+        P1440(1440), // 2K
+        P2040(2040), // Common in HLS/m3u8 streams
+        P2160(2160)  // 4K
+    }
 
     suspend fun getProgressiveUrl(
         url: String,

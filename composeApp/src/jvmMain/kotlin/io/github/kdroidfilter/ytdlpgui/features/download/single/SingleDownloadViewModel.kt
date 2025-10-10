@@ -56,13 +56,26 @@ class SingleDownloadViewModel(
                 includeAutoSubtitles = true
             )
                 .onSuccess { info ->
+                    infoln { "[SingleDownloadViewModel] Got video info successfully" }
+                    infoln { "[SingleDownloadViewModel] Title: ${info.title}" }
+                    infoln { "[SingleDownloadViewModel] Available resolutions: ${info.availableResolutions}" }
+
                     _videoInfo.value = info
+
                     // Derive available presets from availableResolutions (downloadable)
+                    // Now with expanded preset support including HLS/m3u8 common resolutions
+                    infoln { "[SingleDownloadViewModel] Filtering presets from: ${YtDlpWrapper.Preset.entries.map { it.height }}" }
                     val presets = YtDlpWrapper.Preset.entries.filter { preset ->
                         info.availableResolutions[preset.height]?.downloadable == true
                     }.sortedBy { it.height }
+
+                    infoln { "[SingleDownloadViewModel] Final available presets: ${presets.map { it.height }}" }
+
                     _availablePresets.value = presets
                     _selectedPreset.value = presets.maxByOrNull { it.height }
+
+                    infoln { "[SingleDownloadViewModel] Selected preset: ${_selectedPreset.value?.height}p" }
+
                     // Subtitles - get all subtitles with their info
                     _availableSubtitles.value = info.getAllSubtitles()
                     _selectedSubtitles.value = emptyList()
