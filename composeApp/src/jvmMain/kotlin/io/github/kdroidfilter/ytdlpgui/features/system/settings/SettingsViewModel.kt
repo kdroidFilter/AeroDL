@@ -20,7 +20,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsState
-import androidx.lifecycle.viewModelScope
 
 class SettingsViewModel(
     private val navController: NavHostController,
