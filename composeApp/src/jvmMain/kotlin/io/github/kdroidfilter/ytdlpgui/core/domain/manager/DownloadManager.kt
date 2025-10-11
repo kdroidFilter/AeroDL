@@ -2,6 +2,9 @@
 
 package io.github.kdroidfilter.ytdlpgui.core.domain.manager
 
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavHostController
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.kdroid.composetray.tray.api.TrayAppState
 import com.russhwolf.settings.Settings
@@ -12,7 +15,6 @@ import io.github.kdroidfilter.ytdlp.core.Event
 import io.github.kdroidfilter.ytdlp.core.Handle
 import io.github.kdroidfilter.ytdlp.core.SubtitleOptions
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
-import io.github.kdroidfilter.ytdlpgui.core.navigation.Navigator
 import io.github.kdroidfilter.ytdlpgui.core.config.SettingsKeys
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.platform.filesystem.FileExplorerUtils
@@ -48,13 +50,14 @@ import kotlin.collections.ArrayDeque
  * @param ytDlpWrapper The YtDlpWrapper instance used for performing downloads.
  * @param settings Provides settings for configuring the maximum parallel downloads and other options.
  * @param historyRepository Stores the history of completed downloads.
+ * @param trayAppState The tray application state for managing window visibility.
  */
 class DownloadManager(
+    private val getNavController: () -> NavHostController,
     private val ytDlpWrapper: YtDlpWrapper,
     private val settings: Settings,
     private val historyRepository: DownloadHistoryRepository,
     private val trayAppState: TrayAppState,
-    private val navigator: Navigator,
 ) {
     private val scope = CoroutineScope(Dispatchers.IO)
 
@@ -213,9 +216,14 @@ class DownloadManager(
 
                     saveToHistory(id, item, absolutePath)
 
-                    // Notify when window hidden (kept)
+                    // Notify when window hidden or not on downloader screen (using type-safe hasRoute())
+                    val currentDestination = getNavController().currentBackStackEntry?.destination
+                    val isOnDownloaderScreen = currentDestination?.hierarchy?.any {
+                        it.hasRoute(Destination.MainNavigation.Downloader::class)
+                    } == true
+
                     if ((settings.getBoolean(SettingsKeys.NOTIFY_ON_DOWNLOAD_COMPLETE, true) && !trayAppState.isVisible.value) ||
-                        (settings.getBoolean(SettingsKeys.NOTIFY_ON_DOWNLOAD_COMPLETE, true) && trayAppState.isVisible.value && navigator.currentDestination.value != Destination.MainNavigation.Downloader)) {
+                        (settings.getBoolean(SettingsKeys.NOTIFY_ON_DOWNLOAD_COMPLETE, true) && trayAppState.isVisible.value && !isOnDownloaderScreen)) {
                         scope.launch { sendCompletionNotification(item, absolutePath) }
                     }
                 }

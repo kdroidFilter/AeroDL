@@ -4,6 +4,7 @@ package io.github.kdroidfilter.ytdlpgui.features.onboarding
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavHostController
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.kdroid.composetray.tray.api.TrayAppState
 import com.kdroid.composetray.tray.api.TrayWindowDismissMode
@@ -11,7 +12,6 @@ import io.github.kdroidfilter.network.CertificateValidator
 import io.github.kdroidfilter.platformtools.LinuxDesktopEnvironment
 import io.github.kdroidfilter.platformtools.detectLinuxDesktopEnvironment
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
-import io.github.kdroidfilter.ytdlpgui.core.navigation.Navigator
 import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
 import io.github.kdroidfilter.ytdlpgui.features.init.InitViewModel
 import io.github.vinceglb.filekit.FileKit
@@ -27,7 +27,7 @@ import org.koin.core.component.inject
 
 class OnboardingViewModel(
     private val settingsRepository: SettingsRepository,
-    private val navigator: Navigator,
+    private val navController: NavHostController,
     private val trayAppState: TrayAppState,
 ) : ViewModel(), KoinComponent {
 
@@ -172,7 +172,10 @@ class OnboardingViewModel(
     fun completeOnboarding() {
         viewModelScope.launch {
             settingsRepository.setOnboardingCompleted(true)
-            navigator.navigateAndClearBackStack(Destination.MainNavigation.Home)
+            navController.navigate(Destination.MainNavigation.Home) {
+                popUpTo(Destination.InitScreen) { inclusive = true }
+                launchSingleTop = true
+            }
         }
     }
 
@@ -225,7 +228,7 @@ class OnboardingViewModel(
         if (_currentStep.value == step) return
         _currentStep.value = step
         viewModelScope.launch {
-            navigator.navigate(step.toDestination())
+            navController.navigate(step.toDestination())
         }
     }
 

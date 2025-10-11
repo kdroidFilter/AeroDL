@@ -1,8 +1,8 @@
 package io.github.kdroidfilter.ytdlpgui.features.download.manager
 
 import androidx.lifecycle.ViewModel
+import androidx.navigation.NavHostController
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
-import io.github.kdroidfilter.ytdlpgui.core.navigation.Navigator
 import io.github.kdroidfilter.ytdlpgui.core.platform.filesystem.FileExplorerUtils
 import io.github.kdroidfilter.ytdlpgui.core.util.infoln
 import io.github.kdroidfilter.ytdlpgui.core.util.warnln
@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.map
 import java.io.File
 
 class DownloadViewModel(
-    private val navigator: Navigator,
+    private val navController: NavHostController,
     private val downloadManager: DownloadManager,
     private val historyRepository: DownloadHistoryRepository
 ) : ViewModel() {

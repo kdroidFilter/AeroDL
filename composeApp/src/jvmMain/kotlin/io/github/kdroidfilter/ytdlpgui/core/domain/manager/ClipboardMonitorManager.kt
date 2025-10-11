@@ -4,8 +4,8 @@ package io.github.kdroidfilter.ytdlpgui.core.domain.manager
 
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.russhwolf.settings.Settings
+import androidx.navigation.NavHostController
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
-import io.github.kdroidfilter.ytdlpgui.core.navigation.Navigator
 import io.github.kdroidfilter.platformtools.clipboardmanager.ClipboardContent
 import io.github.kdroidfilter.platformtools.clipboardmanager.ClipboardListener
 import io.github.kdroidfilter.platformtools.clipboardmanager.ClipboardMonitor
@@ -48,13 +48,12 @@ import io.github.kdroidfilter.ytdlpgui.core.config.SettingsKeys
  * - Coordinating user interaction through notifications for recognized URLs.
  *
  * @constructor Initializes the manager with the required dependencies.
- * @param navigator Handles navigation within the application.
  * @param settings Provides access to user-configurable settings.
  * @param trayAppState Manages the application tray state for notifications and UI interaction.
  * @param supportedSitesRepository Repository containing information about recognized or supported sites.
  */
 class ClipboardMonitorManager(
-    private val navigator: Navigator,
+    private val getNavController: () -> NavHostController,
     private val settings: Settings,
     private val trayAppState: TrayAppState,
     private val supportedSitesRepository: SupportedSitesRepository,
@@ -131,7 +130,7 @@ class ClipboardMonitorManager(
             scope.launch {
                 trayAppState.setDismissMode(TrayWindowDismissMode.MANUAL)
                 runCatching { trayAppState.show() }
-                navigator.navigate(Destination.Download.Single(url))
+                getNavController().navigate(Destination.Download.Single(url))
                 trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
             }
         }

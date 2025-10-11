@@ -2,12 +2,12 @@ package io.github.kdroidfilter.ytdlpgui.features.init
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavHostController
 import com.russhwolf.settings.Settings
 import io.github.kdroidfilter.network.KtorConfig
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.ClipboardMonitorManager
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
-import io.github.kdroidfilter.ytdlpgui.core.navigation.Navigator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -21,7 +21,7 @@ import io.github.kdroidfilter.platformtools.releasefetcher.github.model.Asset
 
 class InitViewModel(
     private val ytDlpWrapper: YtDlpWrapper,
-    private val navigator: Navigator,
+    private val navController: NavHostController,
     private val settings : Settings,
     // Injected to force eager initialization of clipboard monitoring
     private val clipboardMonitorManager: ClipboardMonitorManager,
@@ -39,7 +39,10 @@ class InitViewModel(
 
             if (!onboardingCompleted) {
                 // Not configured → go to onboarding
-                navigator.navigateAndClearBackStack(Destination.Onboarding.Graph)
+                navController.navigate(Destination.Onboarding.Graph) {
+                    popUpTo(Destination.InitScreen) { inclusive = true }
+                    launchSingleTop = true
+                }
                 return@launch
             }
 
@@ -123,8 +126,9 @@ class InitViewModel(
      * Ignore the update notification and navigate to home
      */
     fun ignoreUpdate() {
-        viewModelScope.launch {
-            navigator.navigateAndClearBackStack(Destination.MainNavigation.Home)
+        navController.navigate(Destination.MainNavigation.Home) {
+            popUpTo(Destination.InitScreen) { inclusive = true }
+            launchSingleTop = true
         }
     }
 
@@ -230,7 +234,10 @@ class InitViewModel(
 
                             // Navigate to home only if requested and no update is available
                             if (navigateToHomeWhenDone && !_state.value.updateAvailable) {
-                                navigator.navigateAndClearBackStack(Destination.MainNavigation.Home)
+                                navController.navigate(Destination.MainNavigation.Home) {
+                                    popUpTo(Destination.InitScreen) { inclusive = true }
+                                    launchSingleTop = true
+                                }
                             }
                         }
                     }
