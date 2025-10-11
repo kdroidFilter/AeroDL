@@ -39,14 +39,9 @@ class DownloadHistoryRepository(
     }
 
     fun reload() {
-        val rows = db.databaseQueries.selectAllHistory().executeAsList()
-        // Keep only a bounded number of newest entries in memory to reduce RAM usage.
-        // Older entries remain in the database and can be surfaced later if needed.
-        _history.value = rows
-            .asSequence()
-            .map { it.toModel() }
-            .take(MAX_HISTORY_IN_MEMORY)
-            .toList()
+        // Fetch only the bounded number of newest entries directly from the database
+        val rows = db.databaseQueries.selectRecentHistory(MAX_HISTORY_IN_MEMORY.toLong()).executeAsList()
+        _history.value = rows.map { it.toModel() }
     }
 
     fun add(

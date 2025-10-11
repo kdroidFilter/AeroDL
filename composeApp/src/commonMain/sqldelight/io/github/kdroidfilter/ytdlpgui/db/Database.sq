@@ -18,6 +18,12 @@ selectAllHistory:
 SELECT * FROM download_history
 ORDER BY created_at DESC;
 
+-- Selects recent history entries ordered by newest first, limited
+selectRecentHistory:
+SELECT * FROM download_history
+ORDER BY created_at DESC
+LIMIT ?;
+
 -- Deletes a single history entry by id
 deleteHistoryById:
 DELETE FROM download_history WHERE id = ?;
