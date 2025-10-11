@@ -11,6 +11,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
+import androidx.lifecycle.viewModelScope
 import java.io.File
 
 class DownloadViewModel(
@@ -32,6 +36,27 @@ class DownloadViewModel(
     val directoryAvailability = history.map { list ->
         list.associate { it.id to (it.outputPath?.let { path -> File(path).exists() } == true) }
     }
+
+    // Combined UI state
+    val state = combine(
+        isLoading,
+        items,
+        history,
+        directoryAvailability,
+        errorDialogItem,
+    ) { loading, itemsList, historyList, dirAvail, errorItem ->
+        DownloadState(
+            isLoading = loading,
+            items = itemsList,
+            history = historyList,
+            directoryAvailability = dirAvail,
+            errorDialogItem = errorItem,
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = DownloadState.emptyState,
+    )
 
     fun onEvents(event: DownloadEvents) {
         when (event) {

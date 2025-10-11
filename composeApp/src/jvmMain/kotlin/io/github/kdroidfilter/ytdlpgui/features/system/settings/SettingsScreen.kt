@@ -42,11 +42,12 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.*
+import androidx.compose.runtime.collectAsState
 
 @Composable
 fun SettingsScreen() {
     val viewModel = koinViewModel<SettingsViewModel>()
-    val state = collectSettingsState(viewModel)
+    val state = viewModel.state.collectAsState().value
     SettingsView(
         state = state,
         onEvent = viewModel::onEvents,

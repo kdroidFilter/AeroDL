@@ -53,7 +53,7 @@ import io.github.kdroidfilter.ytdlpgui.core.config.SettingsKeys
  * @param supportedSitesRepository Repository containing information about recognized or supported sites.
  */
 class ClipboardMonitorManager(
-    private val getNavController: () -> NavHostController,
+    private val navController: () -> NavHostController,
     private val settings: Settings,
     private val trayAppState: TrayAppState,
     private val supportedSitesRepository: SupportedSitesRepository,
@@ -127,10 +127,10 @@ class ClipboardMonitorManager(
         val ignoreBtn = getString(Res.string.clipboard_ignore)
 
         fun action() {
-            scope.launch {
+            scope.launch(Dispatchers.Main) {
                 trayAppState.setDismissMode(TrayWindowDismissMode.MANUAL)
                 runCatching { trayAppState.show() }
-                getNavController().navigate(Destination.Download.Single(url))
+                navController().navigate(Destination.Download.Single(url))
                 trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
             }
         }

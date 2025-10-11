@@ -52,6 +52,7 @@ import io.github.kdroidfilter.ytdlp.model.VideoInfo
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
+import androidx.compose.runtime.collectAsState
 import ytdlpgui.composeapp.generated.resources.*
 import java.time.Duration
 import java.util.*
@@ -59,7 +60,7 @@ import java.util.*
 @Composable
 fun SingleDownloadScreen() {
     val viewModel = koinViewModel<SingleDownloadViewModel>()
-    val state = collectSingleDownloadState(viewModel)
+    val state = viewModel.state.collectAsState().value
     SingleDownloadView(
         state = state,
         onEvent = viewModel::onEvents,

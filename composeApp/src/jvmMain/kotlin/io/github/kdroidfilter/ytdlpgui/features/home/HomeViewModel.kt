@@ -6,7 +6,10 @@ import androidx.navigation.NavHostController
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.awt.Toolkit.getDefaultToolkit
 import org.jetbrains.compose.resources.getString
@@ -21,14 +24,28 @@ class HomeViewModel(
     private var _textFieldContent = MutableStateFlow("")
     val textFieldContent = _textFieldContent.asStateFlow()
 
-    private var _textFieldEnabled = MutableStateFlow(false)
-    val textFieldEnabled = _textFieldEnabled.asStateFlow()
-
     private var _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
 
     private var _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage = _errorMessage.asStateFlow()
+
+    // Combine feature: expose a single UI state to minimize recompositions
+    val state = combine(
+        textFieldContent,
+        isLoading,
+        errorMessage,
+    ) { link, loading, error ->
+        HomeState(
+            link = link,
+            isLoading = loading,
+            errorMessage = error,
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = HomeState.emptyState,
+    )
 
     fun onEvents(event: HomeEvents) {
         when (event) {

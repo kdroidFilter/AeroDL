@@ -2,6 +2,7 @@ package io.github.kdroidfilter.ytdlpgui.features.home
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -23,7 +24,7 @@ import ytdlpgui.composeapp.generated.resources.*
 @Composable
 fun HomeScreen() {
     val viewModel = koinInject<HomeViewModel>()
-    val state = collectHomeState(viewModel)
+    val state = viewModel.state.collectAsState().value
     HomeView(
         state = state,
         onEvent = viewModel::onEvents,
