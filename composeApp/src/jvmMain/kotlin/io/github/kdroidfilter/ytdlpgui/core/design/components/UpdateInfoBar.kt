@@ -73,7 +73,7 @@ internal fun UpdateInfoBar(
                     Text(
                         stringResource(Res.string.download_update),
                         style = FluentTheme.typography.body,
-                        fontSize = 10.sp,
+                        fontSize = 12.sp,
                     )
                 }
             }
@@ -102,7 +102,7 @@ private fun MarkdownBody(text: String, modifier: Modifier = Modifier, lines: Int
             Text(
                 text = annotated,
                 style = FluentTheme.typography.caption,
-                fontSize = 9.sp,
+                fontSize = 10.sp,
                 onTextLayout = { textLayoutResult = it },
                 modifier = Modifier.pointerInput(annotated) {
                     detectTapGestures { pos: Offset ->

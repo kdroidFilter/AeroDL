@@ -4,8 +4,6 @@ package io.github.kdroidfilter.ytdlpgui.core.ui
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.background
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -16,35 +14,22 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.*
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.filled.MoreVertical
-import io.github.composefluent.icons.regular.ArrowLeft
-import io.github.composefluent.icons.regular.ArrowRight
-import io.github.composefluent.icons.regular.History
-import io.github.composefluent.icons.regular.Home
-import io.github.composefluent.icons.regular.Info
-import io.github.composefluent.icons.regular.Settings
-import androidx.navigation.NavDestination.Companion.hasRoute
-import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.currentBackStackEntryAsState
+import io.github.composefluent.icons.regular.*
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnly
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
-import kotlinx.coroutines.launch
+import io.github.kdroidfilter.ytdlpgui.features.init.InitViewModel
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
-import io.github.kdroidfilter.ytdlpgui.features.init.InitViewModel
-import ytdlpgui.composeapp.generated.resources.Res
-import ytdlpgui.composeapp.generated.resources.app_name
-import ytdlpgui.composeapp.generated.resources.download
-import ytdlpgui.composeapp.generated.resources.home
-import ytdlpgui.composeapp.generated.resources.tooltip_back
-import ytdlpgui.composeapp.generated.resources.tooltip_home
-import ytdlpgui.composeapp.generated.resources.about
-import ytdlpgui.composeapp.generated.resources.settings
+import ytdlpgui.composeapp.generated.resources.*
 
 @OptIn(ExperimentalFluentApi::class, ExperimentalFoundationApi::class)
 @Composable
@@ -249,13 +234,14 @@ private fun CenterHeaderBar(
 @Composable
 private fun UpdateNavBadge() {
     Box(
-        modifier = Modifier
-            .size(8.dp)
-            .background(
-                color = FluentTheme.colors.system.attention,
-                shape = CircleShape
-            )
-    )
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Badge(
+            status = BadgeStatus.Critical,
+            content = { BadgeDefaults.Icon(status = BadgeStatus.Informational) },
+            modifier = Modifier.align(Alignment.TopEnd)
+        )
+    }
 }
 
 @Composable
