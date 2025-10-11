@@ -244,7 +244,9 @@ class DownloadManager(
                 // Cleanup sink whatever the result
                 runCatching { if (finalPathSink.exists()) finalPathSink.delete() }
 
-                maybeStartPending()
+                // Drop completed items from memory immediately to prevent list growth
+                // (UI shows active and failed only; completed are persisted in history)
+                remove(id)
             }
 
             is Event.Error -> {
@@ -259,7 +261,8 @@ class DownloadManager(
                 infoln { "[DownloadManager] Download cancelled for item $id" }
                 update(id) { it.copy(status = DownloadItem.Status.Cancelled, message = null) }
                 runCatching { if (finalPathSink.exists()) finalPathSink.delete() }
-                maybeStartPending()
+                // Remove cancelled items to avoid leaking them in memory
+                remove(id)
             }
 
             is Event.NetworkProblem -> {
