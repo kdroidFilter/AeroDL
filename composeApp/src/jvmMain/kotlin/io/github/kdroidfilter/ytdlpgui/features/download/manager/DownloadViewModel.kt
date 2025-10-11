@@ -55,6 +55,13 @@ class DownloadViewModel(
             DownloadEvents.DismissErrorDialog -> {
                 _errorDialogItem.value = null
             }
+            is DownloadEvents.DismissFailed -> {
+                // Clear dialog if it targets the same item
+                if (_errorDialogItem.value?.id == event.id) {
+                    _errorDialogItem.value = null
+                }
+                downloadManager.remove(event.id)
+            }
         }
     }
 

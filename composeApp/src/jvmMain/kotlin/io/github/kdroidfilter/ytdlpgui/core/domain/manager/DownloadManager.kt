@@ -127,6 +127,19 @@ class DownloadManager(
         maybeStartPending()
     }
 
+    /**
+     * Removes a download item from the in-memory list. If the item is currently running,
+     * its handle is cancelled first. Also ensures it is removed from the pending queue.
+     */
+    fun remove(id: String) {
+        pendingQueue.remove(id)
+        // Cancel if still running
+        _items.value.find { it.id == id }?.handle?.cancel()
+        // Drop the item from the list
+        _items.value = _items.value.filterNot { it.id == id }
+        maybeStartPending()
+    }
+
     private fun maybeStartPending() {
         while (runningCount() < maxParallel() && pendingQueue.isNotEmpty()) {
             launchDownload(pendingQueue.removeFirst())

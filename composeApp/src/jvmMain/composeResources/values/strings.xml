@@ -192,4 +192,8 @@
     <string name="ok">OK</string>
     <string name="view_error_details">View error details</string>
     <string name="copy_error">Copy error to clipboard</string>
+    
+    <!-- Dismiss/remove failed item -->
+    <string name="remove_from_list">Remove from list</string>
+    <string name="tooltip_remove_from_list">Remove this item from the list</string>
 </resources>
