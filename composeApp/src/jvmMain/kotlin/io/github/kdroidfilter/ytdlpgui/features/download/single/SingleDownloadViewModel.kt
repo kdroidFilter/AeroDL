@@ -3,13 +3,13 @@ package io.github.kdroidfilter.ytdlpgui.features.download.single
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavHostController
 import androidx.navigation.toRoute
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlp.model.SubtitleInfo
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
-import io.github.kdroidfilter.ytdlpgui.core.navigation.Navigator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +19,7 @@ import io.github.kdroidfilter.ytdlpgui.core.util.errorln
 import io.github.kdroidfilter.ytdlpgui.core.util.infoln
 
 class SingleDownloadViewModel(
-    private val navigator: Navigator,
+    private val navController: NavHostController,
     private val savedStateHandle: SavedStateHandle,
     private val ytDlpWrapper: YtDlpWrapper,
     private val downloadManager: DownloadManager,
@@ -128,14 +128,20 @@ class SingleDownloadViewModel(
                     downloadManager.start(videoUrl, videoInfo.value, preset)
                 }
                 viewModelScope.launch {
-                    navigator.navigateAndClearBackStack(Destination.MainNavigation.Downloader)
+                    navController.navigate(Destination.MainNavigation.Downloader) {
+                        popUpTo(Destination.MainNavigation.Home) { inclusive = false }
+                        launchSingleTop = true
+                    }
                 }
             }
             SingleDownloadEvents.StartAudioDownload -> {
                 infoln { "[SingleDownloadViewModel] Starting audio download" }
                 downloadManager.startAudio(videoUrl, videoInfo.value)
                 viewModelScope.launch {
-                    navigator.navigateAndClearBackStack(Destination.MainNavigation.Downloader)
+                    navController.navigate(Destination.MainNavigation.Downloader) {
+                        popUpTo(Destination.MainNavigation.Home) { inclusive = false }
+                        launchSingleTop = true
+                    }
                 }
             }
         }

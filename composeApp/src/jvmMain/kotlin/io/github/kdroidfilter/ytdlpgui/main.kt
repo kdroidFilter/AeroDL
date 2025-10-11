@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -20,6 +21,8 @@ import androidx.compose.ui.window.application
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
@@ -47,8 +50,9 @@ import io.github.kdroidfilter.platformtools.getAppVersion
 import io.github.kdroidfilter.platformtools.getOperatingSystem
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnly
-import io.github.kdroidfilter.ytdlpgui.core.design.icons.Exit_to_app
-import io.github.kdroidfilter.ytdlpgui.core.design.icons.Login
+import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnlyRtl
+import io.github.kdroidfilter.ytdlpgui.core.util.errorln
+import io.github.kdroidfilter.ytdlpgui.core.util.infoln
 import io.github.kdroidfilter.ytdlpgui.di.appModule
 import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsEvents
 import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsViewModel
@@ -68,11 +72,7 @@ import ytdlpgui.composeapp.generated.resources.settings_auto_launch_title
 import ytdlpgui.composeapp.generated.resources.settings_clipboard_monitoring_title
 import ytdlpgui.composeapp.generated.resources.app_version_label
 import java.io.File
-import java.util.Locale
 import com.russhwolf.settings.Settings
-import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnlyRtl
-import io.github.kdroidfilter.ytdlpgui.core.util.errorln
-import io.github.kdroidfilter.ytdlpgui.core.util.infoln
 
 @OptIn(ExperimentalTrayAppApi::class, ExperimentalFluentApi::class)
 fun main() = application {
@@ -125,6 +125,13 @@ fun main() = application {
                 }
             )
             if (!isSingleInstance) exitApplication()
+
+            // Create NavController and register in Koin FIRST (same pattern as TrayAppState)
+            val existingNavController = remember { runCatching { koin.get<NavHostController>() }.getOrNull() }
+            val navController = existingNavController ?: rememberNavController()
+            if (existingNavController == null) {
+                runCatching { koin.declare(navController) }
+            }
 
             val downloadManager = koinInject<DownloadManager>()
             val isDownloading by downloadManager.isDownloading.collectAsState()

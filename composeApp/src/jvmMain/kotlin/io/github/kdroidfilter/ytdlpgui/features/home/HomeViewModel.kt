@@ -2,9 +2,9 @@ package io.github.kdroidfilter.ytdlpgui.features.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavHostController
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
-import io.github.kdroidfilter.ytdlpgui.core.navigation.Navigator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -15,7 +15,7 @@ import java.awt.datatransfer.DataFlavor
 import java.net.URI
 
 class HomeViewModel(
-    private val navigator: Navigator,
+    private val navController: NavHostController,
     private val ytDlpWrapper: YtDlpWrapper
 ) : ViewModel() {
     private var _textFieldContent = MutableStateFlow("")
@@ -114,9 +114,9 @@ class HomeViewModel(
 
         viewModelScope.launch {
             if (isYouTube && (isPlaylist || isChannel)) {
-                navigator.navigate(Destination.Download.Bulk(url))
+                navController.navigate(Destination.Download.Bulk(url))
             } else {
-                navigator.navigate(Destination.Download.Single(url))
+                navController.navigate(Destination.Download.Single(url))
             }
         }
     }

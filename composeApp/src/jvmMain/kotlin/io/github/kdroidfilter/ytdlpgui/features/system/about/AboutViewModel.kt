@@ -1,7 +1,7 @@
 package io.github.kdroidfilter.ytdlpgui.features.system.about
 
 import androidx.lifecycle.ViewModel
-import io.github.kdroidfilter.ytdlpgui.core.navigation.Navigator
+import androidx.navigation.NavHostController
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import io.github.kdroidfilter.platformtools.getAppVersion
@@ -10,7 +10,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 
 class AboutViewModel(
-    navigator: Navigator,
+    navController: NavHostController,
     ytDlpWrapper: YtDlpWrapper,
 ) : ViewModel() {
 

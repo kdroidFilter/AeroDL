@@ -5,27 +5,24 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
-import androidx.navigation.compose.rememberNavController
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.kdroidfilter.ytdlpgui.core.ui.Footer
 import io.github.kdroidfilter.ytdlpgui.core.ui.MainNavigationHeader
 import io.github.kdroidfilter.ytdlpgui.core.ui.SecondaryNavigationHeader
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
-import io.github.kdroidfilter.ytdlpgui.core.navigation.NavigationAction
-import io.github.kdroidfilter.ytdlpgui.core.navigation.Navigator
-import io.github.kdroidfilter.ytdlpgui.core.navigation.ObserveAsEvents
 import io.github.kdroidfilter.ytdlpgui.core.navigation.noAnimatedComposable
 import io.github.kdroidfilter.ytdlpgui.features.system.about.AboutScreen
 import io.github.kdroidfilter.ytdlpgui.features.download.bulk.BulkDownloadScreen
@@ -43,37 +40,38 @@ import io.github.kdroidfilter.ytdlpgui.features.onboarding.welcome.WelcomeScreen
 import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsScreen
 import io.github.kdroidfilter.ytdlpgui.features.download.single.SingleDownloadScreen
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingViewModel
-import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalFluentApi::class)
 @Composable
 fun App() {
-    val navController = rememberNavController()
-    val navigator = koinInject<Navigator>()
-    val currentDestination by navigator.currentDestination.collectAsState()
+    // Inject NavController from Koin (registered in main.kt, same pattern as TrayAppState)
+    val navController = koinInject<NavHostController>()
 
-    // Drive NavController from Navigator events; do NOT decode routes from BackStack
-    ObserveAsEvents(flow = navigator.navigationActions) { action ->
-        when (action) {
-            is NavigationAction.Navigate -> {
-                navController.navigate(action.destination) {
-                    action.navOptions(this)
-                }
-                // After the framework processes it, previousBackStackEntry may not be updated immediately
-                // but our Navigator already updated stack/canGoBack/currentDestination.
-            }
+    // Observe current back stack entry to determine which header to show
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = backStackEntry?.destination
 
-            NavigationAction.NavigateUp -> {
-                // Let NavController go back; our Navigator already popped its own stack.
-                navController.navigateUp()
-            }
-        }
-    }
+    // Determine current destination type using type-safe hasRoute()
+    val isMainNavigation = currentDestination?.hierarchy?.any {
+        it.hasRoute(Destination.MainNavigation.Graph::class) ||
+                it.hasRoute(Destination.MainNavigation.Home::class) ||
+                it.hasRoute(Destination.MainNavigation.Downloader::class)
+    } == true
+    val isSecondaryNavigation = currentDestination?.hierarchy?.any {
+        it.hasRoute(Destination.SecondaryNavigation.Graph::class) ||
+                it.hasRoute(Destination.SecondaryNavigation.Settings::class) ||
+                it.hasRoute(Destination.SecondaryNavigation.About::class)
+    } == true
+    val isDownload = currentDestination?.hierarchy?.any {
+        it.hasRoute(Destination.Download.Graph::class) ||
+                it.hasRoute(Destination.Download.Single::class) ||
+                it.hasRoute(Destination.Download.Bulk::class)
+    } == true
+    val isInitScreen = currentDestination?.hasRoute(Destination.InitScreen::class) == true
 
-    val canGoBack by navigator.canGoBack.collectAsState()
-    val scope = rememberCoroutineScope()
+    val canGoBack = navController.previousBackStackEntry != null
 
     Column(
         Modifier
@@ -81,9 +79,8 @@ fun App() {
             .onPreviewKeyEvent { keyEvent ->
             // Handle only on key-up to avoid repeats
             if (keyEvent.type == KeyEventType.KeyUp && keyEvent.key == Key.Escape && canGoBack) {
-                // Route back through Navigator so header state stays in sync
-                scope.launch { navigator.navigateUp() }
-                true // consume: prevents NavController from popping on its own
+                navController.navigateUp()
+                true // consume
             } else {
                 false
             }
@@ -92,8 +89,8 @@ fun App() {
         verticalArrangement = Arrangement.Center
     ) {
 
-        if (currentDestination is Destination.MainNavigation) MainNavigationHeader()
-        if (currentDestination is Destination.SecondaryNavigation || currentDestination is Destination.Download) SecondaryNavigationHeader()
+        if (isMainNavigation) MainNavigationHeader()
+        if (isSecondaryNavigation || isDownload) SecondaryNavigationHeader()
 
         NavHost(
             navController = navController,
@@ -145,7 +142,7 @@ fun App() {
             }
         }
 
-        if (currentDestination != Destination.InitScreen) Footer()
+        if (!isInitScreen) Footer()
     }
 }
 
