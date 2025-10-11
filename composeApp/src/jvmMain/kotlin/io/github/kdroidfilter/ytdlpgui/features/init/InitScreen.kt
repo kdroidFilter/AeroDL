@@ -18,26 +18,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.ContentDialog
-import io.github.composefluent.component.ContentDialogButton
-import io.github.composefluent.component.DialogSize
 import io.github.composefluent.component.Icon
 import io.github.composefluent.component.ProgressRing
 import io.github.composefluent.component.Text
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnly
-import io.github.kdroidfilter.ytdlpgui.core.platform.browser.openUrlInBrowser
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
 import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.checking_ffmpeg
 import ytdlpgui.composeapp.generated.resources.checking_ytdlp
-import ytdlpgui.composeapp.generated.resources.download_update
 import ytdlpgui.composeapp.generated.resources.downloading_ffmpeg
 import ytdlpgui.composeapp.generated.resources.downloading_ytdlp
 import ytdlpgui.composeapp.generated.resources.error_occurred
-import ytdlpgui.composeapp.generated.resources.ignore_update
-import ytdlpgui.composeapp.generated.resources.update_available
+ 
 import ytdlpgui.composeapp.generated.resources.updating_ffmpeg
 import ytdlpgui.composeapp.generated.resources.updating_ytdlp
 
@@ -47,47 +41,13 @@ fun InitScreen() {
     val state = viewModel.state.collectAsState().value
     InitView(
         state = state,
-        onIgnoreUpdate = { viewModel.ignoreUpdate() }
     )
 }
 
 @Composable
 fun InitView(
     state: InitState,
-    onIgnoreUpdate: () -> Unit = {}
 ) {
-    var displayUpdateDialog by remember { mutableStateOf(false) }
-
-    // Show dialog when update is available and initialization is completed
-    if (state.updateAvailable && state.latestVersion != null && state.downloadUrl != null && state.initCompleted && !displayUpdateDialog) {
-        displayUpdateDialog = true
-    }
-
-    // Update notification dialog
-    if (state.updateAvailable && state.latestVersion != null && state.downloadUrl != null) {
-        ContentDialog(
-            title = stringResource(Res.string.update_available, state.latestVersion),
-            visible = displayUpdateDialog,
-            size = DialogSize.Min,
-            primaryButtonText = stringResource(Res.string.download_update),
-            closeButtonText = stringResource(Res.string.ignore_update),
-            onButtonClick = { buttonType ->
-                displayUpdateDialog = false
-                when (buttonType) {
-                    ContentDialogButton.Primary -> {
-                        // Primary button (Download)
-                        openUrlInBrowser(state.downloadUrl)
-                    }
-                    ContentDialogButton.Close -> {
-                        // Close button (Ignore)
-                        onIgnoreUpdate()
-                    }
-                    else -> {}
-                }
-            },
-            content = {}
-        )
-    }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -131,10 +91,6 @@ fun InitView(
         }
     }
 }
-
-// ================================================================================================
-// Preview States & Previews
-// ================================================================================================
 
 @Preview
 @Composable

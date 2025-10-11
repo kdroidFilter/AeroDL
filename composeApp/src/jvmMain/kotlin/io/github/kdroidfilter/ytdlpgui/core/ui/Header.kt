@@ -14,34 +14,22 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.*
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.filled.MoreVertical
-import io.github.composefluent.icons.regular.ArrowLeft
-import io.github.composefluent.icons.regular.ArrowRight
-import io.github.composefluent.icons.regular.History
-import io.github.composefluent.icons.regular.Home
-import io.github.composefluent.icons.regular.Info
-import io.github.composefluent.icons.regular.Settings
-import androidx.navigation.NavDestination.Companion.hasRoute
-import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.currentBackStackEntryAsState
+import io.github.composefluent.icons.regular.*
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnly
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
-import kotlinx.coroutines.launch
+import io.github.kdroidfilter.ytdlpgui.features.init.InitViewModel
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
-import ytdlpgui.composeapp.generated.resources.Res
-import ytdlpgui.composeapp.generated.resources.app_name
-import ytdlpgui.composeapp.generated.resources.download
-import ytdlpgui.composeapp.generated.resources.home
-import ytdlpgui.composeapp.generated.resources.tooltip_back
-import ytdlpgui.composeapp.generated.resources.tooltip_home
-import ytdlpgui.composeapp.generated.resources.about
-import ytdlpgui.composeapp.generated.resources.settings
+import ytdlpgui.composeapp.generated.resources.*
 
 @OptIn(ExperimentalFluentApi::class, ExperimentalFoundationApi::class)
 @Composable
@@ -51,6 +39,10 @@ fun MainNavigationHeader(
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
+    // App update badge state (from InitViewModel)
+    val initViewModel = koinInject<InitViewModel>()
+    val initState = initViewModel.state.collectAsState().value
+    val showUpdateBadge = initState.updateAvailable && !initState.updateDismissed
 
     val scope = rememberCoroutineScope()
     var expanded by remember { mutableStateOf(false) }
@@ -93,6 +85,7 @@ fun MainNavigationHeader(
                         Destination.MainNavigation.Downloader as Destination
                     )
                 }
+                val showBadge = (index == 1) && showUpdateBadge
                 val isSelected = currentDestination?.hierarchy?.any {
                     it.hasRoute(destForIndex::class)
                 } == true
@@ -116,7 +109,8 @@ fun MainNavigationHeader(
                                 },
                                 icon = {
                                     Icon(imageVector = icon, contentDescription = null)
-                                }
+                                },
+                                badge = if (showBadge) ({ UpdateNavBadge() }) else null,
                             )
                         }
                     } else {
@@ -133,7 +127,8 @@ fun MainNavigationHeader(
                             },
                             icon = {
                                 Icon(imageVector = icon, contentDescription = null)
-                            }
+                            },
+                            badge = if (showBadge) ({ UpdateNavBadge() }) else null,
                         )
                     }
                 }
@@ -233,6 +228,19 @@ private fun CenterHeaderBar(
                 it.placeRelative(titleX, (height - it.height) / 2)
             }
         }
+    }
+}
+
+@Composable
+private fun UpdateNavBadge() {
+    Box(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Badge(
+            status = BadgeStatus.Critical,
+            content = { BadgeDefaults.Icon(status = BadgeStatus.Informational) },
+            modifier = Modifier.align(Alignment.TopEnd)
+        )
     }
 }
 

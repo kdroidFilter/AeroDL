@@ -2,7 +2,7 @@
 # Kotlin & Compose
 kotlin = "2.2.20"
 composeMultiplatform = "1.9.0"
-composeHotReload = "1.0.0-beta07"
+composeHotReload = "1.0.0-rc02"
 
 # AndroidX
 androidx-lifecycle = "2.9.4"
@@ -39,6 +39,7 @@ filekit = "0.12.0"
 multiplatform-settings = "1.3.0"
 knotify = "0.4.2"
 confettikit = "0.6.0"
+
 
 hydraulicConveyor = "1.12"
 buildConfig = "5.7.0"
@@ -81,6 +82,7 @@ filekit-dialogs-compose = { module = "io.github.vinceglb:filekit-dialogs-compose
 multiplatform-settings = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "multiplatform-settings" }
 knotify = { module = "io.github.kdroidfilter:knotify", version.ref = "knotify" }
 knotify-compose = { module = "io.github.kdroidfilter:knotify-compose", version.ref = "knotify" }
+
 
 # Ktor
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }

@@ -21,6 +21,8 @@ data class InitState(
     val updateAvailable: Boolean = false,
     val latestVersion: String? = null,
     val downloadUrl: String? = null,
+    val releaseBody: String? = null,
+    val updateDismissed: Boolean = false,
 ) {
     companion object {
         // Preview States

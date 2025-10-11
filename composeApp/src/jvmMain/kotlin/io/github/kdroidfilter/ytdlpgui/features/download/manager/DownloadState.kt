@@ -12,6 +12,11 @@ data class DownloadState(
     val history: List<DownloadHistoryRepository.HistoryItem> = emptyList(),
     val directoryAvailability: Map<String, Boolean> = emptyMap(),
     val errorDialogItem: DownloadManager.DownloadItem? = null,
+    // App update info (sourced from InitViewModel)
+    val updateAvailable: Boolean = false,
+    val updateVersion: String? = null,
+    val updateUrl: String? = null,
+    val updateBody: String? = null,
 ) {
     companion object {
         val emptyState = DownloadState()
@@ -208,6 +213,20 @@ data class DownloadState(
                 status = DownloadManager.DownloadItem.Status.Failed,
                 message = "Network pre-check failed.\n--- Last output ---\nConnection timeout after 5000ms\nCould not connect to remote server"
             )
+        )
+
+        val withUpdateInfoState = DownloadState(
+            updateAvailable = true,
+            updateVersion = "1.2.3",
+            updateUrl = "https://example.com/download",
+            updateBody = """
+                ## Nouveautés
+                - Améliorations de performance
+                - Corrections de bugs
+                Consultez le changelog complet [ici](https://example.com/changelog).
+            """.trimIndent(),
+            history = withHistoryState.history,
+            directoryAvailability = withHistoryState.directoryAvailability,
         )
     }
 }

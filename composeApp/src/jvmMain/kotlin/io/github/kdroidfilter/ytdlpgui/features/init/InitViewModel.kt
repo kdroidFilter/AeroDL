@@ -79,7 +79,8 @@ class InitViewModel(
                     _state.value = _state.value.copy(
                         updateAvailable = true,
                         latestVersion = latestVersion,
-                        downloadUrl = downloadUrl
+                        downloadUrl = downloadUrl,
+                        releaseBody = latestRelease.body
                     )
                 }
             }
@@ -126,10 +127,16 @@ class InitViewModel(
      * Ignore the update notification and navigate to home
      */
     fun ignoreUpdate() {
+        _state.value = _state.value.copy(updateDismissed = true)
         navController.navigate(Destination.MainNavigation.Home) {
             popUpTo(Destination.InitScreen) { inclusive = true }
             launchSingleTop = true
         }
+    }
+
+    /** Persist dismissal of the update info bar for the session */
+    fun dismissUpdateInfo() {
+        _state.value = _state.value.copy(updateDismissed = true)
     }
 
     /**
@@ -232,8 +239,8 @@ class InitViewModel(
                             // On first initialization, fetch supported sites list from GitHub and store in DB
                             runCatching { supportedSitesRepository.initializeFromGitHubIfEmpty() }
 
-                            // Navigate to home only if requested and no update is available
-                            if (navigateToHomeWhenDone && !_state.value.updateAvailable) {
+                            // Navigate to home when requested (update banner is shown later in Downloads screen)
+                            if (navigateToHomeWhenDone) {
                                 navController.navigate(Destination.MainNavigation.Home) {
                                     popUpTo(Destination.InitScreen) { inclusive = true }
                                     launchSingleTop = true

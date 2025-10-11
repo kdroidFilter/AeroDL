@@ -20,7 +20,8 @@ import java.io.File
 class DownloadViewModel(
     private val navController: NavHostController,
     private val downloadManager: DownloadManager,
-    private val historyRepository: DownloadHistoryRepository
+    private val historyRepository: DownloadHistoryRepository,
+    private val initViewModel: io.github.kdroidfilter.ytdlpgui.features.init.InitViewModel,
 ) : ViewModel() {
 
     private val _isLoading = MutableStateFlow(false)
@@ -38,6 +39,14 @@ class DownloadViewModel(
     }
 
     // Combined UI state
+    private data class Base(
+        val loading: Boolean,
+        val items: List<DownloadManager.DownloadItem>,
+        val history: List<DownloadHistoryRepository.HistoryItem>,
+        val dirAvail: Map<String, Boolean>,
+        val errorItem: DownloadManager.DownloadItem?,
+    )
+
     val state = combine(
         isLoading,
         items,
@@ -45,12 +54,18 @@ class DownloadViewModel(
         directoryAvailability,
         errorDialogItem,
     ) { loading, itemsList, historyList, dirAvail, errorItem ->
+        Base(loading, itemsList, historyList, dirAvail, errorItem)
+    }.combine(initViewModel.state) { base, initState ->
         DownloadState(
-            isLoading = loading,
-            items = itemsList,
-            history = historyList,
-            directoryAvailability = dirAvail,
-            errorDialogItem = errorItem,
+            isLoading = base.loading,
+            items = base.items,
+            history = base.history,
+            directoryAvailability = base.dirAvail,
+            errorDialogItem = base.errorItem,
+            updateAvailable = initState.updateAvailable && !initState.updateDismissed && initState.latestVersion != null && initState.downloadUrl != null,
+            updateVersion = initState.latestVersion,
+            updateUrl = initState.downloadUrl,
+            updateBody = initState.releaseBody,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -86,6 +101,9 @@ class DownloadViewModel(
                     _errorDialogItem.value = null
                 }
                 downloadManager.remove(event.id)
+            }
+            DownloadEvents.DismissUpdateInfoBar -> {
+                initViewModel.dismissUpdateInfo()
             }
         }
     }
