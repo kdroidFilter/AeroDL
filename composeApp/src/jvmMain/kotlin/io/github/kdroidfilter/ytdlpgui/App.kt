@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
@@ -96,68 +97,28 @@ fun App() {
 
             navigation<Destination.Onboarding.Graph>(startDestination = Destination.Onboarding.Welcome) {
                 noAnimatedComposable<Destination.Onboarding.Welcome> { backStackEntry ->
-                    val parentEntry = remember(backStackEntry) {
-                        backStackEntry.destination.parent?.route?.let(navController::getBackStackEntry) ?: backStackEntry
-                    }
-                    CompositionLocalProvider(LocalViewModelStoreOwner provides parentEntry) {
-                        WelcomeScreen()
-                    }
+                    WithParentViewModelStoreOwner(navController, backStackEntry) { WelcomeScreen() }
                 }
                 noAnimatedComposable<Destination.Onboarding.DownloadDir> { backStackEntry ->
-                    val parentEntry = remember(backStackEntry) {
-                        backStackEntry.destination.parent?.route?.let(navController::getBackStackEntry) ?: backStackEntry
-                    }
-                    CompositionLocalProvider(LocalViewModelStoreOwner provides parentEntry) {
-                        DownloadDirScreen()
-                    }
+                    WithParentViewModelStoreOwner(navController, backStackEntry) { DownloadDirScreen() }
                 }
                 noAnimatedComposable<Destination.Onboarding.Cookies> { backStackEntry ->
-                    val parentEntry = remember(backStackEntry) {
-                        backStackEntry.destination.parent?.route?.let(navController::getBackStackEntry) ?: backStackEntry
-                    }
-                    CompositionLocalProvider(LocalViewModelStoreOwner provides parentEntry) {
-                        CookiesScreen()
-                    }
+                    WithParentViewModelStoreOwner(navController, backStackEntry) { CookiesScreen() }
                 }
                 noAnimatedComposable<Destination.Onboarding.NoCheckCert> { backStackEntry ->
-                    val parentEntry = remember(backStackEntry) {
-                        backStackEntry.destination.parent?.route?.let(navController::getBackStackEntry) ?: backStackEntry
-                    }
-                    CompositionLocalProvider(LocalViewModelStoreOwner provides parentEntry) {
-                        NoCheckCertScreen()
-                    }
+                    WithParentViewModelStoreOwner(navController, backStackEntry) { NoCheckCertScreen() }
                 }
                 noAnimatedComposable<Destination.Onboarding.GnomeFocus> { backStackEntry ->
-                    val parentEntry = remember(backStackEntry) {
-                        backStackEntry.destination.parent?.route?.let(navController::getBackStackEntry) ?: backStackEntry
-                    }
-                    CompositionLocalProvider(LocalViewModelStoreOwner provides parentEntry) {
-                        GnomeFocusScreen()
-                    }
+                    WithParentViewModelStoreOwner(navController, backStackEntry) { GnomeFocusScreen() }
                 }
                 noAnimatedComposable<Destination.Onboarding.Clipboard> { backStackEntry ->
-                    val parentEntry = remember(backStackEntry) {
-                        backStackEntry.destination.parent?.route?.let(navController::getBackStackEntry) ?: backStackEntry
-                    }
-                    CompositionLocalProvider(LocalViewModelStoreOwner provides parentEntry) {
-                        ClipboardScreen()
-                    }
+                    WithParentViewModelStoreOwner(navController, backStackEntry) { ClipboardScreen() }
                 }
                 noAnimatedComposable<Destination.Onboarding.Autostart> { backStackEntry ->
-                    val parentEntry = remember(backStackEntry) {
-                        backStackEntry.destination.parent?.route?.let(navController::getBackStackEntry) ?: backStackEntry
-                    }
-                    CompositionLocalProvider(LocalViewModelStoreOwner provides parentEntry) {
-                        AutostartScreen()
-                    }
+                    WithParentViewModelStoreOwner(navController, backStackEntry) { AutostartScreen() }
                 }
                 noAnimatedComposable<Destination.Onboarding.Finish> { backStackEntry ->
-                    val parentEntry = remember(backStackEntry) {
-                        backStackEntry.destination.parent?.route?.let(navController::getBackStackEntry) ?: backStackEntry
-                    }
-                    CompositionLocalProvider(LocalViewModelStoreOwner provides parentEntry) {
-                        FinishScreen()
-                    }
+                    WithParentViewModelStoreOwner(navController, backStackEntry) { FinishScreen() }
                 }
             }
 
@@ -171,3 +132,16 @@ fun App() {
     }
 }
 
+@Composable
+private fun WithParentViewModelStoreOwner(
+    navController: NavHostController,
+    backStackEntry: NavBackStackEntry,
+    content: @Composable () -> Unit,
+) {
+    val parentEntry = remember(backStackEntry) {
+        backStackEntry.destination.parent?.route?.let(navController::getBackStackEntry) ?: backStackEntry
+    }
+    CompositionLocalProvider(LocalViewModelStoreOwner provides parentEntry) {
+        content()
+    }
+}
