@@ -82,6 +82,8 @@ kotlin {
             implementation(libs.composenativetray)
             implementation(libs.kotlinx.coroutinesSwing)
 
+            // no external markdown UI renderer; using lightweight parser
+
             // Project dependencies
             implementation(project(":ytdlp"))
             implementation(project(":network"))
@@ -146,5 +148,3 @@ sqldelight {
         }
     }
 }
-
-

@@ -9,4 +9,5 @@ sealed class DownloadEvents {
     data class ShowErrorDialog(val id: String) : DownloadEvents()
     data object DismissErrorDialog : DownloadEvents()
     data class DismissFailed(val id: String) : DownloadEvents()
+    data object DismissUpdateInfoBar : DownloadEvents()
 }

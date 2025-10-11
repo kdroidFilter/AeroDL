@@ -59,7 +59,7 @@ val appModule = module {
     viewModel { HomeViewModel(get(), get()) }
     viewModel { AboutViewModel(get(), get()) }
     viewModel { BulkDownloadViewModel(get()) }
-    viewModel { DownloadViewModel(get(), get(), get<DownloadHistoryRepository>()) }
+    viewModel { DownloadViewModel(get(), get(), get<DownloadHistoryRepository>(), get()) }
     viewModel { SettingsViewModel(navController = get(), settingsRepository = get(), trayAppState = get<TrayAppState>()) }
     viewModel { SingleDownloadViewModel(get(), get(), get(), get()) }
     viewModel { OnboardingViewModel(get(), get(), get()) }
