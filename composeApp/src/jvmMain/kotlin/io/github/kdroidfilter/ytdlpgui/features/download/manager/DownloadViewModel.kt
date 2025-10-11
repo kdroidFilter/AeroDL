@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.navigation.NavHostController
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.core.platform.filesystem.FileExplorerUtils
-import io.github.kdroidfilter.ytdlpgui.core.util.infoln
-import io.github.kdroidfilter.ytdlpgui.core.util.warnln
+import io.github.kdroidfilter.logging.infoln
+import io.github.kdroidfilter.logging.warnln
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

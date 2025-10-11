@@ -87,6 +87,7 @@ kotlin {
             // Project dependencies
             implementation(project(":ytdlp"))
             implementation(project(":network"))
+            implementation(project(":logging"))
 
             // SQLDelight driver
             implementation(libs.sqlDelight.driver.sqlite)

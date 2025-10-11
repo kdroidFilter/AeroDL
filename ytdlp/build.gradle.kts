@@ -10,6 +10,7 @@ kotlin {
         jvmMain.dependencies {
             // Network module (provides Ktor, SSL/TLS configuration)
             implementation(project(":network"))
+            implementation(project(":logging"))
 
             // Coroutines
             implementation(libs.kotlinx.coroutinesSwing)
