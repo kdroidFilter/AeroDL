@@ -9,7 +9,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.key.*
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -19,27 +18,27 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import io.github.composefluent.ExperimentalFluentApi
+import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
+import io.github.kdroidfilter.ytdlpgui.core.navigation.noAnimatedComposable
 import io.github.kdroidfilter.ytdlpgui.core.ui.Footer
 import io.github.kdroidfilter.ytdlpgui.core.ui.MainNavigationHeader
 import io.github.kdroidfilter.ytdlpgui.core.ui.SecondaryNavigationHeader
-import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
-import io.github.kdroidfilter.ytdlpgui.core.navigation.noAnimatedComposable
-import io.github.kdroidfilter.ytdlpgui.features.system.about.AboutScreen
 import io.github.kdroidfilter.ytdlpgui.features.download.bulk.BulkDownloadScreen
 import io.github.kdroidfilter.ytdlpgui.features.download.manager.DownloaderScreen
+import io.github.kdroidfilter.ytdlpgui.features.download.single.SingleDownloadScreen
 import io.github.kdroidfilter.ytdlpgui.features.home.HomeScreen
 import io.github.kdroidfilter.ytdlpgui.features.init.InitScreen
+import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingViewModel
+import io.github.kdroidfilter.ytdlpgui.features.onboarding.autostart.AutostartScreen
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.clipboard.ClipboardScreen
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.cookies.CookiesScreen
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.downloaddir.DownloadDirScreen
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.finish.FinishScreen
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.gnomefocus.GnomeFocusScreen
-import io.github.kdroidfilter.ytdlpgui.features.onboarding.autostart.AutostartScreen
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.nocheckcert.NoCheckCertScreen
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.welcome.WelcomeScreen
+import io.github.kdroidfilter.ytdlpgui.features.system.about.AboutScreen
 import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsScreen
-import io.github.kdroidfilter.ytdlpgui.features.download.single.SingleDownloadScreen
-import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingViewModel
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -71,20 +70,9 @@ fun App() {
     } == true
     val isInitScreen = currentDestination?.hasRoute(Destination.InitScreen::class) == true
 
-    val canGoBack = navController.previousBackStackEntry != null
-
     Column(
         Modifier
-            .fillMaxSize()
-            .onPreviewKeyEvent { keyEvent ->
-            // Handle only on key-up to avoid repeats
-            if (keyEvent.type == KeyEventType.KeyUp && keyEvent.key == Key.Escape && canGoBack) {
-                navController.navigateUp()
-                true // consume
-            } else {
-                false
-            }
-        },
+            .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
