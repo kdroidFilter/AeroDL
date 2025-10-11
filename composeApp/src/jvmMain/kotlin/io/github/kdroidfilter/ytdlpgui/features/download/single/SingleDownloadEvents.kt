@@ -9,4 +9,5 @@ sealed class SingleDownloadEvents {
     data object ClearSubtitles : SingleDownloadEvents()
     data object StartDownload : SingleDownloadEvents()
     data object StartAudioDownload : SingleDownloadEvents()
+    data object ScreenDisposed : SingleDownloadEvents()
 }

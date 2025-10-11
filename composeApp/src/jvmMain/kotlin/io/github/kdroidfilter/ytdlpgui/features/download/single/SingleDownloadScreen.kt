@@ -72,6 +72,11 @@ fun SingleDownloadView(
     state: SingleDownloadState,
     onEvent: (SingleDownloadEvents) -> Unit,
 ) {
+    DisposableEffect(Unit) {
+        onDispose {
+            onEvent(SingleDownloadEvents.ScreenDisposed)
+        }
+    }
     val videoPlayerState = rememberVideoPlayerState()
     if (state.isLoading) Loader()
     else if (state.errorMessage != null) ErrorBox(state.errorMessage)
