@@ -41,7 +41,7 @@
     <!-- Dependency Info Bar -->
     <string name="dependency_info_title">While you configure AeroDL settings, we are downloading the necessary dependencies for the app to work properly.</string>
     <string name="dependency_ytdlp_tooltip">yt-dlp is the core tool that downloads videos from supported websites. It handles all the heavy lifting of fetching your content.</string>
-    <string name="dependency_ffmpeg_tooltip">FFmpeg is a multimedia framework used to convert and process audio/video files. It ensures your downloads are in the format you want.</string>
+    <string name="dependency_ffmpeg_tooltip">FFmpeg is a multimedia framework used to convert and process audio and video files. It ensures your downloads are in the format you want.</string>
 
     <!-- Error messages -->
     <string name="error_occurred">An error occurred</string>
@@ -75,7 +75,7 @@
     <string name="onboarding_filtered_network_detected_message">A certificate problem has been detected. This could be due to corporate network filtering, or worse, a MITM attack. For the program to function, it is necessary to disable certificate verification.</string>
     <string name="onboarding_filtered_network_accept">I understand the risks and accept</string>
     <string name="settings_cookies_from_browser_title">Cookies from browser</string>
-    <string name="settings_cookies_from_browser_label">Allows using your browser\'s cookies to access content that requires you to be logged in, such as private YouTube videos. Warning: using this feature may result in your account being banned.</string>
+    <string name="settings_cookies_from_browser_label">Allows using your browser's cookies to access content that requires you to be logged in, such as private YouTube videos. Warning: using this feature may result in your account being banned.</string>
     <string name="settings_browser_select">Select browser…</string>
     <string name="settings_browser_disable">Disabled</string>
     <string name="settings_browser_chrome">Chrome</string>
@@ -131,7 +131,7 @@
     <string name="onboarding_complete_message">Setup complete…</string>
     <string name="onboarding_finish_loading_title">Just a few more moments…</string>
     <string name="onboarding_finish_loading_message">We are still downloading the necessary resources for the program to work properly.</string>
-    <string name="onboarding_finish_ready_title">Let\'s go!</string>
+    <string name="onboarding_finish_ready_title">Let's go!</string>
     <string name="onboarding_finish_ready_message">Everything is ready. You can now start using AeroDL.</string>
     <string name="onboarding_finish_ready_button">Get started</string>
     <string name="onboarding_gnome_focus_title">Improve GNOME Experience</string>
@@ -182,7 +182,7 @@
 
     <!-- Directory unavailable notice -->
     <string name="directory_unavailable">Not available</string>
-    <string name="tooltip_directory_unavailable">This file/folder was moved or deleted and is no longer available</string>
+    <string name="tooltip_directory_unavailable">This file or folder was moved or deleted and is no longer available</string>
 
     <!-- Download error dialog -->
     <string name="download_error_title">Download Error</string>
