@@ -32,6 +32,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.buildAnnotatedString
 import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.Button
@@ -128,7 +129,7 @@ fun DownloadView(
                             it.status == DownloadManager.DownloadItem.Status.Failed
                 }
 
-            items(activeItems) { item ->
+            items(items = activeItems, key = { it.id }) { item ->
                 InProgressRow(
                     item = item,
                     onCancel = { id -> onEvent(DownloadEvents.Cancel(id)) },
@@ -150,7 +151,7 @@ fun DownloadView(
                 }
             }
 
-            items(state.history) { h ->
+            items(items = state.history, key = { it.id }) { h ->
                 HistoryRow(h = h, actions = {
                     val dirAvailable = state.directoryAvailability[h.id] == true
                     if (dirAvailable) {
@@ -321,7 +322,12 @@ private fun HistoryThumbnail(h: HistoryItem) {
                 )
             }
             AsyncImage(
-                model = thumbUrl,
+                model = ImageRequest.Builder(coil3.PlatformContext.INSTANCE)
+                    .data(thumbUrl)
+                    // The row height is 72.dp and thumbnail column width is 88.dp
+                    // Provide a fixed request size to avoid decoding oversized bitmaps.
+                    .size(88, 72)
+                    .build(),
                 contentDescription = stringResource(Res.string.thumbnail_content_desc),
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
@@ -378,7 +384,10 @@ private fun InProgressThumbnail(item: DownloadManager.DownloadItem) {
                 )
             }
             AsyncImage(
-                model = thumbUrl,
+                model = ImageRequest.Builder(coil3.PlatformContext.INSTANCE)
+                    .data(thumbUrl)
+                    .size(88, 72)
+                    .build(),
                 contentDescription = stringResource(Res.string.thumbnail_content_desc),
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop

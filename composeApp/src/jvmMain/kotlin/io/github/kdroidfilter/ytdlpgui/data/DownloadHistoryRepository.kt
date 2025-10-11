@@ -40,7 +40,13 @@ class DownloadHistoryRepository(
 
     fun reload() {
         val rows = db.databaseQueries.selectAllHistory().executeAsList()
-        _history.value = rows.map { it.toModel() }
+        // Keep only a bounded number of newest entries in memory to reduce RAM usage.
+        // Older entries remain in the database and can be surfaced later if needed.
+        _history.value = rows
+            .asSequence()
+            .map { it.toModel() }
+            .take(MAX_HISTORY_IN_MEMORY)
+            .toList()
     }
 
     fun add(
@@ -102,6 +108,9 @@ class DownloadHistoryRepository(
     }
 
     companion object {
+        // Upper bound for history items kept in memory/UI.
+        private const val MAX_HISTORY_IN_MEMORY: Int = 200
+
         fun createDatabase(dbFile: File): Database {
             dbFile.parentFile?.mkdirs()
             val driver = JdbcSqliteDriver("jdbc:sqlite:${dbFile.absolutePath}")
