@@ -131,7 +131,8 @@ fun DownloadView(
                 InProgressRow(
                     item = item,
                     onCancel = { id -> onEvent(DownloadEvents.Cancel(id)) },
-                    onShowError = { id -> onEvent(DownloadEvents.ShowErrorDialog(id)) }
+                    onShowError = { id -> onEvent(DownloadEvents.ShowErrorDialog(id)) },
+                    onDismissFailed = { id -> onEvent(DownloadEvents.DismissFailed(id)) }
                 )
                 Divider(
                     color = FluentTheme.colors.control.secondary,
@@ -398,7 +399,8 @@ private fun InProgressThumbnail(item: DownloadManager.DownloadItem) {
 private fun InProgressRow(
     item: DownloadManager.DownloadItem,
     onCancel: (String) -> Unit,
-    onShowError: (String) -> Unit
+    onShowError: (String) -> Unit,
+    onDismissFailed: (String) -> Unit
 ) {
     Row(
         modifier = Modifier.fillMaxWidth().height(72.dp),
@@ -422,7 +424,7 @@ private fun InProgressRow(
         Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             when (item.status) {
                 DownloadManager.DownloadItem.Status.Failed -> {
-                    // Show error icon for failed downloads
+                    // Error details button
                     TooltipBox(tooltip = { Text(stringResource(Res.string.view_error_details)) }) {
                         SubtleButton(
                             iconOnly = true,
@@ -433,6 +435,19 @@ private fun InProgressRow(
                                 Icons.Default.ErrorCircle,
                                 stringResource(Res.string.view_error_details),
                                 tint = FluentTheme.colors.system.critical
+                            )
+                        }
+                    }
+                    // Dismiss/remove from list button
+                    TooltipBox(tooltip = { Text(stringResource(Res.string.tooltip_remove_from_list)) }) {
+                        SubtleButton(
+                            iconOnly = true,
+                            onClick = { onDismissFailed(item.id) },
+                            modifier = Modifier.size(27.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Dismiss,
+                                stringResource(Res.string.remove_from_list)
                             )
                         }
                     }

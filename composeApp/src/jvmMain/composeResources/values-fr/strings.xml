@@ -192,4 +192,8 @@
     <string name="ok">OK</string>
     <string name="view_error_details">Voir les détails de l'erreur</string>
     <string name="copy_error">Copier l'erreur dans le presse-papiers</string>
+    
+    <!-- Retrait/suppression d'un élément en échec -->
+    <string name="remove_from_list">Supprimer de la liste</string>
+    <string name="tooltip_remove_from_list">Supprimer cet élément de la liste</string>
 </resources>
