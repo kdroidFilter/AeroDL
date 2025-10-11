@@ -244,9 +244,15 @@ class DownloadManager(
                 // Cleanup sink whatever the result
                 runCatching { if (finalPathSink.exists()) finalPathSink.delete() }
 
-                // Drop completed items from memory immediately to prevent list growth
-                // (UI shows active and failed only; completed are persisted in history)
-                remove(id)
+                // Only remove from memory when the download actually succeeded.
+                // Keep failed items so the user can see the error and dismiss manually.
+                if (event.success) {
+                    // Drop completed items to prevent list growth (history persists them)
+                    remove(id)
+                } else {
+                    // Ensure pending queue advances after a failure as well
+                    maybeStartPending()
+                }
             }
 
             is Event.Error -> {
