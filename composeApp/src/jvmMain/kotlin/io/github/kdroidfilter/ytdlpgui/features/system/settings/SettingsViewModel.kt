@@ -15,7 +15,12 @@ import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsState
+import androidx.lifecycle.viewModelScope
 
 class SettingsViewModel(
     private val navController: NavHostController,
@@ -36,6 +41,47 @@ class SettingsViewModel(
     val clipboardMonitoring: StateFlow<Boolean> = settingsRepository.clipboardMonitoringEnabled
     val notifyOnComplete: StateFlow<Boolean> = settingsRepository.notifyOnComplete
     val autoLaunchEnabled: StateFlow<Boolean> = settingsRepository.autoLaunchEnabled
+
+    // Combined UI state for settings
+    val state = combine(
+        isLoading,
+        noCheckCertificate,
+        cookiesFromBrowser,
+        includePresetInFilename,
+        embedThumbnailInMp3,
+        parallelDownloads,
+        downloadDirPath,
+        clipboardMonitoring,
+        autoLaunchEnabled,
+        notifyOnComplete,
+    ) { values: Array<Any?> ->
+        val loading = values[0] as Boolean
+        val noCheck = values[1] as Boolean
+        val cookies = values[2] as String
+        val includePreset = values[3] as Boolean
+        val embedThumb = values[4] as Boolean
+        val parallel = values[5] as Int
+        val downloadDir = values[6] as String
+        val clipboard = values[7] as Boolean
+        val autoLaunch = values[8] as Boolean
+        val notify = values[9] as Boolean
+        SettingsState(
+            isLoading = loading,
+            noCheckCertificate = noCheck,
+            cookiesFromBrowser = cookies,
+            includePresetInFilename = includePreset,
+            embedThumbnailInMp3 = embedThumb,
+            parallelDownloads = parallel,
+            downloadDirPath = downloadDir,
+            clipboardMonitoringEnabled = clipboard,
+            autoLaunchEnabled = autoLaunch,
+            notifyOnComplete = notify,
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = SettingsState.defaultState,
+    )
 
     init {
         // Query system autostart state at startup asynchronously

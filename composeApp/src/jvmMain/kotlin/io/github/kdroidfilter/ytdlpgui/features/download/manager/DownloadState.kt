@@ -1,7 +1,4 @@
 package io.github.kdroidfilter.ytdlpgui.features.download.manager
-
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlp.model.ResolutionAvailability
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
@@ -214,13 +211,3 @@ data class DownloadState(
         )
     }
 }
-
-@Composable
-fun collectDownloadState(viewModel: DownloadViewModel): DownloadState =
-    DownloadState(
-        isLoading = viewModel.isLoading.collectAsState().value,
-        items = viewModel.items.collectAsState().value,
-        history = viewModel.history.collectAsState().value,
-        directoryAvailability = viewModel.directoryAvailability.collectAsState(initial = emptyMap()).value,
-        errorDialogItem = viewModel.errorDialogItem.collectAsState().value,
-    )

@@ -13,7 +13,10 @@ import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import io.github.kdroidfilter.ytdlpgui.core.util.errorln
 import io.github.kdroidfilter.ytdlpgui.core.util.infoln
@@ -46,6 +49,41 @@ class SingleDownloadViewModel(
 
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage = _errorMessage.asStateFlow()
+
+    // Expose a single combined state to the UI
+    val state = combine(
+        isLoading,
+        errorMessage,
+        videoInfo,
+        availablePresets,
+        selectedPreset,
+        availableSubtitles,
+        selectedSubtitles,
+    ) { values: Array<Any?> ->
+        val loading = values[0] as Boolean
+        val error = values[1] as String?
+        val info = values[2] as VideoInfo?
+        @Suppress("UNCHECKED_CAST")
+        val presets = values[3] as List<YtDlpWrapper.Preset>
+        val preset = values[4] as YtDlpWrapper.Preset?
+        @Suppress("UNCHECKED_CAST")
+        val subs = values[5] as Map<String, SubtitleInfo>
+        @Suppress("UNCHECKED_CAST")
+        val selectedSubs = values[6] as List<String>
+        SingleDownloadState(
+            isLoading = loading,
+            errorMessage = error,
+            videoInfo = info,
+            availablePresets = presets,
+            selectedPreset = preset,
+            availableSubtitles = subs,
+            selectedSubtitles = selectedSubs,
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = SingleDownloadState.loadingState,
+    )
 
     init {
         val scope = CoroutineScope(Dispatchers.IO)

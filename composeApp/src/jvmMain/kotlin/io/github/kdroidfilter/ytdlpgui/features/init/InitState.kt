@@ -1,8 +1,5 @@
 package io.github.kdroidfilter.ytdlpgui.features.init
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-
 data class InitState(
     val checkingYtDlp: Boolean = false,
     val checkingFFmpeg: Boolean = false,
@@ -68,9 +65,4 @@ data class InitState(
             downloadFfmpegProgress = 60.0f
         )
     }
-}
-
-@Composable
-fun collectInitState(viewModel: InitViewModel) : InitState {
-    return viewModel.state.collectAsState().value
 }

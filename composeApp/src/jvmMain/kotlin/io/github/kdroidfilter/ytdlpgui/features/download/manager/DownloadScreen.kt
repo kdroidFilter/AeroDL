@@ -56,6 +56,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import ytdlpgui.composeapp.generated.resources.*
 import org.koin.compose.viewmodel.koinViewModel
+import androidx.compose.runtime.collectAsState
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -64,7 +65,7 @@ import kotlin.math.roundToInt
 @Composable
 fun DownloaderScreen() {
     val viewModel = koinViewModel<DownloadViewModel>()
-    val state = collectDownloadState(viewModel)
+    val state = viewModel.state.collectAsState().value
     DownloadView(
         state = state,
         onEvent = viewModel::onEvents,
