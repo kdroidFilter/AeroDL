@@ -126,7 +126,6 @@ fun main() = application {
             )
             if (!isSingleInstance) exitApplication()
 
-            // Create NavController and register in Koin FIRST (same pattern as TrayAppState)
             val existingNavController = remember { runCatching { koin.get<NavHostController>() }.getOrNull() }
             val navController = existingNavController ?: rememberNavController()
             if (existingNavController == null) {
