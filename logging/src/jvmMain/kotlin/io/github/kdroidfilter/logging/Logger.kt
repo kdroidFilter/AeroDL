@@ -32,25 +32,24 @@ private const val COLOR_RESET = "\u001b[0m"
 
 private fun nowString(): String = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(Date())
 
-private inline fun logAt(minLevel: LoggingLevel, color: String, tag: String, crossinline message: () -> String) {
+private fun logAt(minLevel: LoggingLevel, color: String, tag: String, message: () -> String) {
     if (!LoggerConfig.enabled || LoggerConfig.level.priority > minLevel.priority) return
     val ts = if (LoggerConfig.showTimestamp) "[${nowString()}] " else ""
     val content = "[$tag] $ts${message()}"
     if (LoggerConfig.useColors) println(color + content + COLOR_RESET) else kotlin.io.println(content)
 }
 
-inline fun verboseln(noinline message: () -> String) =
+fun verboseln(message: () -> String) =
     logAt(LoggingLevel.VERBOSE, COLOR_LIGHT_GRAY, "VERBOSE", message)
 
-inline fun debugln(noinline message: () -> String) =
+fun debugln(message: () -> String) =
     logAt(LoggingLevel.DEBUG, COLOR_LIGHT_GRAY, "DEBUG", message)
 
-inline fun infoln(noinline message: () -> String) =
+fun infoln(message: () -> String) =
     logAt(LoggingLevel.INFO, COLOR_AQUA, "INFO", message)
 
-inline fun warnln(noinline message: () -> String) =
+fun warnln(message: () -> String) =
     logAt(LoggingLevel.WARN, COLOR_ORANGE, "WARN", message)
 
-inline fun errorln(noinline message: () -> String) =
+fun errorln(message: () -> String) =
     logAt(LoggingLevel.ERROR, COLOR_RED, "ERROR", message)
-
