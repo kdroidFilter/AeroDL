@@ -182,6 +182,24 @@ class SingleDownloadViewModel(
                     }
                 }
             }
+            SingleDownloadEvents.ScreenDisposed -> {
+                infoln { "[SingleDownloadViewModel] Screen disposed: clearing heavy state" }
+                // Clear heavy state to release references quickly
+                _videoInfo.value = null
+                _availablePresets.value = emptyList()
+                _selectedPreset.value = null
+                _availableSubtitles.value = emptyMap()
+                _selectedSubtitles.value = emptyList()
+                _errorMessage.value = null
+                _isLoading.value = false
+
+                // Hint GC after dereferencing large objects
+                try {
+                    System.gc()
+                } catch (_: Throwable) {
+                    // ignore
+                }
+            }
         }
     }
 }
