@@ -8,11 +8,13 @@ This directory contains pre-configured run configurations for IntelliJ IDEA / An
 - **Purpose**: Normal development mode
 - **Settings**: Preserves all application settings and cache
 - **Use when**: Regular development, testing features with existing data
+- **Logs**: Enabled via `-PdebugLogs=true`
 
 ### 🧹 Run (Clean Install)
 - **Purpose**: Clean installation mode for testing onboarding
 - **Settings**: Clears all settings and cache on startup
 - **Use when**: Testing the onboarding flow from scratch
+- **Logs**: Enabled via `-PcleanInstall=true -PdebugLogs=true`
 
 ## How to Use
 
@@ -23,8 +25,8 @@ This directory contains pre-configured run configurations for IntelliJ IDEA / An
 
 ## Technical Details
 
-- **Normal mode**: Runs with default settings (`cleanInstall=false`)
-- **Clean Install mode**: Runs with `-PcleanInstall=true` gradle property
+- **Normal mode**: Runs with default settings (`cleanInstall=false`) and logs enabled (`-PdebugLogs=true`)
+- **Clean Install mode**: Runs with `-PcleanInstall=true` and logs enabled (`-PdebugLogs=true`)
   - Clears Java temp directory (`/tmp`)
   - Clears all application settings (forces onboarding)
 

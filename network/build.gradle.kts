@@ -24,6 +24,9 @@ kotlin {
 
             // Security - Native trusted roots
             implementation(libs.jvm.native.trusted.roots)
+
+            // Internal logging module for shared logging config
+            implementation(project(":logging"))
         }
     }
 }

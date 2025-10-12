@@ -6,6 +6,7 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.logging.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
+import io.github.kdroidfilter.logging.LoggerConfig
 
 /**
  * Provides a configured Ktor HttpClient that uses native OS certificate stores.
@@ -20,7 +21,7 @@ object KtorConfig {
      * @return Configured HttpClient instance
      */
     fun createHttpClient(
-        logLevel: LogLevel = LogLevel.INFO,
+        logLevel: LogLevel = if (LoggerConfig.enabled) LogLevel.INFO else LogLevel.NONE,
         json: Json = Json {
             ignoreUnknownKeys = true
             isLenient = true

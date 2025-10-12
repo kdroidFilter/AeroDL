@@ -8,7 +8,7 @@ import java.util.Date
  * Provides level filtering, optional timestamps, and ANSI colors.
  */
 object LoggerConfig {
-    @Volatile var enabled: Boolean = true
+    @Volatile var enabled: Boolean = System.getProperty("debugLogs", "false").toBoolean()
     @Volatile var level: LoggingLevel = LoggingLevel.VERBOSE
     @Volatile var showTimestamp: Boolean = true
     @Volatile var useColors: Boolean = true
@@ -31,6 +31,7 @@ private const val COLOR_ORANGE = "\u001b[38;2;255;165;0m"
 private const val COLOR_RESET = "\u001b[0m"
 
 private fun nowString(): String = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(Date())
+
 
 private fun logAt(minLevel: LoggingLevel, color: String, tag: String, message: () -> String) {
     if (!LoggerConfig.enabled || LoggerConfig.level.priority > minLevel.priority) return
