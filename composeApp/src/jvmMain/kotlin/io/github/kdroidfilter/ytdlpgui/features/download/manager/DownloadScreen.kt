@@ -515,7 +515,7 @@ private fun InProgressRow(
                         Column(verticalArrangement = Arrangement.spacedBy(2.dp), horizontalAlignment = Alignment.End) {
                             val speedLine = if (item.status == DownloadManager.DownloadItem.Status.Running) speedText else null
                             Text(
-                                text = speedLine ?: " ",
+                                text = speedLine?.let { stringResource(Res.string.download_speed, it) } ?: " ",
                                 style = FluentTheme.typography.caption,
                                 fontSize = 11.sp,
                                 maxLines = 1,

@@ -196,4 +196,7 @@
     <!-- Retrait/suppression d'un élément en échec -->
     <string name="remove_from_list">Supprimer de la liste</string>
     <string name="tooltip_remove_from_list">Supprimer cet élément de la liste</string>
+
+    <!-- Affichage de la vitesse de téléchargement -->
+    <string name="download_speed">Vitesse : %1$s</string>
 </resources>
