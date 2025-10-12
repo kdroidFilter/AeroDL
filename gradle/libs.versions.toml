@@ -14,6 +14,7 @@ junit = "4.13.2"
 # Kotlin extensions
 kotlinx-coroutines = "1.10.2"
 serialization-json = "1.9.0"
+cardiologist = "0.8.0"
 
 # UI Libraries
 fluent = "v0.1.0"
@@ -82,6 +83,8 @@ filekit-dialogs-compose = { module = "io.github.vinceglb:filekit-dialogs-compose
 multiplatform-settings = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "multiplatform-settings" }
 knotify = { module = "io.github.kdroidfilter:knotify", version.ref = "knotify" }
 knotify-compose = { module = "io.github.kdroidfilter:knotify-compose", version.ref = "knotify" }
+
+cardiologist = { module = "io.github.kevincianfarini.cardiologist:cardiologist", version.ref = "cardiologist" }
 
 
 # Ktor
