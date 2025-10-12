@@ -306,7 +306,12 @@ class YtDlpWrapper {
                                         tail.poll(); tail.offer(line)
                                     }
                                     val progress = NetAndArchive.parseProgress(line)
-                                    if (progress != null) onEvent(Event.Progress(progress, line)) else onEvent(Event.Log(line))
+                                    if (progress != null) {
+                                        val speed = NetAndArchive.parseSpeedBytesPerSec(line)
+                                        onEvent(Event.Progress(progress, speed, line))
+                                    } else {
+                                        onEvent(Event.Log(line))
+                                    }
                                 }
                             }
                         } catch (e: Exception) {
