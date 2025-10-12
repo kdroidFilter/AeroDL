@@ -18,6 +18,10 @@ import io.github.kdroidfilter.platformtools.OperatingSystem
 import io.github.kdroidfilter.platformtools.releasefetcher.config.client
 import io.github.kdroidfilter.platformtools.releasefetcher.github.GitHubReleaseFetcher
 import io.github.kdroidfilter.platformtools.releasefetcher.github.model.Asset
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.hours
+import io.github.kevincianfarini.cardiologist.fixedPeriodPulse
+import io.github.kevincianfarini.cardiologist.PulseBackpressureStrategy
 
 class InitViewModel(
     private val ytDlpWrapper: YtDlpWrapper,
@@ -51,6 +55,20 @@ class InitViewModel(
 
             // Already configured → initialize yt-dlp and ffmpeg
             startInitialization(navigateToHomeWhenDone = true)
+        }
+
+        // Schedule periodic update checks every 12 hours (no overlap if previous run is still active)
+        startPeriodicUpdateChecks()
+    }
+
+    @OptIn(kotlin.time.ExperimentalTime::class)
+    private fun startPeriodicUpdateChecks() {
+        viewModelScope.launch {
+            Clock.System
+                .fixedPeriodPulse(12.hours)
+                .beat(strategy = PulseBackpressureStrategy.SkipNext) {
+                    checkForUpdates()
+                }
         }
     }
 

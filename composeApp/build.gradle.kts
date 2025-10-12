@@ -81,6 +81,7 @@ kotlin {
             implementation(compose.desktop.currentOs)
             implementation(libs.composenativetray)
             implementation(libs.kotlinx.coroutinesSwing)
+            implementation(libs.cardiologist)
 
             // no external markdown UI renderer; using lightweight parser
 
