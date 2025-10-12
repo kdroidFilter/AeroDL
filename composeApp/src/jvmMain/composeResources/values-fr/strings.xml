@@ -115,6 +115,8 @@
     <!-- Descriptions de contenu (accessibilité) -->
     <string name="cd_error_icon">Erreur</string>
     <string name="cd_filmstrip_play">Icône pellicule lecture</string>
+    <string name="single_audio_quality">Qualité audio</string>
+    <string name="single_auto_generated">automatique</string>
     <string name="cd_textbox">Icône zone de texte</string>
     
     <!-- Notifications de surveillance du presse-papiers -->

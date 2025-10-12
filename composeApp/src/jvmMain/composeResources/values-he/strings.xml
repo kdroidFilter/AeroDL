@@ -119,6 +119,22 @@
     <string name="menu_hide_window">הסתר חלון</string>
     <string name="quit">יציאה</string>
 
+    <!-- Single download screen -->
+    <string name="download_type_video">וידאו</string>
+    <string name="download_type_audio">שמע</string>
+    <string name="single_formats">פורמטים</string>
+    <string name="single_subtitles">כתוביות</string>
+    <string name="single_no_subtitle">ללא כתוביות</string>
+    <string name="error_fetch_video_info">אירעה שגיאה בעת שליפת פרטי הווידאו: %1$s</string>
+    <string name="thumbnail_content_desc">תמונה ממוזערת</string>
+    <string name="cd_error_icon">סמל שגיאה</string>
+    <string name="cd_textbox">סמל תיבת טקסט</string>
+    <string name="single_choose_format">בחרו פורמט להורדה:</string>
+    <string name="single_description">תיאור</string>
+    <string name="cd_filmstrip_play">סמל ניגון סרט</string>
+    <string name="single_audio_quality">איכות שמע</string>
+    <string name="single_auto_generated">אוטומטי</string>
+
     <!-- פרטי אפליקציה -->
     <string name="app_version_label">גרסת אפליקציה: %1$s</string>
     
