@@ -156,14 +156,14 @@ fun main() = application {
                         label = runBlocking { getString(Res.string.settings_auto_launch_title) },
                         checked = autoStartEnabled,
                         onCheckedChange = { checked ->
-                            settingsVm.onEvents(SettingsEvents.SetAutoLaunchEnabled(checked))
+                            settingsVm.handleEvent(SettingsEvents.SetAutoLaunchEnabled(checked))
                         },
                     )
                     CheckableItem(
                         label = runBlocking { getString(Res.string.settings_clipboard_monitoring_title) },
                         checked = clipboardEnabled,
                         onCheckedChange = { checked ->
-                            settingsVm.onEvents(SettingsEvents.SetClipboardMonitoring(checked))
+                            settingsVm.handleEvent(SettingsEvents.SetClipboardMonitoring(checked))
                         },
                     )
                     Divider()

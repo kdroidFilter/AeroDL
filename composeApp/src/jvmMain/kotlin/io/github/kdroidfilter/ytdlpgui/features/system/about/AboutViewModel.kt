@@ -1,33 +1,34 @@
 package io.github.kdroidfilter.ytdlpgui.features.system.about
 
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import io.github.kdroidfilter.platformtools.getAppVersion
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
-import androidx.lifecycle.viewModelScope
+import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
 import kotlinx.coroutines.launch
 
 class AboutViewModel(
     navController: NavHostController,
-    ytDlpWrapper: YtDlpWrapper,
-) : ViewModel() {
+    private val ytDlpWrapper: YtDlpWrapper,
+) : MVIViewModel<AboutState, AboutEvents>() {
 
-    private val _state = MutableStateFlow(AboutState())
-    val state = _state.asStateFlow()
+    override fun initialState(): AboutState = AboutState()
 
     init {
         viewModelScope.launch {
-            _state.value = AboutState(
-                appVersion = getAppVersion(),
-                ytdlpVersion = ytDlpWrapper.version(),
-                ffmpegVersion = ytDlpWrapper.ffmpegVersion()
-            )
+            val ytdlpVersion = ytDlpWrapper.version()
+            val ffmpegVersion = ytDlpWrapper.ffmpegVersion()
+            update {
+                copy(
+                    appVersion = getAppVersion(),
+                    ytdlpVersion = ytdlpVersion,
+                    ffmpegVersion = ffmpegVersion
+                )
+            }
         }
     }
 
-    fun onEvents(event: AboutEvents) {
+    override fun handleEvent(event: AboutEvents) {
         when (event) {
             AboutEvents.Refresh -> { /* TODO: Implement if needed */ }
         }

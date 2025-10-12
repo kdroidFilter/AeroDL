@@ -37,7 +37,7 @@ fun ClipboardScreen(
     val dependencyInfoBarDismissed by viewModel.dependencyInfoBarDismissed.collectAsState()
     ClipboardView(
         state = state,
-        onEvent = viewModel::onEvents,
+        onEvent = viewModel::handleEvent,
         currentStep = currentStep,
         initState = initState,
         totalSteps = viewModel.getTotalSteps(),

@@ -24,10 +24,10 @@ import ytdlpgui.composeapp.generated.resources.*
 @Composable
 fun HomeScreen() {
     val viewModel = koinInject<HomeViewModel>()
-    val state = viewModel.state.collectAsState().value
+    val state = viewModel.uiState.collectAsState().value
     HomeView(
         state = state,
-        onEvent = viewModel::onEvents,
+        onEvent = viewModel::handleEvent,
     )
 }
 

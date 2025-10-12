@@ -44,7 +44,7 @@ fun CookiesScreen(
     val dependencyInfoBarDismissed by viewModel.dependencyInfoBarDismissed.collectAsState()
     CookiesView(
         state = state,
-        onEvent = viewModel::onEvents,
+        onEvent = viewModel::handleEvent,
         currentStep = currentStep,
         initState = initState,
         totalSteps = viewModel.getTotalSteps(),
