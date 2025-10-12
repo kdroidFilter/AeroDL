@@ -9,6 +9,7 @@ import coil3.memory.MemoryCache
 import okhttp3.OkHttpClient
 import java.io.File
 import okio.Path.Companion.toPath
+import io.github.kdroidfilter.logging.LoggerConfig
 
 /**
  * Provides Coil ImageLoader configuration that uses native OS certificate stores.
@@ -32,7 +33,7 @@ object CoilConfig {
      * @param logger Optional logger for debugging (default: DebugLogger)
      * @return Configured ImageLoader instance
      */
-    fun createImageLoader(logger: Logger? = DebugLogger()): ImageLoader {
+    fun createImageLoader(logger: Logger? = if (LoggerConfig.enabled) DebugLogger() else null): ImageLoader {
         val cacheBase = File(System.getProperty("user.home"), ".aerodl/coil_cache").apply { mkdirs() }
         return ImageLoader.Builder(coil3.PlatformContext.INSTANCE)
             .components {
