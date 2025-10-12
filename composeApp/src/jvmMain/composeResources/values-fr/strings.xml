@@ -199,4 +199,9 @@
 
     <!-- Affichage de la vitesse de téléchargement -->
     <string name="download_speed">Vitesse : %1$s</string>
+    <string name="unit_bps">o/s</string>
+    <string name="unit_kibps">Kio/s</string>
+    <string name="unit_mibps">Mio/s</string>
+    <string name="unit_gibps">Gio/s</string>
+    <string name="unit_tibps">Tio/s</string>
 </resources>

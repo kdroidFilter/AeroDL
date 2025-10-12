@@ -469,7 +469,7 @@ private fun InProgressRow(
                     // Show progress ring for running/pending downloads
                     val progressFraction = (item.progress.coerceIn(0f, 100f)) / 100f
                     val percent = (progressFraction * 100f).roundToInt()
-                    val speedText = item.speedBytesPerSec?.let { humanizeSpeed(it) }
+                    val speedText = item.speedBytesPerSec?.let { humanizeSpeedLocalized(it) }
                     var hovered by remember { mutableStateOf(false) }
 
                     Column(modifier = Modifier.width(72.dp), horizontalAlignment = Alignment.End) {
@@ -573,14 +573,21 @@ fun DownloadScreenPreviewWithUpdateInfo() {
     DownloadView(state = DownloadState.withUpdateInfoState, onEvent = {})
 }
 
-// Simple humanizer for bytes per second in binary units
-private fun humanizeSpeed(bps: Long): String {
-    val units = arrayOf("B/s", "KiB/s", "MiB/s", "GiB/s", "TiB/s")
+// Localized humanizer for bytes per second in binary units
+@Composable
+private fun humanizeSpeedLocalized(bps: Long): String {
     var value = bps.toDouble()
     var idx = 0
-    while (value >= 1024.0 && idx < units.lastIndex) {
+    while (value >= 1024.0 && idx < 4) { // up to TiB/s
         value /= 1024.0
         idx++
     }
-    return String.format(Locale.US, "%.1f %s", value, units[idx])
+    val unit = when (idx) {
+        0 -> stringResource(Res.string.unit_bps)
+        1 -> stringResource(Res.string.unit_kibps)
+        2 -> stringResource(Res.string.unit_mibps)
+        3 -> stringResource(Res.string.unit_gibps)
+        else -> stringResource(Res.string.unit_tibps)
+    }
+    return String.format(Locale.getDefault(), "%.1f %s", value, unit)
 }
