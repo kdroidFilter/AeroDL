@@ -18,9 +18,13 @@ class NetAndArchiveUtilsTest {
 
     @Test
     fun parseSpeed_parsesBytesPerSecond() {
-        assertEquals(2_000_000L, NetAndArchive.parseSpeedBytesPerSec("[download]  12.5% of 10MiB at 2.0MiB/s ETA 00:19") )
-        assertEquals(850L * 1024L, NetAndArchive.parseSpeedBytesPerSec("[download]  99% of 2.0GiB at 850KiB/s") )
-        assertEquals(1_200_000L, NetAndArchive.parseSpeedBytesPerSec("[download]  100,0% of ~ 100.0MiB at 1.2MB/s") )
+        // 2.0 MiB/s -> binary units
+        assertEquals(2L * 1024L * 1024L, NetAndArchive.parseSpeedBytesPerSec("[download]  12.5% of 10MiB at 2.0MiB/s ETA 00:19"))
+        // 850 KiB/s -> binary units
+        assertEquals(850L * 1024L, NetAndArchive.parseSpeedBytesPerSec("[download]  99% of 2.0GiB at 850KiB/s"))
+        // 1.2 MB/s -> decimal units
+        assertEquals(1_200_000L, NetAndArchive.parseSpeedBytesPerSec("[download]  100,0% of ~ 100.0MiB at 1.2MB/s"))
+        // No speed
         assertEquals(null, NetAndArchive.parseSpeedBytesPerSec("no speed here"))
     }
 
