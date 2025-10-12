@@ -115,6 +115,8 @@
     <string name="cd_error_icon">Error</string>
     <string name="cd_filmstrip_play">Filmstrip play icon</string>
     <string name="cd_textbox">Textbox icon</string>
+    <string name="single_audio_quality">Audio quality</string>
+    <string name="single_auto_generated">auto</string>
     
     <!-- Settings: Clipboard monitoring -->
     <string name="settings_clipboard_monitoring_title">Clipboard monitoring</string>
