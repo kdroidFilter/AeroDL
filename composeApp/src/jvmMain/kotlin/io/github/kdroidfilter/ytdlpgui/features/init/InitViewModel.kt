@@ -67,8 +67,21 @@ class InitViewModel(
             Clock.System
                 .fixedPeriodPulse(12.hours)
                 .beat(strategy = PulseBackpressureStrategy.SkipNext) {
+                    // App update check
                     checkForUpdates()
+                    // yt-dlp update check + auto-download if newer
+                    runCatching { checkAndUpdateYtDlp() }
                 }
+        }
+    }
+
+    /**
+     * Periodically checks for yt-dlp updates and downloads the latest binary if available.
+     * Runs silently in background (no UI state toggling), leveraging wrapper's caching.
+     */
+    private suspend fun checkAndUpdateYtDlp() {
+        if (ytDlpWrapper.hasUpdate()) {
+            ytDlpWrapper.downloadOrUpdate()
         }
     }
 
