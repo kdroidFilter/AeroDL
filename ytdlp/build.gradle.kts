@@ -18,6 +18,9 @@ kotlin {
             implementation(libs.platformtools.releasefetcher)
             implementation(libs.platformtools.core)
         }
+        jvmTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlin.testJunit)
+        }
     }
 }
-

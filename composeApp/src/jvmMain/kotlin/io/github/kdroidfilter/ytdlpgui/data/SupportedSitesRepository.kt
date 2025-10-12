@@ -1,12 +1,11 @@
 package io.github.kdroidfilter.ytdlpgui.data
 
+import io.github.kdroidfilter.network.HttpsConnectionFactory
 import io.github.kdroidfilter.ytdlpgui.db.Database
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import java.net.HttpURLConnection
 import java.net.URI
-import java.net.URL
 
 /**
  * Repository to fetch and cache supported sites from yt-dlp GitHub extractor directory.
@@ -86,12 +85,13 @@ class SupportedSitesRepository(
 
     private fun fetchExtractorDirectory(): List<GithubContentItem> {
         val apiUrl = "https://api.github.com/repos/yt-dlp/yt-dlp/contents/yt_dlp/extractor?ref=master"
-        val conn = URL(apiUrl).openConnection() as HttpURLConnection
-        conn.requestMethod = "GET"
-        conn.setRequestProperty("Accept", "application/vnd.github+json")
-        conn.setRequestProperty("User-Agent", "ytdlpgui/1.0")
-        conn.connectTimeout = 15000
-        conn.readTimeout = 30000
+        val conn = HttpsConnectionFactory.openConnection(apiUrl) {
+            requestMethod = "GET"
+            setRequestProperty("Accept", "application/vnd.github+json")
+            setRequestProperty("User-Agent", "ytdlpgui/1.0")
+            connectTimeout = 15000
+            readTimeout = 30000
+        }
         return conn.inputStream.use { input ->
             val body = input.bufferedReader().readText()
             json.decodeFromString(body)
