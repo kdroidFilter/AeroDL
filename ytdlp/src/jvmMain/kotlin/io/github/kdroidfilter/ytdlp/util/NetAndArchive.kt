@@ -216,11 +216,12 @@ object NetAndArchive {
     //   "[download]  99% of 2.0GiB at 850KiB/s"
     //   "[download]  100,0% of ~ 100.0MiB at 1.2MiB/s"
     private val NBSP: Char = '\u00A0'
-    private val speedRegex = Regex("\\bat\\s+([~<>]?)[$NBSP\\s]*([\\d.,]+)[$NBSP\\s]*([KMGTP]?i?B)/s\\b", RegexOption.IGNORE_CASE)
+    // Match speed with or without the literal "at" before it
+    private val speedRegex = Regex("(?:\\bat\\s+)?[$NBSP\\s]*([\\d.,]+)[$NBSP\\s]*([KMGTP]?i?B)/s\\b", RegexOption.IGNORE_CASE)
     fun parseSpeedBytesPerSec(line: String): Long? {
         val m = speedRegex.find(line) ?: return null
-        val number = m.groupValues.getOrNull(2)?.replace(',', '.')?.toDoubleOrNull() ?: return null
-        val unit = (m.groupValues.getOrNull(3) ?: "").uppercase()
+        val number = m.groupValues.getOrNull(1)?.replace(',', '.')?.toDoubleOrNull() ?: return null
+        val unit = (m.groupValues.getOrNull(2) ?: "").uppercase()
         val multiplier = when (unit) {
             "B" -> 1.0
             "KB" -> 1_000.0
