@@ -19,9 +19,9 @@ import io.github.kdroidfilter.ytdlpgui.core.config.SettingsKeys
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.platform.filesystem.FileExplorerUtils
 import io.github.kdroidfilter.ytdlpgui.core.platform.notifications.NotificationThumbUtils
-import io.github.kdroidfilter.ytdlpgui.core.util.errorln
-import io.github.kdroidfilter.ytdlpgui.core.util.infoln
-import io.github.kdroidfilter.ytdlpgui.core.util.warnln
+import io.github.kdroidfilter.logging.errorln
+import io.github.kdroidfilter.logging.infoln
+import io.github.kdroidfilter.logging.warnln
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

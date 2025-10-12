@@ -2,8 +2,8 @@ package io.github.kdroidfilter.ytdlp.core
 
 import io.github.kdroidfilter.ytdlp.model.*
 import io.github.kdroidfilter.ytdlp.util.YouTubeThumbnailHelper
-import io.github.kdroidfilter.ytdlp.util.debugln
-import io.github.kdroidfilter.ytdlp.util.infoln
+import io.github.kdroidfilter.logging.debugln
+import io.github.kdroidfilter.logging.infoln
 import kotlinx.serialization.json.*
 
 // --- Helper to find the best direct URL from a formats array ---

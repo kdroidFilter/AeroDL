@@ -51,8 +51,8 @@ import io.github.kdroidfilter.platformtools.getOperatingSystem
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnly
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnlyRtl
-import io.github.kdroidfilter.ytdlpgui.core.util.errorln
-import io.github.kdroidfilter.ytdlpgui.core.util.infoln
+import io.github.kdroidfilter.logging.errorln
+import io.github.kdroidfilter.logging.infoln
 import io.github.kdroidfilter.ytdlpgui.di.appModule
 import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsEvents
 import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsViewModel

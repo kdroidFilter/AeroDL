@@ -18,8 +18,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import io.github.kdroidfilter.ytdlpgui.core.util.errorln
-import io.github.kdroidfilter.ytdlpgui.core.util.infoln
+import io.github.kdroidfilter.logging.errorln
+import io.github.kdroidfilter.logging.infoln
 
 class SingleDownloadViewModel(
     private val navController: NavHostController,

@@ -9,9 +9,9 @@ import io.github.kdroidfilter.ytdlp.model.PlaylistInfo
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
 import io.github.kdroidfilter.ytdlp.util.NetAndArchive
 import io.github.kdroidfilter.ytdlp.util.PlatformUtils
-import io.github.kdroidfilter.ytdlp.util.errorln
-import io.github.kdroidfilter.ytdlp.util.infoln
-import io.github.kdroidfilter.ytdlp.util.debugln
+import io.github.kdroidfilter.logging.errorln
+import io.github.kdroidfilter.logging.infoln
+import io.github.kdroidfilter.logging.debugln
 import kotlinx.coroutines.*
 import java.io.File
 import java.nio.charset.StandardCharsets
