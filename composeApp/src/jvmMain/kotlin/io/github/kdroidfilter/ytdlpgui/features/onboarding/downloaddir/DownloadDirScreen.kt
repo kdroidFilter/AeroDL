@@ -43,8 +43,9 @@ import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 fun DownloadDirScreen(
     viewModel: OnboardingViewModel = koinViewModel(),
 ) {
+    val downloadDirPath by viewModel.downloadDirPath.collectAsState()
     val state = DownloadDirState(
-        downloadDirPath = viewModel.downloadDirPath.collectAsState().value
+        downloadDirPath = downloadDirPath
     )
     val currentStep by viewModel.currentStep.collectAsState()
     val initState by viewModel.initState.collectAsState()
