@@ -68,6 +68,7 @@ class DownloadManager(
         val videoInfo: VideoInfo? = null,
         val preset: YtDlpWrapper.Preset? = null,
         val progress: Float = 0f,
+        val speedBytesPerSec: Long? = null,
         val status: Status = Status.Pending,
         val message: String? = null,
         val handle: Handle? = null,
@@ -198,7 +199,7 @@ class DownloadManager(
 
             is Event.Progress -> {
                 val pct = (event.percent ?: 0.0).toFloat().coerceIn(0f, 100f)
-                update(id) { it.copy(progress = pct, message = null) }
+                update(id) { it.copy(progress = pct, speedBytesPerSec = event.speedBytesPerSec, message = null) }
             }
 
             is Event.Log -> onLog(event.line)
