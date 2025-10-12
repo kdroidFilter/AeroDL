@@ -38,7 +38,7 @@ import ytdlpgui.composeapp.generated.resources.updating_ytdlp
 @Composable
 fun InitScreen() {
     val viewModel = koinInject<InitViewModel>()
-    val state = viewModel.state.collectAsState().value
+    val state = viewModel.uiState.collectAsState().value
     InitView(
         state = state,
     )

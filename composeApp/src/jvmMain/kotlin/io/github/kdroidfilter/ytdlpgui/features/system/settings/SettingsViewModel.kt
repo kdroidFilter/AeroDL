@@ -2,33 +2,32 @@
 
 package io.github.kdroidfilter.ytdlpgui.features.system.settings
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.kdroid.composetray.tray.api.TrayAppState
 import com.kdroid.composetray.tray.api.TrayWindowDismissMode
+import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
 import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
 import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsState
 
 class SettingsViewModel(
     private val navController: NavHostController,
     private val settingsRepository: SettingsRepository,
     private val trayAppState: TrayAppState,
-) : ViewModel() {
+) : MVIViewModel<SettingsState, SettingsEvents>() {
+
+    override fun initialState(): SettingsState = SettingsState.defaultState
 
     private val _isLoading = MutableStateFlow(false)
-    val isLoading = _isLoading.asStateFlow()
 
     // Expose settings from repository
     val noCheckCertificate: StateFlow<Boolean> = settingsRepository.noCheckCertificate
@@ -41,9 +40,9 @@ class SettingsViewModel(
     val notifyOnComplete: StateFlow<Boolean> = settingsRepository.notifyOnComplete
     val autoLaunchEnabled: StateFlow<Boolean> = settingsRepository.autoLaunchEnabled
 
-    // Combined UI state for settings
-    val state = combine(
-        isLoading,
+    // Note: This ViewModel uses a combined state from multiple sources, so we override uiState
+    override val uiState = combine(
+        _isLoading,
         noCheckCertificate,
         cookiesFromBrowser,
         includePresetInFilename,
@@ -87,7 +86,7 @@ class SettingsViewModel(
         viewModelScope.launch { settingsRepository.refreshAutoLaunchState() }
     }
 
-    fun onEvents(event: SettingsEvents) {
+    override fun handleEvent(event: SettingsEvents) {
         when (event) {
             SettingsEvents.Refresh -> {
                 settingsRepository.refresh()
@@ -129,7 +128,7 @@ class SettingsViewModel(
                         directory = null,
                         dialogSettings = FileKitDialogSettings()
                     )
-                    dir?.let { onEvents(SettingsEvents.SetDownloadDir(it.file.absolutePath)) }
+                    dir?.let { handleEvent(SettingsEvents.SetDownloadDir(it.file.absolutePath)) }
                    trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
                 }
             }

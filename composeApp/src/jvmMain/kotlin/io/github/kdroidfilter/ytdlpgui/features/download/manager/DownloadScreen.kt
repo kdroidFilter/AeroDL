@@ -54,10 +54,10 @@ import kotlin.math.roundToInt
 @Composable
 fun DownloaderScreen() {
     val viewModel = koinViewModel<DownloadViewModel>()
-    val state = viewModel.state.collectAsState().value
+    val state = viewModel.uiState.collectAsState().value
     DownloadView(
         state = state,
-        onEvent = viewModel::onEvents,
+        onEvent = viewModel::handleEvent,
     )
 }
 

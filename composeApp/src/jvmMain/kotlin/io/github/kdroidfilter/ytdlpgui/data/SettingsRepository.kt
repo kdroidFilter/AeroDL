@@ -134,7 +134,7 @@ class SettingsRepository(
         val detected = try {
             autoLaunch.isEnabled()
         } catch (e: Exception) {
-            println("Failed to check auto launch state: ${e.message}")
+            io.github.kdroidfilter.logging.errorln { "Failed to check auto launch state: ${e.message}" }
             current
         }
         _autoLaunchEnabled.value = detected

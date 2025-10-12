@@ -1,7 +1,6 @@
 package io.github.kdroidfilter.ytdlpgui.features.download.single
 
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import androidx.navigation.toRoute
@@ -10,11 +9,12 @@ import io.github.kdroidfilter.ytdlp.model.SubtitleInfo
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
+import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -23,10 +23,12 @@ import io.github.kdroidfilter.logging.infoln
 
 class SingleDownloadViewModel(
     private val navController: NavHostController,
-    private val savedStateHandle: SavedStateHandle,
+    savedStateHandle: SavedStateHandle,
     private val ytDlpWrapper: YtDlpWrapper,
     private val downloadManager: DownloadManager,
-) : ViewModel() {
+) : MVIViewModel<SingleDownloadState, SingleDownloadEvents>(savedStateHandle) {
+
+    override fun initialState(): SingleDownloadState = SingleDownloadState.loadingState
 
     val videoUrl = savedStateHandle.toRoute<Destination.Download.Single>().videoLink
     private var _videoInfo = MutableStateFlow<VideoInfo?>(null)
@@ -50,8 +52,8 @@ class SingleDownloadViewModel(
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage = _errorMessage.asStateFlow()
 
-    // Expose a single combined state to the UI
-    val state = combine(
+    // Note: This ViewModel uses a combined state from multiple sources, so we override uiState
+    override val uiState = combine(
         isLoading,
         errorMessage,
         videoInfo,
@@ -128,7 +130,7 @@ class SingleDownloadViewModel(
         }
     }
 
-    fun onEvents(event: SingleDownloadEvents) {
+    override fun handleEvent(event: SingleDownloadEvents) {
         when (event) {
             SingleDownloadEvents.Refresh -> { /* TODO */ }
             is SingleDownloadEvents.SelectPreset -> {

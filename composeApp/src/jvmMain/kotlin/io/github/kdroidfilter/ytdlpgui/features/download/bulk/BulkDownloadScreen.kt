@@ -27,10 +27,10 @@ import androidx.compose.runtime.collectAsState
 @Composable
 fun BulkDownloadScreen() {
     val viewModel = koinViewModel<BulkDownloadViewModel>()
-    val state = viewModel.state.collectAsState().value
+    val state = viewModel.uiState.collectAsState().value
     BulkDownloadView(
         state = state,
-        onEvent = viewModel::onEvents,
+        onEvent = viewModel::handleEvent,
     )
 }
 

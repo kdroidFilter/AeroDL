@@ -103,8 +103,10 @@ compose.desktop {
         mainClass = "io.github.kdroidfilter.ytdlpgui.MainKt"
 
         val cleanInstall = project.findProperty("cleanInstall")?.toString()?.toBoolean() ?: false
+        val debugLogs = project.findProperty("debugLogs")?.toString()?.toBoolean() ?: false
         jvmArgs += listOf(
-            "-DcleanInstall=$cleanInstall"
+            "-DcleanInstall=$cleanInstall",
+            "-DdebugLogs=$debugLogs"
         )
 
 

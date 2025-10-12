@@ -1,6 +1,5 @@
 package io.github.kdroidfilter.ytdlpgui.features.init
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.russhwolf.settings.Settings
@@ -8,8 +7,7 @@ import io.github.kdroidfilter.network.KtorConfig
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.ClipboardMonitorManager
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
 import kotlinx.coroutines.launch
 import io.github.kdroidfilter.ytdlpgui.core.config.SettingsKeys
 import io.github.kdroidfilter.platformtools.getAppVersion
@@ -30,9 +28,17 @@ class InitViewModel(
     // Injected to force eager initialization of clipboard monitoring
     private val clipboardMonitorManager: ClipboardMonitorManager,
     private val supportedSitesRepository: io.github.kdroidfilter.ytdlpgui.data.SupportedSitesRepository,
-) : ViewModel() {
-    private val _state = MutableStateFlow(InitState())
-    val state = _state.asStateFlow()
+) : MVIViewModel<InitState, InitEvent>() {
+
+    override fun initialState(): InitState = InitState()
+
+    override fun handleEvent(event: InitEvent) {
+        when (event) {
+            InitEvent.IgnoreUpdate -> ignoreUpdate()
+            InitEvent.DismissUpdateInfo -> dismissUpdateInfo()
+            InitEvent.StartInitialization -> startInitialization(navigateToHomeWhenDone = false)
+        }
+    }
 
     private var isInitializing = false
 
@@ -107,12 +113,14 @@ class InitViewModel(
 
                 // Only show update if there's an asset available for this platform
                 if (downloadUrl != null) {
-                    _state.value = _state.value.copy(
-                        updateAvailable = true,
-                        latestVersion = latestVersion,
-                        downloadUrl = downloadUrl,
-                        releaseBody = latestRelease.body
-                    )
+                    update {
+                        copy(
+                            updateAvailable = true,
+                            latestVersion = latestVersion,
+                            downloadUrl = downloadUrl,
+                            releaseBody = latestRelease.body
+                        )
+                    }
                 }
             }
         }
@@ -157,8 +165,8 @@ class InitViewModel(
     /**
      * Ignore the update notification and navigate to home
      */
-    fun ignoreUpdate() {
-        _state.value = _state.value.copy(updateDismissed = true)
+    private fun ignoreUpdate() {
+        update { copy(updateDismissed = true) }
         navController.navigate(Destination.MainNavigation.Home) {
             popUpTo(Destination.InitScreen) { inclusive = true }
             launchSingleTop = true
@@ -167,7 +175,7 @@ class InitViewModel(
 
     /** Persist dismissal of the update info bar for the session */
     fun dismissUpdateInfo() {
-        _state.value = _state.value.copy(updateDismissed = true)
+        update { copy(updateDismissed = true) }
     }
 
     /**
@@ -188,84 +196,99 @@ class InitViewModel(
             }.initialize { event ->
                 when (event) {
                     YtDlpWrapper.InitEvent.CheckingYtDlp -> {
-                        _state.value = _state.value.copy(
-                            checkingYtDlp = true,
-                            downloadingYtDlp = false,
-                            downloadYtDlpProgress = null,
-                            checkingFFmpeg = false,
-                            downloadingFFmpeg = false,
-                            downloadFfmpegProgress = null,
-                            updatingYtdlp = false,
-                            updatingFFmpeg = false,
-                            errorMessage = null,
-                            initCompleted = false,
-                        )
+                        update {
+                            copy(
+                                checkingYtDlp = true,
+                                downloadingYtDlp = false,
+                                downloadYtDlpProgress = null,
+                                checkingFFmpeg = false,
+                                downloadingFFmpeg = false,
+                                downloadFfmpegProgress = null,
+                                updatingYtdlp = false,
+                                updatingFFmpeg = false,
+                                errorMessage = null,
+                                initCompleted = false,
+                            )
+                        }
                     }
                     YtDlpWrapper.InitEvent.DownloadingYtDlp -> {
-                        _state.value = _state.value.copy(
-                            checkingYtDlp = false,
-                            downloadingYtDlp = true,
-                            downloadYtDlpProgress = null,
-                            errorMessage = null
-                        )
+                        update {
+                            copy(
+                                checkingYtDlp = false,
+                                downloadingYtDlp = true,
+                                downloadYtDlpProgress = null,
+                                errorMessage = null
+                            )
+                        }
                     }
                     YtDlpWrapper.InitEvent.UpdatingYtDlp -> {
-                        _state.value = _state.value.copy(
-                            checkingYtDlp = false,
-                            updatingYtdlp = true,
-                            downloadingYtDlp = false,
-                            downloadYtDlpProgress = null,
-                            errorMessage = null
-                        )
+                        update {
+                            copy(
+                                checkingYtDlp = false,
+                                updatingYtdlp = true,
+                                downloadingYtDlp = false,
+                                downloadYtDlpProgress = null,
+                                errorMessage = null
+                            )
+                        }
                     }
                     YtDlpWrapper.InitEvent.EnsuringFfmpeg -> {
-                        _state.value = _state.value.copy(
-                            checkingFFmpeg = true,
-                            downloadingFFmpeg = false,
-                            downloadFfmpegProgress = null,
-                            errorMessage = null,
-                            checkingYtDlp = false,
-                            downloadingYtDlp = false,
-                            updatingYtdlp = false,
-
-                        )
+                        update {
+                            copy(
+                                checkingFFmpeg = true,
+                                downloadingFFmpeg = false,
+                                downloadFfmpegProgress = null,
+                                errorMessage = null,
+                                checkingYtDlp = false,
+                                downloadingYtDlp = false,
+                                updatingYtdlp = false,
+                            )
+                        }
                     }
                     is YtDlpWrapper.InitEvent.YtDlpProgress -> {
-                        _state.value = _state.value.copy(
-                            downloadingYtDlp = true,
-                            downloadYtDlpProgress = (event.percent ?: 0.0).toFloat()
-                        )
+                        update {
+                            copy(
+                                downloadingYtDlp = true,
+                                downloadYtDlpProgress = (event.percent ?: 0.0).toFloat()
+                            )
+                        }
                     }
                     is YtDlpWrapper.InitEvent.FfmpegProgress -> {
-                        _state.value = _state.value.copy(
-                            checkingFFmpeg = false,
-                            downloadingFFmpeg = true,
-                            downloadingYtDlp = false,
-                            downloadFfmpegProgress = (event.percent ?: 0.0).toFloat()
-                        )
+                        update {
+                            copy(
+                                checkingFFmpeg = false,
+                                downloadingFFmpeg = true,
+                                downloadingYtDlp = false,
+                                downloadFfmpegProgress = (event.percent ?: 0.0).toFloat()
+                            )
+                        }
                     }
                     is YtDlpWrapper.InitEvent.Error -> {
-                        _state.value = _state.value.copy(
-                            errorMessage = event.message,
-                            checkingYtDlp = false,
-                            checkingFFmpeg = false,
-                            downloadingYtDlp = false,
-                            downloadingFFmpeg = false,
-                            updatingYtdlp = false,
-                            updatingFFmpeg = false,
-                            initCompleted = false
-                        )
+                        update {
+                            copy(
+                                errorMessage = event.message,
+                                checkingYtDlp = false,
+                                checkingFFmpeg = false,
+                                downloadingYtDlp = false,
+                                downloadingFFmpeg = false,
+                                updatingYtdlp = false,
+                                updatingFFmpeg = false,
+                                initCompleted = false
+                            )
+                        }
                     }
                     is YtDlpWrapper.InitEvent.Completed -> {
-                        _state.value = _state.value.copy(
-                            checkingYtDlp = false,
-                            checkingFFmpeg = false,
-                            downloadingYtDlp = false,
-                            downloadingFFmpeg = false,
-                            updatingYtdlp = false,
-                            updatingFFmpeg = false,
-                            initCompleted = event.success
-                        )
+                        update {
+                            copy(
+                                checkingYtDlp = false,
+                                checkingFFmpeg = false,
+                                downloadingYtDlp = false,
+                                downloadingFFmpeg = false,
+                                updatingYtdlp = false,
+                                updatingFFmpeg = false,
+                                initCompleted = event.success
+                            )
+                        }
                         viewModelScope.launch {
                             // On first initialization, fetch supported sites list from GitHub and store in DB
                             runCatching { supportedSitesRepository.initializeFromGitHubIfEmpty() }
