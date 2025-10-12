@@ -17,6 +17,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -32,7 +33,7 @@ import ytdlpgui.composeapp.generated.resources.*
 @Composable
 fun AboutScreen() {
     val viewModel = koinViewModel<AboutViewModel>()
-    val state = viewModel.uiState.collectAsState().value
+    val state by viewModel.uiState.collectAsState()
     AboutView(
         state = state,
         onEvent = viewModel::handleEvent,

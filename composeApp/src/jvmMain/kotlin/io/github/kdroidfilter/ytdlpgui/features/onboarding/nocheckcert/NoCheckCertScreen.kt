@@ -43,8 +43,9 @@ import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 fun NoCheckCertScreen(
     viewModel: OnboardingViewModel = koinViewModel(),
 ) {
+    val noCheckCertificate by viewModel.noCheckCertificate.collectAsState()
     val state = NoCheckCertState(
-        noCheckCertificate = viewModel.noCheckCertificate.collectAsState().value
+        noCheckCertificate = noCheckCertificate
     )
     val currentStep by viewModel.currentStep.collectAsState()
     val initState by viewModel.initState.collectAsState()
