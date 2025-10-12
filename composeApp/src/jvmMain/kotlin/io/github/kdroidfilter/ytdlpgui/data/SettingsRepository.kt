@@ -173,4 +173,27 @@ class SettingsRepository(
             clipboardMonitorManager.onSettingChanged(true)
         }
     }
+
+    /**
+     * Reset all settings to default values and clear persistent storage.
+     * This does NOT clear binaries or download history - those are handled separately.
+     */
+    fun resetToDefaults() {
+        settings.clear()
+
+        // Reset in-memory state to defaults
+        _noCheckCertificate.value = false
+        _cookiesFromBrowser.value = ""
+        _includePresetInFilename.value = true
+        _embedThumbnailInMp3.value = true
+        _parallelDownloads.value = 2
+        _downloadDirPath.value = ""
+        _clipboardMonitoringEnabled.value = true
+        _notifyOnComplete.value = true
+        _autoLaunchEnabled.value = false
+
+        // Apply defaults to dependencies
+        applyToYtDlpWrapper()
+        applyToClipboardMonitor()
+    }
 }

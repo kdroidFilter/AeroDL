@@ -206,4 +206,13 @@
     <string name="unit_mibps">MiB/s</string>
     <string name="unit_gibps">GiB/s</string>
     <string name="unit_tibps">TiB/s</string>
+
+    <!-- Settings: Reset to defaults -->
+    <string name="settings_reset_title">Reset to defaults</string>
+    <string name="settings_reset_caption">Reset all settings to default values</string>
+    <string name="settings_reset_button">Reset</string>
+    <string name="settings_reset_dialog_title">Reset all settings?</string>
+    <string name="settings_reset_dialog_message">This action will reset all settings to their default values, clear download history, and remove yt-dlp/FFmpeg binaries. Downloaded files will not be affected.\n\nDo you want to continue?</string>
+    <string name="settings_reset_dialog_confirm">Reset everything</string>
+    <string name="settings_reset_dialog_cancel">Cancel</string>
 </resources>

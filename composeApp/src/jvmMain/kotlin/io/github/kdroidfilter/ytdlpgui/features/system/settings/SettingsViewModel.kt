@@ -7,7 +7,9 @@ import androidx.navigation.NavHostController
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.kdroid.composetray.tray.api.TrayAppState
 import com.kdroid.composetray.tray.api.TrayWindowDismissMode
+import io.github.kdroidfilter.platformtools.appmanager.restartApplication
 import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
+import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
 import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
@@ -18,10 +20,12 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.io.File
 
 class SettingsViewModel(
     private val navController: NavHostController,
     private val settingsRepository: SettingsRepository,
+    private val downloadHistoryRepository: DownloadHistoryRepository,
     private val trayAppState: TrayAppState,
 ) : MVIViewModel<SettingsState, SettingsEvents>() {
 
@@ -132,6 +136,36 @@ class SettingsViewModel(
                    trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
                 }
             }
+            SettingsEvents.ResetToDefaults -> {
+                viewModelScope.launch {
+                    // 1. Clear settings
+                    settingsRepository.resetToDefaults()
+
+                    // 2. Clear download history
+                    downloadHistoryRepository.clear()
+
+                    // 3. Delete yt-dlp/FFmpeg binaries and temp files
+                    clearBinariesAndTemp()
+
+                    // 4. Refresh autostart state
+                    settingsRepository.refreshAutoLaunchState()
+
+                    // 5. Restart the app
+                    restartApplication()
+                }
+            }
         }
+    }
+
+    private fun clearBinariesAndTemp() {
+        // Clear java temp directory
+        val tmpDir = System.getProperty("java.io.tmpdir")
+        try {
+            File(tmpDir).listFiles()?.forEach { file ->
+                try {
+                    if (file.isDirectory) file.deleteRecursively() else file.delete()
+                } catch (_: Exception) { /* ignore */ }
+            }
+        } catch (_: Exception) { /* ignore */ }
     }
 }

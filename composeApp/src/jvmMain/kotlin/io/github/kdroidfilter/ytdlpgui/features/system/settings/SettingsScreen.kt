@@ -44,6 +44,12 @@ import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.*
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import io.github.composefluent.component.ContentDialog
+import io.github.composefluent.icons.filled.DeleteDismiss
+import io.github.composefluent.icons.regular.Warning
 
 @Composable
 fun SettingsScreen() {
@@ -122,6 +128,11 @@ fun SettingsView(
                 AutoLaunchSetting(
                     autoLaunchEnabled = state.autoLaunchEnabled,
                     onAutoLaunchChange = { onEvent(SettingsEvents.SetAutoLaunchEnabled(it)) },
+                )
+            }
+            item {
+                ResetToDefaultsSetting(
+                    onResetClick = { onEvent(SettingsEvents.ResetToDefaults) }
                 )
             }
         }
@@ -469,6 +480,57 @@ private fun AutoLaunchSetting(
 @Composable
 fun AutoLaunchSettingPreview() {
     AutoLaunchSetting(autoLaunchEnabled = true, onAutoLaunchChange = {})
+}
+
+@Composable
+private fun ResetToDefaultsSetting(
+    onResetClick: () -> Unit,
+) {
+    var showDialog by remember { mutableStateOf(false) }
+
+    CardExpanderItem(
+        heading = {
+            Text(
+                stringResource(Res.string.settings_reset_title),
+                modifier = Modifier.fillMaxWidth(0.50f)
+            )
+        },
+        caption = {
+            EllipsizedTextWithTooltip(
+                text = stringResource(Res.string.settings_reset_caption),
+                modifier = Modifier.fillMaxWidth(0.50f)
+            )
+        },
+        icon = { Icon(Icons.Regular.Warning, null) },
+        trailing = {
+            Button(
+                onClick = { showDialog = true },
+                content = {
+                    Text(stringResource(Res.string.settings_reset_button))
+                },
+            )
+        }
+    )
+
+    ContentDialog(
+        title = stringResource(Res.string.settings_reset_dialog_title),
+        visible = showDialog,
+        primaryButtonText = stringResource(Res.string.settings_reset_dialog_confirm),
+        closeButtonText = stringResource(Res.string.settings_reset_dialog_cancel),
+        onButtonClick = {
+            showDialog = false
+            onResetClick()
+        },
+        content = {
+            Text(stringResource(Res.string.settings_reset_dialog_message))
+        }
+    )
+}
+
+@Preview
+@Composable
+fun ResetToDefaultsSettingPreview() {
+    ResetToDefaultsSetting(onResetClick = {})
 }
 
 @Preview
