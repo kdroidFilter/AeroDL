@@ -32,10 +32,10 @@ import ytdlpgui.composeapp.generated.resources.*
 @Composable
 fun AboutScreen() {
     val viewModel = koinViewModel<AboutViewModel>()
-    val state = viewModel.state.collectAsState().value
+    val state = viewModel.uiState.collectAsState().value
     AboutView(
         state = state,
-        onEvent = viewModel::onEvents,
+        onEvent = viewModel::handleEvent,
     )
 }
 

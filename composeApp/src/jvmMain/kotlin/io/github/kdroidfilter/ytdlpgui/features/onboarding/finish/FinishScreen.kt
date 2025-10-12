@@ -35,7 +35,7 @@ fun FinishScreen(
 ) {
     val currentStep by viewModel.currentStep.collectAsState()
     val initState by viewModel.initState.collectAsState()
-    LaunchedEffect(Unit) { viewModel.onEvents(OnboardingEvents.OnFinish) }
+    LaunchedEffect(Unit) { viewModel.handleEvent(OnboardingEvents.OnFinish) }
     FinishView(
         currentStep = currentStep,
         initState = initState,

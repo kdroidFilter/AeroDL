@@ -1,15 +1,10 @@
 package io.github.kdroidfilter.ytdlpgui.features.home
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
+import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
 import kotlinx.coroutines.launch
 import java.awt.Toolkit.getDefaultToolkit
 import org.jetbrains.compose.resources.getString
@@ -20,37 +15,14 @@ import java.net.URI
 class HomeViewModel(
     private val navController: NavHostController,
     private val ytDlpWrapper: YtDlpWrapper
-) : ViewModel() {
-    private var _textFieldContent = MutableStateFlow("")
-    val textFieldContent = _textFieldContent.asStateFlow()
+) : MVIViewModel<HomeState, HomeEvents>() {
 
-    private var _isLoading = MutableStateFlow(false)
-    val isLoading = _isLoading.asStateFlow()
+    override fun initialState(): HomeState = HomeState()
 
-    private var _errorMessage = MutableStateFlow<String?>(null)
-    val errorMessage = _errorMessage.asStateFlow()
-
-    // Combine feature: expose a single UI state to minimize recompositions
-    val state = combine(
-        textFieldContent,
-        isLoading,
-        errorMessage,
-    ) { link, loading, error ->
-        HomeState(
-            link = link,
-            isLoading = loading,
-            errorMessage = error,
-        )
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = HomeState.emptyState,
-    )
-
-    fun onEvents(event: HomeEvents) {
+    override fun handleEvent(event: HomeEvents) {
         when (event) {
             is HomeEvents.OnLinkChanged -> {
-                _textFieldContent.value = event.link
+                update { copy(link = event.link) }
                 // Validate as the user types
                 validateLink(event.link)
             }
@@ -65,7 +37,7 @@ class HomeViewModel(
         if (contents != null && contents.isDataFlavorSupported(DataFlavor.stringFlavor)) {
             try {
                 val pasted = contents.getTransferData(DataFlavor.stringFlavor) as String
-                _textFieldContent.value = pasted
+                update { copy(link = pasted) }
                 // Validate immediately after pasting
                 validateLink(pasted)
             } catch (e: Exception) {
@@ -78,7 +50,7 @@ class HomeViewModel(
         val input = inputRaw.trim()
         // If empty, clear error and consider invalid (can't navigate yet)
         if (input.isEmpty()) {
-            _errorMessage.value = null
+            update { copy(errorMessage = null) }
             return false
         }
 
@@ -89,7 +61,8 @@ class HomeViewModel(
         if (matches.size != 1 || matches.first().value != input) {
             // Either multiple URLs or extra text around the URL
             viewModelScope.launch {
-                _errorMessage.value = getString(Res.string.error_single_valid_url)
+                val error = getString(Res.string.error_single_valid_url)
+                update { copy(errorMessage = error) }
             }
             return false
         }
@@ -99,22 +72,24 @@ class HomeViewModel(
         return try {
             URI(url)
             // Looks valid
-            _errorMessage.value = null
+            update { copy(errorMessage = null) }
             true
         } catch (e: Exception) {
             viewModelScope.launch {
-                _errorMessage.value = getString(Res.string.error_invalid_url_format)
+                val error = getString(Res.string.error_invalid_url_format)
+                update { copy(errorMessage = error) }
             }
             false
         }
     }
 
     private fun checkLink() {
-        val current = textFieldContent.value
+        val current = uiState.value.link
         // If empty, show an explicit error when Next is pressed
         if (current.trim().isEmpty()) {
             viewModelScope.launch {
-                _errorMessage.value = getString(Res.string.error_url_required)
+                val error = getString(Res.string.error_url_required)
+                update { copy(errorMessage = error) }
             }
             return
         }

@@ -2,7 +2,6 @@
 
 package io.github.kdroidfilter.ytdlpgui.features.onboarding
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
@@ -12,6 +11,7 @@ import io.github.kdroidfilter.network.CertificateValidator
 import io.github.kdroidfilter.platformtools.LinuxDesktopEnvironment
 import io.github.kdroidfilter.platformtools.detectLinuxDesktopEnvironment
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
+import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
 import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
 import io.github.kdroidfilter.ytdlpgui.features.init.InitViewModel
 import io.github.vinceglb.filekit.FileKit
@@ -19,8 +19,9 @@ import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
 import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -29,10 +30,10 @@ class OnboardingViewModel(
     private val settingsRepository: SettingsRepository,
     private val navController: NavHostController,
     private val trayAppState: TrayAppState,
-) : ViewModel(), KoinComponent {
+) : MVIViewModel<OnboardingState, OnboardingEvents>(), KoinComponent {
 
     private val initViewModel: InitViewModel by inject()
-    val initState = initViewModel.state
+    val initState = initViewModel.uiState
 
     // Check if user is running GNOME desktop environment
     private val isGnome = detectLinuxDesktopEnvironment() == LinuxDesktopEnvironment.GNOME
@@ -41,6 +42,8 @@ class OnboardingViewModel(
     private val _shouldSkipNoCheckCert = MutableStateFlow(true)
     private val shouldSkipNoCheckCert: Boolean
         get() = _shouldSkipNoCheckCert.value
+
+    override fun initialState(): OnboardingState = OnboardingState()
 
     init {
         // Start downloading yt-dlp and ffmpeg in background during onboarding
@@ -54,8 +57,8 @@ class OnboardingViewModel(
         }
     }
 
-    private val _currentStep = MutableStateFlow(OnboardingStep.Welcome)
-    val currentStep: StateFlow<OnboardingStep> = _currentStep.asStateFlow()
+    val currentStep: StateFlow<OnboardingStep> = uiState.map { it.currentStep }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), OnboardingStep.Welcome)
 
     // Expose settings from repository
     val downloadDirPath: StateFlow<String> = settingsRepository.downloadDirPath
@@ -66,8 +69,8 @@ class OnboardingViewModel(
     val clipboardMonitoringEnabled: StateFlow<Boolean> = settingsRepository.clipboardMonitoringEnabled
     val autoLaunchEnabled: StateFlow<Boolean> = settingsRepository.autoLaunchEnabled
 
-    private val _dependencyInfoBarDismissed = MutableStateFlow(false)
-    val dependencyInfoBarDismissed: StateFlow<Boolean> = _dependencyInfoBarDismissed.asStateFlow()
+    val dependencyInfoBarDismissed: StateFlow<Boolean> = uiState.map { it.dependencyInfoBarDismissed }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
     // Calculate dynamic list of steps based on environment
     private fun getEnabledSteps(): List<OnboardingStep> {
@@ -89,9 +92,9 @@ class OnboardingViewModel(
 
     fun getTotalSteps(): Int = getEnabledSteps().size
 
-    fun getCurrentStepIndex(): Int = getEnabledSteps().indexOf(_currentStep.value).coerceAtLeast(0)
+    fun getCurrentStepIndex(): Int = getEnabledSteps().indexOf(uiState.value.currentStep).coerceAtLeast(0)
 
-    fun onEvents(event: OnboardingEvents) {
+    override fun handleEvent(event: OnboardingEvents) {
         when (event) {
             is OnboardingEvents.OnStart -> handleStart()
             is OnboardingEvents.OnNext -> handleNext()
@@ -114,7 +117,8 @@ class OnboardingViewModel(
     }
 
     private fun handleNext() {
-        val nextStep = when (_currentStep.value) {
+        val currentStep = uiState.value.currentStep
+        val nextStep = when (currentStep) {
             OnboardingStep.Welcome -> OnboardingStep.DownloadDir
             OnboardingStep.DownloadDir -> OnboardingStep.Cookies
             OnboardingStep.Cookies -> {
@@ -131,7 +135,7 @@ class OnboardingViewModel(
             OnboardingStep.Finish -> OnboardingStep.Finish
         }
 
-        if (nextStep == OnboardingStep.Finish && _currentStep.value == OnboardingStep.Finish) {
+        if (nextStep == OnboardingStep.Finish && currentStep == OnboardingStep.Finish) {
             handleFinish()
         } else {
             navigateToStep(nextStep)
@@ -139,7 +143,8 @@ class OnboardingViewModel(
     }
 
     private fun handlePrevious() {
-        val previousStep = when (_currentStep.value) {
+        val currentStep = uiState.value.currentStep
+        val previousStep = when (currentStep) {
             OnboardingStep.Welcome -> OnboardingStep.Welcome
             OnboardingStep.DownloadDir -> OnboardingStep.Welcome
             OnboardingStep.Cookies -> OnboardingStep.DownloadDir
@@ -166,7 +171,7 @@ class OnboardingViewModel(
     }
 
     private fun handleFinish() {
-        _currentStep.value = OnboardingStep.Finish
+        update { copy(currentStep = OnboardingStep.Finish) }
     }
 
     fun completeOnboarding() {
@@ -221,12 +226,12 @@ class OnboardingViewModel(
     }
 
     private fun handleDismissDependencyInfoBar() {
-        _dependencyInfoBarDismissed.value = true
+        update { copy(dependencyInfoBarDismissed = true) }
     }
 
     private fun navigateToStep(step: OnboardingStep) {
-        if (_currentStep.value == step) return
-        _currentStep.value = step
+        if (uiState.value.currentStep == step) return
+        update { copy(currentStep = step) }
         viewModelScope.launch {
             navController.navigate(step.toDestination())
         }

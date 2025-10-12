@@ -47,10 +47,10 @@ import androidx.compose.runtime.collectAsState
 @Composable
 fun SettingsScreen() {
     val viewModel = koinViewModel<SettingsViewModel>()
-    val state = viewModel.state.collectAsState().value
+    val state = viewModel.uiState.collectAsState().value
     SettingsView(
         state = state,
-        onEvent = viewModel::onEvents,
+        onEvent = viewModel::handleEvent,
     )
 }
 

@@ -1,20 +1,20 @@
 package io.github.kdroidfilter.ytdlpgui.features.download.manager
 
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.core.platform.filesystem.FileExplorerUtils
+import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
 import io.github.kdroidfilter.logging.infoln
 import io.github.kdroidfilter.logging.warnln
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
-import androidx.lifecycle.viewModelScope
 import java.io.File
 
 class DownloadViewModel(
@@ -22,7 +22,9 @@ class DownloadViewModel(
     private val downloadManager: DownloadManager,
     private val historyRepository: DownloadHistoryRepository,
     private val initViewModel: io.github.kdroidfilter.ytdlpgui.features.init.InitViewModel,
-) : ViewModel() {
+) : MVIViewModel<DownloadState, DownloadEvents>() {
+
+    override fun initialState(): DownloadState = DownloadState.emptyState
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
@@ -47,7 +49,8 @@ class DownloadViewModel(
         val errorItem: DownloadManager.DownloadItem?,
     )
 
-    val state = combine(
+    // Note: This ViewModel uses a combined state from multiple sources, so we override uiState
+    override val uiState = combine(
         isLoading,
         items,
         history,
@@ -55,7 +58,7 @@ class DownloadViewModel(
         errorDialogItem,
     ) { loading, itemsList, historyList, dirAvail, errorItem ->
         Base(loading, itemsList, historyList, dirAvail, errorItem)
-    }.combine(initViewModel.state) { base, initState ->
+    }.combine(initViewModel.uiState) { base, initState ->
         DownloadState(
             isLoading = base.loading,
             items = base.items,
@@ -73,7 +76,7 @@ class DownloadViewModel(
         initialValue = DownloadState.emptyState,
     )
 
-    fun onEvents(event: DownloadEvents) {
+    override fun handleEvent(event: DownloadEvents) {
         when (event) {
             is DownloadEvents.Cancel -> downloadManager.cancel(event.id)
             DownloadEvents.Refresh -> { /* no-op for now */
