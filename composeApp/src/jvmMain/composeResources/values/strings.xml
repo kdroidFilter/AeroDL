@@ -196,4 +196,12 @@
     <!-- Dismiss/remove failed item -->
     <string name="remove_from_list">Remove from list</string>
     <string name="tooltip_remove_from_list">Remove this item from the list</string>
+
+    <!-- Download speed display -->
+    <string name="download_speed">Speed: %1$s</string>
+    <string name="unit_bps">B/s</string>
+    <string name="unit_kibps">KiB/s</string>
+    <string name="unit_mibps">MiB/s</string>
+    <string name="unit_gibps">GiB/s</string>
+    <string name="unit_tibps">TiB/s</string>
 </resources>

@@ -157,5 +157,12 @@
     <!-- הסרה/שחרור של פריט נכשל מהרשימה -->
     <string name="remove_from_list">הסר מהרשימה</string>
     <string name="tooltip_remove_from_list">הסר פריט זה מהרשימה</string>
-</resources>
 
+    <!-- תצוגת מהירות הורדה -->
+    <string name="download_speed">מהירות: %1$s</string>
+    <string name="unit_bps">B/s</string>
+    <string name="unit_kibps">KiB/s</string>
+    <string name="unit_mibps">MiB/s</string>
+    <string name="unit_gibps">GiB/s</string>
+    <string name="unit_tibps">TiB/s</string>
+</resources>

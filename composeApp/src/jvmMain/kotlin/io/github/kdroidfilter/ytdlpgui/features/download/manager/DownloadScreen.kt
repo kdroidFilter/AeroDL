@@ -50,6 +50,7 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
+import java.util.Locale
 
 @Composable
 fun DownloaderScreen() {
@@ -468,41 +469,60 @@ private fun InProgressRow(
                     // Show progress ring for running/pending downloads
                     val progressFraction = (item.progress.coerceIn(0f, 100f)) / 100f
                     val percent = (progressFraction * 100f).roundToInt()
+                    val speedText = item.speedBytesPerSec?.let { humanizeSpeedLocalized(it) }
                     var hovered by remember { mutableStateOf(false) }
-                    Box(
-                        modifier = Modifier.size(27.dp)
-                            .onPointerEvent(PointerEventType.Enter) { hovered = true }
-                            .onPointerEvent(PointerEventType.Exit) { hovered = false },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        // Always show the progress ring
-                        ProgressRing(progress = progressFraction, modifier = Modifier.fillMaxSize())
 
-                        if (!hovered) {
-                            // Show percentage text centered in the ring
-                            Text(
-                                "${percent}%",
-                                style = FluentTheme.typography.caption,
-                                fontSize = 11.sp,
-                                textAlign = TextAlign.Center,
-                                maxLines = 1,
-                                modifier = Modifier.offset(x = (-1).dp)
-                            )
-                        } else {
-                            // On hover, show dismiss icon overlaid on the ring
-                            TooltipBox(tooltip = { Text(stringResource(Res.string.cancel)) }) {
-                                SubtleButton(
-                                    iconOnly = true,
-                                    onClick = { onCancel(item.id) },
-                                    modifier = Modifier.size(18.dp)
-                                ) {
-                                    Icon(
-                                        Icons.Default.Dismiss,
-                                        stringResource(Res.string.cancel),
-                                        modifier = Modifier.size(16.dp)
-                                    )
+                    Column(modifier = Modifier.width(72.dp), horizontalAlignment = Alignment.End) {
+                        Box(
+                            modifier = Modifier.size(27.dp)
+                                .onPointerEvent(PointerEventType.Enter) { hovered = true }
+                                .onPointerEvent(PointerEventType.Exit) { hovered = false },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            // Always show the progress ring
+                            ProgressRing(progress = progressFraction, modifier = Modifier.fillMaxSize())
+
+                            if (!hovered) {
+                                // Show percentage text centered in the ring
+                                Text(
+                                    "${percent}%",
+                                    style = FluentTheme.typography.caption,
+                                    fontSize = 11.sp,
+                                    textAlign = TextAlign.Center,
+                                    maxLines = 1,
+                                    modifier = Modifier.offset(x = (-1).dp)
+                                )
+                            } else {
+                                // On hover, show dismiss icon overlaid on the ring
+                                TooltipBox(tooltip = { Text(stringResource(Res.string.cancel)) }) {
+                                    SubtleButton(
+                                        iconOnly = true,
+                                        onClick = { onCancel(item.id) },
+                                        modifier = Modifier.size(18.dp)
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Dismiss,
+                                            stringResource(Res.string.cancel),
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
                                 }
                             }
+                        }
+
+                        // Below the ring: stack percent and speed like history action buttons
+                        Spacer(Modifier.height(4.dp))
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp), horizontalAlignment = Alignment.End) {
+                            val speedLine = if (item.status == DownloadManager.DownloadItem.Status.Running) speedText else null
+                            Text(
+                                text = speedLine ?: " ",
+                                style = FluentTheme.typography.caption,
+                                fontSize = 11.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Clip,
+                                textAlign = TextAlign.End,
+                                modifier = Modifier.fillMaxWidth()
+                            )
                         }
                     }
                 }
@@ -551,4 +571,23 @@ fun DownloadScreenPreviewWithErrorDialog() {
 @Composable
 fun DownloadScreenPreviewWithUpdateInfo() {
     DownloadView(state = DownloadState.withUpdateInfoState, onEvent = {})
+}
+
+// Localized humanizer for bytes per second in binary units
+@Composable
+private fun humanizeSpeedLocalized(bps: Long): String {
+    var value = bps.toDouble()
+    var idx = 0
+    while (value >= 1024.0 && idx < 4) { // up to TiB/s
+        value /= 1024.0
+        idx++
+    }
+    val unit = when (idx) {
+        0 -> stringResource(Res.string.unit_bps)
+        1 -> stringResource(Res.string.unit_kibps)
+        2 -> stringResource(Res.string.unit_mibps)
+        3 -> stringResource(Res.string.unit_gibps)
+        else -> stringResource(Res.string.unit_tibps)
+    }
+    return String.format(Locale.getDefault(), "%.1f %s", value, unit)
 }

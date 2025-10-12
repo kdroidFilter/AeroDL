@@ -210,6 +210,36 @@ object NetAndArchive {
     fun parseProgress(line: String): Double? =
         percentRegex.find(line)?.groupValues?.getOrNull(1)?.replace(',', '.')?.toDoubleOrNull()
 
+    // Extracts instantaneous speed (bytes/sec) from typical yt-dlp progress lines.
+    // Examples handled:
+    //   "[download]  12.5% of 10MiB at 2.43MiB/s ETA 00:19"
+    //   "[download]  99% of 2.0GiB at 850KiB/s"
+    //   "[download]  100,0% of ~ 100.0MiB at 1.2MiB/s"
+    private val NBSP: Char = '\u00A0'
+    // Match speed with or without the literal "at" before it
+    private val speedRegex = Regex("(?:\\bat\\s+)?[$NBSP\\s]*([\\d.,]+)[$NBSP\\s]*([KMGTP]?i?B)/s\\b", RegexOption.IGNORE_CASE)
+    fun parseSpeedBytesPerSec(line: String): Long? {
+        val m = speedRegex.find(line) ?: return null
+        val number = m.groupValues.getOrNull(1)?.replace(',', '.')?.toDoubleOrNull() ?: return null
+        val unit = (m.groupValues.getOrNull(2) ?: "").uppercase()
+        val multiplier = when (unit) {
+            "B" -> 1.0
+            "KB" -> 1_000.0
+            "KIB" -> 1024.0
+            "MB" -> 1_000_000.0
+            "MIB" -> 1024.0 * 1024.0
+            "GB" -> 1_000_000_000.0
+            "GIB" -> 1024.0 * 1024.0 * 1024.0
+            "TB" -> 1_000_000_000_000.0
+            "TIB" -> 1024.0 * 1024.0 * 1024.0 * 1024.0
+            "PB" -> 1_000_000_000_000_000.0
+            "PIB" -> 1024.0 * 1024.0 * 1024.0 * 1024.0 * 1024.0
+            else -> 1.0
+        }
+        val bps = number * multiplier
+        return if (bps.isFinite() && bps >= 0.0) bps.toLong() else null
+    }
+
     // --- Error Diagnosis ---
     fun diagnose(lines: List<String>): String? {
         val joined = lines.joinToString("\n").lowercase()

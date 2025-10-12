@@ -17,6 +17,18 @@ class NetAndArchiveUtilsTest {
     }
 
     @Test
+    fun parseSpeed_parsesBytesPerSecond() {
+        // 2.0 MiB/s -> binary units
+        assertEquals(2L * 1024L * 1024L, NetAndArchive.parseSpeedBytesPerSec("[download]  12.5% of 10MiB at 2.0MiB/s ETA 00:19"))
+        // 850 KiB/s -> binary units
+        assertEquals(850L * 1024L, NetAndArchive.parseSpeedBytesPerSec("[download]  99% of 2.0GiB at 850KiB/s"))
+        // 1.2 MB/s -> decimal units
+        assertEquals(1_200_000L, NetAndArchive.parseSpeedBytesPerSec("[download]  100,0% of ~ 100.0MiB at 1.2MB/s"))
+        // No speed
+        assertEquals(null, NetAndArchive.parseSpeedBytesPerSec("no speed here"))
+    }
+
+    @Test
     fun diagnose_returnsHelpfulMessages() {
         assertTrue(NetAndArchive.diagnose(listOf("Connection refused by host"))?.contains("Connection problem") == true)
         assertTrue(NetAndArchive.diagnose(listOf("Operation timed out"))?.contains("timeout", ignoreCase = true) == true)
@@ -43,4 +55,3 @@ class NetAndArchiveUtilsTest {
         assertTrue(selMp4.contains("bestaudio[ext=m4a]"))
     }
 }
-
