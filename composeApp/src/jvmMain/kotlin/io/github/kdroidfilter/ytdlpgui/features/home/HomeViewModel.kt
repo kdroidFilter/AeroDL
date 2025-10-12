@@ -7,7 +7,6 @@ import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
 import kotlinx.coroutines.launch
 import java.awt.Toolkit.getDefaultToolkit
-import org.jetbrains.compose.resources.getString
 import ytdlpgui.composeapp.generated.resources.*
 import java.awt.datatransfer.DataFlavor
 import java.net.URI
@@ -60,10 +59,7 @@ class HomeViewModel(
 
         if (matches.size != 1 || matches.first().value != input) {
             // Either multiple URLs or extra text around the URL
-            viewModelScope.launch {
-                val error = getString(Res.string.error_single_valid_url)
-                update { copy(errorMessage = error) }
-            }
+            update { copy(errorMessage = HomeError.SingleValidUrl) }
             return false
         }
 
@@ -75,10 +71,7 @@ class HomeViewModel(
             update { copy(errorMessage = null) }
             true
         } catch (e: Exception) {
-            viewModelScope.launch {
-                val error = getString(Res.string.error_invalid_url_format)
-                update { copy(errorMessage = error) }
-            }
+            update { copy(errorMessage = HomeError.InvalidUrlFormat) }
             false
         }
     }
@@ -87,10 +80,7 @@ class HomeViewModel(
         val current = uiState.value.link
         // If empty, show an explicit error when Next is pressed
         if (current.trim().isEmpty()) {
-            viewModelScope.launch {
-                val error = getString(Res.string.error_url_required)
-                update { copy(errorMessage = error) }
-            }
+            update { copy(errorMessage = HomeError.UrlRequired) }
             return
         }
         val isValid = validateLink(current)

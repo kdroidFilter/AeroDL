@@ -41,7 +41,7 @@ fun MainNavigationHeader(
     val currentDestination = backStackEntry?.destination
     // App update badge state (from InitViewModel)
     val initViewModel = koinInject<InitViewModel>()
-    val initState = initViewModel.uiState.collectAsState().value
+    val initState by initViewModel.uiState.collectAsState()
     val showUpdateBadge = initState.updateAvailable && !initState.updateDismissed
 
     val scope = rememberCoroutineScope()

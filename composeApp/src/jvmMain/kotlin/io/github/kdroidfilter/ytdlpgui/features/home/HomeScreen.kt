@@ -3,6 +3,7 @@ package io.github.kdroidfilter.ytdlpgui.features.home
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -24,7 +25,7 @@ import ytdlpgui.composeapp.generated.resources.*
 @Composable
 fun HomeScreen() {
     val viewModel = koinInject<HomeViewModel>()
-    val state = viewModel.uiState.collectAsState().value
+    val state by viewModel.uiState.collectAsState()
     HomeView(
         state = state,
         onEvent = viewModel::handleEvent,
@@ -69,7 +70,14 @@ fun HomeView(
                 header = {
                     val (headerText, headerColor) = when {
                         state.isLoading -> stringResource(Res.string.loading) to FluentTheme.colors.text.text.tertiary
-                        state.errorMessage != null -> state.errorMessage to FluentTheme.colors.system.critical
+                        state.errorMessage != null -> {
+                            val msg = when (state.errorMessage) {
+                                HomeError.SingleValidUrl -> stringResource(Res.string.error_single_valid_url)
+                                HomeError.InvalidUrlFormat -> stringResource(Res.string.error_invalid_url_format)
+                                HomeError.UrlRequired -> stringResource(Res.string.error_url_required)
+                            }
+                            msg to FluentTheme.colors.system.critical
+                        }
                         else -> stringResource(Res.string.paste_video_link_header) to FluentTheme.colors.text.text.disabled
                     }
                     Text(

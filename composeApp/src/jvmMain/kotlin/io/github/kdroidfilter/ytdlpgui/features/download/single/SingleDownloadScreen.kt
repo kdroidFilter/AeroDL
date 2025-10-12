@@ -60,7 +60,7 @@ import java.util.*
 @Composable
 fun SingleDownloadScreen() {
     val viewModel = koinViewModel<SingleDownloadViewModel>()
-    val state = viewModel.uiState.collectAsState().value
+    val state by viewModel.uiState.collectAsState()
     SingleDownloadView(
         state = state,
         onEvent = viewModel::handleEvent,

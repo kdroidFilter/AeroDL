@@ -36,8 +36,9 @@ import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 fun CookiesScreen(
     viewModel: OnboardingViewModel = koinViewModel(),
 ) {
+    val cookiesFromBrowser by viewModel.cookiesFromBrowser.collectAsState()
     val state = CookiesState(
-        cookiesFromBrowser = viewModel.cookiesFromBrowser.collectAsState().value
+        cookiesFromBrowser = cookiesFromBrowser
     )
     val currentStep by viewModel.currentStep.collectAsState()
     val initState by viewModel.initState.collectAsState()
