@@ -63,7 +63,7 @@ fun SingleDownloadScreen() {
     val state by viewModel.uiState.collectAsState()
     SingleDownloadView(
         state = state,
-        onEvent = viewModel::handleEvent,
+        onEvent = viewModel::handleEvent
     )
 }
 
@@ -87,7 +87,10 @@ fun SingleDownloadView(
         selectedPreset = state.selectedPreset,
         availableSubtitles = state.availableSubtitles,
         selectedSubtitles = state.selectedSubtitles,
+        availableAudioQualityPresets = state.availableAudioQualityPresets,
+        selectedAudioQualityPreset = state.selectedAudioQualityPreset,
         onSelectPreset = { onEvent(SingleDownloadEvents.SelectPreset(it)) },
+        onSelectAudioQualityPreset = { onEvent(SingleDownloadEvents.SelectAudioQualityPreset(it)) },
         onToggleSubtitle = { onEvent(SingleDownloadEvents.ToggleSubtitle(it)) },
         onClearSubtitles = { onEvent(SingleDownloadEvents.ClearSubtitles) },
         onStartDownload = { onEvent(SingleDownloadEvents.StartDownload) },
@@ -133,7 +136,10 @@ private fun SingleVideoDownloadView(
     selectedPreset: YtDlpWrapper.Preset?,
     availableSubtitles: Map<String, io.github.kdroidfilter.ytdlp.model.SubtitleInfo>,
     selectedSubtitles: List<String>,
+    availableAudioQualityPresets: List<YtDlpWrapper.AudioQualityPreset>,
+    selectedAudioQualityPreset: YtDlpWrapper.AudioQualityPreset?,
     onSelectPreset: (YtDlpWrapper.Preset) -> Unit,
+    onSelectAudioQualityPreset: (YtDlpWrapper.AudioQualityPreset) -> Unit,
     onToggleSubtitle: (String) -> Unit,
     onClearSubtitles: () -> Unit,
     onStartDownload: () -> Unit,
@@ -171,9 +177,9 @@ private fun SingleVideoDownloadView(
             )
             Spacer(Modifier.height(16.dp))
 
-            if (availablePresets.isNotEmpty()) {
+            if (availablePresets.isNotEmpty() || availableAudioQualityPresets.isNotEmpty()) {
                 // Afficher les options vidéo seulement si "Vidéo" est sélectionné
-                if (selectedFormatIndex == 0) {
+                if (selectedFormatIndex == 0 && availablePresets.isNotEmpty()) {
                     // Sélecteur de résolution avec SegmentedControl
                     Text(text = stringResource(Res.string.single_formats))
                     Spacer(Modifier.height(8.dp))
@@ -264,6 +270,31 @@ private fun SingleVideoDownloadView(
                         }
                         Spacer(Modifier.height(16.dp))
                     }
+                }
+
+                // Afficher le sélecteur de qualité audio si "Audio" est sélectionné
+                if (selectedFormatIndex == 1 && availableAudioQualityPresets.isNotEmpty()) {
+                    // Sélecteur de qualité audio
+                    Text(text = "Qualité audio")
+                    Spacer(Modifier.height(8.dp))
+
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        availableAudioQualityPresets.forEach { audioPreset ->
+                            SegmentedControl {
+                                SegmentedButton(
+                                    checked = audioPreset == selectedAudioQualityPreset,
+                                    onCheckedChanged = { onSelectAudioQualityPreset(audioPreset) },
+                                    position = SegmentedItemPosition.Center,
+                                    text = { Text(audioPreset.bitrate) }
+                                )
+                            }
+                        }
+                    }
+                    Spacer(Modifier.height(16.dp))
                 }
 
                 // Bouton de téléchargement centré

@@ -49,6 +49,12 @@ class SingleDownloadViewModel(
     private val _selectedSubtitles = MutableStateFlow<List<String>>(emptyList())
     val selectedSubtitles = _selectedSubtitles.asStateFlow()
 
+    private val _availableAudioQualityPresets = MutableStateFlow<List<YtDlpWrapper.AudioQualityPreset>>(emptyList())
+    val availableAudioQualityPresets = _availableAudioQualityPresets.asStateFlow()
+
+    private val _selectedAudioQualityPreset = MutableStateFlow<YtDlpWrapper.AudioQualityPreset?>(null)
+    val selectedAudioQualityPreset = _selectedAudioQualityPreset.asStateFlow()
+
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage = _errorMessage.asStateFlow()
 
@@ -61,6 +67,8 @@ class SingleDownloadViewModel(
         selectedPreset,
         availableSubtitles,
         selectedSubtitles,
+        availableAudioQualityPresets,
+        selectedAudioQualityPreset,
     ) { values: Array<Any?> ->
         val loading = values[0] as Boolean
         val error = values[1] as String?
@@ -72,6 +80,9 @@ class SingleDownloadViewModel(
         val subs = values[5] as Map<String, SubtitleInfo>
         @Suppress("UNCHECKED_CAST")
         val selectedSubs = values[6] as List<String>
+        @Suppress("UNCHECKED_CAST")
+        val audioPresets = values[7] as List<YtDlpWrapper.AudioQualityPreset>
+        val audioPreset = values[8] as YtDlpWrapper.AudioQualityPreset?
         SingleDownloadState(
             isLoading = loading,
             errorMessage = error,
@@ -80,6 +91,8 @@ class SingleDownloadViewModel(
             selectedPreset = preset,
             availableSubtitles = subs,
             selectedSubtitles = selectedSubs,
+            availableAudioQualityPresets = audioPresets,
+            selectedAudioQualityPreset = audioPreset,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -119,6 +132,11 @@ class SingleDownloadViewModel(
                     // Subtitles - get all subtitles with their info
                     _availableSubtitles.value = info.getAllSubtitles()
                     _selectedSubtitles.value = emptyList()
+
+                    // Audio quality presets - all available
+                    _availableAudioQualityPresets.value = YtDlpWrapper.AudioQualityPreset.entries
+                    _selectedAudioQualityPreset.value = YtDlpWrapper.AudioQualityPreset.HIGH
+
                     _isLoading.value = false
                 }
                 .onFailure {
@@ -136,6 +154,10 @@ class SingleDownloadViewModel(
             is SingleDownloadEvents.SelectPreset -> {
                 infoln { "[SingleDownloadViewModel] Preset selected: ${event.preset.height}p" }
                 _selectedPreset.value = event.preset
+            }
+            is SingleDownloadEvents.SelectAudioQualityPreset -> {
+                infoln { "[SingleDownloadViewModel] Audio quality preset selected: ${event.preset.name}" }
+                _selectedAudioQualityPreset.value = event.preset
             }
             is SingleDownloadEvents.ToggleSubtitle -> {
                 val current = _selectedSubtitles.value
@@ -175,8 +197,9 @@ class SingleDownloadViewModel(
                 }
             }
             SingleDownloadEvents.StartAudioDownload -> {
-                infoln { "[SingleDownloadViewModel] Starting audio download" }
-                downloadManager.startAudio(videoUrl, videoInfo.value)
+                val audioQuality = selectedAudioQualityPreset.value
+                infoln { "[SingleDownloadViewModel] Starting audio download with quality: ${audioQuality?.name}" }
+                downloadManager.startAudio(videoUrl, videoInfo.value, audioQuality)
                 viewModelScope.launch {
                     navController.navigate(Destination.MainNavigation.Downloader) {
                         popUpTo(Destination.MainNavigation.Home) { inclusive = false }

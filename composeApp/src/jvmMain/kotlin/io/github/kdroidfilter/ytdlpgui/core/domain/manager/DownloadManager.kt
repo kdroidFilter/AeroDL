@@ -73,6 +73,7 @@ class DownloadManager(
         val message: String? = null,
         val handle: Handle? = null,
         val subtitleLanguages: List<String>? = null,
+        val audioQualityPreset: YtDlpWrapper.AudioQualityPreset? = null,
     ) {
         enum class Status { Pending, Running, Completed, Failed, Cancelled }
     }
@@ -100,20 +101,25 @@ class DownloadManager(
         languages: List<String>
     ): String = enqueueDownload(url, videoInfo, preset ?: YtDlpWrapper.Preset.P720, languages.filter { it.isNotBlank() })
 
-    fun startAudio(url: String, videoInfo: VideoInfo? = null): String =
-        enqueueDownload(url, videoInfo, null, null)
+    fun startAudio(
+        url: String,
+        videoInfo: VideoInfo? = null,
+        audioQualityPreset: YtDlpWrapper.AudioQualityPreset? = null
+    ): String = enqueueDownload(url, videoInfo, null, null, audioQualityPreset)
 
     private fun enqueueDownload(
         url: String,
         videoInfo: VideoInfo?,
         preset: YtDlpWrapper.Preset?,
-        subtitles: List<String>?
+        subtitles: List<String>?,
+        audioQualityPreset: YtDlpWrapper.AudioQualityPreset? = null
     ): String {
         val item = DownloadItem(
             url = url,
             videoInfo = videoInfo,
             preset = preset,
-            subtitleLanguages = subtitles
+            subtitleLanguages = subtitles,
+            audioQualityPreset = audioQualityPreset
         )
         _items.value += item
         pendingQueue.addLast(item.id)
@@ -323,8 +329,8 @@ class DownloadManager(
     private fun downloadAudio(item: DownloadItem, onEvent: (Event) -> Unit): Handle =
         ytDlpWrapper.downloadAudioMp3WithPreset(
             url = item.url,
-            preset = YtDlpWrapper.AudioQualityPreset.HIGH,
-            outputTemplate = "%(title)s.%(ext)s",
+            preset = item.audioQualityPreset ?: YtDlpWrapper.AudioQualityPreset.HIGH,
+            outputTemplate = buildOutputTemplateForAudio(item.audioQualityPreset),
             onEvent = onEvent
         )
 
@@ -364,6 +370,15 @@ class DownloadManager(
         val includePreset = settings.getBoolean(SettingsKeys.INCLUDE_PRESET_IN_FILENAME, true)
         return if (includePreset && preset != null) {
             "%(title)s_${preset.height}p.%(ext)s"
+        } else {
+            "%(title)s.%(ext)s"
+        }
+    }
+
+    private fun buildOutputTemplateForAudio(preset: YtDlpWrapper.AudioQualityPreset?): String {
+        val includePreset = settings.getBoolean(SettingsKeys.INCLUDE_PRESET_IN_FILENAME, true)
+        return if (includePreset && preset != null) {
+            "%(title)s_${preset.bitrate}.%(ext)s"
         } else {
             "%(title)s.%(ext)s"
         }
