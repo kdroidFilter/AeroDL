@@ -206,4 +206,13 @@
     <string name="unit_mibps">Mio/s</string>
     <string name="unit_gibps">Gio/s</string>
     <string name="unit_tibps">Tio/s</string>
+
+    <!-- Paramètres : Réinitialisation -->
+    <string name="settings_reset_title">Réinitialiser aux valeurs par défaut</string>
+    <string name="settings_reset_caption">Réinitialiser tous les paramètres aux valeurs par défaut</string>
+    <string name="settings_reset_button">Réinitialiser</string>
+    <string name="settings_reset_dialog_title">Réinitialiser tous les paramètres ?</string>
+    <string name="settings_reset_dialog_message">Cette action réinitialisera tous les paramètres à leurs valeurs par défaut, effacera l'historique des téléchargements et supprimera les binaires yt-dlp/FFmpeg. Les fichiers téléchargés ne seront pas affectés.\n\nVoulez-vous continuer ?</string>
+    <string name="settings_reset_dialog_confirm">Tout réinitialiser</string>
+    <string name="settings_reset_dialog_cancel">Annuler</string>
 </resources>

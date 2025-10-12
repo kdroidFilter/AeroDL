@@ -71,6 +71,7 @@ platformtools-core = { module = "io.github.kdroidfilter:platformtools.core", ver
 platformtools-darkmodedetector = { module = "io.github.kdroidfilter:platformtools.darkmodedetector", version.ref = "platformtools" }
 platformtools-clipboardmanager = { module = "io.github.kdroidfilter:platformtools.clipboardmanager", version.ref = "platformtools" }
 platformtools-releasefetcher = { module = "io.github.kdroidfilter:platformtools.releasefetcher", version.ref = "platformtools" }
+platformtools-appmanager = { module = "io.github.kdroidfilter:platformtools.appmanager", version.ref = "platformtools" }
 
 # Additional libraries
 coil = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }

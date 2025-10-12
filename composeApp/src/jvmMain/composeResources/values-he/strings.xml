@@ -181,4 +181,13 @@
     <string name="unit_mibps">MiB/s</string>
     <string name="unit_gibps">GiB/s</string>
     <string name="unit_tibps">TiB/s</string>
+
+    <!-- הגדרות: איפוס להגדרות ברירת מחדל -->
+    <string name="settings_reset_title">אפס להגדרות ברירת המחדל</string>
+    <string name="settings_reset_caption">אפס את כל ההגדרות לערכי ברירת המחדל</string>
+    <string name="settings_reset_button">אפס</string>
+    <string name="settings_reset_dialog_title">לאפס את כל ההגדרות?</string>
+    <string name="settings_reset_dialog_message">פעולה זו תאפס את כל ההגדרות לערכי ברירת המחדל, תמחק את היסטוריית ההורדות ותסיר את קבצי yt-dlp/FFmpeg. קבצים שהורדו לא יושפעו.\n\nהאם להמשיך?</string>
+    <string name="settings_reset_dialog_confirm">אפס הכל</string>
+    <string name="settings_reset_dialog_cancel">ביטול</string>
 </resources>

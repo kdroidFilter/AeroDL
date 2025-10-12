@@ -83,6 +83,7 @@ kotlin {
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.cardiologist)
 
+            implementation(libs.platformtools.appmanager)
             // no external markdown UI renderer; using lightweight parser
 
             // Project dependencies
