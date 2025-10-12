@@ -469,7 +469,11 @@ private fun InProgressRow(
                     // Show progress ring for running/pending downloads
                     val progressFraction = (item.progress.coerceIn(0f, 100f)) / 100f
                     val percent = (progressFraction * 100f).roundToInt()
+<<<<<<< HEAD
                     val speedText = item.speedBytesPerSec?.let { humanizeSpeedLocalized(it) }
+=======
+                    val speedText = item.speedBytesPerSec?.let { humanizeSpeed(it) }
+>>>>>>> origin/main
                     var hovered by remember { mutableStateOf(false) }
 
                     Column(modifier = Modifier.width(72.dp), horizontalAlignment = Alignment.End) {
