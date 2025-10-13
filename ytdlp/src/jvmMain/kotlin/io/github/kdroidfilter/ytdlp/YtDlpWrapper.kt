@@ -77,6 +77,12 @@ class YtDlpWrapper {
      */
     var embedThumbnailInMp3: Boolean = true
 
+    /**
+     * Controls whether to remove sponsored segments from downloaded videos.
+     * When true, yt-dlp is invoked with "--sponsorblock-remove default".
+     */
+    var sponsorBlockRemove: Boolean = false
+
     private val httpClient = KtorConfig.createHttpClient()
     private val ytdlpFetcher = GitHubReleaseFetcher(owner = "yt-dlp", repo = "yt-dlp", httpClient = httpClient)
     private val ffmpegFetcher = GitHubReleaseFetcher(owner = "yt-dlp", repo = "FFmpeg-Builds", httpClient = httpClient)
@@ -689,7 +695,8 @@ class YtDlpWrapper {
             timeout = timeout,
             targetContainer = "mp4",
             allowRecode = recodeIfNeeded,
-            subtitles = subtitles
+            subtitles = subtitles,
+            sponsorBlockRemove = this.sponsorBlockRemove
         )
         return download(url, opts, onEvent)
     }

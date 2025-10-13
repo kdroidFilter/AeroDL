@@ -68,5 +68,38 @@ class NetAndArchiveBuildCommandTest {
         assertTrue(cmdRemux.contains("--remux-video"))
         assertTrue(cmdRecode.contains("--recode-video"))
     }
+
+    @Test
+    fun buildCommand_includesSponsorBlockRemove_whenEnabled() {
+        val opts = Options(
+            outputTemplate = "%(title)s.%(ext)s",
+            sponsorBlockRemove = true
+        )
+        val cmd = NetAndArchive.buildCommand(
+            ytDlpPath = "/usr/bin/yt-dlp",
+            ffmpegPath = null,
+            url = "https://example.com/video",
+            options = opts,
+            downloadDir = null
+        )
+        assertTrue(cmd.contains("--sponsorblock-remove"))
+        assertTrue(cmd.contains("default"))
+    }
+
+    @Test
+    fun buildCommand_omitsSponsorBlock_whenDisabled() {
+        val opts = Options(
+            outputTemplate = "%(title)s.%(ext)s",
+            sponsorBlockRemove = false
+        )
+        val cmd = NetAndArchive.buildCommand(
+            ytDlpPath = "/usr/bin/yt-dlp",
+            ffmpegPath = null,
+            url = "https://example.com/video",
+            options = opts,
+            downloadDir = null
+        )
+        assertTrue(!cmd.contains("--sponsorblock-remove"))
+    }
 }
 

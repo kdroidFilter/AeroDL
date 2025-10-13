@@ -47,7 +47,6 @@ fun EllipsizedTextWithTooltip(
                     Text(
                         text = text,
                         modifier = Modifier.padding(8.dp),
-                        color = Color.White
                     )
 
             },
