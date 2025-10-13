@@ -106,6 +106,11 @@ object NetAndArchive {
         // Subtitles
         options.subtitles?.let { subOpts -> handleSubtitleOptions(cmd, subOpts) }
 
+        // SponsorBlock
+        if (options.sponsorBlockRemove) {
+            cmd.addAll(listOf("--sponsorblock-remove", "default"))
+        }
+
         // Container enforcement (kept)
         options.targetContainer?.let { container ->
             if (container.equals("mp4", ignoreCase = true)) {

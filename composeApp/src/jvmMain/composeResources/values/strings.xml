@@ -90,6 +90,10 @@
     <string name="settings_embed_thumbnail_mp3_title">Embed thumbnail in MP3</string>
     <string name="settings_embed_thumbnail_mp3_caption">When enabled, embed the video thumbnail as MP3 cover art</string>
 
+    <!-- Settings: SponsorBlock -->
+    <string name="settings_sponsorblock_title">Remove sponsored segments</string>
+    <string name="settings_sponsorblock_caption">Many YouTube videos contain sponsored segments, which are typically advertisements. This option removes them from the final video</string>
+
     <!-- Settings: Download directory section -->
     <string name="settings_download_dir_title">Download directory</string>
     <string name="settings_download_dir_caption">Choose the folder where downloads will be saved by default.</string>

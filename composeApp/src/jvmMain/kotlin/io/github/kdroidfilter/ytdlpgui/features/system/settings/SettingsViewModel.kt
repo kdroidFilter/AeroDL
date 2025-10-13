@@ -43,6 +43,7 @@ class SettingsViewModel(
     val clipboardMonitoring: StateFlow<Boolean> = settingsRepository.clipboardMonitoringEnabled
     val notifyOnComplete: StateFlow<Boolean> = settingsRepository.notifyOnComplete
     val autoLaunchEnabled: StateFlow<Boolean> = settingsRepository.autoLaunchEnabled
+    val sponsorBlockRemove: StateFlow<Boolean> = settingsRepository.sponsorBlockRemove
 
     // Note: This ViewModel uses a combined state from multiple sources, so we override uiState
     override val uiState = combine(
@@ -56,6 +57,7 @@ class SettingsViewModel(
         clipboardMonitoring,
         autoLaunchEnabled,
         notifyOnComplete,
+        sponsorBlockRemove,
     ) { values: Array<Any?> ->
         val loading = values[0] as Boolean
         val noCheck = values[1] as Boolean
@@ -67,6 +69,7 @@ class SettingsViewModel(
         val clipboard = values[7] as Boolean
         val autoLaunch = values[8] as Boolean
         val notify = values[9] as Boolean
+        val sponsorBlock = values[10] as Boolean
         SettingsState(
             isLoading = loading,
             noCheckCertificate = noCheck,
@@ -78,6 +81,7 @@ class SettingsViewModel(
             clipboardMonitoringEnabled = clipboard,
             autoLaunchEnabled = autoLaunch,
             notifyOnComplete = notify,
+            sponsorBlockRemove = sponsorBlock,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -123,6 +127,9 @@ class SettingsViewModel(
             }
             is SettingsEvents.SetAutoLaunchEnabled -> {
                 viewModelScope.launch { settingsRepository.setAutoLaunchEnabled(event.enabled) }
+            }
+            is SettingsEvents.SetSponsorBlockRemove -> {
+                settingsRepository.setSponsorBlockRemove(event.enabled)
             }
             is SettingsEvents.PickDownloadDir -> {
                 viewModelScope.launch {

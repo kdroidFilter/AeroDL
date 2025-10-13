@@ -27,6 +27,7 @@ data class SubtitleOptions(
  * @property targetContainer The desired container format (e.g., "mp4"). Null to keep the original.
  * @property allowRecode If true, allows re-encoding if remuxing into the target container is not possible.
  * @property subtitles Subtitle download configuration. Null to skip subtitle downloading.
+ * @property sponsorBlockRemove If true, removes SponsorBlock segments (default categories).
  */
 data class Options(
     val format: String? = null,
@@ -37,5 +38,6 @@ data class Options(
     val timeout: Duration? = Duration.ofMinutes(30),
     val targetContainer: String? = null,
     val allowRecode: Boolean = false,
-    val subtitles: SubtitleOptions? = null  // NEW: Subtitle configuration
+    val subtitles: SubtitleOptions? = null,  // NEW: Subtitle configuration
+    val sponsorBlockRemove: Boolean = false  // NEW: SponsorBlock segment removal
 )

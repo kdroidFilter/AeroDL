@@ -190,4 +190,9 @@
     <string name="settings_reset_dialog_message">פעולה זו תאפס את כל ההגדרות לערכי ברירת המחדל, תמחק את היסטוריית ההורדות ותסיר את קבצי yt-dlp/FFmpeg. קבצים שהורדו לא יושפעו.\n\nהאם להמשיך?</string>
     <string name="settings_reset_dialog_confirm">אפס הכל</string>
     <string name="settings_reset_dialog_cancel">ביטול</string>
+
+    <!-- הגדרות: SponsorBlock -->
+    <string name="settings_sponsorblock_title">הסר קטעי ספונסרים</string>
+    <string name="settings_sponsorblock_caption">סרטוני יוטיוב רבים מכילים קטעי חסות, שהם בדרך כלל פרסומות. אפשרות זו מסירה אותם מהווידאו הסופי</string>
+
 </resources>
