@@ -28,6 +28,7 @@ data class SubtitleOptions(
  * @property allowRecode If true, allows re-encoding if remuxing into the target container is not possible.
  * @property subtitles Subtitle download configuration. Null to skip subtitle downloading.
  * @property sponsorBlockRemove If true, removes SponsorBlock segments (default categories).
+ * @property concurrentFragments Number of threads for downloading m3u8/mpd fragments in parallel (1-5). 1 = disabled.
  */
 data class Options(
     val format: String? = null,
@@ -39,5 +40,6 @@ data class Options(
     val targetContainer: String? = null,
     val allowRecode: Boolean = false,
     val subtitles: SubtitleOptions? = null,  // NEW: Subtitle configuration
-    val sponsorBlockRemove: Boolean = false  // NEW: SponsorBlock segment removal
+    val sponsorBlockRemove: Boolean = false,  // NEW: SponsorBlock segment removal
+    val concurrentFragments: Int = 1  // NEW: Multi-threaded fragment downloads
 )

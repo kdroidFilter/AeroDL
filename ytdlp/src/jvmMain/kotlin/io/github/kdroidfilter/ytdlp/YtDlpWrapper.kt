@@ -83,6 +83,13 @@ class YtDlpWrapper {
      */
     var sponsorBlockRemove: Boolean = false
 
+    /**
+     * Number of threads for downloading m3u8/mpd fragments in parallel (1-5).
+     * Values > 1 can significantly speed up downloads but may risk rate limiting.
+     * Default: 1 (disabled).
+     */
+    var concurrentFragments: Int = 1
+
     private val httpClient = KtorConfig.createHttpClient()
     private val ytdlpFetcher = GitHubReleaseFetcher(owner = "yt-dlp", repo = "yt-dlp", httpClient = httpClient)
     private val ffmpegFetcher = GitHubReleaseFetcher(owner = "yt-dlp", repo = "FFmpeg-Builds", httpClient = httpClient)
@@ -696,7 +703,8 @@ class YtDlpWrapper {
             targetContainer = "mp4",
             allowRecode = recodeIfNeeded,
             subtitles = subtitles,
-            sponsorBlockRemove = this.sponsorBlockRemove
+            sponsorBlockRemove = this.sponsorBlockRemove,
+            concurrentFragments = this.concurrentFragments
         )
         return download(url, opts, onEvent)
     }

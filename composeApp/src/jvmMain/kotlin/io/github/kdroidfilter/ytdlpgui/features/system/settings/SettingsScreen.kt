@@ -70,6 +70,12 @@ fun SettingsView(
                 )
             }
             item {
+                ConcurrentFragmentsSetting(
+                    concurrentFragments = state.concurrentFragments,
+                    onConcurrentFragmentsSelected = { onEvent(SettingsEvents.SetConcurrentFragments(it)) },
+                )
+            }
+            item {
                 ParallelDownloadsSetting(
                     parallelDownloads = state.parallelDownloads,
                     onParallelDownloadsSelected = { onEvent(SettingsEvents.SetParallelDownloads(it)) },
@@ -262,12 +268,57 @@ fun SponsorBlockRemoveSettingPreview() {
 }
 
 @Composable
+private fun ConcurrentFragmentsSetting(
+    concurrentFragments: Int,
+    onConcurrentFragmentsSelected: (Int) -> Unit,
+) {
+    val options = (1..5).toList()
+    val items = options.map { it.toString() }
+    var selected by remember(concurrentFragments) {
+        mutableStateOf(options.indexOf(concurrentFragments))
+    }
+
+    CardExpanderItem(
+        heading = { Text(stringResource(Res.string.settings_concurrent_fragments_title), modifier = Modifier.fillMaxWidth(0.75f)) },
+        caption = {
+            EllipsizedTextWithTooltip(
+                text = stringResource(Res.string.settings_concurrent_fragments_caption),
+                modifier = Modifier.fillMaxWidth(0.75f)
+            )
+        },
+        icon = { Icon(Icons.Filled.Flash, null) },
+        trailing = {
+            ComboBox(
+                modifier = Modifier.width(80.dp),
+                header = null,
+                placeholder = "",
+                selected = selected,
+                items = items,
+                onSelectionChange = { index, _ ->
+                    selected = index
+                    onConcurrentFragmentsSelected(options[index])
+                }
+            )
+        }
+    )
+}
+
+@Preview
+@Composable
+fun ConcurrentFragmentsSettingPreview() {
+    ConcurrentFragmentsSetting(concurrentFragments = 1, onConcurrentFragmentsSelected = {})
+}
+
+@Composable
 private fun ParallelDownloadsSetting(
     parallelDownloads: Int,
     onParallelDownloadsSelected: (Int) -> Unit,
 ) {
     val options = (1..5).toList()
-    val selectionLabel = parallelDownloads.toString()
+    val items = options.map { it.toString() }
+    var selected by remember(parallelDownloads) {
+        mutableStateOf(options.indexOf(parallelDownloads))
+    }
 
     CardExpanderItem(
         heading = { Text(stringResource(Res.string.settings_parallel_downloads_title)) },
@@ -279,34 +330,16 @@ private fun ParallelDownloadsSetting(
         },
         icon = { Icon(Icons.Filled.TopSpeed, null) },
         trailing = {
-            MenuFlyoutContainer(
-                flyout = {
-                    options.forEach { count ->
-                        MenuFlyoutItem(
-                            modifier = Modifier.width(56.dp),
-                            text = { Text(count.toString()) },
-                            onClick = {
-                                onParallelDownloadsSelected(count)
-                                isFlyoutVisible = false
-                            }
-                        )
-                    }
-                },
-                content = {
-                    DropDownButton(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 1.dp),
-                        onClick = { isFlyoutVisible = !isFlyoutVisible },
-                        content = {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(0.9f),
-                                horizontalArrangement = Arrangement.SpaceEvenly
-                            ) {
-                                Text(selectionLabel)
-                            }
-                        },
-                    )
-                },
-                placement = FlyoutPlacement.Bottom
+            ComboBox(
+                modifier = Modifier.width(80.dp),
+                header = null,
+                placeholder = "",
+                selected = selected,
+                items = items,
+                onSelectionChange = { index, _ ->
+                    selected = index
+                    onParallelDownloadsSelected(options[index])
+                }
             )
         }
     )

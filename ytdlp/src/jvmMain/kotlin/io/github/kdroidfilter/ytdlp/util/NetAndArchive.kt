@@ -111,6 +111,11 @@ object NetAndArchive {
             cmd.addAll(listOf("--sponsorblock-remove", "default"))
         }
 
+        // Concurrent fragments
+        if (options.concurrentFragments > 1) {
+            cmd.addAll(listOf("--concurrent-fragments", options.concurrentFragments.coerceIn(1, 5).toString()))
+        }
+
         // Container enforcement (kept)
         options.targetContainer?.let { container ->
             if (container.equals("mp4", ignoreCase = true)) {

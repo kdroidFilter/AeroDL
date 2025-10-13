@@ -94,6 +94,10 @@
     <!-- Paramètres : SponsorBlock -->
     <string name="settings_sponsorblock_title">Supprimer les segments sponsorisés</string>
     <string name="settings_sponsorblock_caption">De nombreuses vidéos YouTube contiennent des segments sponsorisés, qui sont généralement des publicités. Cette option les supprime de la vidéo finale</string>
+    <!-- Paramètres : Fragments concurrents -->
+    <string name="settings_concurrent_fragments_title">Threads de téléchargement de fragments</string>
+    <string name="settings_concurrent_fragments_caption">Fractionne le fichier et télécharge chaque partie simultanément, accélérant grandement les téléchargements. Non recommandé : peut entraîner un bannissement</string>
+
 
     <!-- Paramètres : section Dossier de téléchargement -->
     <string name="settings_download_dir_title">Dossier de téléchargement</string>

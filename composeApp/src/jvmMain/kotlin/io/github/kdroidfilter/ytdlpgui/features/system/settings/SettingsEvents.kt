@@ -14,6 +14,7 @@ sealed class SettingsEvents {
     data class SetClipboardMonitoring(val enabled: Boolean) : SettingsEvents()
     data class SetAutoLaunchEnabled(val enabled: Boolean) : SettingsEvents()
     data class SetSponsorBlockRemove(val enabled: Boolean) : SettingsEvents()
+    data class SetConcurrentFragments(val count: Int) : SettingsEvents()
     data class PickDownloadDir(val title: String) : SettingsEvents()
     data object ResetToDefaults : SettingsEvents()
 }
