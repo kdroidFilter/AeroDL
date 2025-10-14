@@ -4,6 +4,8 @@ import io.github.kdroidfilter.network.HttpsConnectionFactory
 import io.github.kdroidfilter.platformtools.OperatingSystem
 import io.github.kdroidfilter.platformtools.getCacheDir
 import io.github.kdroidfilter.platformtools.getOperatingSystem
+import io.github.kdroidfilter.logging.debugln
+import io.github.kdroidfilter.logging.errorln
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
@@ -91,6 +93,7 @@ object PlatformUtils {
         val conn = HttpsConnectionFactory.openConnection(uri.toURL()) {
             connectTimeout = 12_000
             readTimeout = 24_000
+            instanceFollowRedirects = true
             setRequestProperty("User-Agent", "kdroidFilter-ytdlp/1.0")
         }
 
@@ -181,21 +184,22 @@ object PlatformUtils {
 
 
     /**
-     * Select the appropriate FFmpeg asset for the current system.
-     * macOS: keep separate binaries for x64/arm64 as before (download URLs unchanged).
+     * Select the appropriate FFmpeg asset pattern for the current system.
+     * Returns a pattern to match against available assets in the GitHub release.
+     * macOS: exact names for eugeneware/ffmpeg-static repo.
+     * Windows/Linux: patterns for yt-dlp/FFmpeg-Builds repo (version-specific names).
      */
-    fun getFfmpegAssetNameForSystem(): String? {
+    fun getFfmpegAssetPatternForSystem(): String? {
         val os = getOperatingSystem()
         val arch = (System.getProperty("os.arch") ?: "").lowercase()
         val isArm64 = arch.contains("aarch64") || arch.contains("arm64")
         return when (os) {
             OperatingSystem.WINDOWS -> when {
-                isArm64 -> "ffmpeg-master-latest-winarm64-gpl.zip"
-                arch.contains("32") || (arch.contains("x86") && !arch.contains("64")) -> "ffmpeg-master-latest-win32-gpl.zip"
-                else -> "ffmpeg-master-latest-win64-gpl.zip"
+                isArm64 -> "winarm64-gpl.zip"
+                arch.contains("32") || (arch.contains("x86") && !arch.contains("64")) -> "win32-gpl.zip"
+                else -> "win64-gpl.zip"
             }
-            OperatingSystem.LINUX -> if (isArm64) "ffmpeg-master-latest-linuxarm64-gpl.tar.xz"
-            else "ffmpeg-master-latest-linux64-gpl.tar.xz"
+            OperatingSystem.LINUX -> if (isArm64) "linuxarm64-gpl.tar.xz" else "linux64-gpl.tar.xz"
             OperatingSystem.MACOS -> if (isArm64) "ffmpeg-darwin-arm64" else "ffmpeg-darwin-x64"
             else -> null
         }
@@ -204,10 +208,14 @@ object PlatformUtils {
     /**
      * Download and install FFmpeg in the app cache, verifying it runs.
      * On macOS the asset is a plain binary; on Windows/Linux, archives are extracted.
+     * Uses GitHubReleaseFetcher to get the direct download URL (same method as yt-dlp).
+     * For macOS, the fetcher should point to eugeneware/ffmpeg-static;
+     * for Windows/Linux, it should point to yt-dlp/FFmpeg-Builds.
      */
     suspend fun downloadAndInstallFfmpeg(
-        assetName: String,
+        assetPattern: String,
         forceDownload: Boolean,
+        ffmpegFetcher: io.github.kdroidfilter.platformtools.releasefetcher.github.GitHubReleaseFetcher,
         onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null
     ): String? = withContext(Dispatchers.IO) {
         val baseDir = File(getCacheDir(), "ffmpeg")
@@ -221,23 +229,30 @@ object PlatformUtils {
         baseDir.mkdirs(); binDir.mkdirs()
 
         val os = getOperatingSystem()
-        val archive = File(baseDir, assetName)
-        val url = when (os) {
-            OperatingSystem.MACOS -> "https://github.com/eugeneware/ffmpeg-static/releases/download/b6.0/$assetName"
-            OperatingSystem.WINDOWS, OperatingSystem.LINUX -> "https://github.com/yt-dlp/FFmpeg-Builds/releases/latest/download/$assetName"
-            else -> "https://github.com/yt-dlp/FFmpeg-Builds/releases/latest/download/$assetName"
-        }
 
         try {
+            // Use GitHubReleaseFetcher for all platforms (different repos per OS)
+            val release = ffmpegFetcher.getLatestRelease() ?: error("Could not fetch FFmpeg release from GitHub")
+
+            // Find asset by pattern (for Windows/Linux with version-specific names) or exact match (for macOS)
+            val asset = if (os == OperatingSystem.MACOS) {
+                release.assets.find { it.name == assetPattern }
+            } else {
+                release.assets.find { it.name.endsWith(assetPattern) && !it.name.contains("shared") }
+            } ?: error("Asset matching pattern '$assetPattern' not found in FFmpeg release. Available assets: ${release.assets.map { it.name }}")
+
+            val url = asset.browser_download_url
+            val archive = File(baseDir, asset.name)
+
             downloadFile(url, archive, onProgress)
 
             if (os == OperatingSystem.MACOS) {
                 // macOS assets are plain binaries (no archive)
                 archive.copyTo(targetExe, overwrite = true)
             } else {
-                if (assetName.endsWith(".zip")) NetAndArchive.extractZip(archive, baseDir)
-                else if (assetName.endsWith(".tar.xz")) NetAndArchive.extractTarXzWithSystemTar(archive, baseDir)
-                else error("Unsupported FFmpeg archive: $assetName")
+                if (archive.name.endsWith(".zip")) NetAndArchive.extractZip(archive, baseDir)
+                else if (archive.name.endsWith(".tar.xz")) NetAndArchive.extractTarXzWithSystemTar(archive, baseDir)
+                else error("Unsupported FFmpeg archive: ${archive.name}")
 
                 val found = baseDir.walkTopDown()
                     .firstOrNull { it.isFile && it.name.startsWith("ffmpeg") && it.canRead() }

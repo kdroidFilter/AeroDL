@@ -39,7 +39,8 @@ class DownloadHistoryRepository(
     }
 
     fun reload() {
-        val rows = db.databaseQueries.selectAllHistory().executeAsList()
+        // Fetch only the bounded number of newest entries directly from the database
+        val rows = db.databaseQueries.selectRecentHistory(MAX_HISTORY_IN_MEMORY.toLong()).executeAsList()
         _history.value = rows.map { it.toModel() }
     }
 
@@ -102,6 +103,9 @@ class DownloadHistoryRepository(
     }
 
     companion object {
+        // Upper bound for history items kept in memory/UI.
+        private const val MAX_HISTORY_IN_MEMORY: Int = 200
+
         fun createDatabase(dbFile: File): Database {
             dbFile.parentFile?.mkdirs()
             val driver = JdbcSqliteDriver("jdbc:sqlite:${dbFile.absolutePath}")

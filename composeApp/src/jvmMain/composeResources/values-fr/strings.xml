@@ -45,7 +45,12 @@
     <string name="dependency_ffmpeg_tooltip">FFmpeg est un framework multimédia utilisé pour convertir et traiter les fichiers audio/vidéo. Il garantit que vos téléchargements sont dans le format souhaité.</string>
 
     <!-- Messages d'erreur -->
-    <string name="error_occurred">Une erreur s’est produite</string>
+    <string name="error_occurred">Une erreur s'est produite</string>
+
+    <!-- Notification de mise à jour -->
+    <string name="update_available">Nouvelle version disponible : %1$s</string>
+    <string name="download_update">Télécharger</string>
+    <string name="ignore_update">Ignorer</string>
 
     <!-- Titres d’écran temporaires -->
     <string name="about_screen_title">Écran À propos</string>
@@ -86,6 +91,10 @@
     <string name="settings_embed_thumbnail_mp3_title">Intégrer la miniature dans le MP3</string>
     <string name="settings_embed_thumbnail_mp3_caption">Si activé, intégrer la miniature de la vidéo comme pochette du MP3</string>
 
+    <!-- Paramètres : SponsorBlock -->
+    <string name="settings_sponsorblock_title">Supprimer les segments sponsorisés</string>
+    <string name="settings_sponsorblock_caption">De nombreuses vidéos YouTube contiennent des segments sponsorisés, qui sont généralement des publicités. Cette option les supprime de la vidéo finale</string>
+
     <!-- Paramètres : section Dossier de téléchargement -->
     <string name="settings_download_dir_title">Dossier de téléchargement</string>
     <string name="settings_download_dir_caption">Choisissez le dossier où les téléchargements seront enregistrés par défaut.</string>
@@ -110,6 +119,8 @@
     <!-- Descriptions de contenu (accessibilité) -->
     <string name="cd_error_icon">Erreur</string>
     <string name="cd_filmstrip_play">Icône pellicule lecture</string>
+    <string name="single_audio_quality">Qualité audio</string>
+    <string name="single_auto_generated">automatique</string>
     <string name="cd_textbox">Icône zone de texte</string>
     
     <!-- Notifications de surveillance du presse-papiers -->
@@ -175,7 +186,37 @@
     <string name="download_completed_title">Téléchargement terminé</string>
     <string name="download_completed_message">%1$s a été téléchargé</string>
 
-    <!-- Indicateur d’indisponibilité du dossier -->
+    <!-- Indicateur d'indisponibilité du dossier -->
     <string name="directory_unavailable">Indisponible</string>
-    <string name="tooltip_directory_unavailable">Le fichier/dossier a été déplacé ou supprimé et n’est plus disponible</string>
+    <string name="tooltip_directory_unavailable">Le fichier/dossier a été déplacé ou supprimé et n'est plus disponible</string>
+
+    <!-- Dialogue d'erreur de téléchargement -->
+    <string name="download_error_title">Erreur de téléchargement</string>
+    <string name="download_failed_for">Le téléchargement a échoué pour :</string>
+    <string name="error_details">Détails de l'erreur :</string>
+    <string name="unknown_error">Erreur inconnue</string>
+    <string name="ok">OK</string>
+    <string name="view_error_details">Voir les détails de l'erreur</string>
+    <string name="copy_error">Copier l'erreur dans le presse-papiers</string>
+    
+    <!-- Retrait/suppression d'un élément en échec -->
+    <string name="remove_from_list">Supprimer de la liste</string>
+    <string name="tooltip_remove_from_list">Supprimer cet élément de la liste</string>
+
+    <!-- Affichage de la vitesse de téléchargement -->
+    <string name="download_speed">Vitesse : %1$s</string>
+    <string name="unit_bps">o/s</string>
+    <string name="unit_kibps">Kio/s</string>
+    <string name="unit_mibps">Mio/s</string>
+    <string name="unit_gibps">Gio/s</string>
+    <string name="unit_tibps">Tio/s</string>
+
+    <!-- Paramètres : Réinitialisation -->
+    <string name="settings_reset_title">Réinitialiser aux valeurs par défaut</string>
+    <string name="settings_reset_caption">Réinitialiser tous les paramètres aux valeurs par défaut</string>
+    <string name="settings_reset_button">Réinitialiser</string>
+    <string name="settings_reset_dialog_title">Réinitialiser tous les paramètres ?</string>
+    <string name="settings_reset_dialog_message">Cette action réinitialisera tous les paramètres à leurs valeurs par défaut, effacera l'historique des téléchargements et supprimera les binaires yt-dlp/FFmpeg. Les fichiers téléchargés ne seront pas affectés.\n\nVoulez-vous continuer ?</string>
+    <string name="settings_reset_dialog_confirm">Tout réinitialiser</string>
+    <string name="settings_reset_dialog_cancel">Annuler</string>
 </resources>

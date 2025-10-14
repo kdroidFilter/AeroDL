@@ -2,54 +2,31 @@ package io.github.kdroidfilter.ytdlpgui.features.system.settings
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.VerticalScrollbar
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollbarAdapter
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.github.composefluent.component.Button
-import io.github.composefluent.component.CardExpanderItem
-import io.github.composefluent.component.DropDownButton
-import io.github.composefluent.component.FlyoutPlacement
-import io.github.composefluent.component.Icon
-import io.github.composefluent.component.MenuFlyoutContainer
-import io.github.composefluent.component.MenuFlyoutItem
-import io.github.composefluent.component.Text
+import io.github.composefluent.component.*
 import io.github.composefluent.icons.Icons
-import io.github.composefluent.icons.filled.DocumentEdit
-import io.github.composefluent.icons.filled.MusicNote1
-import io.github.composefluent.icons.filled.OpenFolder
-import io.github.composefluent.icons.filled.TopSpeed
-import io.github.composefluent.icons.regular.Clipboard
-import io.github.composefluent.icons.regular.Cookies
-import io.github.composefluent.icons.regular.LockShield
-import io.github.composefluent.icons.regular.Power
+import io.github.composefluent.icons.filled.*
+import io.github.composefluent.icons.regular.*
 import io.github.kdroidfilter.ytdlpgui.core.design.components.BrowserSelector
 import io.github.kdroidfilter.ytdlpgui.core.design.components.EllipsizedTextWithTooltip
 import io.github.kdroidfilter.ytdlpgui.core.design.components.Switcher
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.*
 
 @Composable
 fun SettingsScreen() {
     val viewModel = koinViewModel<SettingsViewModel>()
-    val state = collectSettingsState(viewModel)
+    val state by viewModel.uiState.collectAsState()
     SettingsView(
         state = state,
-        onEvent = viewModel::onEvents,
+        onEvent = viewModel::handleEvent,
     )
 }
 
@@ -87,6 +64,12 @@ fun SettingsView(
                 )
             }
             item {
+                SponsorBlockRemoveSetting(
+                    sponsorBlockRemove = state.sponsorBlockRemove,
+                    onSponsorBlockChange = { onEvent(SettingsEvents.SetSponsorBlockRemove(it)) },
+                )
+            }
+            item {
                 ParallelDownloadsSetting(
                     parallelDownloads = state.parallelDownloads,
                     onParallelDownloadsSelected = { onEvent(SettingsEvents.SetParallelDownloads(it)) },
@@ -120,6 +103,11 @@ fun SettingsView(
                 AutoLaunchSetting(
                     autoLaunchEnabled = state.autoLaunchEnabled,
                     onAutoLaunchChange = { onEvent(SettingsEvents.SetAutoLaunchEnabled(it)) },
+                )
+            }
+            item {
+                ResetToDefaultsSetting(
+                    onResetClick = { onEvent(SettingsEvents.ResetToDefaults) }
                 )
             }
         }
@@ -237,6 +225,40 @@ private fun EmbedThumbnailInMp3Setting(
 @Composable
 fun EmbedThumbnailInMp3SettingPreview() {
     EmbedThumbnailInMp3Setting(embedThumbnailInMp3 = true, onEmbedThumbnailChange = {})
+}
+
+@Composable
+private fun SponsorBlockRemoveSetting(
+    sponsorBlockRemove: Boolean,
+    onSponsorBlockChange: (Boolean) -> Unit,
+) {
+    CardExpanderItem(
+        heading = {
+            Text(
+                stringResource(Res.string.settings_sponsorblock_title),
+                modifier = Modifier.fillMaxWidth(0.8f)
+            )
+        },
+        caption = {
+            EllipsizedTextWithTooltip(
+                text = stringResource(Res.string.settings_sponsorblock_caption),
+                modifier = Modifier.fillMaxWidth(0.8f)
+            )
+        },
+        icon = { Icon(Icons.Filled.Cut, null) },
+        trailing = {
+            Switcher(
+                checked = sponsorBlockRemove,
+                onCheckStateChange = onSponsorBlockChange,
+            )
+        }
+    )
+}
+
+@Preview
+@Composable
+fun SponsorBlockRemoveSettingPreview() {
+    SponsorBlockRemoveSetting(sponsorBlockRemove = true, onSponsorBlockChange = {})
 }
 
 @Composable
@@ -467,6 +489,57 @@ private fun AutoLaunchSetting(
 @Composable
 fun AutoLaunchSettingPreview() {
     AutoLaunchSetting(autoLaunchEnabled = true, onAutoLaunchChange = {})
+}
+
+@Composable
+private fun ResetToDefaultsSetting(
+    onResetClick: () -> Unit,
+) {
+    var showDialog by remember { mutableStateOf(false) }
+
+    CardExpanderItem(
+        heading = {
+            Text(
+                stringResource(Res.string.settings_reset_title),
+                modifier = Modifier.fillMaxWidth(0.50f)
+            )
+        },
+        caption = {
+            EllipsizedTextWithTooltip(
+                text = stringResource(Res.string.settings_reset_caption),
+                modifier = Modifier.fillMaxWidth(0.50f)
+            )
+        },
+        icon = { Icon(Icons.Regular.Warning, null) },
+        trailing = {
+            Button(
+                onClick = { showDialog = true },
+                content = {
+                    Text(stringResource(Res.string.settings_reset_button))
+                },
+            )
+        }
+    )
+
+    ContentDialog(
+        title = stringResource(Res.string.settings_reset_dialog_title),
+        visible = showDialog,
+        primaryButtonText = stringResource(Res.string.settings_reset_dialog_confirm),
+        closeButtonText = stringResource(Res.string.settings_reset_dialog_cancel),
+        onButtonClick = {
+            showDialog = false
+            onResetClick()
+        },
+        content = {
+            Text(stringResource(Res.string.settings_reset_dialog_message))
+        }
+    )
+}
+
+@Preview
+@Composable
+fun ResetToDefaultsSettingPreview() {
+    ResetToDefaultsSetting(onResetClick = {})
 }
 
 @Preview

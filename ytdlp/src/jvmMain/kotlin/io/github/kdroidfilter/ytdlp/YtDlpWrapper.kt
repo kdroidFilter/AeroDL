@@ -9,7 +9,9 @@ import io.github.kdroidfilter.ytdlp.model.PlaylistInfo
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
 import io.github.kdroidfilter.ytdlp.util.NetAndArchive
 import io.github.kdroidfilter.ytdlp.util.PlatformUtils
-import io.github.kdroidfilter.ytdlp.util.errorln
+import io.github.kdroidfilter.logging.errorln
+import io.github.kdroidfilter.logging.infoln
+import io.github.kdroidfilter.logging.debugln
 import kotlinx.coroutines.*
 import java.io.File
 import java.nio.charset.StandardCharsets
@@ -75,8 +77,16 @@ class YtDlpWrapper {
      */
     var embedThumbnailInMp3: Boolean = true
 
+    /**
+     * Controls whether to remove sponsored segments from downloaded videos.
+     * When true, yt-dlp is invoked with "--sponsorblock-remove default".
+     */
+    var sponsorBlockRemove: Boolean = false
+
     private val httpClient = KtorConfig.createHttpClient()
     private val ytdlpFetcher = GitHubReleaseFetcher(owner = "yt-dlp", repo = "yt-dlp", httpClient = httpClient)
+    private val ffmpegFetcher = GitHubReleaseFetcher(owner = "yt-dlp", repo = "FFmpeg-Builds", httpClient = httpClient)
+    private val ffmpegMacOsFetcher = GitHubReleaseFetcher(owner = "eugeneware", repo = "ffmpeg-static", httpClient = httpClient)
 
     private data class ProcessResult(val exitCode: Int, val stdout: List<String>, val stderr: String)
 
@@ -224,8 +234,9 @@ class YtDlpWrapper {
             return true
         }
         if (getOperatingSystem() in listOf(OperatingSystem.WINDOWS, OperatingSystem.LINUX, OperatingSystem.MACOS)) {
-            val asset = PlatformUtils.getFfmpegAssetNameForSystem() ?: return false
-            val result = PlatformUtils.downloadAndInstallFfmpeg(asset, forceDownload, onProgress)
+            val assetPattern = PlatformUtils.getFfmpegAssetPatternForSystem() ?: return false
+            val fetcher = if (getOperatingSystem() == OperatingSystem.MACOS) ffmpegMacOsFetcher else ffmpegFetcher
+            val result = PlatformUtils.downloadAndInstallFfmpeg(assetPattern, forceDownload, fetcher, onProgress)
             if (result != null) ffmpegPath = result
             return result != null
         }
@@ -245,29 +256,48 @@ class YtDlpWrapper {
 
     fun download(url: String, options: Options = Options(), onEvent: (Event) -> Unit): Handle {
         val job = scope.launch {
+            infoln { "[YtDlpWrapper] Starting download for URL: $url" }
             if (!isAvailable()) {
-                onEvent(Event.Error("yt-dlp is not available. Please call initialize() first."))
+                val error = "yt-dlp is not available. Please call initialize() first."
+                errorln { "[YtDlpWrapper] $error" }
+                onEvent(Event.Error(error))
                 return@launch
             }
 
+            infoln { "[YtDlpWrapper] Checking network connectivity..." }
             checkNetwork(url, 5000, 5000).getOrElse {
-                onEvent(Event.NetworkProblem(it.message ?: "Network unavailable"))
+                val networkError = it.message ?: "Network unavailable"
+                errorln { "[YtDlpWrapper] Network pre-check failed: $networkError" }
+                onEvent(Event.NetworkProblem(networkError))
                 onEvent(Event.Error("Network pre-check failed."))
                 return@launch
             }
+            infoln { "[YtDlpWrapper] Network check passed" }
 
             val finalOptions = options.copy(
                 noCheckCertificate = if (options.noCheckCertificate) true else this@YtDlpWrapper.noCheckCertificate,
                 cookiesFromBrowser = options.cookiesFromBrowser ?: this@YtDlpWrapper.cookiesFromBrowser
             )
+
+            options.subtitles?.let { subOpts ->
+                infoln { "[YtDlpWrapper] Subtitle options provided: languages=${subOpts.languages}, embed=${subOpts.embedSubtitles}, writeAuto=${subOpts.writeAutoSubtitles}" }
+            }
+
             val cmd = NetAndArchive.buildCommand(ytDlpPath, ffmpegPath, url, finalOptions, downloadDir)
+            infoln { "[YtDlpWrapper] Built command with ${cmd.size} arguments" }
+            debugln { "[YtDlpWrapper] Full command: ${cmd.joinToString(" ")}" }
+
             val process: Process = try {
                 ProcessBuilder(cmd).directory(downloadDir).redirectErrorStream(true).start()
             } catch (t: Throwable) {
-                onEvent(Event.Error("Failed to start the yt-dlp process.", t))
+                val error = "Failed to start the yt-dlp process: ${t.message}"
+                errorln { "[YtDlpWrapper] $error" }
+                errorln { "[YtDlpWrapper] Stack trace: ${t.stackTraceToString()}" }
+                onEvent(Event.Error(error, t))
                 return@launch
             }
 
+            infoln { "[YtDlpWrapper] Process started successfully" }
             onEvent(Event.Started)
             val tail = ArrayBlockingQueue<String>(120)
 
@@ -282,12 +312,20 @@ class YtDlpWrapper {
                                         tail.poll(); tail.offer(line)
                                     }
                                     val progress = NetAndArchive.parseProgress(line)
-                                    if (progress != null) onEvent(Event.Progress(progress, line)) else onEvent(Event.Log(line))
+                                    if (progress != null) {
+                                        val speed = NetAndArchive.parseSpeedBytesPerSec(line)
+                                        onEvent(Event.Progress(progress, speed, line))
+                                    } else {
+                                        onEvent(Event.Log(line))
+                                    }
                                 }
                             }
                         } catch (e: Exception) {
                             if (isActive) {
-                                onEvent(Event.Error("I/O error while reading yt-dlp output", e))
+                                val error = "I/O error while reading yt-dlp output: ${e.message}"
+                                errorln { "[YtDlpWrapper] $error" }
+                                errorln { "[YtDlpWrapper] Stack trace: ${e.stackTraceToString()}" }
+                                onEvent(Event.Error(error, e))
                             }
                         }
                     }
@@ -298,12 +336,36 @@ class YtDlpWrapper {
                     if (exitCode != 0) {
                         val lines = mutableListOf<String>().also { tail.drainTo(it) }
                         val diagnostic = NetAndArchive.diagnose(lines)
-                        val tailPreview = if (lines.isEmpty()) "(no output captured)" else lines.takeLast(min(15, lines.size)).joinToString("\n")
-                        onEvent(
-                            Event.Error(
-                                "yt-dlp failed (exit $exitCode). ${diagnostic ?: ""}".trim() + "\n--- Last output ---\n$tailPreview"
-                            )
-                        )
+
+                        // Extract all ERROR lines
+                        val errorLines = lines.filter { it.trim().startsWith("ERROR:", ignoreCase = true) }
+
+                        // Build error message
+                        val errorMsg = buildString {
+                            append("yt-dlp failed (exit $exitCode). ${diagnostic ?: ""}".trim())
+
+                            if (errorLines.isNotEmpty()) {
+                                append("\n\n")
+                                append("Errors:\n")
+                                errorLines.forEach { errorLine ->
+                                    append("• ${errorLine.removePrefix("ERROR:").trim()}\n")
+                                }
+                            }
+
+                            append("\n--- Last output ---\n")
+                            val tailPreview = if (lines.isEmpty()) "(no output captured)" else lines.takeLast(min(15, lines.size)).joinToString("\n")
+                            append(tailPreview)
+                        }
+
+                        errorln { "[YtDlpWrapper] Download failed with exit code $exitCode" }
+                        errorln { "[YtDlpWrapper] Diagnostic: ${diagnostic ?: "none"}" }
+                        if (errorLines.isNotEmpty()) {
+                            errorln { "[YtDlpWrapper] ERROR lines found: ${errorLines.joinToString("; ")}" }
+                        }
+                        errorln { "[YtDlpWrapper] Last output:\n${lines.takeLast(min(15, lines.size)).joinToString("\n")}" }
+                        onEvent(Event.Error(errorMsg))
+                    } else {
+                        infoln { "[YtDlpWrapper] Download completed successfully" }
                     }
                     onEvent(Event.Completed(exitCode, exitCode == 0))
                 }
@@ -369,7 +431,28 @@ class YtDlpWrapper {
 
     // --- Simple Resolution Presets ---
 
-    enum class Preset(val height: Int) { P360(360), P480(480), P720(720), P1080(1080), P1440(1440), P2160(2160) }
+    enum class Preset(val height: Int) {
+        P136(136),   // Common in HLS/m3u8 streams
+        P144(144),   // YouTube very low quality
+        P226(226),   // Common in HLS/m3u8 streams
+        P240(240),   // YouTube low quality
+        P270(270),   // Common in some streams
+        P340(340),   // Common in HLS/m3u8 streams
+        P360(360),   // Standard definition
+        P406(406),   // Common in some streams
+        P454(454),   // Common in HLS/m3u8 streams
+        P480(480),   // Standard definition
+        P540(540),   // Common in some streams
+        P680(680),   // Common in HLS/m3u8 streams
+        P720(720),   // HD
+        P810(810),   // Common in some streams
+        P1020(1020), // Common in HLS/m3u8 streams
+        P1080(1080), // Full HD
+        P1360(1360), // Common in HLS/m3u8 streams
+        P1440(1440), // 2K
+        P2040(2040), // Common in HLS/m3u8 streams
+        P2160(2160)  // 4K
+    }
 
     suspend fun getProgressiveUrl(
         url: String,
@@ -612,7 +695,8 @@ class YtDlpWrapper {
             timeout = timeout,
             targetContainer = "mp4",
             allowRecode = recodeIfNeeded,
-            subtitles = subtitles
+            subtitles = subtitles,
+            sponsorBlockRemove = this.sponsorBlockRemove
         )
         return download(url, opts, onEvent)
     }

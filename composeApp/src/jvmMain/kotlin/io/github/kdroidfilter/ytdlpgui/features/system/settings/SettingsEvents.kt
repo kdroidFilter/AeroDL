@@ -13,5 +13,7 @@ sealed class SettingsEvents {
     data class SetDownloadDir(val path: String) : SettingsEvents()
     data class SetClipboardMonitoring(val enabled: Boolean) : SettingsEvents()
     data class SetAutoLaunchEnabled(val enabled: Boolean) : SettingsEvents()
+    data class SetSponsorBlockRemove(val enabled: Boolean) : SettingsEvents()
     data class PickDownloadDir(val title: String) : SettingsEvents()
+    data object ResetToDefaults : SettingsEvents()
 }

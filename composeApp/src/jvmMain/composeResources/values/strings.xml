@@ -41,10 +41,15 @@
     <!-- Dependency Info Bar -->
     <string name="dependency_info_title">While you configure AeroDL settings, we are downloading the necessary dependencies for the app to work properly.</string>
     <string name="dependency_ytdlp_tooltip">yt-dlp is the core tool that downloads videos from supported websites. It handles all the heavy lifting of fetching your content.</string>
-    <string name="dependency_ffmpeg_tooltip">FFmpeg is a multimedia framework used to convert and process audio/video files. It ensures your downloads are in the format you want.</string>
+    <string name="dependency_ffmpeg_tooltip">FFmpeg is a multimedia framework used to convert and process audio and video files. It ensures your downloads are in the format you want.</string>
 
     <!-- Error messages -->
     <string name="error_occurred">An error occurred</string>
+
+    <!-- Update notification -->
+    <string name="update_available">New version available: %1$s</string>
+    <string name="download_update">Download</string>
+    <string name="ignore_update">Ignore</string>
 
     <!-- Placeholder screen titles -->
     <string name="about_screen_title">About Screen</string>
@@ -70,7 +75,7 @@
     <string name="onboarding_filtered_network_detected_message">A certificate problem has been detected. This could be due to corporate network filtering, or worse, a MITM attack. For the program to function, it is necessary to disable certificate verification.</string>
     <string name="onboarding_filtered_network_accept">I understand the risks and accept</string>
     <string name="settings_cookies_from_browser_title">Cookies from browser</string>
-    <string name="settings_cookies_from_browser_label">Allows using your browser\'s cookies to access content that requires you to be logged in, such as private YouTube videos. Warning: using this feature may result in your account being banned.</string>
+    <string name="settings_cookies_from_browser_label">Allows using your browser's cookies to access content that requires you to be logged in, such as private YouTube videos. Warning: using this feature may result in your account being banned.</string>
     <string name="settings_browser_select">Select browser…</string>
     <string name="settings_browser_disable">Disabled</string>
     <string name="settings_browser_chrome">Chrome</string>
@@ -84,6 +89,10 @@
     <!-- Settings: Audio thumbnail embedding -->
     <string name="settings_embed_thumbnail_mp3_title">Embed thumbnail in MP3</string>
     <string name="settings_embed_thumbnail_mp3_caption">When enabled, embed the video thumbnail as MP3 cover art</string>
+
+    <!-- Settings: SponsorBlock -->
+    <string name="settings_sponsorblock_title">Remove sponsored segments</string>
+    <string name="settings_sponsorblock_caption">Many YouTube videos contain sponsored segments, which are typically advertisements. This option removes them from the final video</string>
 
     <!-- Settings: Download directory section -->
     <string name="settings_download_dir_title">Download directory</string>
@@ -110,6 +119,8 @@
     <string name="cd_error_icon">Error</string>
     <string name="cd_filmstrip_play">Filmstrip play icon</string>
     <string name="cd_textbox">Textbox icon</string>
+    <string name="single_audio_quality">Audio quality</string>
+    <string name="single_auto_generated">auto</string>
     
     <!-- Settings: Clipboard monitoring -->
     <string name="settings_clipboard_monitoring_title">Clipboard monitoring</string>
@@ -126,7 +137,7 @@
     <string name="onboarding_complete_message">Setup complete…</string>
     <string name="onboarding_finish_loading_title">Just a few more moments…</string>
     <string name="onboarding_finish_loading_message">We are still downloading the necessary resources for the program to work properly.</string>
-    <string name="onboarding_finish_ready_title">Let\'s go!</string>
+    <string name="onboarding_finish_ready_title">Let's go!</string>
     <string name="onboarding_finish_ready_message">Everything is ready. You can now start using AeroDL.</string>
     <string name="onboarding_finish_ready_button">Get started</string>
     <string name="onboarding_gnome_focus_title">Improve GNOME Experience</string>
@@ -177,5 +188,35 @@
 
     <!-- Directory unavailable notice -->
     <string name="directory_unavailable">Not available</string>
-    <string name="tooltip_directory_unavailable">This file/folder was moved or deleted and is no longer available</string>
+    <string name="tooltip_directory_unavailable">This file or folder was moved or deleted and is no longer available</string>
+
+    <!-- Download error dialog -->
+    <string name="download_error_title">Download Error</string>
+    <string name="download_failed_for">Download failed for:</string>
+    <string name="error_details">Error details:</string>
+    <string name="unknown_error">Unknown error</string>
+    <string name="ok">OK</string>
+    <string name="view_error_details">View error details</string>
+    <string name="copy_error">Copy error to clipboard</string>
+    
+    <!-- Dismiss/remove failed item -->
+    <string name="remove_from_list">Remove from list</string>
+    <string name="tooltip_remove_from_list">Remove this item from the list</string>
+
+    <!-- Download speed display -->
+    <string name="download_speed">Speed: %1$s</string>
+    <string name="unit_bps">B/s</string>
+    <string name="unit_kibps">KiB/s</string>
+    <string name="unit_mibps">MiB/s</string>
+    <string name="unit_gibps">GiB/s</string>
+    <string name="unit_tibps">TiB/s</string>
+
+    <!-- Settings: Reset to defaults -->
+    <string name="settings_reset_title">Reset to defaults</string>
+    <string name="settings_reset_caption">Reset all settings to default values</string>
+    <string name="settings_reset_button">Reset</string>
+    <string name="settings_reset_dialog_title">Reset all settings?</string>
+    <string name="settings_reset_dialog_message">This action will reset all settings to their default values, clear download history, and remove yt-dlp/FFmpeg binaries. Downloaded files will not be affected.\n\nDo you want to continue?</string>
+    <string name="settings_reset_dialog_confirm">Reset everything</string>
+    <string name="settings_reset_dialog_cancel">Cancel</string>
 </resources>

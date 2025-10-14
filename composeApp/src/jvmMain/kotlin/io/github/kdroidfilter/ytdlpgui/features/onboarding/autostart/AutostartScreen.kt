@@ -41,14 +41,17 @@ import ytdlpgui.composeapp.generated.resources.settings_auto_launch_title
 fun AutostartScreen(
     viewModel: OnboardingViewModel = koinViewModel(),
 ) {
-    val state = collectAutostartState(viewModel)
+    val autoLaunchEnabled by viewModel.autoLaunchEnabled.collectAsState()
+    val state = AutostartState(
+        autoLaunchEnabled = autoLaunchEnabled
+    )
     val currentStep by viewModel.currentStep.collectAsState()
     val initState by viewModel.initState.collectAsState()
     val dependencyInfoBarDismissed by viewModel.dependencyInfoBarDismissed.collectAsState()
 
     AutostartView(
         state = state,
-        onEvent = viewModel::onEvents,
+        onEvent = viewModel::handleEvent,
         currentStep = currentStep,
         initState = initState,
         totalSteps = viewModel.getTotalSteps(),

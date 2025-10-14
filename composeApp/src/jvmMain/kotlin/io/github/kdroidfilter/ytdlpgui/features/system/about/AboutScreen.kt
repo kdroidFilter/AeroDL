@@ -1,11 +1,23 @@
 package io.github.kdroidfilter.ytdlpgui.features.system.about
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.VerticalScrollbar
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -21,10 +33,10 @@ import ytdlpgui.composeapp.generated.resources.*
 @Composable
 fun AboutScreen() {
     val viewModel = koinViewModel<AboutViewModel>()
-    val state = viewModel.state.collectAsState().value
+    val state by viewModel.uiState.collectAsState()
     AboutView(
         state = state,
-        onEvent = viewModel::onEvents,
+        onEvent = viewModel::handleEvent,
     )
 }
 
@@ -47,66 +59,75 @@ fun AboutView(
 
     val scrollState = rememberScrollState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState)
-            .padding(horizontal = 24.dp, vertical = 32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(24.dp)
-    ) {
+    Row(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .widthIn(max = 720.dp),
+                .weight(1f)
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .padding(horizontal = 24.dp, vertical = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            Text(
-                text = stringResource(Res.string.about_credits_title),
-                style = FluentTheme.typography.subtitle,
-                textAlign = TextAlign.Center
-            )
-            Text(
-                text = stringResource(Res.string.credits_made_by),
-                style = FluentTheme.typography.body,
-                textAlign = TextAlign.Center
-            )
-            Text(
-                text = stringResource(Res.string.credits_thank_jetbrains),
-                style = FluentTheme.typography.body,
-                textAlign = TextAlign.Center
-            )
-            Text(
-                text = stringResource(Res.string.credits_thank_oss),
-                style = FluentTheme.typography.body,
-                textAlign = TextAlign.Center
-            )
-            HyperlinkButton(
-                onClick = { openUrlInBrowser("https://github.com/kdroidFilter") },
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .widthIn(max = 720.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text(stringResource(Res.string.credits_github_prompt))
+                Text(
+                    text = stringResource(Res.string.about_credits_title),
+                    style = FluentTheme.typography.subtitle,
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = stringResource(Res.string.credits_made_by),
+                    style = FluentTheme.typography.body,
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = stringResource(Res.string.credits_thank_jetbrains),
+                    style = FluentTheme.typography.body,
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = stringResource(Res.string.credits_thank_oss),
+                    style = FluentTheme.typography.body,
+                    textAlign = TextAlign.Center
+                )
+                HyperlinkButton(
+                    onClick = { openUrlInBrowser("https://github.com/kdroidFilter") },
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                ) {
+                    Text(stringResource(Res.string.credits_github_prompt))
+                }
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .widthIn(max = 480.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Divider()
+                Text(
+                    text = stringResource(Res.string.about_versions_title),
+                    style = FluentTheme.typography.bodyStrong,
+                    textAlign = TextAlign.Center
+                )
+                Text(text = appVersion, style = FluentTheme.typography.body, textAlign = TextAlign.Center)
+                Text(text = ytdlpVersion, style = FluentTheme.typography.body, textAlign = TextAlign.Center)
+                Text(text = ffmpegVersion, style = FluentTheme.typography.body, textAlign = TextAlign.Center)
+                Spacer(Modifier.height(8.dp))
             }
         }
-
-        Column(
+        VerticalScrollbar(
+            adapter = rememberScrollbarAdapter(scrollState),
             modifier = Modifier
-                .fillMaxWidth()
-                .widthIn(max = 480.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Divider()
-            Text(
-                text = stringResource(Res.string.about_versions_title),
-                style = FluentTheme.typography.bodyStrong,
-                textAlign = TextAlign.Center
-            )
-            Text(text = appVersion, style = FluentTheme.typography.body, textAlign = TextAlign.Center)
-            Text(text = ytdlpVersion, style = FluentTheme.typography.body, textAlign = TextAlign.Center)
-            Text(text = ffmpegVersion, style = FluentTheme.typography.body, textAlign = TextAlign.Center)
-            Spacer(Modifier.height(8.dp))
-        }
+                .fillMaxHeight()
+                .padding(top = 2.dp, start = 8.dp)
+        )
     }
 }

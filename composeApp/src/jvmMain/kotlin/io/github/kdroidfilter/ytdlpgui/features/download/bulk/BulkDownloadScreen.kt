@@ -22,14 +22,16 @@ import io.github.kdroidfilter.ytdlpgui.core.platform.browser.openUrlInBrowser
 import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.*
 import org.koin.compose.viewmodel.koinViewModel
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 
 @Composable
 fun BulkDownloadScreen() {
     val viewModel = koinViewModel<BulkDownloadViewModel>()
-    val state = collectBulkDownloadState(viewModel)
+    val state by viewModel.uiState.collectAsState()
     BulkDownloadView(
         state = state,
-        onEvent = viewModel::onEvents,
+        onEvent = viewModel::handleEvent,
     )
 }
 

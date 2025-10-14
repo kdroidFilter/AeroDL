@@ -1,16 +1,29 @@
 package io.github.kdroidfilter.ytdlpgui.features.download.bulk
 
-import androidx.lifecycle.ViewModel
-import io.github.kdroidfilter.ytdlpgui.core.navigation.Navigator
+import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavHostController
+import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 
-class BulkDownloadViewModel(navigator: Navigator) : ViewModel() {
+class BulkDownloadViewModel(navController: NavHostController) : MVIViewModel<BulkDownloadState, BulkDownloadEvents>() {
+
+    override fun initialState(): BulkDownloadState = BulkDownloadState()
 
     private val _isLoading = MutableStateFlow(false)
-    val isLoading = _isLoading.asStateFlow()
 
-    fun onEvents(event: BulkDownloadEvents) {
+    // Single UI state for the screen - Note: This ViewModel uses a simple mapped state, so we override uiState
+    override val uiState = _isLoading
+        .map { loading -> BulkDownloadState(isLoading = loading) }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = BulkDownloadState()
+        )
+
+    override fun handleEvent(event: BulkDownloadEvents) {
         when (event) {
             BulkDownloadEvents.Refresh -> { /* TODO */ }
         }

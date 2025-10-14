@@ -36,3 +36,4 @@ plugins {
 include(":composeApp")
 include(":ytdlp")
 include(":network")
+include(":logging")

@@ -21,11 +21,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
@@ -54,6 +52,7 @@ import io.github.kdroidfilter.ytdlp.model.VideoInfo
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
+import androidx.compose.runtime.collectAsState
 import ytdlpgui.composeapp.generated.resources.*
 import java.time.Duration
 import java.util.*
@@ -61,10 +60,10 @@ import java.util.*
 @Composable
 fun SingleDownloadScreen() {
     val viewModel = koinViewModel<SingleDownloadViewModel>()
-    val state = collectSingleDownloadState(viewModel)
+    val state by viewModel.uiState.collectAsState()
     SingleDownloadView(
         state = state,
-        onEvent = viewModel::onEvents,
+        onEvent = viewModel::handleEvent
     )
 }
 
@@ -73,6 +72,11 @@ fun SingleDownloadView(
     state: SingleDownloadState,
     onEvent: (SingleDownloadEvents) -> Unit,
 ) {
+    DisposableEffect(Unit) {
+        onDispose {
+            onEvent(SingleDownloadEvents.ScreenDisposed)
+        }
+    }
     val videoPlayerState = rememberVideoPlayerState()
     if (state.isLoading) Loader()
     else if (state.errorMessage != null) ErrorBox(state.errorMessage)
@@ -83,7 +87,10 @@ fun SingleDownloadView(
         selectedPreset = state.selectedPreset,
         availableSubtitles = state.availableSubtitles,
         selectedSubtitles = state.selectedSubtitles,
+        availableAudioQualityPresets = state.availableAudioQualityPresets,
+        selectedAudioQualityPreset = state.selectedAudioQualityPreset,
         onSelectPreset = { onEvent(SingleDownloadEvents.SelectPreset(it)) },
+        onSelectAudioQualityPreset = { onEvent(SingleDownloadEvents.SelectAudioQualityPreset(it)) },
         onToggleSubtitle = { onEvent(SingleDownloadEvents.ToggleSubtitle(it)) },
         onClearSubtitles = { onEvent(SingleDownloadEvents.ClearSubtitles) },
         onStartDownload = { onEvent(SingleDownloadEvents.StartDownload) },
@@ -129,7 +136,10 @@ private fun SingleVideoDownloadView(
     selectedPreset: YtDlpWrapper.Preset?,
     availableSubtitles: Map<String, io.github.kdroidfilter.ytdlp.model.SubtitleInfo>,
     selectedSubtitles: List<String>,
+    availableAudioQualityPresets: List<YtDlpWrapper.AudioQualityPreset>,
+    selectedAudioQualityPreset: YtDlpWrapper.AudioQualityPreset?,
     onSelectPreset: (YtDlpWrapper.Preset) -> Unit,
+    onSelectAudioQualityPreset: (YtDlpWrapper.AudioQualityPreset) -> Unit,
     onToggleSubtitle: (String) -> Unit,
     onClearSubtitles: () -> Unit,
     onStartDownload: () -> Unit,
@@ -167,27 +177,24 @@ private fun SingleVideoDownloadView(
             )
             Spacer(Modifier.height(16.dp))
 
-            if (availablePresets.isNotEmpty()) {
+            if (availablePresets.isNotEmpty() || availableAudioQualityPresets.isNotEmpty()) {
                 // Afficher les options vidéo seulement si "Vidéo" est sélectionné
-                if (selectedFormatIndex == 0) {
+                if (selectedFormatIndex == 0 && availablePresets.isNotEmpty()) {
                     // Sélecteur de résolution avec SegmentedControl
                     Text(text = stringResource(Res.string.single_formats))
                     Spacer(Modifier.height(8.dp))
 
-                    Row(
+                    FlowRow(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
+                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        SegmentedControl {
-                            availablePresets.forEachIndexed { index, preset ->
+                        availablePresets.forEach { preset ->
+                            SegmentedControl {
                                 SegmentedButton(
                                     checked = preset == selectedPreset,
                                     onCheckedChanged = { onSelectPreset(preset) },
-                                    position = when (index) {
-                                        0 -> SegmentedItemPosition.Start
-                                        availablePresets.lastIndex -> SegmentedItemPosition.End
-                                        else -> SegmentedItemPosition.Center
-                                    },
+                                    position = SegmentedItemPosition.Center,
                                     text = { Text("${preset.height}p") }
                                 )
                             }
@@ -196,69 +203,98 @@ private fun SingleVideoDownloadView(
                     Spacer(Modifier.height(16.dp))
 
                     // Sélecteur de sous-titres avec MenuFlyoutContainer
-                    var resetKey by remember { mutableStateOf(0) }
-                    val sortedLanguages = remember(resetKey, availableSubtitles) {
-                        availableSubtitles.keys.sortedBy {
-                            languageCodeToDisplayName(it).lowercase(Locale.getDefault())
+                    if (availableSubtitles.isNotEmpty()) {
+                        var resetKey by remember { mutableStateOf(0) }
+                        val sortedLanguages = remember(resetKey, availableSubtitles) {
+                            availableSubtitles.keys.sortedBy {
+                                languageCodeToDisplayName(it).lowercase(Locale.getDefault())
+                            }
                         }
-                    }
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(text = stringResource(Res.string.single_subtitles))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(text = stringResource(Res.string.single_subtitles))
 
-                        MenuFlyoutContainer(
-                            flyout = {
-                                MenuFlyoutItem(
-                                    onClick = {
-                                        onClearSubtitles()
-                                        resetKey += 1
-                                        isFlyoutVisible = false
-                                    },
-                                    text = { Text(stringResource(Res.string.single_no_subtitle)) }
-                                )
-                                MenuFlyoutSeparator()
-                                sortedLanguages.forEach { lang ->
-                                    val isSelected = selectedSubtitles.contains(lang)
-                                    val subtitleInfo = availableSubtitles[lang]
-                                    val displayName = languageCodeToDisplayName(lang)
-                                    val isAutoGenerated = subtitleInfo?.autoGenerated == true || subtitleInfo?.isAutomatic == true
-                                    val fullDisplayName = if (isAutoGenerated) "$displayName (auto)" else displayName
+                                    MenuFlyoutContainer(
+                                        flyout = {
                                     MenuFlyoutItem(
-                                        selected = isSelected,
-                                        onSelectedChanged = {
-                                            onToggleSubtitle(lang)
-                                        },
-                                        selectionType = ListItemSelectionType.Check,
-                                        colors = ListItemDefaults.defaultListItemColors(),
-                                        text = { Text(fullDisplayName) }
-                                    )
-                                }
-                            },
-                            content = {
-                                Button(
-                                    onClick = { isFlyoutVisible = !isFlyoutVisible },
-                                    content = {
-                                        Text(
-                                            if (selectedSubtitles.isEmpty())
-                                                stringResource(Res.string.single_no_subtitle)
-                                            else
-                                                selectedSubtitles.joinToString(", ") { lang ->
-                                                    val subtitleInfo = availableSubtitles[lang]
-                                                    val displayName = languageCodeToDisplayName(lang)
-                                                    val isAutoGenerated = subtitleInfo?.autoGenerated == true || subtitleInfo?.isAutomatic == true
-                                                    if (isAutoGenerated) "$displayName (auto)" else displayName
-                                                }
+                                            onClick = {
+                                                onClearSubtitles()
+                                                resetKey += 1
+                                                isFlyoutVisible = false
+                                            },
+                                            text = { Text(stringResource(Res.string.single_no_subtitle)) }
+                                        )
+                                        MenuFlyoutSeparator()
+                                    val autoLabel = stringResource(Res.string.single_auto_generated)
+                                    sortedLanguages.forEach { lang ->
+                                            val isSelected = selectedSubtitles.contains(lang)
+                                            val subtitleInfo = availableSubtitles[lang]
+                                            val displayName = languageCodeToDisplayName(lang)
+                                            val isAutoGenerated = subtitleInfo?.autoGenerated == true || subtitleInfo?.isAutomatic == true
+                                            val fullDisplayName = if (isAutoGenerated) "$displayName ($autoLabel)" else displayName
+                                            MenuFlyoutItem(
+                                                selected = isSelected,
+                                                onSelectedChanged = {
+                                                    onToggleSubtitle(lang)
+                                                },
+                                            selectionType = ListItemSelectionType.Check,
+                                            colors = ListItemDefaults.defaultListItemColors(),
+                                            text = { Text(fullDisplayName) }
                                         )
                                     }
+                                },
+                                content = {
+                                    Button(
+                                        onClick = { isFlyoutVisible = !isFlyoutVisible },
+                                        content = {
+                                            val autoLabel = stringResource(Res.string.single_auto_generated)
+                                            Text(
+                                                if (selectedSubtitles.isEmpty())
+                                                    stringResource(Res.string.single_no_subtitle)
+                                                else
+                                                    selectedSubtitles.joinToString(", ") { lang ->
+                                                        val subtitleInfo = availableSubtitles[lang]
+                                                        val displayName = languageCodeToDisplayName(lang)
+                                                        val isAutoGenerated = subtitleInfo?.autoGenerated == true || subtitleInfo?.isAutomatic == true
+                                                        if (isAutoGenerated) "$displayName ($autoLabel)" else displayName
+                                                    }
+                                            )
+                                        }
+                                    )
+                                },
+                                adaptivePlacement = true,
+                                placement = FlyoutPlacement.Bottom
+                            )
+                        }
+                        Spacer(Modifier.height(16.dp))
+                    }
+                }
+
+                // Afficher le sélecteur de qualité audio si "Audio" est sélectionné
+                if (selectedFormatIndex == 1 && availableAudioQualityPresets.isNotEmpty()) {
+                    // Sélecteur de qualité audio
+                    Text(text = stringResource(Res.string.single_audio_quality))
+                    Spacer(Modifier.height(8.dp))
+
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        availableAudioQualityPresets.forEach { audioPreset ->
+                            SegmentedControl {
+                                SegmentedButton(
+                                    checked = audioPreset == selectedAudioQualityPreset,
+                                    onCheckedChanged = { onSelectAudioQualityPreset(audioPreset) },
+                                    position = SegmentedItemPosition.Center,
+                                    text = { Text(audioPreset.bitrate) }
                                 )
-                            },
-                            adaptivePlacement = true,
-                            placement = FlyoutPlacement.Bottom
-                        )
+                            }
+                        }
                     }
                     Spacer(Modifier.height(16.dp))
                 }
@@ -347,8 +383,6 @@ private fun VideoTitle(videoInfo: VideoInfo?) {
 
 @Composable
 private fun VideoDescription(videoInfo: VideoInfo?) {
-    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
-
     if (videoInfo?.description?.isNotEmpty() == true) {
         var expanded by remember { mutableStateOf(false) }
         var hasOverflow by remember(videoInfo.description) { mutableStateOf(false) }

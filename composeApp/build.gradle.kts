@@ -54,6 +54,7 @@ kotlin {
             implementation(libs.platformtools.core)
             implementation(libs.platformtools.darkmodedetector)
             implementation(libs.platformtools.clipboardmanager)
+            implementation(libs.platformtools.releasefetcher)
             implementation(libs.autolaunch)
             implementation(libs.filekit.core)
             implementation(libs.filekit.dialogs)
@@ -80,10 +81,15 @@ kotlin {
             implementation(compose.desktop.currentOs)
             implementation(libs.composenativetray)
             implementation(libs.kotlinx.coroutinesSwing)
+            implementation(libs.cardiologist)
+
+            implementation(libs.platformtools.appmanager)
+            // no external markdown UI renderer; using lightweight parser
 
             // Project dependencies
             implementation(project(":ytdlp"))
             implementation(project(":network"))
+            implementation(project(":logging"))
 
             // SQLDelight driver
             implementation(libs.sqlDelight.driver.sqlite)
@@ -98,8 +104,10 @@ compose.desktop {
         mainClass = "io.github.kdroidfilter.ytdlpgui.MainKt"
 
         val cleanInstall = project.findProperty("cleanInstall")?.toString()?.toBoolean() ?: false
+        val debugLogs = project.findProperty("debugLogs")?.toString()?.toBoolean() ?: false
         jvmArgs += listOf(
-            "-DcleanInstall=$cleanInstall"
+            "-DcleanInstall=$cleanInstall",
+            "-DdebugLogs=$debugLogs"
         )
 
 
@@ -145,5 +153,3 @@ sqldelight {
         }
     }
 }
-
-

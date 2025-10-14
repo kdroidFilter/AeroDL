@@ -48,6 +48,9 @@ class SettingsRepository(
     private val _autoLaunchEnabled = MutableStateFlow(settings.getBoolean(SettingsKeys.AUTO_LAUNCH_ENABLED, false))
     val autoLaunchEnabled: StateFlow<Boolean> = _autoLaunchEnabled.asStateFlow()
 
+    private val _sponsorBlockRemove = MutableStateFlow(settings.getBoolean(SettingsKeys.SPONSORBLOCK_REMOVE, false))
+    val sponsorBlockRemove: StateFlow<Boolean> = _sponsorBlockRemove.asStateFlow()
+
     init {
         // Apply initial settings to dependencies
         applyToYtDlpWrapper()
@@ -102,6 +105,12 @@ class SettingsRepository(
         settings.putBoolean(SettingsKeys.NOTIFY_ON_DOWNLOAD_COMPLETE, enabled)
     }
 
+    fun setSponsorBlockRemove(enabled: Boolean) {
+        _sponsorBlockRemove.value = enabled
+        settings.putBoolean(SettingsKeys.SPONSORBLOCK_REMOVE, enabled)
+        ytDlpWrapper.sponsorBlockRemove = enabled
+    }
+
     fun setOnboardingCompleted(completed: Boolean) {
         settings.putBoolean(SettingsKeys.ONBOARDING_COMPLETED, completed)
     }
@@ -124,6 +133,7 @@ class SettingsRepository(
         _clipboardMonitoringEnabled.value = settings.getBoolean(SettingsKeys.CLIPBOARD_MONITORING_ENABLED, true)
         _notifyOnComplete.value = settings.getBoolean(SettingsKeys.NOTIFY_ON_DOWNLOAD_COMPLETE, true)
         _autoLaunchEnabled.value = settings.getBoolean(SettingsKeys.AUTO_LAUNCH_ENABLED, false)
+        _sponsorBlockRemove.value = settings.getBoolean(SettingsKeys.SPONSORBLOCK_REMOVE, false)
 
         applyToYtDlpWrapper()
         applyToClipboardMonitor()
@@ -134,7 +144,7 @@ class SettingsRepository(
         val detected = try {
             autoLaunch.isEnabled()
         } catch (e: Exception) {
-            println("Failed to check auto launch state: ${e.message}")
+            io.github.kdroidfilter.logging.errorln { "Failed to check auto launch state: ${e.message}" }
             current
         }
         _autoLaunchEnabled.value = detected
@@ -166,11 +176,36 @@ class SettingsRepository(
         val path = _downloadDirPath.value
         ytDlpWrapper.downloadDir = path.takeIf { it.isNotBlank() }?.let { File(it) }
         ytDlpWrapper.embedThumbnailInMp3 = _embedThumbnailInMp3.value
+        ytDlpWrapper.sponsorBlockRemove = _sponsorBlockRemove.value
     }
 
     private fun applyToClipboardMonitor() {
         if (_clipboardMonitoringEnabled.value) {
             clipboardMonitorManager.onSettingChanged(true)
         }
+    }
+
+    /**
+     * Reset all settings to default values and clear persistent storage.
+     * This does NOT clear binaries or download history - those are handled separately.
+     */
+    fun resetToDefaults() {
+        settings.clear()
+
+        // Reset in-memory state to defaults
+        _noCheckCertificate.value = false
+        _cookiesFromBrowser.value = ""
+        _includePresetInFilename.value = true
+        _embedThumbnailInMp3.value = true
+        _parallelDownloads.value = 2
+        _downloadDirPath.value = ""
+        _clipboardMonitoringEnabled.value = true
+        _notifyOnComplete.value = true
+        _autoLaunchEnabled.value = false
+        _sponsorBlockRemove.value = false
+
+        // Apply defaults to dependencies
+        applyToYtDlpWrapper()
+        applyToClipboardMonitor()
     }
 }

@@ -9,6 +9,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -26,18 +31,24 @@ import ytdlpgui.composeapp.generated.resources.checking_ytdlp
 import ytdlpgui.composeapp.generated.resources.downloading_ffmpeg
 import ytdlpgui.composeapp.generated.resources.downloading_ytdlp
 import ytdlpgui.composeapp.generated.resources.error_occurred
+ 
 import ytdlpgui.composeapp.generated.resources.updating_ffmpeg
 import ytdlpgui.composeapp.generated.resources.updating_ytdlp
 
 @Composable
 fun InitScreen() {
     val viewModel = koinInject<InitViewModel>()
-    val state = collectInitState(viewModel)
-    InitView(state)
+    val state by viewModel.uiState.collectAsState()
+    InitView(
+        state = state,
+    )
 }
 
 @Composable
-fun InitView(state: InitState) {
+fun InitView(
+    state: InitState,
+) {
+
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -80,10 +91,6 @@ fun InitView(state: InitState) {
         }
     }
 }
-
-// ================================================================================================
-// Preview States & Previews
-// ================================================================================================
 
 @Preview
 @Composable

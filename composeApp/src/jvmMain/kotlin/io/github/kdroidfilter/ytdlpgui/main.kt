@@ -20,6 +20,8 @@ import androidx.compose.ui.window.application
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
@@ -29,26 +31,24 @@ import com.kdroid.composetray.tray.api.rememberTrayAppState
 import com.kdroid.composetray.utils.SingleInstanceManager
 import com.kdroid.composetray.utils.allowComposeNativeTrayLogging
 import com.kdroid.composetray.utils.isMenuBarInDarkMode
+import com.russhwolf.settings.Settings
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.background.Mica
 import io.github.composefluent.darkColors
-import io.github.composefluent.icons.Icons
-import io.github.composefluent.icons.regular.Clipboard
-import io.github.composefluent.icons.regular.Eye
-import io.github.composefluent.icons.regular.EyeOff
-import io.github.composefluent.icons.regular.Info
 import io.github.composefluent.lightColors
 import io.github.kdroidfilter.knotify.builder.AppConfig
 import io.github.kdroidfilter.knotify.builder.NotificationInitializer
+import io.github.kdroidfilter.logging.LoggerConfig
+import io.github.kdroidfilter.logging.errorln
+import io.github.kdroidfilter.logging.infoln
 import io.github.kdroidfilter.platformtools.OperatingSystem
 import io.github.kdroidfilter.platformtools.darkmodedetector.isSystemInDarkMode
 import io.github.kdroidfilter.platformtools.getAppVersion
 import io.github.kdroidfilter.platformtools.getOperatingSystem
-import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnly
-import io.github.kdroidfilter.ytdlpgui.core.design.icons.Exit_to_app
-import io.github.kdroidfilter.ytdlpgui.core.design.icons.Login
+import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnlyRtl
+import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.di.appModule
 import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsEvents
 import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsViewModel
@@ -59,24 +59,12 @@ import org.koin.compose.KoinApplication
 import org.koin.compose.getKoin
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import ytdlpgui.composeapp.generated.resources.Res
-import ytdlpgui.composeapp.generated.resources.app_name
-import ytdlpgui.composeapp.generated.resources.menu_hide_window
-import ytdlpgui.composeapp.generated.resources.menu_show_window
-import ytdlpgui.composeapp.generated.resources.quit
-import ytdlpgui.composeapp.generated.resources.settings_auto_launch_title
-import ytdlpgui.composeapp.generated.resources.settings_clipboard_monitoring_title
-import ytdlpgui.composeapp.generated.resources.app_version_label
+import ytdlpgui.composeapp.generated.resources.*
 import java.io.File
-import java.util.Locale
-import com.russhwolf.settings.Settings
-import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnlyRtl
-import io.github.kdroidfilter.ytdlpgui.core.util.errorln
-import io.github.kdroidfilter.ytdlpgui.core.util.infoln
 
 @OptIn(ExperimentalTrayAppApi::class, ExperimentalFluentApi::class)
 fun main() = application {
-    allowComposeNativeTrayLogging = true
+    allowComposeNativeTrayLogging = LoggerConfig.enabled
     val cleanInstall = System.getProperty("cleanInstall", "false").toBoolean()
 
     if (cleanInstall) {
@@ -126,6 +114,12 @@ fun main() = application {
             )
             if (!isSingleInstance) exitApplication()
 
+            val existingNavController = remember { runCatching { koin.get<NavHostController>() }.getOrNull() }
+            val navController = existingNavController ?: rememberNavController()
+            if (existingNavController == null) {
+                runCatching { koin.declare(navController) }
+            }
+
             val downloadManager = koinInject<DownloadManager>()
             val isDownloading by downloadManager.isDownloading.collectAsState()
 
@@ -162,14 +156,14 @@ fun main() = application {
                         label = runBlocking { getString(Res.string.settings_auto_launch_title) },
                         checked = autoStartEnabled,
                         onCheckedChange = { checked ->
-                            settingsVm.onEvents(SettingsEvents.SetAutoLaunchEnabled(checked))
+                            settingsVm.handleEvent(SettingsEvents.SetAutoLaunchEnabled(checked))
                         },
                     )
                     CheckableItem(
                         label = runBlocking { getString(Res.string.settings_clipboard_monitoring_title) },
                         checked = clipboardEnabled,
                         onCheckedChange = { checked ->
-                            settingsVm.onEvents(SettingsEvents.SetClipboardMonitoring(checked))
+                            settingsVm.handleEvent(SettingsEvents.SetClipboardMonitoring(checked))
                         },
                     )
                     Divider()

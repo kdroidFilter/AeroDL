@@ -14,39 +14,36 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.*
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.filled.MoreVertical
-import io.github.composefluent.icons.regular.ArrowLeft
-import io.github.composefluent.icons.regular.ArrowRight
-import io.github.composefluent.icons.regular.History
-import io.github.composefluent.icons.regular.Home
-import io.github.composefluent.icons.regular.Info
-import io.github.composefluent.icons.regular.Settings
+import io.github.composefluent.icons.regular.*
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnly
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
-import io.github.kdroidfilter.ytdlpgui.core.navigation.Navigator
-import kotlinx.coroutines.launch
+import io.github.kdroidfilter.ytdlpgui.features.init.InitViewModel
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
-import ytdlpgui.composeapp.generated.resources.Res
-import ytdlpgui.composeapp.generated.resources.app_name
-import ytdlpgui.composeapp.generated.resources.download
-import ytdlpgui.composeapp.generated.resources.home
-import ytdlpgui.composeapp.generated.resources.tooltip_back
-import ytdlpgui.composeapp.generated.resources.tooltip_home
-import ytdlpgui.composeapp.generated.resources.about
-import ytdlpgui.composeapp.generated.resources.settings
+import ytdlpgui.composeapp.generated.resources.*
 
 @OptIn(ExperimentalFluentApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun MainNavigationHeader(
-    navigator: Navigator = koinInject(),
+    navController: NavHostController = koinInject(),
     modifier: Modifier = Modifier,
 ) {
-    val currentDestination by navigator.currentDestination.collectAsState()
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = backStackEntry?.destination
+    // App update badge state (from InitViewModel)
+    val initViewModel = koinInject<InitViewModel>()
+    val initState by initViewModel.uiState.collectAsState()
+    val showUpdateBadge = initState.updateAvailable && !initState.updateDismissed
+
     val scope = rememberCoroutineScope()
     var expanded by remember { mutableStateOf(false) }
     Row(
@@ -88,11 +85,10 @@ fun MainNavigationHeader(
                         Destination.MainNavigation.Downloader as Destination
                     )
                 }
-                val isSelected = when (destForIndex) {
-                    Destination.MainNavigation.Home -> currentDestination is Destination.MainNavigation.Home
-                    Destination.MainNavigation.Downloader -> currentDestination is Destination.MainNavigation.Downloader
-                    else -> false
-                }
+                val showBadge = (index == 1) && showUpdateBadge
+                val isSelected = currentDestination?.hierarchy?.any {
+                    it.hasRoute(destForIndex::class)
+                } == true
                 run {
                     val full = stringResource(titleRes)
                     val display = if (full.length > 8) full.take(8) + "…" else full
@@ -103,8 +99,9 @@ fun MainNavigationHeader(
                             TopNavItem(
                                 selected = isSelected,
                                 onClick = {
-                                    scope.launch {
-                                        navigator.navigateAndClearBackStack(destForIndex)
+                                    navController.navigate(destForIndex) {
+                                        popUpTo(Destination.InitScreen) { inclusive = false }
+                                        launchSingleTop = true
                                     }
                                 },
                                 text = {
@@ -112,15 +109,17 @@ fun MainNavigationHeader(
                                 },
                                 icon = {
                                     Icon(imageVector = icon, contentDescription = null)
-                                }
+                                },
+                                badge = if (showBadge) ({ UpdateNavBadge() }) else null,
                             )
                         }
                     } else {
                         TopNavItem(
                             selected = isSelected,
                             onClick = {
-                                scope.launch {
-                                    navigator.navigateAndClearBackStack(destForIndex)
+                                navController.navigate(destForIndex) {
+                                    popUpTo(Destination.InitScreen) { inclusive = false }
+                                    launchSingleTop = true
                                 }
                             },
                             text = {
@@ -128,7 +127,8 @@ fun MainNavigationHeader(
                             },
                             icon = {
                                 Icon(imageVector = icon, contentDescription = null)
-                            }
+                            },
+                            badge = if (showBadge) ({ UpdateNavBadge() }) else null,
                         )
                     }
                 }
@@ -140,7 +140,7 @@ fun MainNavigationHeader(
                         MenuFlyoutItem(
                             onClick = {
                                 isFlyoutVisible = false
-                                scope.launch { navigator.navigate(Destination.SecondaryNavigation.Settings) }
+                                navController.navigate(Destination.SecondaryNavigation.Settings)
                             },
                             icon = { Icon(Icons.Default.Settings, contentDescription = null) },
                             text = { Text(stringResource(Res.string.settings)) }
@@ -148,7 +148,7 @@ fun MainNavigationHeader(
                         MenuFlyoutItem(
                             onClick = {
                                 isFlyoutVisible = false
-                                scope.launch { navigator.navigate(Destination.SecondaryNavigation.About) }
+                                navController.navigate(Destination.SecondaryNavigation.About)
                             },
                             icon = { Icon(Icons.Default.Info, contentDescription = null) },
                             text = { Text(stringResource(Res.string.about)) }
@@ -232,13 +232,32 @@ private fun CenterHeaderBar(
 }
 
 @Composable
+private fun UpdateNavBadge() {
+    Box(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Badge(
+            status = BadgeStatus.Critical,
+            content = { BadgeDefaults.Icon(status = BadgeStatus.Informational) },
+            modifier = Modifier.align(Alignment.TopEnd)
+        )
+    }
+}
+
+@Composable
 fun SecondaryNavigationHeader(
-    navigator: Navigator = koinInject(),
+    navController: NavHostController = koinInject(),
     modifier: Modifier = Modifier,
 ) {
-    val previousDestination by navigator.previousDestination.collectAsState()
-    val currentDestination by navigator.currentDestination.collectAsState()
-    val scope = rememberCoroutineScope()
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = backStackEntry?.destination
+
+    // Check if previous destination is Home using type-safe hasRoute()
+    val previousEntry = navController.previousBackStackEntry
+    val isPreviousHome = previousEntry?.destination?.hierarchy?.any {
+        it.hasRoute(Destination.MainNavigation.Home::class)
+    } == true
+
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
 
     CenterHeaderBar(
@@ -249,7 +268,7 @@ fun SecondaryNavigationHeader(
             TooltipBox(tooltip = { Text(stringResource(Res.string.tooltip_back)) }) {
                 SubtleButton(
                     iconOnly = true,
-                    onClick = { scope.launch { navigator.navigateUp() } },
+                    onClick = { navController.navigateUp() },
                     modifier = Modifier.padding(top = 12.dp, start = 4.dp)
                 ) {
                     Icon(if (isRtl) Icons.Default.ArrowRight else Icons.Default.ArrowLeft, "Back")
@@ -257,8 +276,9 @@ fun SecondaryNavigationHeader(
             }
         },
         title = {
-            when (currentDestination) {
-                Destination.SecondaryNavigation.Settings ->
+            // Use type-safe hasRoute() to check current destination
+            when {
+                currentDestination?.hasRoute(Destination.SecondaryNavigation.Settings::class) == true ->
                     Text(
                         stringResource(Res.string.settings),
                         style = FluentTheme.typography.subtitle,
@@ -266,7 +286,7 @@ fun SecondaryNavigationHeader(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                Destination.SecondaryNavigation.About ->
+                currentDestination?.hasRoute(Destination.SecondaryNavigation.About::class) == true ->
                     Text(
                         stringResource(Res.string.about),
                         style = FluentTheme.typography.subtitle,
@@ -274,17 +294,17 @@ fun SecondaryNavigationHeader(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                else -> {}
             }
         },
         actions = {
-            if (previousDestination !is Destination.MainNavigation.Home) {
+            if (!isPreviousHome) {
                 TooltipBox(tooltip = { Text(stringResource(Res.string.tooltip_home)) }) {
                     SubtleButton(
                         iconOnly = true,
                         onClick = {
-                            scope.launch {
-                                navigator.navigateAndClearBackStack(Destination.MainNavigation.Home)
+                            navController.navigate(Destination.MainNavigation.Home) {
+                                popUpTo(Destination.InitScreen) { inclusive = false }
+                                launchSingleTop = true
                             }
                         },
                         modifier = Modifier.padding(top = 12.dp, end = 4.dp)

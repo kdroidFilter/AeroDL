@@ -1,7 +1,4 @@
 package io.github.kdroidfilter.ytdlpgui.features.download.manager
-
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlp.model.ResolutionAvailability
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
@@ -14,6 +11,12 @@ data class DownloadState(
     val items: List<DownloadManager.DownloadItem> = emptyList(),
     val history: List<DownloadHistoryRepository.HistoryItem> = emptyList(),
     val directoryAvailability: Map<String, Boolean> = emptyMap(),
+    val errorDialogItem: DownloadManager.DownloadItem? = null,
+    // App update info (sourced from InitViewModel)
+    val updateAvailable: Boolean = false,
+    val updateVersion: String? = null,
+    val updateUrl: String? = null,
+    val updateBody: String? = null,
 ) {
     companion object {
         val emptyState = DownloadState()
@@ -142,14 +145,88 @@ data class DownloadState(
             ),
             directoryAvailability = mapOf("history-recent" to true)
         )
+
+        val withErrorState = DownloadState(
+            items = listOf(
+                DownloadManager.DownloadItem(
+                    id = "download-failed",
+                    url = "https://www.youtube.com/watch?v=error1",
+                    videoInfo = VideoInfo(
+                        id = "error1",
+                        title = "Failed Download - Subtitle Error",
+                        url = "https://www.youtube.com/watch?v=error1",
+                        thumbnail = "https://i.ytimg.com/vi/error1/maxresdefault.jpg",
+                        duration = Duration.ofSeconds(350)
+                    ),
+                    preset = YtDlpWrapper.Preset.P720,
+                    progress = 15.0f,
+                    status = DownloadManager.DownloadItem.Status.Failed,
+                    message = "yt-dlp failed (exit 1). ERROR: Requested subtitles not available for this video.\n--- Last output ---\n[youtube] Extracting URL: https://www.youtube.com/watch?v=error1\n[youtube] error1: Downloading webpage\n[youtube] error1: Downloading ios player API JSON\n[youtube] error1: Downloading m3u8 information\nERROR: Requested subtitles not available for this video"
+                ),
+                DownloadManager.DownloadItem(
+                    id = "download-running",
+                    url = "https://www.youtube.com/watch?v=active2",
+                    videoInfo = VideoInfo(
+                        id = "active2",
+                        title = "Another Video Downloading",
+                        url = "https://www.youtube.com/watch?v=active2",
+                        thumbnail = "https://i.ytimg.com/vi/active2/maxresdefault.jpg",
+                        duration = Duration.ofSeconds(280)
+                    ),
+                    preset = YtDlpWrapper.Preset.P1080,
+                    progress = 52.8f,
+                    status = DownloadManager.DownloadItem.Status.Running
+                )
+            )
+        )
+
+        val withErrorDialogState = DownloadState(
+            items = listOf(
+                DownloadManager.DownloadItem(
+                    id = "download-failed-with-dialog",
+                    url = "https://www.youtube.com/watch?v=error2",
+                    videoInfo = VideoInfo(
+                        id = "error2",
+                        title = "Network Error Download",
+                        url = "https://www.youtube.com/watch?v=error2",
+                        thumbnail = "https://i.ytimg.com/vi/error2/maxresdefault.jpg",
+                        duration = Duration.ofSeconds(195)
+                    ),
+                    preset = YtDlpWrapper.Preset.P1080,
+                    progress = 0f,
+                    status = DownloadManager.DownloadItem.Status.Failed,
+                    message = "Network pre-check failed.\n--- Last output ---\nConnection timeout after 5000ms\nCould not connect to remote server"
+                )
+            ),
+            errorDialogItem = DownloadManager.DownloadItem(
+                id = "download-failed-with-dialog",
+                url = "https://www.youtube.com/watch?v=error2",
+                videoInfo = VideoInfo(
+                    id = "error2",
+                    title = "Network Error Download",
+                    url = "https://www.youtube.com/watch?v=error2",
+                    thumbnail = "https://i.ytimg.com/vi/error2/maxresdefault.jpg",
+                    duration = Duration.ofSeconds(195)
+                ),
+                preset = YtDlpWrapper.Preset.P1080,
+                progress = 0f,
+                status = DownloadManager.DownloadItem.Status.Failed,
+                message = "Network pre-check failed.\n--- Last output ---\nConnection timeout after 5000ms\nCould not connect to remote server"
+            )
+        )
+
+        val withUpdateInfoState = DownloadState(
+            updateAvailable = true,
+            updateVersion = "1.2.3",
+            updateUrl = "https://example.com/download",
+            updateBody = """
+                ## Nouveautés
+                - Améliorations de performance
+                - Corrections de bugs
+                Consultez le changelog complet [ici](https://example.com/changelog).
+            """.trimIndent(),
+            history = withHistoryState.history,
+            directoryAvailability = withHistoryState.directoryAvailability,
+        )
     }
 }
-
-@Composable
-fun collectDownloadState(viewModel: DownloadViewModel): DownloadState =
-    DownloadState(
-        isLoading = viewModel.isLoading.collectAsState().value,
-        items = viewModel.items.collectAsState().value,
-        history = viewModel.history.collectAsState().value,
-        directoryAvailability = viewModel.directoryAvailability.collectAsState(initial = emptyMap()).value,
-    )

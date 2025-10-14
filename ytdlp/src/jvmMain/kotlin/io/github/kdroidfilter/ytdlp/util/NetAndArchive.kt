@@ -3,6 +3,7 @@ package io.github.kdroidfilter.ytdlp.util
 import io.github.kdroidfilter.network.HttpsConnectionFactory
 import io.github.kdroidfilter.ytdlp.core.Options
 import io.github.kdroidfilter.ytdlp.core.SubtitleOptions
+import io.github.kdroidfilter.logging.infoln
 import java.io.BufferedInputStream
 import java.io.File
 import java.net.*
@@ -105,6 +106,11 @@ object NetAndArchive {
         // Subtitles
         options.subtitles?.let { subOpts -> handleSubtitleOptions(cmd, subOpts) }
 
+        // SponsorBlock
+        if (options.sponsorBlockRemove) {
+            cmd.addAll(listOf("--sponsorblock-remove", "default"))
+        }
+
         // Container enforcement (kept)
         options.targetContainer?.let { container ->
             if (container.equals("mp4", ignoreCase = true)) {
@@ -145,9 +151,12 @@ object NetAndArchive {
      * Add subtitle-related arguments to the command
      */
     private fun handleSubtitleOptions(cmd: MutableList<String>, subOpts: SubtitleOptions) {
+        infoln { "[SubtitleOptions] Processing subtitle configuration: languages=${subOpts.languages}, allSubtitles=${subOpts.allSubtitles}, embed=${subOpts.embedSubtitles}, write=${subOpts.writeSubtitles}, writeAuto=${subOpts.writeAutoSubtitles}" }
+
         when {
             // Download all subtitles
             subOpts.allSubtitles -> {
+                infoln { "[SubtitleOptions] Requesting all available subtitles" }
                 if (subOpts.writeSubtitles || !subOpts.embedSubtitles) {
                     cmd.add("--all-subs")
                 } else {
@@ -155,22 +164,27 @@ object NetAndArchive {
                     cmd.add("--all-subs")
                 }
                 if (subOpts.writeAutoSubtitles) {
+                    infoln { "[SubtitleOptions] Including auto-generated subtitles" }
                     cmd.add("--write-auto-subs")
                 }
             }
             // Download specific languages
             subOpts.languages.isNotEmpty() -> {
+                infoln { "[SubtitleOptions] Requesting specific subtitle languages: ${subOpts.languages.joinToString(",")}" }
                 // Only add --write-subs if we want to keep separate files
                 if (subOpts.writeSubtitles || !subOpts.embedSubtitles) {
                     cmd.add("--write-subs")
+                    infoln { "[SubtitleOptions] Added --write-subs flag" }
                 }
                 cmd.addAll(listOf("--sub-langs", subOpts.languages.joinToString(",")))
                 if (subOpts.writeAutoSubtitles) {
+                    infoln { "[SubtitleOptions] Including auto-generated subtitles for specified languages" }
                     cmd.add("--write-auto-subs")
                 }
             }
             // Only auto-subs requested without specific languages
             subOpts.writeAutoSubtitles -> {
+                infoln { "[SubtitleOptions] Requesting auto-generated subtitles only" }
                 if (subOpts.writeSubtitles || !subOpts.embedSubtitles) {
                     cmd.add("--write-auto-subs")
                 }
@@ -179,16 +193,19 @@ object NetAndArchive {
 
         // Embed subtitles in the video file (requires ffmpeg)
         if (subOpts.embedSubtitles) {
+            infoln { "[SubtitleOptions] Embedding subtitles into video file (requires ffmpeg)" }
             cmd.add("--embed-subs")
         }
 
         // Specify subtitle format preference
         subOpts.subFormat?.let {
+            infoln { "[SubtitleOptions] Subtitle format preference: $it" }
             cmd.addAll(listOf("--sub-format", it))
         }
 
         // Convert subtitles to a specific format after download
         subOpts.convertSubtitles?.let {
+            infoln { "[SubtitleOptions] Will convert subtitles to: $it" }
             cmd.addAll(listOf("--convert-subs", it))
         }
     }
@@ -197,6 +214,36 @@ object NetAndArchive {
     private val percentRegex = Regex("(\\d{1,3}(?:[.,]\\d+)?)%")
     fun parseProgress(line: String): Double? =
         percentRegex.find(line)?.groupValues?.getOrNull(1)?.replace(',', '.')?.toDoubleOrNull()
+
+    // Extracts instantaneous speed (bytes/sec) from typical yt-dlp progress lines.
+    // Examples handled:
+    //   "[download]  12.5% of 10MiB at 2.43MiB/s ETA 00:19"
+    //   "[download]  99% of 2.0GiB at 850KiB/s"
+    //   "[download]  100,0% of ~ 100.0MiB at 1.2MiB/s"
+    private val NBSP: Char = '\u00A0'
+    // Match speed with or without the literal "at" before it
+    private val speedRegex = Regex("(?:\\bat\\s+)?[$NBSP\\s]*([\\d.,]+)[$NBSP\\s]*([KMGTP]?i?B)/s\\b", RegexOption.IGNORE_CASE)
+    fun parseSpeedBytesPerSec(line: String): Long? {
+        val m = speedRegex.find(line) ?: return null
+        val number = m.groupValues.getOrNull(1)?.replace(',', '.')?.toDoubleOrNull() ?: return null
+        val unit = (m.groupValues.getOrNull(2) ?: "").uppercase()
+        val multiplier = when (unit) {
+            "B" -> 1.0
+            "KB" -> 1_000.0
+            "KIB" -> 1024.0
+            "MB" -> 1_000_000.0
+            "MIB" -> 1024.0 * 1024.0
+            "GB" -> 1_000_000_000.0
+            "GIB" -> 1024.0 * 1024.0 * 1024.0
+            "TB" -> 1_000_000_000_000.0
+            "TIB" -> 1024.0 * 1024.0 * 1024.0 * 1024.0
+            "PB" -> 1_000_000_000_000_000.0
+            "PIB" -> 1024.0 * 1024.0 * 1024.0 * 1024.0 * 1024.0
+            else -> 1.0
+        }
+        val bps = number * multiplier
+        return if (bps.isFinite() && bps >= 0.0) bps.toLong() else null
+    }
 
     // --- Error Diagnosis ---
     fun diagnose(lines: List<String>): String? {

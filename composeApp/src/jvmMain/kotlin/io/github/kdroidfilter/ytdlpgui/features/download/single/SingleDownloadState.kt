@@ -1,7 +1,5 @@
 package io.github.kdroidfilter.ytdlpgui.features.download.single
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlp.model.ResolutionAvailability
 import io.github.kdroidfilter.ytdlp.model.SubtitleInfo
@@ -16,6 +14,8 @@ data class SingleDownloadState(
     val selectedPreset: YtDlpWrapper.Preset? = null,
     val availableSubtitles: Map<String, SubtitleInfo> = emptyMap(),
     val selectedSubtitles: List<String> = emptyList(),
+    val availableAudioQualityPresets: List<YtDlpWrapper.AudioQualityPreset> = emptyList(),
+    val selectedAudioQualityPreset: YtDlpWrapper.AudioQualityPreset? = null,
 ) {
     companion object {
         val loadingState = SingleDownloadState(
@@ -119,15 +119,3 @@ data class SingleDownloadState(
         )
     }
 }
-
-@Composable
-fun collectSingleDownloadState(viewModel: SingleDownloadViewModel): SingleDownloadState =
-    SingleDownloadState(
-        isLoading = viewModel.isLoading.collectAsState().value,
-        errorMessage = viewModel.errorMessage.collectAsState().value,
-        videoInfo = viewModel.videoInfo.collectAsState().value,
-        availablePresets = viewModel.availablePresets.collectAsState().value,
-        selectedPreset = viewModel.selectedPreset.collectAsState().value,
-        availableSubtitles = viewModel.availableSubtitles.collectAsState().value,
-        selectedSubtitles = viewModel.selectedSubtitles.collectAsState().value,
-    )

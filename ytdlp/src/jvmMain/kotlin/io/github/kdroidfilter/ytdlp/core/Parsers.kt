@@ -2,6 +2,8 @@ package io.github.kdroidfilter.ytdlp.core
 
 import io.github.kdroidfilter.ytdlp.model.*
 import io.github.kdroidfilter.ytdlp.util.YouTubeThumbnailHelper
+import io.github.kdroidfilter.logging.debugln
+import io.github.kdroidfilter.logging.infoln
 import kotlinx.serialization.json.*
 
 // --- Helper to find the best direct URL from a formats array ---
@@ -60,7 +62,15 @@ private fun findBestDirectUrl(
 
 // --- Helper to parse resolution availability from a formats array ---
 private fun parseResolutionAvailability(formats: JsonArray?): Map<Int, ResolutionAvailability> {
-    if (formats == null || formats.isEmpty()) return emptyMap()
+    debugln { "[parseResolutionAvailability] Starting to parse formats" }
+    debugln { "[parseResolutionAvailability] formats == null? ${formats == null}" }
+    debugln { "[parseResolutionAvailability] formats.isEmpty()? ${formats?.isEmpty()}" }
+    debugln { "[parseResolutionAvailability] formats.size = ${formats?.size}" }
+
+    if (formats == null || formats.isEmpty()) {
+        debugln { "[parseResolutionAvailability] Returning empty map - no formats" }
+        return emptyMap()
+    }
 
     fun JsonElement?.objOrNull() = this as? JsonObject
     fun JsonElement?.strOrNull() = this?.jsonPrimitive?.contentOrNull
@@ -69,22 +79,44 @@ private fun parseResolutionAvailability(formats: JsonArray?): Map<Int, Resolutio
     val progressiveHeights = mutableSetOf<Int>()
     val videoOnlyHeights = mutableSetOf<Int>()
 
+    var formatIndex = 0
     formats.forEach { formatEl ->
-        val format = formatEl.objOrNull() ?: return@forEach
-        val height = format["height"].intOrNull() ?: return@forEach
+        formatIndex++
+        val format = formatEl.objOrNull()
+        if (format == null) {
+            debugln { "[parseResolutionAvailability] Format #$formatIndex: Not a JsonObject, skipping" }
+            return@forEach
+        }
+
+        val formatId = format["format_id"].strOrNull()
+        val height = format["height"].intOrNull()
         val vcodec = format["vcodec"].strOrNull()
         val acodec = format["acodec"].strOrNull()
+        val protocol = format["protocol"].strOrNull()
+
+        debugln { "[parseResolutionAvailability] Format #$formatIndex (id=$formatId): height=$height, vcodec=$vcodec, acodec=$acodec, protocol=$protocol" }
+
+        if (height == null) {
+            debugln { "[parseResolutionAvailability]   -> Skipping: no height" }
+            return@forEach
+        }
 
         if (vcodec != null && vcodec != "none") {
             if (acodec != null && acodec != "none") {
                 progressiveHeights.add(height)
+                debugln { "[parseResolutionAvailability]   -> Added to PROGRESSIVE: ${height}p" }
             } else {
                 videoOnlyHeights.add(height)
+                debugln { "[parseResolutionAvailability]   -> Added to VIDEO-ONLY: ${height}p" }
             }
+        } else {
+            debugln { "[parseResolutionAvailability]   -> Skipping: vcodec is null or 'none'" }
         }
     }
 
     val allHeights = (progressiveHeights + videoOnlyHeights).toSet()
+    infoln { "[parseResolutionAvailability] Summary: Progressive=${progressiveHeights.sorted()}, Video-only=${videoOnlyHeights.sorted()}, All=${allHeights.sorted()}" }
+
     return allHeights.associateWith { height ->
         ResolutionAvailability(
             progressive = height in progressiveHeights,

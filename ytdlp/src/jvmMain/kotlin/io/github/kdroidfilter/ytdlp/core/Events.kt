@@ -7,7 +7,7 @@ import kotlinx.coroutines.Job
  */
 sealed class Event {
     /** Indicates download progress. */
-    data class Progress(val percent: Double?, val rawLine: String) : Event()
+    data class Progress(val percent: Double?, val speedBytesPerSec: Long?, val rawLine: String) : Event()
 
     /** A generic log message from the yt-dlp process. */
     data class Log(val line: String) : Event()

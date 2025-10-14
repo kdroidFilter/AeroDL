@@ -29,13 +29,16 @@ import ytdlpgui.composeapp.generated.resources.*
 fun ClipboardScreen(
     viewModel: OnboardingViewModel = koinViewModel(),
 ) {
-    val state = collectClipboardState(viewModel)
+    val clipboardMonitoringEnabled by viewModel.clipboardMonitoringEnabled.collectAsState()
+    val state = ClipboardState(
+        clipboardMonitoringEnabled = clipboardMonitoringEnabled
+    )
     val currentStep by viewModel.currentStep.collectAsState()
     val initState by viewModel.initState.collectAsState()
     val dependencyInfoBarDismissed by viewModel.dependencyInfoBarDismissed.collectAsState()
     ClipboardView(
         state = state,
-        onEvent = viewModel::onEvents,
+        onEvent = viewModel::handleEvent,
         currentStep = currentStep,
         initState = initState,
         totalSteps = viewModel.getTotalSteps(),
