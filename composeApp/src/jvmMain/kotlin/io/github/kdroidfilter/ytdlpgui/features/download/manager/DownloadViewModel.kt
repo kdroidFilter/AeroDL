@@ -37,7 +37,17 @@ class DownloadViewModel(
 
     // Availability of output directories by history id (derived from history)
     val directoryAvailability = history.map { list ->
-        list.associate { it.id to (it.outputPath?.let { path -> File(path).exists() } == true) }
+        list.associate { h ->
+            val exists = h.outputPath?.let { p ->
+                val f = File(p)
+                if (h.isSplit) {
+                    f.parentFile?.exists() == true
+                } else {
+                    f.exists()
+                }
+            } == true
+            h.id to exists
+        }
     }
 
     // Combined UI state
@@ -114,6 +124,10 @@ class DownloadViewModel(
     private fun openDirectoryFor(historyId: String) {
         val item = historyRepository.history.value.firstOrNull { it.id == historyId } ?: return
         val path = item.outputPath ?: return
-        FileExplorerUtils.openDirectoryForPath(path)
+        val toOpen = if (item.isSplit) {
+            val parent = File(path).parentFile
+            parent?.absolutePath ?: path
+        } else path
+        FileExplorerUtils.openDirectoryForPath(toOpen)
     }
 }

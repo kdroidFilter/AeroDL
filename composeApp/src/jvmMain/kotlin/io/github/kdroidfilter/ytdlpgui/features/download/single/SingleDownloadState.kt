@@ -16,6 +16,9 @@ data class SingleDownloadState(
     val selectedSubtitles: List<String> = emptyList(),
     val availableAudioQualityPresets: List<YtDlpWrapper.AudioQualityPreset> = emptyList(),
     val selectedAudioQualityPreset: YtDlpWrapper.AudioQualityPreset? = null,
+    val splitChapters: Boolean = false,
+    val hasSponsorSegments: Boolean = false,
+    val removeSponsors: Boolean = false,
 ) {
     companion object {
         val loadingState = SingleDownloadState(

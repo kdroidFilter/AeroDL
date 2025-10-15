@@ -23,6 +23,7 @@ class DownloadHistoryRepository(
         val videoInfo: VideoInfo?,
         val outputPath: String?,
         val isAudio: Boolean,
+        val isSplit: Boolean,
         val presetHeight: Int?,
         val createdAt: Long
     )
@@ -50,6 +51,7 @@ class DownloadHistoryRepository(
         videoInfo: VideoInfo?,
         outputPath: String?,
         isAudio: Boolean,
+        isSplit: Boolean,
         presetHeight: Int?,
         createdAt: Long = System.currentTimeMillis()
     ) {
@@ -63,6 +65,7 @@ class DownloadHistoryRepository(
                 video_info_json = jsonStr,
                 output_path = outputPath,
                 is_audio = if (isAudio) 1 else 0,
+                is_split = if (isSplit) 1 else 0,
                 preset_height = presetHeight?.toLong(),
                 created_at = createdAt
             )
@@ -97,6 +100,7 @@ class DownloadHistoryRepository(
             videoInfo = info,
             outputPath = this.output_path,
             isAudio = this.is_audio != 0L,
+            isSplit = this.is_split != 0L,
             presetHeight = this.preset_height?.toInt(),
             createdAt = this.created_at
         )
@@ -111,6 +115,10 @@ class DownloadHistoryRepository(
             val driver = JdbcSqliteDriver("jdbc:sqlite:${dbFile.absolutePath}")
             // Ensure schema exists (idempotent via IF NOT EXISTS)
             Database.Schema.create(driver)
+            // Best-effort migration: add is_split if missing (ignore errors if already exists)
+            runCatching {
+                driver.execute(null, "ALTER TABLE download_history ADD COLUMN is_split INTEGER NOT NULL DEFAULT 0", 0)
+            }
             return Database(driver)
         }
 

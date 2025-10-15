@@ -28,6 +28,9 @@ import coil3.request.ImageRequest
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.Button
+import io.github.composefluent.component.Badge
+import io.github.composefluent.component.BadgeDefaults
+import io.github.composefluent.component.BadgeStatus
 import io.github.composefluent.component.ContentDialog
 import io.github.composefluent.component.DialogSize
 import io.github.composefluent.component.Icon
@@ -334,7 +337,7 @@ private fun HistoryThumbnail(h: HistoryItem) {
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
-            val overlay = if (h.isAudio) "MP3" else h.presetHeight?.let { "${it}P" } ?: ""
+            val overlay = if (h.isSplit) "Split" else if (h.isAudio) "MP3" else h.presetHeight?.let { "${it}P" } ?: ""
             Text(
                 overlay,
                 textAlign = TextAlign.Center,

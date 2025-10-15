@@ -64,12 +64,6 @@ fun SettingsView(
                 )
             }
             item {
-                SponsorBlockRemoveSetting(
-                    sponsorBlockRemove = state.sponsorBlockRemove,
-                    onSponsorBlockChange = { onEvent(SettingsEvents.SetSponsorBlockRemove(it)) },
-                )
-            }
-            item {
                 ConcurrentFragmentsSetting(
                     concurrentFragments = state.concurrentFragments,
                     onConcurrentFragmentsSelected = { onEvent(SettingsEvents.SetConcurrentFragments(it)) },
@@ -233,39 +227,6 @@ fun EmbedThumbnailInMp3SettingPreview() {
     EmbedThumbnailInMp3Setting(embedThumbnailInMp3 = true, onEmbedThumbnailChange = {})
 }
 
-@Composable
-private fun SponsorBlockRemoveSetting(
-    sponsorBlockRemove: Boolean,
-    onSponsorBlockChange: (Boolean) -> Unit,
-) {
-    CardExpanderItem(
-        heading = {
-            Text(
-                stringResource(Res.string.settings_sponsorblock_title),
-                modifier = Modifier.fillMaxWidth(0.8f)
-            )
-        },
-        caption = {
-            EllipsizedTextWithTooltip(
-                text = stringResource(Res.string.settings_sponsorblock_caption),
-                modifier = Modifier.fillMaxWidth(0.8f)
-            )
-        },
-        icon = { Icon(Icons.Filled.Cut, null) },
-        trailing = {
-            Switcher(
-                checked = sponsorBlockRemove,
-                onCheckStateChange = onSponsorBlockChange,
-            )
-        }
-    )
-}
-
-@Preview
-@Composable
-fun SponsorBlockRemoveSettingPreview() {
-    SponsorBlockRemoveSetting(sponsorBlockRemove = true, onSponsorBlockChange = {})
-}
 
 @Composable
 private fun ConcurrentFragmentsSetting(

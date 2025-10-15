@@ -31,6 +31,7 @@ import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.AccentButton
 import io.github.composefluent.component.Button
 import io.github.composefluent.component.FlyoutPlacement
+import io.github.composefluent.component.CheckBox
 import io.github.composefluent.component.Icon
 import io.github.composefluent.component.ListItemDefaults
 import io.github.composefluent.component.ListItemSelectionType
@@ -89,10 +90,15 @@ fun SingleDownloadView(
         selectedSubtitles = state.selectedSubtitles,
         availableAudioQualityPresets = state.availableAudioQualityPresets,
         selectedAudioQualityPreset = state.selectedAudioQualityPreset,
+        splitChapters = state.splitChapters,
+        hasSponsorSegments = state.hasSponsorSegments,
+        removeSponsors = state.removeSponsors,
         onSelectPreset = { onEvent(SingleDownloadEvents.SelectPreset(it)) },
         onSelectAudioQualityPreset = { onEvent(SingleDownloadEvents.SelectAudioQualityPreset(it)) },
         onToggleSubtitle = { onEvent(SingleDownloadEvents.ToggleSubtitle(it)) },
         onClearSubtitles = { onEvent(SingleDownloadEvents.ClearSubtitles) },
+        onSetSplitChapters = { onEvent(SingleDownloadEvents.SetSplitChapters(it)) },
+        onSetRemoveSponsors = { onEvent(SingleDownloadEvents.SetRemoveSponsors(it)) },
         onStartDownload = { onEvent(SingleDownloadEvents.StartDownload) },
         onStartAudioDownload = { onEvent(SingleDownloadEvents.StartAudioDownload) }
     )
@@ -138,10 +144,15 @@ private fun SingleVideoDownloadView(
     selectedSubtitles: List<String>,
     availableAudioQualityPresets: List<YtDlpWrapper.AudioQualityPreset>,
     selectedAudioQualityPreset: YtDlpWrapper.AudioQualityPreset?,
+    splitChapters: Boolean,
+    hasSponsorSegments: Boolean,
+    removeSponsors: Boolean,
     onSelectPreset: (YtDlpWrapper.Preset) -> Unit,
     onSelectAudioQualityPreset: (YtDlpWrapper.AudioQualityPreset) -> Unit,
     onToggleSubtitle: (String) -> Unit,
     onClearSubtitles: () -> Unit,
+    onSetSplitChapters: (Boolean) -> Unit,
+    onSetRemoveSponsors: (Boolean) -> Unit,
     onStartDownload: () -> Unit,
     onStartAudioDownload: () -> Unit
 ) {
@@ -272,6 +283,39 @@ private fun SingleVideoDownloadView(
                         }
                         Spacer(Modifier.height(16.dp))
                     }
+                    // Option: Split chapters (vidéo)
+                    if (videoInfo?.hasChapters == true) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Start,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            CheckBox(
+                                checked = splitChapters,
+                                onCheckStateChange = { onSetSplitChapters(it) }
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(text = stringResource(Res.string.split_chapters))
+                        }
+                        Spacer(Modifier.height(8.dp))
+                    }
+
+                    // Option: SponsorBlock (vidéo)
+                    if (hasSponsorSegments) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Start,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            CheckBox(
+                                checked = removeSponsors,
+                                onCheckStateChange = { onSetRemoveSponsors(it) }
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(text = stringResource(Res.string.remove_sponsors))
+                        }
+                        Spacer(Modifier.height(8.dp))
+                    }
                 }
 
                 // Afficher le sélecteur de qualité audio si "Audio" est sélectionné
@@ -297,19 +341,52 @@ private fun SingleVideoDownloadView(
                         }
                     }
                     Spacer(Modifier.height(16.dp))
+                    // Option: Split chapters (audio)
+                    if (videoInfo?.hasChapters == true) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Start,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            CheckBox(
+                                checked = splitChapters,
+                                onCheckStateChange = { onSetSplitChapters(it) }
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(text = stringResource(Res.string.split_chapters))
+                        }
+                    }
+
+                    // Option: SponsorBlock (audio)
+                    if (hasSponsorSegments) {
+                        Spacer(Modifier.height(8.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Start,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            CheckBox(
+                                checked = removeSponsors,
+                                onCheckStateChange = { onSetRemoveSponsors(it) }
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(text = stringResource(Res.string.remove_sponsors))
+                        }
+                    }
                 }
 
                 // Bouton de téléchargement centré
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
+                    horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-
                     AccentButton(onClick = if (selectedFormatIndex == 0) onStartDownload else onStartAudioDownload) {
                         Icon(Icons.Default.ArrowDownload, null)
                         Text(stringResource(Res.string.download))
                     }
 
+                    // Split-chapters now controlled by a checkbox above
                 }
                 Spacer(Modifier.height(16.dp))
             }

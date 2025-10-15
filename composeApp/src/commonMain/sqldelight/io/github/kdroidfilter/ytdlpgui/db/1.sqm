@@ -1,0 +1,2 @@
+-- Migration 1 -> 2: add is_split column to download_history
+ALTER TABLE download_history ADD COLUMN is_split INTEGER NOT NULL DEFAULT 0;

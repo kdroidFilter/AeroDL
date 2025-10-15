@@ -48,8 +48,6 @@ class SettingsRepository(
     private val _autoLaunchEnabled = MutableStateFlow(settings.getBoolean(SettingsKeys.AUTO_LAUNCH_ENABLED, false))
     val autoLaunchEnabled: StateFlow<Boolean> = _autoLaunchEnabled.asStateFlow()
 
-    private val _sponsorBlockRemove = MutableStateFlow(settings.getBoolean(SettingsKeys.SPONSORBLOCK_REMOVE, false))
-    val sponsorBlockRemove: StateFlow<Boolean> = _sponsorBlockRemove.asStateFlow()
 
     private val _concurrentFragments = MutableStateFlow(settings.getInt(SettingsKeys.CONCURRENT_FRAGMENTS, 1).coerceIn(1, 5))
     val concurrentFragments: StateFlow<Int> = _concurrentFragments.asStateFlow()
@@ -108,11 +106,6 @@ class SettingsRepository(
         settings.putBoolean(SettingsKeys.NOTIFY_ON_DOWNLOAD_COMPLETE, enabled)
     }
 
-    fun setSponsorBlockRemove(enabled: Boolean) {
-        _sponsorBlockRemove.value = enabled
-        settings.putBoolean(SettingsKeys.SPONSORBLOCK_REMOVE, enabled)
-        ytDlpWrapper.sponsorBlockRemove = enabled
-    }
 
     fun setConcurrentFragments(count: Int) {
         val clamped = count.coerceIn(1, 5)
@@ -143,7 +136,6 @@ class SettingsRepository(
         _clipboardMonitoringEnabled.value = settings.getBoolean(SettingsKeys.CLIPBOARD_MONITORING_ENABLED, true)
         _notifyOnComplete.value = settings.getBoolean(SettingsKeys.NOTIFY_ON_DOWNLOAD_COMPLETE, true)
         _autoLaunchEnabled.value = settings.getBoolean(SettingsKeys.AUTO_LAUNCH_ENABLED, false)
-        _sponsorBlockRemove.value = settings.getBoolean(SettingsKeys.SPONSORBLOCK_REMOVE, false)
         _concurrentFragments.value = settings.getInt(SettingsKeys.CONCURRENT_FRAGMENTS, 1).coerceIn(1, 5)
 
         applyToYtDlpWrapper()
@@ -187,7 +179,6 @@ class SettingsRepository(
         val path = _downloadDirPath.value
         ytDlpWrapper.downloadDir = path.takeIf { it.isNotBlank() }?.let { File(it) }
         ytDlpWrapper.embedThumbnailInMp3 = _embedThumbnailInMp3.value
-        ytDlpWrapper.sponsorBlockRemove = _sponsorBlockRemove.value
         ytDlpWrapper.concurrentFragments = _concurrentFragments.value
     }
 
@@ -214,7 +205,6 @@ class SettingsRepository(
         _clipboardMonitoringEnabled.value = true
         _notifyOnComplete.value = true
         _autoLaunchEnabled.value = false
-        _sponsorBlockRemove.value = false
         _concurrentFragments.value = 1
 
         // Apply defaults to dependencies

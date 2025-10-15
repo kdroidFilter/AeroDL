@@ -55,6 +55,15 @@ class SingleDownloadViewModel(
     private val _selectedAudioQualityPreset = MutableStateFlow<YtDlpWrapper.AudioQualityPreset?>(null)
     val selectedAudioQualityPreset = _selectedAudioQualityPreset.asStateFlow()
 
+    private val _splitChapters = MutableStateFlow(false)
+    val splitChapters = _splitChapters.asStateFlow()
+
+    private val _hasSponsorSegments = MutableStateFlow(false)
+    val hasSponsorSegments = _hasSponsorSegments.asStateFlow()
+
+    private val _removeSponsors = MutableStateFlow(false)
+    val removeSponsors = _removeSponsors.asStateFlow()
+
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage = _errorMessage.asStateFlow()
 
@@ -69,6 +78,9 @@ class SingleDownloadViewModel(
         selectedSubtitles,
         availableAudioQualityPresets,
         selectedAudioQualityPreset,
+        splitChapters,
+        hasSponsorSegments,
+        removeSponsors,
     ) { values: Array<Any?> ->
         val loading = values[0] as Boolean
         val error = values[1] as String?
@@ -83,6 +95,9 @@ class SingleDownloadViewModel(
         @Suppress("UNCHECKED_CAST")
         val audioPresets = values[7] as List<YtDlpWrapper.AudioQualityPreset>
         val audioPreset = values[8] as YtDlpWrapper.AudioQualityPreset?
+        val split = values[9] as Boolean
+        val sponsorAvail = values[10] as Boolean
+        val rmSponsor = values[11] as Boolean
         SingleDownloadState(
             isLoading = loading,
             errorMessage = error,
@@ -93,6 +108,9 @@ class SingleDownloadViewModel(
             selectedSubtitles = selectedSubs,
             availableAudioQualityPresets = audioPresets,
             selectedAudioQualityPreset = audioPreset,
+            splitChapters = split,
+            hasSponsorSegments = sponsorAvail,
+            removeSponsors = rmSponsor,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -146,6 +164,12 @@ class SingleDownloadViewModel(
                     _isLoading.value = false
                 }
         }
+        // Fire-and-forget sponsor detection (does not block UI)
+        scope.launch {
+            ytDlpWrapper.detectSponsorSegments(videoUrl)
+                .onSuccess { has -> _hasSponsorSegments.value = has }
+                .onFailure { _hasSponsorSegments.value = false }
+        }
     }
 
     override fun handleEvent(event: SingleDownloadEvents) {
@@ -174,20 +198,51 @@ class SingleDownloadViewModel(
                 infoln { "[SingleDownloadViewModel] Clearing all subtitle selections" }
                 _selectedSubtitles.value = emptyList()
             }
+            is SingleDownloadEvents.SetSplitChapters -> {
+                infoln { "[SingleDownloadViewModel] Split chapters set to: ${event.enabled}" }
+                _splitChapters.value = event.enabled
+            }
+            is SingleDownloadEvents.SetRemoveSponsors -> {
+                infoln { "[SingleDownloadViewModel] Remove sponsors set to: ${event.enabled}" }
+                _removeSponsors.value = event.enabled
+            }
             SingleDownloadEvents.StartDownload -> {
                 val preset = selectedPreset.value
                 val subtitles = selectedSubtitles.value
-                if (subtitles.isNotEmpty()) {
-                    infoln { "[SingleDownloadViewModel] Starting download with subtitles: ${subtitles.joinToString(",")}, preset: ${preset?.height}p" }
-                    downloadManager.startWithSubtitles(
-                        url = videoUrl,
-                        videoInfo = videoInfo.value,
-                        preset = preset,
-                        languages = subtitles
-                    )
+                if (_splitChapters.value) {
+                    if (subtitles.isNotEmpty()) {
+                        infoln { "[SingleDownloadViewModel] Starting split-chapters download with subtitles: ${subtitles.joinToString(",")}, preset: ${preset?.height}p" }
+                        downloadManager.startSplitChapters(
+                            url = videoUrl,
+                            videoInfo = videoInfo.value,
+                            preset = preset,
+                            languages = subtitles,
+                            sponsorBlock = _removeSponsors.value
+                        )
+                    } else {
+                        infoln { "[SingleDownloadViewModel] Starting split-chapters download without subtitles, preset: ${preset?.height}p" }
+                        downloadManager.startSplitChapters(
+                            url = videoUrl,
+                            videoInfo = videoInfo.value,
+                            preset = preset,
+                            languages = null,
+                            sponsorBlock = _removeSponsors.value
+                        )
+                    }
                 } else {
-                    infoln { "[SingleDownloadViewModel] Starting download without subtitles, preset: ${preset?.height}p" }
-                    downloadManager.start(videoUrl, videoInfo.value, preset)
+                    if (subtitles.isNotEmpty()) {
+                        infoln { "[SingleDownloadViewModel] Starting download with subtitles: ${subtitles.joinToString(",")}, preset: ${preset?.height}p" }
+                        downloadManager.startWithSubtitles(
+                            url = videoUrl,
+                            videoInfo = videoInfo.value,
+                            preset = preset,
+                            languages = subtitles,
+                            sponsorBlock = _removeSponsors.value
+                        )
+                    } else {
+                        infoln { "[SingleDownloadViewModel] Starting download without subtitles, preset: ${preset?.height}p" }
+                        downloadManager.start(videoUrl, videoInfo.value, preset, sponsorBlock = _removeSponsors.value)
+                    }
                 }
                 viewModelScope.launch {
                     navController.navigate(Destination.MainNavigation.Downloader) {
@@ -198,8 +253,51 @@ class SingleDownloadViewModel(
             }
             SingleDownloadEvents.StartAudioDownload -> {
                 val audioQuality = selectedAudioQualityPreset.value
-                infoln { "[SingleDownloadViewModel] Starting audio download with quality: ${audioQuality?.name}" }
-                downloadManager.startAudio(videoUrl, videoInfo.value, audioQuality)
+                if (_splitChapters.value) {
+                    infoln { "[SingleDownloadViewModel] Starting audio split-chapters download with quality: ${audioQuality?.name}" }
+                    downloadManager.startAudioSplitChapters(videoUrl, videoInfo.value, audioQuality, sponsorBlock = _removeSponsors.value)
+                } else {
+                    infoln { "[SingleDownloadViewModel] Starting audio download with quality: ${audioQuality?.name}" }
+                    downloadManager.startAudio(videoUrl, videoInfo.value, audioQuality, sponsorBlock = _removeSponsors.value)
+                }
+                viewModelScope.launch {
+                    navController.navigate(Destination.MainNavigation.Downloader) {
+                        popUpTo(Destination.MainNavigation.Home) { inclusive = false }
+                        launchSingleTop = true
+                    }
+                }
+            }
+            SingleDownloadEvents.StartSplitChaptersDownload -> {
+                val preset = selectedPreset.value
+                val subtitles = selectedSubtitles.value
+                if (subtitles.isNotEmpty()) {
+                    infoln { "[SingleDownloadViewModel] Starting split-chapters download with subtitles: ${subtitles.joinToString(",")}, preset: ${preset?.height}p" }
+                    downloadManager.startSplitChapters(
+                        url = videoUrl,
+                        videoInfo = videoInfo.value,
+                        preset = preset,
+                        languages = subtitles
+                    )
+                } else {
+                    infoln { "[SingleDownloadViewModel] Starting split-chapters download without subtitles, preset: ${preset?.height}p" }
+                    downloadManager.startSplitChapters(
+                        url = videoUrl,
+                        videoInfo = videoInfo.value,
+                        preset = preset,
+                        languages = null
+                    )
+                }
+                viewModelScope.launch {
+                    navController.navigate(Destination.MainNavigation.Downloader) {
+                        popUpTo(Destination.MainNavigation.Home) { inclusive = false }
+                        launchSingleTop = true
+                    }
+                }
+            }
+            SingleDownloadEvents.StartAudioSplitChaptersDownload -> {
+                val audioQuality = selectedAudioQualityPreset.value
+                infoln { "[SingleDownloadViewModel] Starting audio split-chapters download with quality: ${audioQuality?.name}" }
+                downloadManager.startAudioSplitChapters(videoUrl, videoInfo.value, audioQuality)
                 viewModelScope.launch {
                     navController.navigate(Destination.MainNavigation.Downloader) {
                         popUpTo(Destination.MainNavigation.Home) { inclusive = false }

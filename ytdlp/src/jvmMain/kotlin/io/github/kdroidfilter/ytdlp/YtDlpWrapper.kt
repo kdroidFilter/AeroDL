@@ -516,6 +516,33 @@ class YtDlpWrapper {
             onEvent
         )
 
+    /**
+     * Convenience method to download a video at the given preset and split it into separate files per chapter.
+     * Uses yt-dlp's `--split-chapters` under the hood.
+     */
+    fun downloadMp4SplitChapters(
+        url: String,
+        preset: Preset,
+        outputTemplate: String? = "%(title)s_%(section_number)02d_%(section_title)s.%(ext)s",
+        noCheckCertificate: Boolean = false,
+        extraArgs: List<String> = emptyList(),
+        timeout: Duration? = Duration.ofMinutes(30),
+        recodeIfNeeded: Boolean = false,
+        subtitles: SubtitleOptions? = null,
+        onEvent: (Event) -> Unit
+    ): Handle =
+        downloadAtHeightMp4(
+            url,
+            preset.height,
+            noCheckCertificate,
+            outputTemplate,
+            extraArgs = listOf("--split-chapters") + extraArgs,
+            timeout = timeout,
+            recodeIfNeeded = recodeIfNeeded,
+            subtitles = subtitles,
+            onEvent = onEvent
+        )
+
     // --- Audio Downloads ---
 
     fun downloadAudioMp3(
@@ -606,6 +633,33 @@ class YtDlpWrapper {
         }
         return extractMetadata(url, noCheckCertificate, timeoutSec, args).mapCatching { json ->
             parseVideoInfoFromJson(json, maxHeight, preferredExts)
+        }
+    }
+
+    /**
+     * Detect if SponsorBlock segments exist for the given video URL by asking yt-dlp
+     * to mark SponsorBlock segments as chapters and then inspecting the resulting metadata.
+     * This performs a fast metadata-only call (no download).
+     */
+    suspend fun detectSponsorSegments(
+        url: String,
+        noCheckCertificate: Boolean = false,
+        timeoutSec: Long = 15,
+    ): Result<Boolean> {
+        val args = listOf("--no-playlist", "--sponsorblock-mark", "all")
+        return extractMetadata(url, noCheckCertificate, timeoutSec, args).mapCatching { json ->
+            val info = parseVideoInfoFromJson(json)
+            val chapters = info.chapters
+            if (chapters.isEmpty()) return@mapCatching false
+            val tokens = listOf(
+                "sponsor", "selfpromo", "interaction", "music_offtopic",
+                "intro", "outro", "preview", "filler", "nonmusic"
+            )
+            chapters.any { ch ->
+                val t = ch.title?.lowercase() ?: return@any false
+                // yt-dlp typically prefixes SponsorBlock chapters with category or mentions SponsorBlock
+                t.contains("sponsorblock") || tokens.any { token -> t.contains(token) }
+            }
         }
     }
 

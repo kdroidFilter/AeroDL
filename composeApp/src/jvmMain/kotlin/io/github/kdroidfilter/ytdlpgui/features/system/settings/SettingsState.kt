@@ -15,7 +15,6 @@ data class SettingsState(
     val clipboardMonitoringEnabled: Boolean = false,
     val autoLaunchEnabled: Boolean = false,
     val notifyOnComplete: Boolean = true,
-    val sponsorBlockRemove: Boolean = false,
     val concurrentFragments: Int = 1,
 ) {
     companion object {
