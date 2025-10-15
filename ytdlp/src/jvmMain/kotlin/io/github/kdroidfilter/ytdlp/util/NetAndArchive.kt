@@ -88,7 +88,12 @@ object NetAndArchive {
     ): List<String> {
         val cmd = mutableListOf(ytDlpPath, "--newline")
 
-        ffmpegPath?.takeIf { it.isNotBlank() }?.let { cmd.addAll(listOf("--ffmpeg-location", it)) }
+        // Point yt-dlp to the directory that contains ffmpeg AND ffprobe.
+        // Passing the directory ensures yt-dlp can locate both tools reliably.
+        ffmpegPath?.takeIf { it.isNotBlank() }?.let {
+            val location = File(it).parentFile?.absolutePath ?: it
+            cmd.addAll(listOf("--ffmpeg-location", location))
+        }
         if (options.noCheckCertificate) cmd.add("--no-check-certificate")
         options.cookiesFromBrowser?.takeIf { it.isNotBlank() }?.let { cmd.addAll(listOf("--cookies-from-browser", it)) }
 
