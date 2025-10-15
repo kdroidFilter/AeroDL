@@ -51,6 +51,9 @@ class SettingsRepository(
     private val _sponsorBlockRemove = MutableStateFlow(settings.getBoolean(SettingsKeys.SPONSORBLOCK_REMOVE, false))
     val sponsorBlockRemove: StateFlow<Boolean> = _sponsorBlockRemove.asStateFlow()
 
+    private val _concurrentFragments = MutableStateFlow(settings.getInt(SettingsKeys.CONCURRENT_FRAGMENTS, 1).coerceIn(1, 5))
+    val concurrentFragments: StateFlow<Int> = _concurrentFragments.asStateFlow()
+
     init {
         // Apply initial settings to dependencies
         applyToYtDlpWrapper()
@@ -111,6 +114,13 @@ class SettingsRepository(
         ytDlpWrapper.sponsorBlockRemove = enabled
     }
 
+    fun setConcurrentFragments(count: Int) {
+        val clamped = count.coerceIn(1, 5)
+        _concurrentFragments.value = clamped
+        settings.putInt(SettingsKeys.CONCURRENT_FRAGMENTS, clamped)
+        ytDlpWrapper.concurrentFragments = clamped
+    }
+
     fun setOnboardingCompleted(completed: Boolean) {
         settings.putBoolean(SettingsKeys.ONBOARDING_COMPLETED, completed)
     }
@@ -134,6 +144,7 @@ class SettingsRepository(
         _notifyOnComplete.value = settings.getBoolean(SettingsKeys.NOTIFY_ON_DOWNLOAD_COMPLETE, true)
         _autoLaunchEnabled.value = settings.getBoolean(SettingsKeys.AUTO_LAUNCH_ENABLED, false)
         _sponsorBlockRemove.value = settings.getBoolean(SettingsKeys.SPONSORBLOCK_REMOVE, false)
+        _concurrentFragments.value = settings.getInt(SettingsKeys.CONCURRENT_FRAGMENTS, 1).coerceIn(1, 5)
 
         applyToYtDlpWrapper()
         applyToClipboardMonitor()
@@ -177,6 +188,7 @@ class SettingsRepository(
         ytDlpWrapper.downloadDir = path.takeIf { it.isNotBlank() }?.let { File(it) }
         ytDlpWrapper.embedThumbnailInMp3 = _embedThumbnailInMp3.value
         ytDlpWrapper.sponsorBlockRemove = _sponsorBlockRemove.value
+        ytDlpWrapper.concurrentFragments = _concurrentFragments.value
     }
 
     private fun applyToClipboardMonitor() {
@@ -203,6 +215,7 @@ class SettingsRepository(
         _notifyOnComplete.value = true
         _autoLaunchEnabled.value = false
         _sponsorBlockRemove.value = false
+        _concurrentFragments.value = 1
 
         // Apply defaults to dependencies
         applyToYtDlpWrapper()

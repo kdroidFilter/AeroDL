@@ -16,6 +16,7 @@ data class SettingsState(
     val autoLaunchEnabled: Boolean = false,
     val notifyOnComplete: Boolean = true,
     val sponsorBlockRemove: Boolean = false,
+    val concurrentFragments: Int = 1,
 ) {
     companion object {
         val defaultState = SettingsState()

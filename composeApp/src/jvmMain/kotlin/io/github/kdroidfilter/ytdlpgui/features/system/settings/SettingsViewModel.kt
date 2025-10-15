@@ -44,6 +44,7 @@ class SettingsViewModel(
     val notifyOnComplete: StateFlow<Boolean> = settingsRepository.notifyOnComplete
     val autoLaunchEnabled: StateFlow<Boolean> = settingsRepository.autoLaunchEnabled
     val sponsorBlockRemove: StateFlow<Boolean> = settingsRepository.sponsorBlockRemove
+    val concurrentFragments: StateFlow<Int> = settingsRepository.concurrentFragments
 
     // Note: This ViewModel uses a combined state from multiple sources, so we override uiState
     override val uiState = combine(
@@ -58,6 +59,7 @@ class SettingsViewModel(
         autoLaunchEnabled,
         notifyOnComplete,
         sponsorBlockRemove,
+        concurrentFragments,
     ) { values: Array<Any?> ->
         val loading = values[0] as Boolean
         val noCheck = values[1] as Boolean
@@ -70,6 +72,7 @@ class SettingsViewModel(
         val autoLaunch = values[8] as Boolean
         val notify = values[9] as Boolean
         val sponsorBlock = values[10] as Boolean
+        val concurrent = values[11] as Int
         SettingsState(
             isLoading = loading,
             noCheckCertificate = noCheck,
@@ -82,6 +85,7 @@ class SettingsViewModel(
             autoLaunchEnabled = autoLaunch,
             notifyOnComplete = notify,
             sponsorBlockRemove = sponsorBlock,
+            concurrentFragments = concurrent,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -130,6 +134,9 @@ class SettingsViewModel(
             }
             is SettingsEvents.SetSponsorBlockRemove -> {
                 settingsRepository.setSponsorBlockRemove(event.enabled)
+            }
+            is SettingsEvents.SetConcurrentFragments -> {
+                settingsRepository.setConcurrentFragments(event.count)
             }
             is SettingsEvents.PickDownloadDir -> {
                 viewModelScope.launch {
