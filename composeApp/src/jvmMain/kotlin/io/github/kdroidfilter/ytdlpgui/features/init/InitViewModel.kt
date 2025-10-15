@@ -1,7 +1,6 @@
 package io.github.kdroidfilter.ytdlpgui.features.init
 
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavHostController
 import com.russhwolf.settings.Settings
 import io.github.kdroidfilter.network.KtorConfig
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
@@ -23,12 +22,12 @@ import io.github.kevincianfarini.cardiologist.PulseBackpressureStrategy
 
 class InitViewModel(
     private val ytDlpWrapper: YtDlpWrapper,
-    private val navController: NavHostController,
     private val settings : Settings,
     // Injected to force eager initialization of clipboard monitoring
     private val clipboardMonitorManager: ClipboardMonitorManager,
     private val supportedSitesRepository: io.github.kdroidfilter.ytdlpgui.data.SupportedSitesRepository,
 ) : MVIViewModel<InitState, InitEvent>() {
+
 
     override fun initialState(): InitState = InitState()
 
@@ -37,6 +36,9 @@ class InitViewModel(
             InitEvent.IgnoreUpdate -> ignoreUpdate()
             InitEvent.DismissUpdateInfo -> dismissUpdateInfo()
             InitEvent.StartInitialization -> startInitialization(navigateToHomeWhenDone = false)
+            InitEvent.NavigationConsumed -> {
+                update { copy(navigationState = InitNavigationState.None) }
+            }
         }
     }
 
@@ -49,10 +51,7 @@ class InitViewModel(
 
             if (!onboardingCompleted) {
                 // Not configured → go to onboarding
-                navController.navigate(Destination.Onboarding.Graph) {
-                    popUpTo(Destination.InitScreen) { inclusive = true }
-                    launchSingleTop = true
-                }
+                update { copy(navigationState = InitNavigationState.NavigateToOnboarding) }
                 return@launch
             }
 
@@ -166,11 +165,7 @@ class InitViewModel(
      * Ignore the update notification and navigate to home
      */
     private fun ignoreUpdate() {
-        update { copy(updateDismissed = true) }
-        navController.navigate(Destination.MainNavigation.Home) {
-            popUpTo(Destination.InitScreen) { inclusive = true }
-            launchSingleTop = true
-        }
+        update { copy(updateDismissed = true, navigationState = InitNavigationState.NavigateToHome) }
     }
 
     /** Persist dismissal of the update info bar for the session */
@@ -295,10 +290,7 @@ class InitViewModel(
 
                             // Navigate to home when requested (update banner is shown later in Downloads screen)
                             if (navigateToHomeWhenDone) {
-                                navController.navigate(Destination.MainNavigation.Home) {
-                                    popUpTo(Destination.InitScreen) { inclusive = true }
-                                    launchSingleTop = true
-                                }
+                                update { copy(navigationState = InitNavigationState.NavigateToHome) }
                             }
                         }
                     }

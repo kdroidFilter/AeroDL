@@ -3,7 +3,6 @@
 package io.github.kdroidfilter.ytdlpgui.features.onboarding
 
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavHostController
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.kdroid.composetray.tray.api.TrayAppState
 import com.kdroid.composetray.tray.api.TrayWindowDismissMode
@@ -28,9 +27,9 @@ import org.koin.core.component.inject
 
 class OnboardingViewModel(
     private val settingsRepository: SettingsRepository,
-    private val navController: NavHostController,
     private val trayAppState: TrayAppState,
 ) : MVIViewModel<OnboardingState, OnboardingEvents>(), KoinComponent {
+
 
     private val initViewModel: InitViewModel by inject()
     val initState = initViewModel.uiState
@@ -109,6 +108,9 @@ class OnboardingViewModel(
             is OnboardingEvents.OnSetClipboardMonitoring -> handleSetClipboardMonitoring(event.enabled)
             is OnboardingEvents.OnSetAutoLaunchEnabled -> handleSetAutoLaunchEnabled(event.enabled)
             is OnboardingEvents.OnDismissDependencyInfoBar -> handleDismissDependencyInfoBar()
+            is OnboardingEvents.OnNavigationConsumed -> {
+                update { copy(navigationState = OnboardingNavigationState.None) }
+            }
         }
     }
 
@@ -177,10 +179,7 @@ class OnboardingViewModel(
     fun completeOnboarding() {
         viewModelScope.launch {
             settingsRepository.setOnboardingCompleted(true)
-            navController.navigate(Destination.MainNavigation.Home) {
-                popUpTo(Destination.InitScreen) { inclusive = true }
-                launchSingleTop = true
-            }
+            update { copy(navigationState = OnboardingNavigationState.NavigateToHome) }
         }
     }
 
@@ -231,10 +230,7 @@ class OnboardingViewModel(
 
     private fun navigateToStep(step: OnboardingStep) {
         if (uiState.value.currentStep == step) return
-        update { copy(currentStep = step) }
-        viewModelScope.launch {
-            navController.navigate(step.toDestination())
-        }
+        update { copy(currentStep = step, navigationState = OnboardingNavigationState.NavigateToStep(step.toDestination())) }
     }
 
     private fun OnboardingStep.toDestination(): Destination.Onboarding = when (this) {

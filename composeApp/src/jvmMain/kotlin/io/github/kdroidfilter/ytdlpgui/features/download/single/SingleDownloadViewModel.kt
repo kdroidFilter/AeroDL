@@ -2,7 +2,6 @@ package io.github.kdroidfilter.ytdlpgui.features.download.single
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavHostController
 import androidx.navigation.toRoute
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlp.model.SubtitleInfo
@@ -22,11 +21,11 @@ import io.github.kdroidfilter.logging.errorln
 import io.github.kdroidfilter.logging.infoln
 
 class SingleDownloadViewModel(
-    private val navController: NavHostController,
     savedStateHandle: SavedStateHandle,
     private val ytDlpWrapper: YtDlpWrapper,
     private val downloadManager: DownloadManager,
 ) : MVIViewModel<SingleDownloadState, SingleDownloadEvents>(savedStateHandle) {
+
 
     override fun initialState(): SingleDownloadState = SingleDownloadState.loadingState
 
@@ -244,12 +243,7 @@ class SingleDownloadViewModel(
                         downloadManager.start(videoUrl, videoInfo.value, preset, sponsorBlock = _removeSponsors.value)
                     }
                 }
-                viewModelScope.launch {
-                    navController.navigate(Destination.MainNavigation.Downloader) {
-                        popUpTo(Destination.MainNavigation.Home) { inclusive = false }
-                        launchSingleTop = true
-                    }
-                }
+                update { copy(navigationState = SingleDownloadNavigationState.NavigateToDownloader) }
             }
             SingleDownloadEvents.StartAudioDownload -> {
                 val audioQuality = selectedAudioQualityPreset.value
@@ -260,12 +254,7 @@ class SingleDownloadViewModel(
                     infoln { "[SingleDownloadViewModel] Starting audio download with quality: ${audioQuality?.name}" }
                     downloadManager.startAudio(videoUrl, videoInfo.value, audioQuality, sponsorBlock = _removeSponsors.value)
                 }
-                viewModelScope.launch {
-                    navController.navigate(Destination.MainNavigation.Downloader) {
-                        popUpTo(Destination.MainNavigation.Home) { inclusive = false }
-                        launchSingleTop = true
-                    }
-                }
+                update { copy(navigationState = SingleDownloadNavigationState.NavigateToDownloader) }
             }
             SingleDownloadEvents.StartSplitChaptersDownload -> {
                 val preset = selectedPreset.value
@@ -287,23 +276,13 @@ class SingleDownloadViewModel(
                         languages = null
                     )
                 }
-                viewModelScope.launch {
-                    navController.navigate(Destination.MainNavigation.Downloader) {
-                        popUpTo(Destination.MainNavigation.Home) { inclusive = false }
-                        launchSingleTop = true
-                    }
-                }
+                update { copy(navigationState = SingleDownloadNavigationState.NavigateToDownloader) }
             }
             SingleDownloadEvents.StartAudioSplitChaptersDownload -> {
                 val audioQuality = selectedAudioQualityPreset.value
                 infoln { "[SingleDownloadViewModel] Starting audio split-chapters download with quality: ${audioQuality?.name}" }
                 downloadManager.startAudioSplitChapters(videoUrl, videoInfo.value, audioQuality)
-                viewModelScope.launch {
-                    navController.navigate(Destination.MainNavigation.Downloader) {
-                        popUpTo(Destination.MainNavigation.Home) { inclusive = false }
-                        launchSingleTop = true
-                    }
-                }
+                update { copy(navigationState = SingleDownloadNavigationState.NavigateToDownloader) }
             }
             SingleDownloadEvents.ScreenDisposed -> {
                 infoln { "[SingleDownloadViewModel] Screen disposed: clearing heavy state" }
@@ -322,6 +301,9 @@ class SingleDownloadViewModel(
                 } catch (_: Throwable) {
                     // ignore
                 }
+            }
+            SingleDownloadEvents.OnNavigationConsumed -> {
+                update { copy(navigationState = SingleDownloadNavigationState.None) }
             }
         }
     }

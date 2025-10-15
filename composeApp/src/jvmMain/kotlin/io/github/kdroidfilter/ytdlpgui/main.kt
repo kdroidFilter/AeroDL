@@ -20,8 +20,6 @@ import androidx.compose.ui.window.application
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
@@ -114,11 +112,6 @@ fun main() = application {
             )
             if (!isSingleInstance) exitApplication()
 
-            val existingNavController = remember { runCatching { koin.get<NavHostController>() }.getOrNull() }
-            val navController = existingNavController ?: rememberNavController()
-            if (existingNavController == null) {
-                runCatching { koin.declare(navController) }
-            }
 
             val downloadManager = koinInject<DownloadManager>()
             val isDownloading by downloadManager.isDownloading.collectAsState()

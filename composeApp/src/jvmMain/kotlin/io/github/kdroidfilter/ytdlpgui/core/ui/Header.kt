@@ -34,7 +34,7 @@ import ytdlpgui.composeapp.generated.resources.*
 @OptIn(ExperimentalFluentApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun MainNavigationHeader(
-    navController: NavHostController = koinInject(),
+    navController: NavHostController,
     modifier: Modifier = Modifier,
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -246,7 +246,7 @@ private fun UpdateNavBadge() {
 
 @Composable
 fun SecondaryNavigationHeader(
-    navController: NavHostController = koinInject(),
+    navController: NavHostController,
     modifier: Modifier = Modifier,
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()

@@ -52,16 +52,16 @@ val appModule = module {
 
     single { DownloadManager({ get() }, get(), get(), get<DownloadHistoryRepository>(), get()) }
     single { ClipboardMonitorManager({ get() }, get(), get(), get()) }
-    single { InitViewModel(get(), get(), get(), get(), get()) }
+    single { InitViewModel(get(), get(), get(), get()) }
 
 
 
-    viewModel { HomeViewModel(get(), get()) }
-    viewModel { AboutViewModel(get(), get()) }
-    viewModel { BulkDownloadViewModel(get()) }
-    viewModel { DownloadViewModel(get(), get(), get<DownloadHistoryRepository>(), get()) }
-    viewModel { SettingsViewModel(navController = get(), settingsRepository = get(), get(), trayAppState = get<TrayAppState>()) }
-    viewModel { SingleDownloadViewModel(get(), get(), get(), get()) }
-    viewModel { OnboardingViewModel(get(), get(), get()) }
+    viewModel { HomeViewModel(get()) }
+    viewModel { AboutViewModel(get()) }
+    viewModel { BulkDownloadViewModel() }
+    viewModel { DownloadViewModel(get(), get(), get()) }
+    viewModel { SettingsViewModel(settingsRepository = get(), get(), trayAppState = get<TrayAppState>()) }
+    viewModel { (savedStateHandle: androidx.lifecycle.SavedStateHandle) -> SingleDownloadViewModel(savedStateHandle, get(), get()) }
+    viewModel { OnboardingViewModel(get(), get()) }
 
 }

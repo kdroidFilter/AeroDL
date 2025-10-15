@@ -15,4 +15,5 @@ sealed class OnboardingEvents {
     data class OnSetClipboardMonitoring(val enabled: Boolean) : OnboardingEvents()
     data class OnSetAutoLaunchEnabled(val enabled: Boolean) : OnboardingEvents()
     data object OnDismissDependencyInfoBar : OnboardingEvents()
+    data object OnNavigationConsumed : OnboardingEvents()
 }

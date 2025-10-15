@@ -2,6 +2,7 @@ package io.github.kdroidfilter.ytdlpgui.features.home
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -10,6 +11,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.*
 import io.github.composefluent.icons.Icons
@@ -23,9 +25,23 @@ import org.koin.compose.koinInject
 import ytdlpgui.composeapp.generated.resources.*
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(navController: NavHostController) {
     val viewModel = koinInject<HomeViewModel>()
     val state by viewModel.uiState.collectAsState()
+    
+    // Handle navigation
+    LaunchedEffect(state.navigationState) {
+        when (val navigationState = state.navigationState) {
+            is HomeNavigationState.NavigateToDownload -> {
+                navController.navigate(navigationState.destination)
+                viewModel.handleEvent(HomeEvents.OnNavigationConsumed)
+            }
+            HomeNavigationState.None -> {
+                // No navigation needed
+            }
+        }
+    }
+    
     HomeView(
         state = state,
         onEvent = viewModel::handleEvent,

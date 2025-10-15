@@ -19,6 +19,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
+import androidx.navigation.compose.rememberNavController
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.navigation.noAnimatedComposable
@@ -40,12 +41,11 @@ import io.github.kdroidfilter.ytdlpgui.features.onboarding.nocheckcert.NoCheckCe
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.welcome.WelcomeScreen
 import io.github.kdroidfilter.ytdlpgui.features.system.about.AboutScreen
 import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsScreen
-import org.koin.compose.koinInject
 
 @OptIn(ExperimentalFluentApi::class)
 @Composable
 fun App() {
-    val navController = koinInject<NavHostController>()
+    val navController = rememberNavController()
 
     // Observe current back stack entry to determine which header to show
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -75,18 +75,18 @@ fun App() {
         verticalArrangement = Arrangement.Center
     ) {
 
-        if (isMainNavigation) MainNavigationHeader()
-        if (isSecondaryNavigation || isDownload) SecondaryNavigationHeader()
+        if (isMainNavigation) MainNavigationHeader(navController)
+        if (isSecondaryNavigation || isDownload) SecondaryNavigationHeader(navController)
 
         NavHost(
             navController = navController,
             startDestination = Destination.InitScreen,
             modifier = Modifier.fillMaxSize().weight(1f).padding(start = 16.dp, end = 16.dp, top = 8.dp)
         ) {
-            noAnimatedComposable<Destination.InitScreen> { InitScreen() }
+            noAnimatedComposable<Destination.InitScreen> { InitScreen(navController) }
 
             navigation<Destination.MainNavigation.Graph>(startDestination = Destination.MainNavigation.Home) {
-                noAnimatedComposable<Destination.MainNavigation.Home> { HomeScreen() }
+                noAnimatedComposable<Destination.MainNavigation.Home> { HomeScreen(navController) }
                 noAnimatedComposable<Destination.MainNavigation.Downloader> { DownloaderScreen() }
             }
 

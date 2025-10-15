@@ -1,7 +1,6 @@
 package io.github.kdroidfilter.ytdlpgui.features.home
 
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavHostController
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
@@ -12,7 +11,6 @@ import java.awt.datatransfer.DataFlavor
 import java.net.URI
 
 class HomeViewModel(
-    private val navController: NavHostController,
     private val ytDlpWrapper: YtDlpWrapper
 ) : MVIViewModel<HomeState, HomeEvents>() {
 
@@ -27,6 +25,9 @@ class HomeViewModel(
             }
             HomeEvents.OnNextClicked -> checkLink()
             HomeEvents.OnClipBoardClicked -> copyFromClipboard()
+            HomeEvents.OnNavigationConsumed -> {
+                update { copy(navigationState = HomeNavigationState.None) }
+            }
         }
     }
 
@@ -95,11 +96,12 @@ class HomeViewModel(
         val isChannel = lower.contains("/channel/") || lower.contains("/c/") || (isYouTube && lower.contains("youtube.com/@"))
 
         viewModelScope.launch {
-            if (isYouTube && (isPlaylist || isChannel)) {
-                navController.navigate(Destination.Download.Bulk(url))
+            val destination = if (isYouTube && (isPlaylist || isChannel)) {
+                Destination.Download.Bulk(url)
             } else {
-                navController.navigate(Destination.Download.Single(url))
+                Destination.Download.Single(url)
             }
+            update { copy(navigationState = HomeNavigationState.NavigateToDownload(destination)) }
         }
     }
 

@@ -3,7 +3,6 @@
 package io.github.kdroidfilter.ytdlpgui.features.system.settings
 
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavHostController
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.kdroid.composetray.tray.api.TrayAppState
 import com.kdroid.composetray.tray.api.TrayWindowDismissMode
@@ -23,11 +22,11 @@ import kotlinx.coroutines.launch
 import java.io.File
 
 class SettingsViewModel(
-    private val navController: NavHostController,
     private val settingsRepository: SettingsRepository,
     private val downloadHistoryRepository: DownloadHistoryRepository,
     private val trayAppState: TrayAppState,
 ) : MVIViewModel<SettingsState, SettingsEvents>() {
+
 
     override fun initialState(): SettingsState = SettingsState.defaultState
 

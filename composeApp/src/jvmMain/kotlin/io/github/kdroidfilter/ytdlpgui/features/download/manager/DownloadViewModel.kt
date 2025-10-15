@@ -1,7 +1,6 @@
 package io.github.kdroidfilter.ytdlpgui.features.download.manager
 
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavHostController
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.core.platform.filesystem.FileExplorerUtils
 import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
@@ -18,11 +17,11 @@ import kotlinx.coroutines.flow.stateIn
 import java.io.File
 
 class DownloadViewModel(
-    private val navController: NavHostController,
     private val downloadManager: DownloadManager,
     private val historyRepository: DownloadHistoryRepository,
     private val initViewModel: io.github.kdroidfilter.ytdlpgui.features.init.InitViewModel,
 ) : MVIViewModel<DownloadState, DownloadEvents>() {
+
 
     override fun initialState(): DownloadState = DownloadState.emptyState
 

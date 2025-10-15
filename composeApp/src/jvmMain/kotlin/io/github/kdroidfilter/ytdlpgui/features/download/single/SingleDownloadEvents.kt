@@ -15,4 +15,5 @@ sealed class SingleDownloadEvents {
     data object StartSplitChaptersDownload : SingleDownloadEvents()
     data object StartAudioSplitChaptersDownload : SingleDownloadEvents()
     data object ScreenDisposed : SingleDownloadEvents()
+    data object OnNavigationConsumed : SingleDownloadEvents()
 }

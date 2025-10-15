@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -17,11 +18,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.Icon
 import io.github.composefluent.component.ProgressRing
 import io.github.composefluent.component.Text
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnly
+import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
@@ -36,9 +39,33 @@ import ytdlpgui.composeapp.generated.resources.updating_ffmpeg
 import ytdlpgui.composeapp.generated.resources.updating_ytdlp
 
 @Composable
-fun InitScreen() {
+fun InitScreen(navController: NavHostController) {
     val viewModel = koinInject<InitViewModel>()
     val state by viewModel.uiState.collectAsState()
+    
+    // Handle navigation based on state
+    LaunchedEffect(state.navigationState) {
+        when (val navigationState = state.navigationState) {
+            is InitNavigationState.NavigateToOnboarding -> {
+                navController.navigate(Destination.Onboarding.Graph) {
+                    popUpTo(Destination.InitScreen) { inclusive = true }
+                    launchSingleTop = true
+                }
+                viewModel.handleEvent(InitEvent.NavigationConsumed)
+            }
+            is InitNavigationState.NavigateToHome -> {
+                navController.navigate(Destination.MainNavigation.Home) {
+                    popUpTo(Destination.InitScreen) { inclusive = true }
+                    launchSingleTop = true
+                }
+                viewModel.handleEvent(InitEvent.NavigationConsumed)
+            }
+            InitNavigationState.None -> {
+                // No navigation needed
+            }
+        }
+    }
+    
     InitView(
         state = state,
     )
