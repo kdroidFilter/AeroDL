@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -19,14 +20,15 @@ import io.github.composefluent.icons.filled.ClipboardPaste
 import io.github.composefluent.icons.regular.ArrowLeft
 import io.github.composefluent.icons.regular.ArrowRight
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnly
+import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.koin.compose.koinInject
 import ytdlpgui.composeapp.generated.resources.*
 
 @Composable
 fun HomeScreen(navController: NavHostController) {
-    val viewModel = koinInject<HomeViewModel>()
+    val appGraph = LocalAppGraph.current
+        val viewModel = remember(appGraph) { appGraph.homeViewModel }
     val state by viewModel.uiState.collectAsState()
     
     // Handle navigation

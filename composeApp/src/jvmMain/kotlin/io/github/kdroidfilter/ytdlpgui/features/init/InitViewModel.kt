@@ -1,31 +1,28 @@
 package io.github.kdroidfilter.ytdlpgui.features.init
 
 import androidx.lifecycle.viewModelScope
-import com.russhwolf.settings.Settings
+import dev.zacsweers.metro.Inject
 import io.github.kdroidfilter.network.KtorConfig
-import io.github.kdroidfilter.ytdlp.YtDlpWrapper
-import io.github.kdroidfilter.ytdlpgui.core.domain.manager.ClipboardMonitorManager
-import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
-import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
-import kotlinx.coroutines.launch
-import io.github.kdroidfilter.ytdlpgui.core.config.SettingsKeys
+import io.github.kdroidfilter.platformtools.OperatingSystem
 import io.github.kdroidfilter.platformtools.getAppVersion
 import io.github.kdroidfilter.platformtools.getOperatingSystem
-import io.github.kdroidfilter.platformtools.OperatingSystem
-import io.github.kdroidfilter.platformtools.releasefetcher.config.client
 import io.github.kdroidfilter.platformtools.releasefetcher.github.GitHubReleaseFetcher
 import io.github.kdroidfilter.platformtools.releasefetcher.github.model.Asset
+import io.github.kdroidfilter.ytdlp.YtDlpWrapper
+import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
+import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
+import io.github.kevincianfarini.cardiologist.PulseBackpressureStrategy
+import io.github.kevincianfarini.cardiologist.fixedPeriodPulse
+import kotlinx.coroutines.launch
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
-import io.github.kevincianfarini.cardiologist.fixedPeriodPulse
-import io.github.kevincianfarini.cardiologist.PulseBackpressureStrategy
 
+@Inject
 class InitViewModel(
     private val ytDlpWrapper: YtDlpWrapper,
-    private val settings : Settings,
-    // Injected to force eager initialization of clipboard monitoring
-    private val clipboardMonitorManager: ClipboardMonitorManager,
+    private val settingsRepository: SettingsRepository,
     private val supportedSitesRepository: io.github.kdroidfilter.ytdlpgui.data.SupportedSitesRepository,
+    private val downloadHistoryRepository: io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
 ) : MVIViewModel<InitState, InitEvent>() {
 
 
@@ -47,7 +44,7 @@ class InitViewModel(
     init {
         viewModelScope.launch {
             // Check if onboarding is completed
-            val onboardingCompleted = settings.getBoolean(SettingsKeys.ONBOARDING_COMPLETED, false)
+            val onboardingCompleted = settingsRepository.isOnboardingCompleted()
 
             if (!onboardingCompleted) {
                 // Not configured → go to onboarding
@@ -182,8 +179,8 @@ class InitViewModel(
         isInitializing = true
 
         viewModelScope.launch {
-            val noCheck = settings.getBoolean(SettingsKeys.NO_CHECK_CERTIFICATE, false)
-            val cookies = settings.getString(SettingsKeys.COOKIES_FROM_BROWSER, "").ifBlank { null }
+            val noCheck = settingsRepository.noCheckCertificate.value
+            val cookies = settingsRepository.cookiesFromBrowser.value.ifBlank { null }
 
             ytDlpWrapper.apply {
                 noCheckCertificate = noCheck

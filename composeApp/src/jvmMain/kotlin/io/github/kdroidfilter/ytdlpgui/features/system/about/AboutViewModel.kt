@@ -5,8 +5,12 @@ import io.github.kdroidfilter.platformtools.getAppVersion
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
 import kotlinx.coroutines.launch
+import dev.zacsweers.metro.Inject
+import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
 
+@Inject
 class AboutViewModel(
+    private val settingsRepository: SettingsRepository,
     private val ytDlpWrapper: YtDlpWrapper,
 ) : MVIViewModel<AboutState, AboutEvents>() {
 

@@ -3,7 +3,6 @@ package io.github.kdroidfilter.ytdlpgui.data
 import com.russhwolf.settings.Settings
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlpgui.core.config.SettingsKeys
-import io.github.kdroidfilter.ytdlpgui.core.domain.manager.ClipboardMonitorManager
 import io.github.vinceglb.autolaunch.AutoLaunch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,9 +16,9 @@ import java.io.File
 class SettingsRepository(
     private val settings: Settings,
     private val ytDlpWrapper: YtDlpWrapper,
-    private val clipboardMonitorManager: ClipboardMonitorManager,
     private val autoLaunch: AutoLaunch,
 ) {
+    private var clipboardMonitorManager: io.github.kdroidfilter.ytdlpgui.core.domain.manager.ClipboardMonitorManager? = null
     // StateFlows for reactive UI
     private val _noCheckCertificate = MutableStateFlow(settings.getBoolean(SettingsKeys.NO_CHECK_CERTIFICATE, false))
     val noCheckCertificate: StateFlow<Boolean> = _noCheckCertificate.asStateFlow()
@@ -55,7 +54,6 @@ class SettingsRepository(
     init {
         // Apply initial settings to dependencies
         applyToYtDlpWrapper()
-        applyToClipboardMonitor()
     }
 
     fun setNoCheckCertificate(enabled: Boolean) {
@@ -98,7 +96,7 @@ class SettingsRepository(
     fun setClipboardMonitoringEnabled(enabled: Boolean) {
         _clipboardMonitoringEnabled.value = enabled
         settings.putBoolean(SettingsKeys.CLIPBOARD_MONITORING_ENABLED, enabled)
-        clipboardMonitorManager.onSettingChanged(enabled)
+        clipboardMonitorManager?.onSettingChanged(enabled)
     }
 
     fun setNotifyOnComplete(enabled: Boolean) {
@@ -139,7 +137,7 @@ class SettingsRepository(
         _concurrentFragments.value = settings.getInt(SettingsKeys.CONCURRENT_FRAGMENTS, 1).coerceIn(1, 5)
 
         applyToYtDlpWrapper()
-        applyToClipboardMonitor()
+        clipboardMonitorManager?.let { applyToClipboardMonitor(it) }
     }
 
     suspend fun refreshAutoLaunchState() {
@@ -182,10 +180,15 @@ class SettingsRepository(
         ytDlpWrapper.concurrentFragments = _concurrentFragments.value
     }
 
-    private fun applyToClipboardMonitor() {
+    private fun applyToClipboardMonitor(clipboardMonitor: io.github.kdroidfilter.ytdlpgui.core.domain.manager.ClipboardMonitorManager) {
         if (_clipboardMonitoringEnabled.value) {
-            clipboardMonitorManager.onSettingChanged(true)
+            clipboardMonitor.onSettingChanged(true)
         }
+    }
+
+    fun setClipboardMonitorManager(manager: io.github.kdroidfilter.ytdlpgui.core.domain.manager.ClipboardMonitorManager) {
+        this.clipboardMonitorManager = manager
+        applyToClipboardMonitor(manager)
     }
 
     /**
@@ -209,6 +212,6 @@ class SettingsRepository(
 
         // Apply defaults to dependencies
         applyToYtDlpWrapper()
-        applyToClipboardMonitor()
+        clipboardMonitorManager?.let { applyToClipboardMonitor(it) }
     }
 }

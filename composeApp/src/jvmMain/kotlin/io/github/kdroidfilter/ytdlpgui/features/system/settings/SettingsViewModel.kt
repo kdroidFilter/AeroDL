@@ -20,9 +20,12 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.File
+import dev.zacsweers.metro.Inject
 
+@Inject
 class SettingsViewModel(
     private val settingsRepository: SettingsRepository,
+    private val supportedSitesRepository: io.github.kdroidfilter.ytdlpgui.data.SupportedSitesRepository,
     private val downloadHistoryRepository: DownloadHistoryRepository,
     private val trayAppState: TrayAppState,
 ) : MVIViewModel<SettingsState, SettingsEvents>() {

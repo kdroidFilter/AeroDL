@@ -9,12 +9,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import io.github.composefluent.component.AccentButton
 import io.github.composefluent.component.HyperlinkButton
 import io.github.composefluent.component.Text
+import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
 import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.HeaderRow
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.NavigationRow
@@ -25,16 +27,15 @@ import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingViewModel
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.DependencyInfoBar
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.koin.compose.viewmodel.koinViewModel
 import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.onboarding_gnome_focus_caption
 import ytdlpgui.composeapp.generated.resources.onboarding_gnome_focus_open_extension
 import ytdlpgui.composeapp.generated.resources.onboarding_gnome_focus_title
 
 @Composable
-fun GnomeFocusScreen(
-    viewModel: OnboardingViewModel = koinViewModel(),
-) {
+fun GnomeFocusScreen() {
+    val appGraph = LocalAppGraph.current
+    val viewModel = remember(appGraph) { appGraph.onboardingViewModel }
     val currentStep by viewModel.currentStep.collectAsState()
     val initState by viewModel.initState.collectAsState()
     val dependencyInfoBarDismissed by viewModel.dependencyInfoBarDismissed.collectAsState()

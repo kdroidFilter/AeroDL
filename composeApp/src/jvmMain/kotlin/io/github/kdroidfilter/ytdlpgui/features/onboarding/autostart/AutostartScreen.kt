@@ -20,6 +20,7 @@ import io.github.composefluent.component.Text
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.Power
 import io.github.kdroidfilter.ytdlpgui.core.design.components.Switcher
+import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingStep
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingViewModel
@@ -30,7 +31,6 @@ import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.Onboarding
 import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.koin.compose.viewmodel.koinViewModel
 import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.common_disabled
 import ytdlpgui.composeapp.generated.resources.common_enabled
@@ -39,7 +39,7 @@ import ytdlpgui.composeapp.generated.resources.settings_auto_launch_title
 
 @Composable
 fun AutostartScreen(
-    viewModel: OnboardingViewModel = koinViewModel(),
+    viewModel : OnboardingViewModel = LocalAppGraph.current.onboardingViewModel
 ) {
     val autoLaunchEnabled by viewModel.autoLaunchEnabled.collectAsState()
     val state = AutostartState(

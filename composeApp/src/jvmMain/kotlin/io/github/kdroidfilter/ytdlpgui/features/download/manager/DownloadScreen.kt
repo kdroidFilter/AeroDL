@@ -45,9 +45,9 @@ import io.github.kdroidfilter.ytdlpgui.core.design.components.UpdateInfoBar
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository.HistoryItem
 import io.github.kdroidfilter.ytdlpgui.core.design.components.UpdateInfoBar
+import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.koin.compose.viewmodel.koinViewModel
 import ytdlpgui.composeapp.generated.resources.*
 import java.time.Instant
 import java.time.ZoneId
@@ -57,7 +57,8 @@ import java.util.Locale
 
 @Composable
 fun DownloaderScreen() {
-    val viewModel = koinViewModel<DownloadViewModel>()
+    val appGraph = LocalAppGraph.current
+        val viewModel = remember(appGraph) { appGraph.downloadViewModel }
     val state by viewModel.uiState.collectAsState()
     DownloadView(
         state = state,

@@ -52,16 +52,31 @@ import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.runtime.collectAsState
 import ytdlpgui.composeapp.generated.resources.*
+import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
 import java.time.Duration
 import java.util.*
 
 @Composable
-fun SingleDownloadScreen() {
-    val viewModel = koinViewModel<SingleDownloadViewModel>()
+fun SingleDownloadScreen(navController: androidx.navigation.NavHostController, backStackEntry: androidx.navigation.NavBackStackEntry) {
+    val appGraph = LocalAppGraph.current
+    val viewModel = remember(backStackEntry) { appGraph.singleDownloadViewModel(backStackEntry.savedStateHandle) }
     val state by viewModel.uiState.collectAsState()
+
+    // Handle navigation to Downloader directly via NavController
+    LaunchedEffect(state.navigationState) {
+        when (state.navigationState) {
+            is SingleDownloadNavigationState.NavigateToDownloader -> {
+                navController.navigate(io.github.kdroidfilter.ytdlpgui.core.navigation.Destination.MainNavigation.Downloader)
+                viewModel.handleEvent(SingleDownloadEvents.OnNavigationConsumed)
+            }
+            SingleDownloadNavigationState.None -> {
+                // no-op
+            }
+        }
+    }
+
     SingleDownloadView(
         state = state,
         onEvent = viewModel::handleEvent

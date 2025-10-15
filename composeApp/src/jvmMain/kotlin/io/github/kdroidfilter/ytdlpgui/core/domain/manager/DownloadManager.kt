@@ -7,7 +7,7 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.kdroid.composetray.tray.api.TrayAppState
-import com.russhwolf.settings.Settings
+import dev.zacsweers.metro.Inject
 import io.github.kdroidfilter.knotify.builder.ExperimentalNotificationsApi
 import io.github.kdroidfilter.knotify.compose.builder.notification
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
@@ -23,6 +23,7 @@ import io.github.kdroidfilter.logging.errorln
 import io.github.kdroidfilter.logging.infoln
 import io.github.kdroidfilter.logging.warnln
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
+import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -52,10 +53,10 @@ import kotlin.collections.ArrayDeque
  * @param historyRepository Stores the history of completed downloads.
  * @param trayAppState The tray application state for managing window visibility.
  */
+@Inject
 class DownloadManager(
-    private val getNavController: () -> NavHostController,
     private val ytDlpWrapper: YtDlpWrapper,
-    private val settings: Settings,
+    private val settingsRepository: SettingsRepository,
     private val historyRepository: DownloadHistoryRepository,
     private val trayAppState: TrayAppState,
 ) {
@@ -90,7 +91,7 @@ class DownloadManager(
 
     private val pendingQueue: ArrayDeque<String> = ArrayDeque()
 
-    private fun maxParallel(): Int = settings.getInt(SettingsKeys.PARALLEL_DOWNLOADS, 2).coerceIn(1, 10)
+    private fun maxParallel(): Int = settingsRepository.parallelDownloads.value
     private fun runningCount(): Int = _items.value.count { it.status == DownloadItem.Status.Running }
 
     fun start(url: String, videoInfo: VideoInfo? = null, preset: YtDlpWrapper.Preset? = null, sponsorBlock: Boolean = false): String =
@@ -274,14 +275,8 @@ class DownloadManager(
 
                     saveToHistory(id, item, absolutePath)
 
-                    // Notify when window hidden or not on downloader screen (using type-safe hasRoute())
-                    val currentDestination = getNavController().currentBackStackEntry?.destination
-                    val isOnDownloaderScreen = currentDestination?.hierarchy?.any {
-                        it.hasRoute(Destination.MainNavigation.Downloader::class)
-                    } == true
-
-                    if ((settings.getBoolean(SettingsKeys.NOTIFY_ON_DOWNLOAD_COMPLETE, true) && !trayAppState.isVisible.value) ||
-                        (settings.getBoolean(SettingsKeys.NOTIFY_ON_DOWNLOAD_COMPLETE, true) && trayAppState.isVisible.value && !isOnDownloaderScreen)) {
+                    // Notify when enabled in settings and window is hidden
+                    if (settingsRepository.notifyOnComplete.value && !trayAppState.isVisible.value) {
                         scope.launch { sendCompletionNotification(item, absolutePath) }
                     }
                 }
@@ -490,7 +485,7 @@ class DownloadManager(
     }
 
     private fun buildOutputTemplate(preset: YtDlpWrapper.Preset?): String {
-        val includePreset = settings.getBoolean(SettingsKeys.INCLUDE_PRESET_IN_FILENAME, true)
+        val includePreset = settingsRepository.includePresetInFilename.value
         return if (includePreset && preset != null) {
             "%(title)s_${preset.height}p.%(ext)s"
         } else {
@@ -499,7 +494,7 @@ class DownloadManager(
     }
 
     private fun buildOutputTemplateForAudio(preset: YtDlpWrapper.AudioQualityPreset?): String {
-        val includePreset = settings.getBoolean(SettingsKeys.INCLUDE_PRESET_IN_FILENAME, true)
+        val includePreset = settingsRepository.includePresetInFilename.value
         return if (includePreset && preset != null) {
             "%(title)s_${preset.bitrate}.%(ext)s"
         } else {
@@ -508,7 +503,7 @@ class DownloadManager(
     }
 
     private fun buildOutputTemplateForSplitChapters(preset: YtDlpWrapper.Preset?): String {
-        val includePreset = settings.getBoolean(SettingsKeys.INCLUDE_PRESET_IN_FILENAME, true)
+        val includePreset = settingsRepository.includePresetInFilename.value
         return if (includePreset && preset != null) {
             "%(title)s_%(section_number)02d_%(section_title)s_${preset.height}p.%(ext)s"
         } else {
@@ -517,7 +512,7 @@ class DownloadManager(
     }
 
     private fun buildOutputTemplateForAudioSplitChapters(preset: YtDlpWrapper.AudioQualityPreset?): String {
-        val includePreset = settings.getBoolean(SettingsKeys.INCLUDE_PRESET_IN_FILENAME, true)
+        val includePreset = settingsRepository.includePresetInFilename.value
         return if (includePreset && preset != null) {
             "%(title)s_%(section_number)02d_%(section_title)s_${preset.bitrate}.%(ext)s"
         } else {
@@ -526,7 +521,7 @@ class DownloadManager(
     }
 
     private fun buildDirectoryTemplateForVideo(preset: YtDlpWrapper.Preset?): String {
-        val includePreset = settings.getBoolean(SettingsKeys.INCLUDE_PRESET_IN_FILENAME, true)
+        val includePreset = settingsRepository.includePresetInFilename.value
         return if (includePreset && preset != null) {
             "%(title)s_${preset.height}p"
         } else {
@@ -535,7 +530,7 @@ class DownloadManager(
     }
 
     private fun buildDirectoryTemplateForAudio(preset: YtDlpWrapper.AudioQualityPreset?): String {
-        val includePreset = settings.getBoolean(SettingsKeys.INCLUDE_PRESET_IN_FILENAME, true)
+        val includePreset = settingsRepository.includePresetInFilename.value
         return if (includePreset && preset != null) {
             "%(title)s_${preset.bitrate}"
         } else {

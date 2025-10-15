@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -23,6 +24,7 @@ import androidx.navigation.compose.rememberNavController
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.navigation.noAnimatedComposable
+import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
 import io.github.kdroidfilter.ytdlpgui.core.ui.Footer
 import io.github.kdroidfilter.ytdlpgui.core.ui.MainNavigationHeader
 import io.github.kdroidfilter.ytdlpgui.core.ui.SecondaryNavigationHeader
@@ -46,6 +48,34 @@ import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsScreen
 @Composable
 fun App() {
     val navController = rememberNavController()
+
+    // Bridge: observe DI-backed navigation events and apply to NavController
+    val appGraph = LocalAppGraph.current
+    LaunchedEffect(navController) {
+        appGraph.navigationEventBus.events.collect { destination ->
+            runCatching { navController.navigate(destination) }
+        }
+    }
+
+    // Observe onboarding navigation intents and route them via NavController
+    val onboardingViewModel = remember(appGraph) { appGraph.onboardingViewModel }
+    LaunchedEffect(navController, onboardingViewModel) {
+        onboardingViewModel.uiState.collect { state ->
+            when (val nav = state.navigationState) {
+                is io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingNavigationState.NavigateToStep -> {
+                    runCatching { navController.navigate(nav.destination) }
+                    onboardingViewModel.handleEvent(io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents.OnNavigationConsumed)
+                }
+                io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingNavigationState.NavigateToHome -> {
+                    runCatching { navController.navigate(Destination.MainNavigation.Home) }
+                    onboardingViewModel.handleEvent(io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents.OnNavigationConsumed)
+                }
+                io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingNavigationState.None -> {
+                    // no-op
+                }
+            }
+        }
+    }
 
     // Observe current back stack entry to determine which header to show
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -123,7 +153,7 @@ fun App() {
             }
 
             navigation<Destination.Download.Graph>(startDestination = Destination.Download.Single("")) {
-                noAnimatedComposable<Destination.Download.Single> { SingleDownloadScreen() }
+                noAnimatedComposable<Destination.Download.Single> { backStackEntry -> SingleDownloadScreen(navController, backStackEntry) }
                 noAnimatedComposable<Destination.Download.Bulk> { BulkDownloadScreen() }
             }
         }

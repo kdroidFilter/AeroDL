@@ -1,7 +1,6 @@
 package io.github.kdroidfilter.ytdlpgui.features.home
 
 import androidx.lifecycle.viewModelScope
-import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
 import kotlinx.coroutines.launch
@@ -9,9 +8,12 @@ import java.awt.Toolkit.getDefaultToolkit
 import ytdlpgui.composeapp.generated.resources.*
 import java.awt.datatransfer.DataFlavor
 import java.net.URI
+import dev.zacsweers.metro.Inject
+import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
 
+@Inject
 class HomeViewModel(
-    private val ytDlpWrapper: YtDlpWrapper
+    private val settingsRepository: SettingsRepository
 ) : MVIViewModel<HomeState, HomeEvents>() {
 
     override fun initialState(): HomeState = HomeState()

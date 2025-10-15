@@ -16,13 +16,14 @@ import io.github.composefluent.icons.regular.*
 import io.github.kdroidfilter.ytdlpgui.core.design.components.BrowserSelector
 import io.github.kdroidfilter.ytdlpgui.core.design.components.EllipsizedTextWithTooltip
 import io.github.kdroidfilter.ytdlpgui.core.design.components.Switcher
+import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.viewmodel.koinViewModel
 import ytdlpgui.composeapp.generated.resources.*
 
 @Composable
 fun SettingsScreen() {
-    val viewModel = koinViewModel<SettingsViewModel>()
+    val appGraph = LocalAppGraph.current
+        val viewModel = remember(appGraph) { appGraph.settingsViewModel }
     val state by viewModel.uiState.collectAsState()
     SettingsView(
         state = state,

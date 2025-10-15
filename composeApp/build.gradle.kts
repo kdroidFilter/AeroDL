@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.sqlDelight)
     alias(libs.plugins.hydraulicConveyor)
+    alias(libs.plugins.metro)
 }
 
 val ref = System.getenv("GITHUB_REF") ?: ""
@@ -45,10 +46,8 @@ kotlin {
             implementation(libs.coil)
             implementation(libs.coil.network)
 
-            // DI
-            implementation(libs.koin.core)
-            implementation(libs.koin.compose)
-            implementation(libs.koin.compose.viewmodel)
+            // DI - Metro
+            implementation(libs.metro.runtime)
 
             // Platform tools
             implementation(libs.platformtools.core)
@@ -152,4 +151,10 @@ sqldelight {
             dialect("app.cash.sqldelight:sqlite-3-24-dialect:${libs.versions.sqlDelight.get()}")
         }
     }
+}
+
+tasks.withType<Jar> {
+    exclude("META-INF/*.SF")
+    exclude("META-INF/*.DSA")
+    exclude("META-INF/*.RSA")
 }

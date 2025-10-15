@@ -27,7 +27,7 @@ import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnly
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.koin.compose.koinInject
+import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
 import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.checking_ffmpeg
 import ytdlpgui.composeapp.generated.resources.checking_ytdlp
@@ -40,7 +40,8 @@ import ytdlpgui.composeapp.generated.resources.updating_ytdlp
 
 @Composable
 fun InitScreen(navController: NavHostController) {
-    val viewModel = koinInject<InitViewModel>()
+    val appGraph = LocalAppGraph.current
+    val viewModel = appGraph.initViewModel
     val state by viewModel.uiState.collectAsState()
     
     // Handle navigation based on state

@@ -23,7 +23,7 @@ import io.github.composefluent.component.CheckBox
 
 import io.github.composefluent.icons.regular.LockShield
 import io.github.composefluent.icons.regular.Warning
-import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.HeaderRow
+import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.NavigationRow
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.OnboardingProgress
@@ -32,7 +32,6 @@ import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingViewModel
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.DependencyInfoBar
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.koin.compose.viewmodel.koinViewModel
 import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.onboarding_filtered_network_detected_title
 import ytdlpgui.composeapp.generated.resources.onboarding_filtered_network_detected_message
@@ -41,7 +40,7 @@ import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 
 @Composable
 fun NoCheckCertScreen(
-    viewModel: OnboardingViewModel = koinViewModel(),
+    viewModel: OnboardingViewModel = LocalAppGraph.current.onboardingViewModel,
 ) {
     val noCheckCertificate by viewModel.noCheckCertificate.collectAsState()
     val state = NoCheckCertState(

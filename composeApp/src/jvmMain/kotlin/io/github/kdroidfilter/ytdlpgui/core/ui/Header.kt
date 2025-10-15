@@ -26,9 +26,8 @@ import io.github.composefluent.icons.filled.MoreVertical
 import io.github.composefluent.icons.regular.*
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnly
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
-import io.github.kdroidfilter.ytdlpgui.features.init.InitViewModel
+import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
 import ytdlpgui.composeapp.generated.resources.*
 
 @OptIn(ExperimentalFluentApi::class, ExperimentalFoundationApi::class)
@@ -40,7 +39,7 @@ fun MainNavigationHeader(
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
     // App update badge state (from InitViewModel)
-    val initViewModel = koinInject<InitViewModel>()
+    val initViewModel = LocalAppGraph.current.initViewModel
     val initState by initViewModel.uiState.collectAsState()
     val showUpdateBadge = initState.updateAvailable && !initState.updateDismissed
 

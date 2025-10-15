@@ -22,16 +22,17 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
+import dev.zacsweers.metro.Inject
 
+@Inject
 class OnboardingViewModel(
     private val settingsRepository: SettingsRepository,
+    private val supportedSitesRepository: io.github.kdroidfilter.ytdlpgui.data.SupportedSitesRepository,
+    private val initViewModel: InitViewModel,
     private val trayAppState: TrayAppState,
-) : MVIViewModel<OnboardingState, OnboardingEvents>(), KoinComponent {
+) : MVIViewModel<OnboardingState, OnboardingEvents>() {
 
 
-    private val initViewModel: InitViewModel by inject()
     val initState = initViewModel.uiState
 
     // Check if user is running GNOME desktop environment

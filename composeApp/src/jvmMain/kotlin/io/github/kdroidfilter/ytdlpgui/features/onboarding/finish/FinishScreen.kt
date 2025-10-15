@@ -14,6 +14,7 @@ import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.AccentButton
 import io.github.composefluent.component.Text
 import io.github.kdroidfilter.ytdlpgui.core.design.components.ProgressBar
+import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
 import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingStep
@@ -25,13 +26,12 @@ import io.github.vinceglb.confettikit.core.emitter.Emitter
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.koin.compose.viewmodel.koinViewModel
 import ytdlpgui.composeapp.generated.resources.*
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun FinishScreen(
-    viewModel: OnboardingViewModel = koinViewModel(),
+    viewModel: OnboardingViewModel = LocalAppGraph.current.onboardingViewModel,
 ) {
     val currentStep by viewModel.currentStep.collectAsState()
     val initState by viewModel.initState.collectAsState()
