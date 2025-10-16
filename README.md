@@ -4,7 +4,7 @@
 
 AeroDL is a modern and fluent graphical user interface for the powerful yt-dlp command-line tool. It is designed to be simple, user-friendly, and always available when you need it, without being intrusive.
 
-![AeroDL Screenshot](/Art/SC01.png)
+![AeroDL Screenshot](/art/SC01.png)
 
 ## ✨ Features
 
