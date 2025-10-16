@@ -12,7 +12,7 @@
 AeroDL welcomes you with a clean and minimal home screen.
 Simply paste or detect a YouTube link — AeroDL automatically recognizes it and prepares everything for download.
 
-![Home Screenshot](/art/home.png)
+<p align="center"><img src="/art/home.png" alt="Home Screenshot"/></p>
 
 ---
 
@@ -20,7 +20,7 @@ Simply paste or detect a YouTube link — AeroDL automatically recognizes it and
 
 Instant notifications appear when a supported link is detected — open it directly in AeroDL or ignore.
 
-![Notification Screenshot](/art/notification.png)
+<p align="center"><img src="/art/notification.png" alt="Notification Screenshot"/></p>
 
 ---
 
