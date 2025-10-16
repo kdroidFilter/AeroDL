@@ -24,6 +24,7 @@ import ytdlpgui.composeapp.generated.resources.clipboard_link_detected_title
 import ytdlpgui.composeapp.generated.resources.clipboard_open_in_app
 import androidx.compose.runtime.*
 import io.github.kdroidfilter.ytdlpgui.core.platform.notifications.NotificationThumbUtils
+import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlpgui.data.SupportedSitesRepository
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 
@@ -56,6 +57,7 @@ class ClipboardMonitorManager(
     private val trayAppState: TrayAppState,
     private val supportedSitesRepository: SupportedSitesRepository,
     private val navigationEventBus: io.github.kdroidfilter.ytdlpgui.core.navigation.NavigationEventBus,
+    private val ytDlpWrapper: YtDlpWrapper,
 ) {
 
     private val scope = CoroutineScope(Dispatchers.Default)
@@ -115,7 +117,12 @@ class ClipboardMonitorManager(
         // For YouTube, avoid bulk (playlist/channel) prompts which can be noisy.
         if (isYouTube && (isPlaylist || isChannel)) return
 
-        // Mark as handled to avoid repeated prompts for the same URL
+        // Only send notification if app is configured and initialized
+        if (!settingsRepository.isOnboardingCompleted()) return
+        val available = runCatching { ytDlpWrapper.isAvailable() }.getOrDefault(false)
+        if (!available) return
+
+        // Mark as handled to avoid repeated prompts for the same URL once we are actually going to notify
         lastHandled = url
 
         val appName = getString(Res.string.app_name)
