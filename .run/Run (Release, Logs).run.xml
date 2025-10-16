@@ -10,7 +10,7 @@
       </option>
       <option name="taskNames">
         <list>
-          <option value=":composeApp:runReleaseDist" />
+          <option value=":composeApp:runRelease" />
         </list>
       </option>
       <option name="vmOptions" />
@@ -22,4 +22,3 @@
     <method v="2" />
   </configuration>
 </component>
-

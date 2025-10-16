@@ -5,11 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -21,15 +17,15 @@ import androidx.compose.ui.window.application
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
-import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.kdroid.composetray.tray.api.TrayApp
-import com.kdroid.composetray.tray.api.TrayAppState
 import com.kdroid.composetray.tray.api.rememberTrayAppState
 import com.kdroid.composetray.utils.SingleInstanceManager
 import com.kdroid.composetray.utils.allowComposeNativeTrayLogging
 import com.kdroid.composetray.utils.isMenuBarInDarkMode
+import com.russhwolf.settings.Settings
+import dev.zacsweers.metro.createGraph
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.background.Mica
@@ -46,9 +42,6 @@ import io.github.kdroidfilter.platformtools.getAppVersion
 import io.github.kdroidfilter.platformtools.getOperatingSystem
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnly
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnlyRtl
-import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
-import com.russhwolf.settings.Settings
-import dev.zacsweers.metro.createGraph
 import io.github.kdroidfilter.ytdlpgui.di.AppGraph
 import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
 import io.github.kdroidfilter.ytdlpgui.di.TrayAppStateHolder
@@ -101,6 +94,10 @@ fun main() = application {
             if (cleanInstall) {
                 clearSettings(appGraph.settings)
             }
+
+            SingleInstanceManager.configuration = SingleInstanceManager.Configuration(
+                lockIdentifier = "aerodl"
+            )
 
             val isSingleInstance = SingleInstanceManager.isSingleInstance(
                 onRestoreRequest = {
