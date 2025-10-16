@@ -222,4 +222,8 @@
     <string name="settings_reset_dialog_cancel">Annuler</string>
     <string name="split_badge">Split</string>
     <string name="remove_sponsors">Supprimer les sponsors (SponsorBlock)</string>
+    
+    <!-- Écran téléchargement simple : légendes conviviales -->
+    <string name="single_sponsorblock_caption">Nous avons détecté des segments sponsorisés dans cette vidéo. Activez cette option pour les supprimer automatiquement du téléchargement. Dans de nombreux cas, il s’agit de publicités sans lien direct avec le contenu principal.</string>
+    <string name="single_split_chapters_caption">Nous avons détecté que cette vidéo est divisée en chapitres. Activez cette option pour enregistrer un fichier par chapitre — particulièrement utile pour les sets ou longs mixes afin d’obtenir un fichier par morceau.</string>
 </resources>

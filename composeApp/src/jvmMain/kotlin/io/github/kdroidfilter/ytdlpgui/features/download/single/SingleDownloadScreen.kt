@@ -30,8 +30,8 @@ import coil3.compose.AsyncImage
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.AccentButton
 import io.github.composefluent.component.Button
+import io.github.composefluent.component.CardExpanderItem
 import io.github.composefluent.component.FlyoutPlacement
-import io.github.composefluent.component.CheckBox
 import io.github.composefluent.component.Icon
 import io.github.composefluent.component.ListItemDefaults
 import io.github.composefluent.component.ListItemSelectionType
@@ -55,6 +55,8 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 import androidx.compose.runtime.collectAsState
 import ytdlpgui.composeapp.generated.resources.*
 import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
+import io.github.kdroidfilter.ytdlpgui.core.design.components.EllipsizedTextWithTooltip
+import io.github.kdroidfilter.ytdlpgui.core.design.components.Switcher
 import java.time.Duration
 import java.util.*
 
@@ -298,37 +300,55 @@ private fun SingleVideoDownloadView(
                         }
                         Spacer(Modifier.height(16.dp))
                     }
-                    // Option: Split chapters (vidéo)
+                    // Option: Split chapters (video) — friendlier CardExpander with caption
                     if (videoInfo?.hasChapters == true) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Start,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            CheckBox(
-                                checked = splitChapters,
-                                onCheckStateChange = { onSetSplitChapters(it) }
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            Text(text = stringResource(Res.string.split_chapters))
-                        }
+                        CardExpanderItem(
+                            heading = {
+                                Text(
+                                    stringResource(Res.string.split_chapters),
+                                    modifier = Modifier.fillMaxWidth(0.75f)
+                                )
+                            },
+                            caption = {
+                                EllipsizedTextWithTooltip(
+                                    text = stringResource(Res.string.single_split_chapters_caption),
+                                    modifier = Modifier.fillMaxWidth(0.75f)
+                                )
+                            },
+                            icon = { Icon(Icons.Regular.FilmstripPlay, null) },
+                            trailing = {
+                                Switcher(
+                                    checked = splitChapters,
+                                    onCheckStateChange = onSetSplitChapters,
+                                )
+                            }
+                        )
                         Spacer(Modifier.height(8.dp))
                     }
 
-                    // Option: SponsorBlock (vidéo)
+                    // Option: SponsorBlock (video) — friendlier CardExpander with caption
                     if (hasSponsorSegments) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Start,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            CheckBox(
-                                checked = removeSponsors,
-                                onCheckStateChange = { onSetRemoveSponsors(it) }
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            Text(text = stringResource(Res.string.remove_sponsors))
-                        }
+                        CardExpanderItem(
+                            heading = {
+                                Text(
+                                    stringResource(Res.string.remove_sponsors),
+                                    modifier = Modifier.fillMaxWidth(0.75f)
+                                )
+                            },
+                            caption = {
+                                EllipsizedTextWithTooltip(
+                                    text = stringResource(Res.string.single_sponsorblock_caption),
+                                    modifier = Modifier.fillMaxWidth(0.75f)
+                                )
+                            },
+                            icon = { Icon(Icons.Regular.Info, null) },
+                            trailing = {
+                                Switcher(
+                                    checked = removeSponsors,
+                                    onCheckStateChange = onSetRemoveSponsors,
+                                )
+                            }
+                        )
                         Spacer(Modifier.height(8.dp))
                     }
                 }
@@ -356,37 +376,55 @@ private fun SingleVideoDownloadView(
                         }
                     }
                     Spacer(Modifier.height(16.dp))
-                    // Option: Split chapters (audio)
+                    // Option: Split chapters (audio) — friendlier CardExpander with caption
                     if (videoInfo?.hasChapters == true) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Start,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            CheckBox(
-                                checked = splitChapters,
-                                onCheckStateChange = { onSetSplitChapters(it) }
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            Text(text = stringResource(Res.string.split_chapters))
-                        }
+                        CardExpanderItem(
+                            heading = {
+                                Text(
+                                    stringResource(Res.string.split_chapters),
+                                    modifier = Modifier.fillMaxWidth(0.75f)
+                                )
+                            },
+                            caption = {
+                                EllipsizedTextWithTooltip(
+                                    text = stringResource(Res.string.single_split_chapters_caption),
+                                    modifier = Modifier.fillMaxWidth(0.75f)
+                                )
+                            },
+                            icon = { Icon(Icons.Regular.FilmstripPlay, null) },
+                            trailing = {
+                                Switcher(
+                                    checked = splitChapters,
+                                    onCheckStateChange = onSetSplitChapters,
+                                )
+                            }
+                        )
                     }
 
-                    // Option: SponsorBlock (audio)
+                    // Option: SponsorBlock (audio) — friendlier CardExpander with caption
                     if (hasSponsorSegments) {
                         Spacer(Modifier.height(8.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Start,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            CheckBox(
-                                checked = removeSponsors,
-                                onCheckStateChange = { onSetRemoveSponsors(it) }
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            Text(text = stringResource(Res.string.remove_sponsors))
-                        }
+                        CardExpanderItem(
+                            heading = {
+                                Text(
+                                    stringResource(Res.string.remove_sponsors),
+                                    modifier = Modifier.fillMaxWidth(0.75f)
+                                )
+                            },
+                            caption = {
+                                EllipsizedTextWithTooltip(
+                                    text = stringResource(Res.string.single_sponsorblock_caption),
+                                    modifier = Modifier.fillMaxWidth(0.75f)
+                                )
+                            },
+                            icon = { Icon(Icons.Regular.Info, null) },
+                            trailing = {
+                                Switcher(
+                                    checked = removeSponsors,
+                                    onCheckStateChange = onSetRemoveSponsors,
+                                )
+                            }
+                        )
                     }
                 }
 
