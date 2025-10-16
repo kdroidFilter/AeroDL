@@ -123,6 +123,7 @@ compose.desktop {
                 iconFile.set(project.file("icons/logo.ico"))
                 shortcut = true
                 upgradeUuid = "ada57c09-11e1-4d56-9d5d-0c480f6968ec"
+                perUserInstall = true
             }
             macOS {
                 bundleID = "io.github.kdroidfilter.ytdlpgui"
