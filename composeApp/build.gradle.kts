@@ -113,7 +113,7 @@ compose.desktop {
 
         nativeDistributions {
             vendor = "KDroidFilter"
-            targetFormats(TargetFormat.Pkg, TargetFormat.Msi, TargetFormat.Deb)
+            targetFormats(TargetFormat.Pkg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Exe)
             packageName = "AeroDl"
             packageVersion = version
             description = "An awesome GUI for yt-dlp!"
@@ -364,40 +364,33 @@ tasks.register("packageReleaseMsix") {
             .maxByOrNull { sdkVersionScore(it) }
             ?: signtoolCandidates.maxByOrNull { sdkVersionScore(it) } // may be null if SDK missing
 
-        // Create two PowerShell helper scripts: one to sign, one to install
-        val signScript = JFile(msixDir, "Sign-AeroDl.ps1")
         val installScript = JFile(msixDir, "Install-AeroDl.ps1")
 
         // Note: escape $ for Kotlin interpolation by using ${'$'}
-        val signPs1 = """
-        <#
-          Sign-AeroDl.ps1
-          - Creates or reuses a self-signed Code Signing certificate (CN configurable)
-          - Exports KDroidFilter.cer and KDroidFilter.pfx next to this script
-          - Locates signtool.exe from Windows SDK and signs the MSIX package
-
-          Usage:
-            ./Sign-AeroDl.ps1 -PackagePath "path\\to\\AeroDl_X_Y_Z.msix" -CN "KDroidFilter" -PfxPassword "your-pass"
-        #>
+        val ps1 = """
         param(
-          [Parameter(Mandatory=${'$'}false)] [string]${'$'}PackagePath = "${outputMsix.canonicalPath}",
-          [Parameter(Mandatory=${'$'}false)] [string]${'$'}CN = "KDroidFilter",
-          [Parameter(Mandatory=${'$'}false)] [string]${'$'}PfxPassword = "ChangeMe-Temp123!"
+          [string]${'$'}PackagePath = "${outputMsix.canonicalPath}",
+          [string]${'$'}CN = "KDroidFilter",
+          [string]${'$'}PfxPassword = "ChangeMe-Temp123!"
         )
         ${'$'}ErrorActionPreference = "Stop"
 
-        if (-not (Test-Path ${'$'}PackagePath)) { throw "MSIX not found: ${'$'}PackagePath" }
+        Write-Host "== AeroDl: self-sign, sign MSIX, and install =="
 
-        Write-Host "== AeroDl: generate self-signed cert and sign MSIX =="
+        # Ensure running as Administrator
+        ${'$'}principal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+        if (-not ${'$'}principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+          throw "Please re-run this script in an elevated PowerShell (Run as Administrator)."
+        }
 
-        # Find or create a code-signing certificate for the given CN (CurrentUser store)
+        # Find or create a code-signing certificate for the given CN
         ${'$'}store = New-Object System.Security.Cryptography.X509Certificates.X509Store("My","CurrentUser")
         ${'$'}store.Open([System.Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite)
         ${'$'}cert = ${'$'}store.Certificates | Where-Object {
             ${'$'}_.Subject -eq "CN=${'$'}CN" -and ${'$'}_.HasPrivateKey -and (
               ${'$'}_.EnhancedKeyUsageList | Where-Object { ${'$'}_.FriendlyName -like "*Code Signing*" }
             )
-        } | Select-Object -First 1
+        }
         if (-not ${'$'}cert) {
           Write-Host "Creating self-signed code signing certificate for CN=${'$'}CN ..."
           ${'$'}cert = New-SelfSignedCertificate `
@@ -410,6 +403,7 @@ tasks.register("packageReleaseMsix") {
           Write-Host "Reusing existing code-signing certificate for CN=${'$'}CN"
         }
 
+        ${'$'}thumb = ${'$'}cert.Thumbprint
         ${'$'}scriptDir = Split-Path -Parent ${'$'}MyInvocation.MyCommand.Path
         ${'$'}cerPath = Join-Path ${'$'}scriptDir "KDroidFilter.cer"
         ${'$'}pfxPath = Join-Path ${'$'}scriptDir "KDroidFilter.pfx"
@@ -419,8 +413,8 @@ tasks.register("packageReleaseMsix") {
         ${'$'}secPwd = ConvertTo-SecureString ${'$'}PfxPassword -AsPlainText -Force
         Export-PfxCertificate -Cert ${'$'}cert -FilePath ${'$'}pfxPath -Password ${'$'}secPwd | Out-Null
 
-        # Optionally trust the public certificate for current user (not required for signing)
-        try { Import-Certificate -FilePath ${'$'}cerPath -CertStoreLocation Cert:\CurrentUser\TrustedPeople | Out-Null } catch {}
+        # Trust the public certificate so the signed MSIX will install for the current user
+        Import-Certificate -FilePath ${'$'}cerPath -CertStoreLocation Cert:\CurrentUser\TrustedPeople | Out-Null
 
         # Locate signtool.exe (fallback to SDK search)
         ${'$'}signtool = ${'$'}null
@@ -447,48 +441,14 @@ tasks.register("packageReleaseMsix") {
 
         # Sign the MSIX
         & ${'$'}signtool sign /fd SHA256 /f ${'$'}pfxPath /p ${'$'}PfxPassword ${'$'}PackagePath
-        Write-Host "Signing completed: ${'$'}PackagePath"
-        """.trimIndent()
-
-        signScript.writeText(signPs1)
-        logger.lifecycle("packageReleaseMsix: Wrote ${signScript.absolutePath}")
-
-        val installPs1 = """
-        <#
-          Install-AeroDl.ps1
-          - Imports KDroidFilter.cer into CurrentUser TrustedPeople
-          - Installs the specified MSIX package
-
-          Usage:
-            ./Install-AeroDl.ps1 -PackagePath "path\\to\\AeroDl_X_Y_Z.msix" -CerPath ".\\KDroidFilter.cer"
-        #>
-        param(
-          [Parameter(Mandatory=${'$'}false)] [string]${'$'}PackagePath = "${outputMsix.canonicalPath}",
-          [Parameter(Mandatory=${'$'}false)] [string]${'$'}CerPath
-        )
-        ${'$'}ErrorActionPreference = "Stop"
-
-        if (-not (Test-Path ${'$'}PackagePath)) { throw "MSIX not found: ${'$'}PackagePath" }
-
-        ${'$'}scriptDir = Split-Path -Parent ${'$'}MyInvocation.MyCommand.Path
-        if (-not ${'$'}CerPath) { ${'$'}CerPath = Join-Path ${'$'}scriptDir "KDroidFilter.cer" }
-
-        if (-not (Test-Path ${'$'}CerPath)) {
-          throw "Certificate file not found: ${'$'}CerPath. Please run Sign-AeroDl.ps1 first to generate and sign."
-        }
-
-        Write-Host "== AeroDl: trust certificate and install MSIX =="
-
-        # Install certificate into CurrentUser TrustedPeople (no admin required)
-        Import-Certificate -FilePath ${'$'}CerPath -CertStoreLocation Cert:\CurrentUser\TrustedPeople | Out-Null
-        Write-Host "Trusted certificate: ${'$'}CerPath"
 
         # Install the MSIX
         Add-AppxPackage -Path ${'$'}PackagePath
-        Write-Host "Success: package installed."
-        """.trimIndent()
 
-        installScript.writeText(installPs1)
+        Write-Host "Success: package installed."
+    """.trimIndent()
+
+        installScript.writeText(ps1)
         logger.lifecycle("packageReleaseMsix: Wrote ${installScript.absolutePath}")
     }
 }
