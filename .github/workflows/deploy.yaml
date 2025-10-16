@@ -35,7 +35,7 @@ jobs:
       - name: Set up Gradle
         uses: gradle/gradle-build-action@v2
         with:
-          gradle-version: '8.12'
+          gradle-version: '8.14'
       
       # 4. Build the application
       - name: Build with Gradle
@@ -56,12 +56,26 @@ jobs:
           name: macos-pkg
           path: composeApp/build/compose/binaries/main-release/pkg/*.pkg
       
-      - name: Upload Windows artifact
+      - name: Package MSIX (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: .\gradlew.bat :composeApp:createReleaseDistributable :composeApp:packageReleaseMsix
+      
+      - name: Upload Windows MSI artifact
         if: matrix.os == 'windows-latest'
         uses: actions/upload-artifact@v4
         with:
           name: windows-msi
           path: composeApp/build/compose/binaries/main-release/msi/*.msi
+      
+      - name: Upload Windows MSIX artifact
+        if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-msix
+          path: |
+            composeApp/build/compose/binaries/main-release/msix/*.msix
+          if-no-files-found: error
   
   release:
     needs: build
@@ -89,6 +103,11 @@ jobs:
         with:
           name: windows-msi
       
+      - name: Download Windows MSIX artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-msix
+      
       # 3. List downloaded artifacts
       - name: Check downloaded artifacts
         run: ls -R
@@ -101,5 +120,6 @@ jobs:
             *.deb
             *.pkg
             *.msi
+            *.msix
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
