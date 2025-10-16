@@ -104,6 +104,7 @@
     <!-- מסך הורדות (היסטוריה ובתהליך) -->
     <string name="download_clear_history">נקה היסטוריה</string>
     <string name="tooltip_clear_history">נקה היסטוריה</string>
+    <string name="download_search_placeholder">חפש בהיסטוריה</string>
     <string name="open_directory">פתח תיקייה</string>
     <string name="tooltip_open_directory">פתח תיקייה</string>
     <string name="delete_element">מחק פריט זה</string>

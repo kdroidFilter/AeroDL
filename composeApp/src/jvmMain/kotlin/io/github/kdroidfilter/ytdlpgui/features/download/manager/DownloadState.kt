@@ -17,6 +17,10 @@ data class DownloadState(
     val updateVersion: String? = null,
     val updateUrl: String? = null,
     val updateBody: String? = null,
+    // UI: history search
+    val searchQuery: String = "",
+    // Whether any history exists (pre-filter)
+    val hasAnyHistory: Boolean = false,
 ) {
     companion object {
         val emptyState = DownloadState()

@@ -10,4 +10,5 @@ sealed class DownloadEvents {
     data object DismissErrorDialog : DownloadEvents()
     data class DismissFailed(val id: String) : DownloadEvents()
     data object DismissUpdateInfoBar : DownloadEvents()
+    data class UpdateSearchQuery(val query: String) : DownloadEvents()
 }

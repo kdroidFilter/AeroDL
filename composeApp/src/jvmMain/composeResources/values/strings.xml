@@ -159,6 +159,7 @@
     <!-- Download screen (history and in-progress) -->
     <string name="download_clear_history">Clear history</string>
     <string name="tooltip_clear_history">Clear history</string>
+    <string name="download_search_placeholder">Search history</string>
     <string name="open_directory">Open directory</string>
     <string name="tooltip_open_directory">Open directory</string>
     <string name="delete_element">Delete this item</string>

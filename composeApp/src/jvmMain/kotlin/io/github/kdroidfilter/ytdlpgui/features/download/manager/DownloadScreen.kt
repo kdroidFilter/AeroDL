@@ -28,6 +28,7 @@ import coil3.request.ImageRequest
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.Button
+import io.github.composefluent.component.TextField
 import io.github.composefluent.component.Badge
 import io.github.composefluent.component.BadgeDefaults
 import io.github.composefluent.component.BadgeStatus
@@ -58,7 +59,7 @@ import java.util.Locale
 @Composable
 fun DownloaderScreen() {
     val appGraph = LocalAppGraph.current
-        val viewModel = remember(appGraph) { appGraph.downloadViewModel }
+    val viewModel = remember(appGraph) { appGraph.downloadViewModel }
     val state by viewModel.uiState.collectAsState()
     DownloadView(
         state = state,
@@ -66,7 +67,6 @@ fun DownloaderScreen() {
     )
 }
 
- 
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalFluentApi::class)
 @Composable
@@ -102,52 +102,71 @@ fun DownloadView(
                 modifier = Modifier.fillMaxSize()
             ) {
                 item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    if (state.history.isNotEmpty()) {
-                        TooltipBox(tooltip = {
-                            Text(stringResource(Res.string.tooltip_clear_history))
-                        }) {
-                            Button(
-                                onClick = { onEvent(DownloadEvents.ClearHistory) },
-                                modifier = Modifier.padding(bottom = 8.dp)
-                            ) {
-                                Text(
-                                    stringResource(Res.string.download_clear_history),
-                                    style = FluentTheme.typography.bodyStrong
-                                )
-                                Icon(Icons.Default.Delete, stringResource(Res.string.download_clear_history))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (state.hasAnyHistory) {
+                            TextField(
+                                value = state.searchQuery,
+                                onValueChange = { onEvent(DownloadEvents.UpdateSearchQuery(it)) },
+                                placeholder = {
+                                    Text(
+                                        stringResource(Res.string.download_search_placeholder),
+                                        maxLines = 1
+                                    )
+                                },
+                                singleLine = true,
+                                modifier = Modifier.weight(1f).padding(bottom = 8.dp),
+                                trailing = {
+                                    Icon(
+                                        imageVector = Icons.Regular.Search,
+                                        contentDescription = "Search"
+                                    )
+                                }
+                            )
+
+                            TooltipBox(tooltip = {
+                                Text(stringResource(Res.string.tooltip_clear_history))
+                            }) {
+                                Button(
+                                    onClick = { onEvent(DownloadEvents.ClearHistory) },
+                                    modifier = Modifier.padding(bottom = 8.dp)
+                                ) {
+                                    Text(
+                                        stringResource(Res.string.download_clear_history),
+                                        style = FluentTheme.typography.bodyStrong
+                                    )
+                                    Icon(Icons.Default.Delete, stringResource(Res.string.download_clear_history))
+                                }
                             }
                         }
                     }
+                    Spacer(Modifier.height(8.dp))
                 }
-                Spacer(Modifier.height(8.dp))
-            }
 
                 // Section: In-progress and failed downloads
-            val activeItems =
-                state.items.filter {
-                    it.status == DownloadManager.DownloadItem.Status.Running ||
-                            it.status == DownloadManager.DownloadItem.Status.Pending ||
-                            it.status == DownloadManager.DownloadItem.Status.Failed
-                }
+                val activeItems =
+                    state.items.filter {
+                        it.status == DownloadManager.DownloadItem.Status.Running ||
+                                it.status == DownloadManager.DownloadItem.Status.Pending ||
+                                it.status == DownloadManager.DownloadItem.Status.Failed
+                    }
 
-            items(items = activeItems, key = { it.id }) { item ->
-                InProgressRow(
-                    item = item,
-                    onCancel = { id -> onEvent(DownloadEvents.Cancel(id)) },
-                    onShowError = { id -> onEvent(DownloadEvents.ShowErrorDialog(id)) },
-                    onDismissFailed = { id -> onEvent(DownloadEvents.DismissFailed(id)) }
-                )
-                Divider(
-                    color = FluentTheme.colors.control.secondary,
-                    thickness = 1.dp,
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
-                )
-            }
+                items(items = activeItems, key = { it.id }) { item ->
+                    InProgressRow(
+                        item = item,
+                        onCancel = { id -> onEvent(DownloadEvents.Cancel(id)) },
+                        onShowError = { id -> onEvent(DownloadEvents.ShowErrorDialog(id)) },
+                        onDismissFailed = { id -> onEvent(DownloadEvents.DismissFailed(id)) }
+                    )
+                    Divider(
+                        color = FluentTheme.colors.control.secondary,
+                        thickness = 1.dp,
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+                    )
+                }
 
                 // Section: History
 
@@ -158,39 +177,42 @@ fun DownloadView(
                 }
 
                 items(items = state.history, key = { it.id }) { h ->
-                HistoryRow(h = h, actions = {
-                    val dirAvailable = state.directoryAvailability[h.id] == true
-                    if (dirAvailable) {
-                        TooltipBox(tooltip = { Text(stringResource(Res.string.tooltip_open_directory)) }) {
-                            Button(iconOnly = true, onClick = { onEvent(DownloadEvents.OpenDirectory(h.id)) }) {
-                                Icon(Icons.Default.Folder, stringResource(Res.string.open_directory))
+                    HistoryRow(h = h, actions = {
+                        val dirAvailable = state.directoryAvailability[h.id] == true
+                        if (dirAvailable) {
+                            TooltipBox(tooltip = { Text(stringResource(Res.string.tooltip_open_directory)) }) {
+                                Button(iconOnly = true, onClick = { onEvent(DownloadEvents.OpenDirectory(h.id)) }) {
+                                    Icon(Icons.Default.Folder, stringResource(Res.string.open_directory))
+                                }
+                            }
+                        } else {
+                            TooltipBox(tooltip = { Text(stringResource(Res.string.tooltip_directory_unavailable)) }) {
+                                // Disabled/placeholder action when directory no longer exists
+                                Button(
+                                    iconOnly = true,
+                                    disabled = true,
+                                    onClick = { /* no-op: directory unavailable */ }) {
+                                    Icon(
+                                        Icons.Default.FolderProhibited,
+                                        stringResource(Res.string.directory_unavailable),
+                                        tint = FluentTheme.colors.system.critical
+                                    )
+                                }
                             }
                         }
-                    } else {
-                        TooltipBox(tooltip = { Text(stringResource(Res.string.tooltip_directory_unavailable)) }) {
-                            // Disabled/placeholder action when directory no longer exists
-                            Button(iconOnly = true, disabled = true, onClick = { /* no-op: directory unavailable */ }) {
-                                Icon(
-                                    Icons.Default.FolderProhibited,
-                                    stringResource(Res.string.directory_unavailable),
-                                    tint = FluentTheme.colors.system.critical
-                                )
-                            }
-                        }
-                    }
 
-                    TooltipBox(tooltip = { Text(stringResource(Res.string.tooltip_delete_element)) }) {
-                        Button(iconOnly = true, onClick = { onEvent(DownloadEvents.DeleteHistory(h.id)) }) {
-                            Icon(Icons.Default.Delete, stringResource(Res.string.delete_element))
+                        TooltipBox(tooltip = { Text(stringResource(Res.string.tooltip_delete_element)) }) {
+                            Button(iconOnly = true, onClick = { onEvent(DownloadEvents.DeleteHistory(h.id)) }) {
+                                Icon(Icons.Default.Delete, stringResource(Res.string.delete_element))
+                            }
                         }
-                    }
-                })
-                Divider(
-                    color = FluentTheme.colors.control.secondary,
-                    thickness = 1.dp,
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
-                )
-            }
+                    })
+                    Divider(
+                        color = FluentTheme.colors.control.secondary,
+                        thickness = 1.dp,
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+                    )
+                }
             }
         }
 
@@ -517,7 +539,8 @@ private fun InProgressRow(
                         // Below the ring: stack percent and speed like history action buttons
                         Spacer(Modifier.height(4.dp))
                         Column(verticalArrangement = Arrangement.spacedBy(2.dp), horizontalAlignment = Alignment.End) {
-                            val speedLine = if (item.status == DownloadManager.DownloadItem.Status.Running) speedText else null
+                            val speedLine =
+                                if (item.status == DownloadManager.DownloadItem.Status.Running) speedText else null
                             Text(
                                 text = speedLine ?: " ",
                                 style = FluentTheme.typography.caption,
