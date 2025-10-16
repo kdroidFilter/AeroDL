@@ -55,6 +55,9 @@ import java.io.File
 fun main() = application {
     allowComposeNativeTrayLogging = LoggerConfig.enabled
     val cleanInstall = System.getProperty("cleanInstall", "false").toBoolean()
+    SingleInstanceManager.configuration = SingleInstanceManager.Configuration(
+        lockIdentifier = "aerodl"
+    )
 
     if (cleanInstall) {
         clearJavaTempDir()
@@ -95,9 +98,6 @@ fun main() = application {
                 clearSettings(appGraph.settings)
             }
 
-            SingleInstanceManager.configuration = SingleInstanceManager.Configuration(
-                lockIdentifier = "aerodl"
-            )
 
             val isSingleInstance = SingleInstanceManager.isSingleInstance(
                 onRestoreRequest = {
