@@ -40,6 +40,7 @@ import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 fun CookiesScreen(navController: NavHostController) {
     val appGraph = LocalAppGraph.current
     val viewModel = remember(appGraph) { appGraph.onboardingViewModel }
+    val onboardingUiState by viewModel.uiState.collectAsState()
     val cookiesFromBrowser by viewModel.cookiesFromBrowser.collectAsState()
     val state = CookiesState(
         cookiesFromBrowser = cookiesFromBrowser
@@ -47,7 +48,21 @@ fun CookiesScreen(navController: NavHostController) {
     val currentStep by viewModel.currentStep.collectAsState()
     val initState by viewModel.initState.collectAsState()
     val dependencyInfoBarDismissed by viewModel.dependencyInfoBarDismissed.collectAsState()
-    
+
+    // Navigation driven by ViewModel state
+    LaunchedEffect(onboardingUiState.navigationState) {
+        when (val navState = onboardingUiState.navigationState) {
+            is io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingNavigationState.NavigateToStep -> {
+                navController.navigate(navState.destination)
+                viewModel.handleEvent(OnboardingEvents.OnNavigationConsumed)
+            }
+            is io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingNavigationState.NavigateToHome -> {
+                navController.navigate(io.github.kdroidfilter.ytdlpgui.core.navigation.Destination.MainNavigation.Home)
+                viewModel.handleEvent(OnboardingEvents.OnNavigationConsumed)
+            }
+            io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingNavigationState.None -> Unit
+        }
+    }
     
     CookiesView(
         state = state,

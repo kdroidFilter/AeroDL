@@ -11,11 +11,11 @@ import io.github.composefluent.component.AccentButton
 import io.github.composefluent.component.Icon
 import io.github.composefluent.component.Text
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnly
-import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
+import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
+import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingNavigationState
 import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents
-import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingNavigationState
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingStep
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.DependencyInfoBar
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.OnboardingProgress
@@ -31,23 +31,22 @@ fun WelcomeScreen(navController: NavHostController) {
     val appGraph = LocalAppGraph.current
     val viewModel = remember(appGraph) { appGraph.onboardingViewModel }
     val state by viewModel.uiState.collectAsState()
-    
-    // Handle navigation following the same pattern as SingleDownloadScreen
+
+    // Navigation driven by ViewModel state (like HomeScreen)
     LaunchedEffect(state.navigationState) {
         when (val navState = state.navigationState) {
             is OnboardingNavigationState.NavigateToStep -> {
-                println("WelcomeScreen: Navigating to ${navState.destination}")
                 navController.navigate(navState.destination)
+                viewModel.handleEvent(OnboardingEvents.OnNavigationConsumed)
             }
             is OnboardingNavigationState.NavigateToHome -> {
                 navController.navigate(Destination.MainNavigation.Home)
+                viewModel.handleEvent(OnboardingEvents.OnNavigationConsumed)
             }
-            OnboardingNavigationState.None -> {
-                // no-op
-            }
+            OnboardingNavigationState.None -> Unit
         }
     }
-    
+
     WelcomeView(
         onEvent = viewModel::handleEvent,
         currentStep = state.currentStep,

@@ -40,11 +40,13 @@ import ytdlpgui.composeapp.generated.resources.onboarding_filtered_network_detec
 import ytdlpgui.composeapp.generated.resources.onboarding_filtered_network_detected_message
 import ytdlpgui.composeapp.generated.resources.onboarding_filtered_network_accept
 import io.github.kdroidfilter.ytdlpgui.features.init.InitState
+import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents.*
 
 @Composable
 fun NoCheckCertScreen(navController: NavHostController) {
     val appGraph = LocalAppGraph.current
     val viewModel = remember(appGraph) { appGraph.onboardingViewModel }
+    val onboardingUiState by viewModel.uiState.collectAsState()
     val noCheckCertificate by viewModel.noCheckCertificate.collectAsState()
     val state = NoCheckCertState(
         noCheckCertificate = noCheckCertificate
@@ -53,6 +55,21 @@ fun NoCheckCertScreen(navController: NavHostController) {
     val initState by viewModel.initState.collectAsState()
     
     val dependencyInfoBarDismissed by viewModel.dependencyInfoBarDismissed.collectAsState()
+
+    // Navigation driven by ViewModel state
+    LaunchedEffect(onboardingUiState.navigationState) {
+        when (val navState = onboardingUiState.navigationState) {
+            is io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingNavigationState.NavigateToStep -> {
+                navController.navigate(navState.destination)
+                viewModel.handleEvent(OnNavigationConsumed)
+            }
+            is io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingNavigationState.NavigateToHome -> {
+                navController.navigate(io.github.kdroidfilter.ytdlpgui.core.navigation.Destination.MainNavigation.Home)
+                viewModel.handleEvent(OnNavigationConsumed)
+            }
+            io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingNavigationState.None -> Unit
+        }
+    }
     NoCheckCertView(
         state = state,
         onEvent = viewModel::handleEvent,
@@ -107,7 +124,7 @@ fun NoCheckCertView(
             ) {
                 CheckBox(
                     state.noCheckCertificate,
-                    onCheckStateChange = { onEvent(OnboardingEvents.OnSetNoCheckCertificate(it)) }
+                    onCheckStateChange = { onEvent(OnSetNoCheckCertificate(it)) }
                 )
 
                 Spacer(Modifier.width(8.dp))
@@ -118,12 +135,12 @@ fun NoCheckCertView(
             DependencyInfoBar(
                 initState = initState,
                 isDismissed = dependencyInfoBarDismissed,
-                onDismiss = { onEvent(OnboardingEvents.OnDismissDependencyInfoBar) }
+                onDismiss = { onEvent(OnDismissDependencyInfoBar) }
             )
         }
         NavigationRow(
-            onNext = { onEvent(OnboardingEvents.OnNext) },
-            onPrevious = { onEvent(OnboardingEvents.OnPrevious) },
+            onNext = { onEvent(OnNext) },
+            onPrevious = { onEvent(OnPrevious) },
             nextEnabled = state.noCheckCertificate  // Disable Next until user accepts
         )
     }

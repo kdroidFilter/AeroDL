@@ -23,6 +23,7 @@ import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.HeaderRow
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.NavigationRow
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents
+import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents.*
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.OnboardingProgress
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingStep
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingViewModel
@@ -38,10 +39,25 @@ import ytdlpgui.composeapp.generated.resources.onboarding_gnome_focus_title
 fun GnomeFocusScreen(navController: NavHostController) {
     val appGraph = LocalAppGraph.current
     val viewModel = remember(appGraph) { appGraph.onboardingViewModel }
+    val onboardingUiState by viewModel.uiState.collectAsState()
     val currentStep by viewModel.currentStep.collectAsState()
     val initState by viewModel.initState.collectAsState()
     val dependencyInfoBarDismissed by viewModel.dependencyInfoBarDismissed.collectAsState()
     
+    // Navigation driven by ViewModel state
+    LaunchedEffect(onboardingUiState.navigationState) {
+        when (val navState = onboardingUiState.navigationState) {
+            is io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingNavigationState.NavigateToStep -> {
+                navController.navigate(navState.destination)
+                viewModel.handleEvent(OnNavigationConsumed)
+            }
+            is io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingNavigationState.NavigateToHome -> {
+                navController.navigate(io.github.kdroidfilter.ytdlpgui.core.navigation.Destination.MainNavigation.Home)
+                viewModel.handleEvent(OnNavigationConsumed)
+            }
+            io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingNavigationState.None -> Unit
+        }
+    }
     
     GnomeFocusView(
         onEvent = viewModel::handleEvent,
@@ -90,12 +106,12 @@ fun GnomeFocusView(
             DependencyInfoBar(
                 initState = initState,
                 isDismissed = dependencyInfoBarDismissed,
-                onDismiss = { onEvent(OnboardingEvents.OnDismissDependencyInfoBar) }
+                onDismiss = { onEvent(OnDismissDependencyInfoBar) }
             )
         }
         NavigationRow(
-            onNext = { onEvent(OnboardingEvents.OnNext) },
-            onPrevious = { onEvent(OnboardingEvents.OnPrevious) }
+            onNext = { onEvent(OnNext) },
+            onPrevious = { onEvent(OnPrevious) }
         )
     }
 }

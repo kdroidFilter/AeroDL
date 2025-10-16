@@ -23,8 +23,11 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import dev.zacsweers.metro.Inject
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
+import dev.zacsweers.metro.SingleIn
+import io.github.kdroidfilter.ytdlpgui.di.AppScope
 
 @Inject
+@SingleIn(AppScope::class)
 class OnboardingViewModel(
     private val settingsRepository: SettingsRepository,
     private val supportedSitesRepository: io.github.kdroidfilter.ytdlpgui.data.SupportedSitesRepository,
@@ -233,7 +236,7 @@ class OnboardingViewModel(
     private fun navigateToStep(step: OnboardingStep) {
         if (uiState.value.currentStep == step) return
         println("OnboardingViewModel: Navigating from ${uiState.value.currentStep} to $step")
-        update { 
+        update {
             copy(
                 currentStep = step,
                 navigationState = OnboardingNavigationState.NavigateToStep(step.toDestination())
