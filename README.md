@@ -28,7 +28,7 @@ Instant notifications appear when a supported link is detected — open it direc
 
 Preview thumbnails, read descriptions, and choose between video or audio modes before confirming your download.
 
-![Single Download Screenshot](/art/single-download.png)
+<p align="center"><img src="/art/single-download.png" alt="Single Download Screenshot"/></p>
 
 ---
 
@@ -36,7 +36,7 @@ Preview thumbnails, read descriptions, and choose between video or audio modes b
 
 Track all your downloads in real time — progress bars, speeds, sizes, and completion notifications.
 
-![Download Manager Screenshot](art/download-manager.png)
+<p align="center"><img src="art/download-manager.png" alt="Download Manager Screenshot"/></p>
 
 ---
 
@@ -45,7 +45,7 @@ Track all your downloads in real time — progress bars, speeds, sizes, and comp
 Easily customize AeroDL to your workflow:
 choose your browser cookies, naming presets, threads, parallel downloads, and thumbnail embedding.
 
-![Settings Screenshot](/art/settings.png)
+<p align="center"><img src="/art/settings.png" alt="Settings Screenshot"/></p>
 
 ---
 
@@ -87,19 +87,22 @@ choose your browser cookies, naming presets, threads, parallel downloads, and th
 
 | Platform             | Status   | Notes                                      |
 | -------------------- | -------- | ------------------------------------------ |
-| 🪟 Windows 10+       | ✅ Stable | MSIX build with self-signed cert installer |
-| 🍎 macOS 13+         | ✅ Stable | Native app distributed via Homebrew        |
-| 🐧 Linux (GNOME/KDE) | ✅ Stable | DE-aware window & tray handling            |
+| 🪟 Windows 10+       | ✅ Stable | MSI installer via GitHub Releases          |
+| 🍎 macOS 13+         | ✅ Stable | PKG installer via GitHub Releases          |
+| 🐧 Linux (GNOME/KDE) | ✅ Stable | DEB package via GitHub Releases            |
 
 ---
 
 ## 📦 **Installation**
 
-Official distribution (coming soon):
+Official distribution: GitHub Releases
 
-* **Windows** → Microsoft Store / MSIX installer
-* **macOS** → Homebrew tap
-* **Linux** → `.deb`, `.rpm`, and AppImage packages
+Get the latest version from the Releases page:
+- https://github.com/kdroidFilter/AeroDL/releases/latest
+
+* Windows → MSI installer
+* macOS → PKG installer
+* Linux → DEB package
 
 For testing or development:
 
