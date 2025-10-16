@@ -1,5 +1,6 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import java.util.Locale
+import java.io.File as JFile
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -16,7 +17,7 @@ val ref = System.getenv("GITHUB_REF") ?: ""
 val version = if (ref.startsWith("refs/tags/")) {
     val tag = ref.removePrefix("refs/tags/")
     if (tag.startsWith("v")) tag.substring(1) else tag
-} else "1.0.0"
+} else "1.3.2"
 
 kotlin {
     jvm()
@@ -112,7 +113,7 @@ compose.desktop {
 
         nativeDistributions {
             vendor = "KDroidFilter"
-            targetFormats(TargetFormat.Pkg, TargetFormat.Msi, TargetFormat.Deb)
+            targetFormats(TargetFormat.Pkg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Exe)
             packageName = "AeroDl"
             packageVersion = version
             description = "An awesome GUI for yt-dlp!"
@@ -159,4 +160,295 @@ tasks.withType<Jar> {
     exclude("META-INF/*.DSA")
     exclude("META-INF/*.RSA")
     exclude("META-INF/*.EC")
+}
+
+// MSIX packaging task (Windows-only)
+// Creates an MSIX from the Compose Desktop distributable, after the MSI is packaged.
+// Usage: ./gradlew :composeApp:packageReleaseMsix (on Windows with Windows SDK installed)
+tasks.register("packageReleaseMsix") {
+    group = "distribution"
+    description = "Packs a Windows MSIX using makeappx.exe after packageReleaseMsi"
+
+    // Ensure the release distributable exists first
+    dependsOn(tasks.named("createReleaseDistributable"))
+
+    // Capture project-scoped values at configuration time (config-cache friendly)
+    val capturedProjectDir: JFile = project.projectDir
+    val capturedRootDir: JFile = project.rootDir
+    val capturedBuildDir: JFile = project.buildDir
+    val capturedProjectName: String = project.name
+    val capturedVersion: String = version
+    val capturedProjectIcon: JFile = JFile(capturedProjectDir, "icons/logo.png")
+
+    doLast {
+        val os = org.gradle.internal.os.OperatingSystem.current()
+        if (!os.isWindows) {
+            logger.lifecycle("packageReleaseMsix: Skipped (non-Windows OS)")
+            return@doLast
+        }
+
+        // Discover makeappx.exe from Windows 10/11 SDK
+        val programFilesX86 = System.getenv("ProgramFiles(x86)")
+            ?: throw GradleException("ProgramFiles(x86) environment variable not found.")
+        val windowsKitsDir = JFile(programFilesX86, "Windows Kits/10/bin")
+        val makeAppxCandidates: List<JFile> = if (windowsKitsDir.exists()) {
+            windowsKitsDir.walkTopDown()
+                .filter { file: JFile -> file.name.equals("makeappx.exe", ignoreCase = true) }
+                .toList()
+        } else emptyList()
+
+        fun sdkVersionScore(file: JFile): Long {
+            val versionDir = file.parentFile?.parentFile?.name ?: return 0
+            val nums = versionDir.split('.').mapNotNull { it.toIntOrNull() }
+            return (nums.getOrNull(0) ?: 0).toLong() shl 48 or
+                    (nums.getOrNull(1) ?: 0).toLong() shl 32 or
+                    (nums.getOrNull(2) ?: 0).toLong() shl 16 or
+                    (nums.getOrNull(3) ?: 0).toLong()
+        }
+
+        val x64Candidates = makeAppxCandidates.filter { it.parentFile.path.contains("x64", ignoreCase = true) }
+        val preferredList = x64Candidates.ifEmpty { makeAppxCandidates }
+        val makeAppxPath = preferredList.maxByOrNull { sdkVersionScore(it) }
+            ?: throw GradleException("makeappx.exe not found in Windows Kits. Please install Windows 10/11 SDK.")
+
+        logger.lifecycle("packageReleaseMsix: Using $makeAppxPath")
+
+        // Compose Desktop release app dir (e.g., compose/binaries/main-release/app/AeroDl)
+        val primaryBaseDir = JFile(capturedBuildDir, "compose/binaries/main-release/app")
+        val fallbackBaseDir = JFile(capturedBuildDir, "compose/binaries/main/app")
+        val baseReleaseDir = if (primaryBaseDir.exists()) primaryBaseDir else fallbackBaseDir
+
+        // Prefer configured package name, otherwise auto-detect
+        val configuredPackageName = "AeroDl" // keep in sync with nativeDistributions.packageName
+        val candidateDir = JFile(baseReleaseDir, configuredPackageName)
+        val appDir: JFile = when {
+            candidateDir.exists() -> candidateDir
+            baseReleaseDir.exists() -> baseReleaseDir.listFiles()?.firstOrNull { it.isDirectory }
+                ?: throw GradleException("Release app directory not found under $baseReleaseDir")
+
+            else -> throw GradleException("Release app directory base not found. Expected $primaryBaseDir or $fallbackBaseDir.")
+        }
+
+        // Prepare assets folder and manifest location
+        val assetsDir = JFile(appDir, "assets")
+        if (!assetsDir.exists()) assetsDir.mkdirs()
+
+        // Provide basic icons by reusing the project icon if dedicated MSIX assets are absent
+        val projectIcon = capturedProjectIcon
+        val iconTargets = listOf(
+            JFile(assetsDir, "icon_44.png"),
+            JFile(assetsDir, "icon_50.png"),
+            JFile(assetsDir, "icon_150.png"),
+        )
+        if (projectIcon.exists()) {
+            iconTargets.forEach { target ->
+                if (!target.exists()) {
+                    projectIcon.copyTo(target, overwrite = true)
+                }
+            }
+        } else {
+            logger.warn("packageReleaseMsix: icons/logo.png not found; MSIX will reference assets that may be missing.")
+        }
+
+        // Determine exe and version
+        val exeName = appDir.name + ".exe"
+        val exeFile = JFile(appDir, exeName)
+        if (!exeFile.exists()) {
+            throw GradleException("Expected executable not found: $exeFile")
+        }
+
+        // Ensure 4-part numeric version for MSIX
+        val baseVersion = capturedVersion
+        val msixVersion = baseVersion.split('-')[0].let { v ->
+            val parts = v.split('.')
+            val padded = (parts + listOf("0", "0", "0", "0")).take(4)
+            padded.joinToString(".")
+        }
+        logger.lifecycle("packageReleaseMsix: Resolved MSIX version: $msixVersion")
+
+        fun createManifest(ver: String): String = """
+        <?xml version="1.0" encoding="utf-8"?>
+        <Package
+          xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+          xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+          xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+          IgnorableNamespaces="uap rescap">
+
+          <Identity
+            Name="io.github.kdroidfilter.ytdlpgui"
+            Publisher="CN=KDroidFilter"
+            Version="$ver"
+            ProcessorArchitecture="x64" />
+
+          <Properties>
+            <DisplayName>AeroDl</DisplayName>
+            <PublisherDisplayName>KDroidFilter</PublisherDisplayName>
+            <Logo>assets\icon_50.png</Logo>
+          </Properties>
+
+          <Dependencies>
+            <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.22621.0" />
+          </Dependencies>
+
+          <Resources>
+            <Resource Language="en" />
+          </Resources>
+
+          <Applications>
+            <Application Id="App"
+                         Executable="$exeName"
+                         EntryPoint="Windows.FullTrustApplication">
+              <uap:VisualElements
+                DisplayName="AeroDl"
+                Description="AeroDl"
+                BackgroundColor="transparent"
+                Square150x150Logo="assets\icon_150.png"
+                Square44x44Logo="assets\icon_44.png">
+              </uap:VisualElements>
+            </Application>
+          </Applications>
+
+          <Capabilities>
+            <Capability Name="privateNetworkClientServer"/>
+            <rescap:Capability Name="runFullTrust"/>
+          </Capabilities>
+        </Package>
+    """.trimIndent()
+
+        val manifestFile = JFile(appDir, "AppxManifest.xml")
+        manifestFile.writeText(createManifest(msixVersion))
+
+        // Run makeappx pack
+        val outputBase = baseReleaseDir.parentFile
+        val msixDir = JFile(outputBase, "msix")
+        if (!msixDir.exists()) msixDir.mkdirs()
+
+        // Derive MSIX filename from the generated EXE filename (same base, .msix)
+        val exeDir = JFile(outputBase, "exe")
+        val exeFileName: String? = if (exeDir.exists()) {
+            exeDir.listFiles()
+                ?.firstOrNull { it.isFile && it.name.lowercase(Locale.getDefault()).endsWith(".exe") }?.name
+        } else null
+        val outputNameBase = exeFileName?.removeSuffix(".exe") ?: "${appDir.name}-${baseVersion}"
+        val outputMsix = JFile(msixDir, "$outputNameBase.msix")
+
+        val cmd = listOf(
+            makeAppxPath.absolutePath,
+            "pack", "/d", appDir.canonicalPath,
+            "/p", outputMsix.canonicalPath,
+            "/o"
+        )
+        logger.lifecycle("packageReleaseMsix: Running: ${cmd.joinToString(" ")}")
+        val process = ProcessBuilder(cmd)
+            .directory(makeAppxPath.parentFile)
+            .redirectErrorStream(true)
+            .start()
+        val out = process.inputStream.bufferedReader().readText()
+        val code = process.waitFor()
+        if (out.isNotBlank()) logger.lifecycle(out)
+        if (code != 0) throw GradleException("makeappx.exe failed with exit code $code")
+
+        logger.lifecycle("packageReleaseMsix: Created ${outputMsix.absolutePath}")
+
+        // ---------------------------------------------------------------------
+        // Create a companion PowerShell script that self-signs, signs the MSIX,
+        // and installs it. This script lives next to the .msix output.
+        // ---------------------------------------------------------------------
+
+        // Best-effort locate signtool.exe now (also re-checked in the PS1 script)
+        val signtoolCandidates = windowsKitsDir.walkTopDown()
+            .filter { it.name.equals("signtool.exe", ignoreCase = true) }
+            .toList()
+        val signtoolPath = signtoolCandidates
+            .filter { it.parentFile.path.contains("x64", ignoreCase = true) }
+            .maxByOrNull { sdkVersionScore(it) }
+            ?: signtoolCandidates.maxByOrNull { sdkVersionScore(it) } // may be null if SDK missing
+
+        val installScript = JFile(msixDir, "Install-AeroDl.ps1")
+
+        // Note: escape $ for Kotlin interpolation by using ${'$'}
+        val ps1 = """
+        param(
+          [string]${'$'}PackagePath = "${outputMsix.canonicalPath}",
+          [string]${'$'}CN = "KDroidFilter",
+          [string]${'$'}PfxPassword = "ChangeMe-Temp123!"
+        )
+        ${'$'}ErrorActionPreference = "Stop"
+
+        Write-Host "== AeroDl: self-sign, sign MSIX, and install =="
+
+        # Ensure running as Administrator
+        ${'$'}principal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+        if (-not ${'$'}principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+          throw "Please re-run this script in an elevated PowerShell (Run as Administrator)."
+        }
+
+        # Find or create a code-signing certificate for the given CN
+        ${'$'}store = New-Object System.Security.Cryptography.X509Certificates.X509Store("My","CurrentUser")
+        ${'$'}store.Open([System.Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite)
+        ${'$'}cert = ${'$'}store.Certificates | Where-Object {
+            ${'$'}_.Subject -eq "CN=${'$'}CN" -and ${'$'}_.HasPrivateKey -and (
+              ${'$'}_.EnhancedKeyUsageList | Where-Object { ${'$'}_.FriendlyName -like "*Code Signing*" }
+            )
+        }
+        if (-not ${'$'}cert) {
+          Write-Host "Creating self-signed code signing certificate for CN=${'$'}CN ..."
+          ${'$'}cert = New-SelfSignedCertificate `
+            -Type CodeSigningCert `
+            -Subject "CN=${'$'}CN" `
+            -CertStoreLocation "Cert:\CurrentUser\My" `
+            -KeyAlgorithm RSA -KeyLength 2048 `
+            -NotAfter (Get-Date).AddYears(2)
+        } else {
+          Write-Host "Reusing existing code-signing certificate for CN=${'$'}CN"
+        }
+
+        ${'$'}thumb = ${'$'}cert.Thumbprint
+        ${'$'}scriptDir = Split-Path -Parent ${'$'}MyInvocation.MyCommand.Path
+        ${'$'}cerPath = Join-Path ${'$'}scriptDir "KDroidFilter.cer"
+        ${'$'}pfxPath = Join-Path ${'$'}scriptDir "KDroidFilter.pfx"
+
+        # Export public and private keys (for signing)
+        Export-Certificate -Cert ${'$'}cert -FilePath ${'$'}cerPath | Out-Null
+        ${'$'}secPwd = ConvertTo-SecureString ${'$'}PfxPassword -AsPlainText -Force
+        Export-PfxCertificate -Cert ${'$'}cert -FilePath ${'$'}pfxPath -Password ${'$'}secPwd | Out-Null
+
+        # Trust the public certificate so the signed MSIX will install for the current user
+        Import-Certificate -FilePath ${'$'}cerPath -CertStoreLocation Cert:\CurrentUser\TrustedPeople | Out-Null
+
+        # Locate signtool.exe (fallback to SDK search)
+        ${'$'}signtool = ${'$'}null
+        ${
+            if (signtoolPath != null) "if (Test-Path '${
+                signtoolPath.canonicalPath.replace(
+                    "\\",
+                    "\\\\"
+                )
+            }') { \$signtool = '${signtoolPath.canonicalPath.replace("\\", "\\\\")}' }" else ""
+        }
+        if (-not ${'$'}signtool) {
+          ${'$'}c = Get-ChildItem "${
+            windowsKitsDir.canonicalPath.replace(
+                "\\",
+                "\\\\"
+            )
+        }" -Recurse -Filter signtool.exe -ErrorAction SilentlyContinue |
+                Where-Object { ${'$'}_.FullName -match "x64" } | Sort-Object FullName -Descending | Select-Object -First 1
+          if (${'$'}c) { ${'$'}signtool = ${'$'}c.FullName }
+        }
+        if (-not ${'$'}signtool) { throw "signtool.exe not found. Please install Windows 10/11 SDK." }
+        Write-Host "Using signtool: ${'$'}signtool"
+
+        # Sign the MSIX
+        & ${'$'}signtool sign /fd SHA256 /f ${'$'}pfxPath /p ${'$'}PfxPassword ${'$'}PackagePath
+
+        # Install the MSIX
+        Add-AppxPackage -Path ${'$'}PackagePath
+
+        Write-Host "Success: package installed."
+    """.trimIndent()
+
+        installScript.writeText(ps1)
+        logger.lifecycle("packageReleaseMsix: Wrote ${installScript.absolutePath}")
+    }
 }
