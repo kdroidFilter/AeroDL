@@ -1,28 +1,41 @@
-This is a Kotlin Multiplatform project targeting Desktop (JVM).
+# 🚀 AeroDL: The Ultimate GUI for yt-dlp 🚀
 
-* [/composeApp](./composeApp/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-    - [commonMain](./composeApp/src/commonMain/kotlin) is for code that’s common for all targets.
-    - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-      For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-      the [iosMain](./composeApp/src/iosMain/kotlin) folder would be the right place for such calls.
-      Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./composeApp/src/jvmMain/kotlin)
-      folder is the appropriate location.
+**The most elegant and intuitive way to download videos.**
 
-### Build and Run Desktop (JVM) Application
+AeroDL is a modern and fluent graphical user interface for the powerful yt-dlp command-line tool. It is designed to be simple, user-friendly, and always available when you need it, without being intrusive.
 
-To build and run the development version of the desktop app, use the run configuration from the run widget
-in your IDE’s toolbar or run it directly from the terminal:
+![AeroDL Screenshot](/Art/SC01.png)
 
-- on macOS/Linux
-  ```shell
-  ./gradlew :composeApp:run
-  ```
-- on Windows
-  ```shell
-  .\gradlew.bat :composeApp:run
-  ```
+## ✨ Features
 
----
+*   🎨 **Modern and Fluent Interface:** AeroDL is built with the latest technologies to provide a beautiful and intuitive user experience. The interface is clean, simple, and easy to use.
+*   tray **Always Available:** AeroDL lives in your system tray, always ready to download videos without getting in your way. You can quickly access it with a single click.
+*   📋 **Simple Copy-Paste:** No need for browser extensions. Just copy a video URL to your clipboard, and AeroDL will automatically detect it and prepare the download. It's that simple!
+*   💪 **Powerful and Flexible:** Based on the powerful yt-dlp, AeroDL supports downloading from hundreds of websites. You can choose from various formats and qualities to get the perfect download.
+*   🖥️ **Cross-Platform:** AeroDL is available for Windows, macOS, and Linux. Use it on all your devices!
+*   🎞️ **Multiple Downloads:** Download multiple videos at once, or even a whole playlist (not yet available).
+*   字幕 **Subtitles:** Download subtitles for your videos in any language.
+*   ⚙️ **Advanced Options:** For advanced users, AeroDL provides access to many of yt-dlp's options to customize your downloads.
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+## 📦 Installation
+
+1.  Go to the [Releases](https://github.com/kdroidFilter/ytdlpgui/releases) page.
+2.  Download the latest version for your operating system.
+3.  Install the application.
+
+## 🚀 How to use
+
+1.  Launch AeroDL. It will appear in your system tray.
+2.  Copy a video URL from your browser.
+3.  AeroDL will automatically detect the URL and show a notification.
+4.  Click on the notification to open the download screen.
+5.  Choose your preferred quality and options, and start the download.
+6.  Enjoy your video!
+
+## 🤝 Contributing
+
+Contributions are welcome! If you have any ideas, suggestions, or bug reports, please open an issue or submit a pull request.
+
+## 📄 License
+
+This project is licensed under the GPL-3.0 License - see the [LICENSE](LICENSE) file for details.

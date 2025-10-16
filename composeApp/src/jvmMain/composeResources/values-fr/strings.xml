@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Navigation -->
+    <string name="quit">Quitter</string>
+    <string name="home">Accueil</string>
+    <string name="download">Téléchargement</string>
+    <string name="about">À propos</string>
+    <string name="settings">Paramètres</string>
+
+    <!-- Info-bulles -->
+    <string name="tooltip_back">Revenir en arrière</string>
+    <string name="tooltip_home">Aller à l'accueil</string>
+    <string name="tooltip_github">Projet open source sur GitHub</string>
+    <string name="tooltip_support_kofi">Soutenez-moi sur Ko-fi !</string>
+
+    <!-- Écran d'accueil -->
+    <string name="app_name">AeroDL</string>
+    <string name="logo_content_desc">Logo</string>
+    <string name="placeholder_link_example">https://youtu.be/XXXXXXXXX</string>
+    <string name="paste_video_link_header">Collez un lien vidéo</string>
+    <string name="paste_link_content_desc">Coller le lien</string>
+    <string name="loading">Chargement…</string>
+    <string name="next">Suivant</string>
+    <string name="error_single_valid_url">Veuillez coller une seule URL valide.</string>
+    <string name="error_invalid_url_format">Format d’URL invalide.</string>
+    <string name="error_url_required">Veuillez entrer une URL.</string>
+
+    <!-- Messages d'initialisation -->
+    <string name="checking_ytdlp">Vérification des mises à jour de yt-dlp…</string>
+    <string name="checking_ffmpeg">Vérification de l'installation de FFmpeg…</string>
+    <string name="downloading_ytdlp">Téléchargement de yt-dlp…</string>
+    <string name="downloading_ffmpeg">Téléchargement de FFmpeg…</string>
+    <string name="updating_ytdlp">Mise à jour de yt-dlp…</string>
+    <string name="updating_ffmpeg">Mise à jour de FFmpeg…</string>
+    <string name="status_checking">Vérification…</string>
+    <string name="status_downloading">Téléchargement</string>
+    <string name="status_updating">Mise à jour…</string>
+    <string name="status_installed">Installé</string>
+    <string name="status_error">Erreur : %1$s</string>
+    <string name="unknown_dependency">Dépendance inconnue</string>
+
+    <!-- Barre d'info des dépendances -->
+    <string name="dependency_info_title">Pendant que vous configurez les paramètres d'AeroDL, nous téléchargeons les dépendances nécessaires au bon fonctionnement de l'application.</string>
+    <string name="dependency_ytdlp_tooltip">yt-dlp est l'outil principal qui télécharge les vidéos depuis les sites supportés. Il s'occupe de tout le travail difficile pour récupérer votre contenu.</string>
+    <string name="dependency_ffmpeg_tooltip">FFmpeg est un framework multimédia utilisé pour convertir et traiter les fichiers audio/vidéo. Il garantit que vos téléchargements sont dans le format souhaité.</string>
+
+    <!-- Messages d'erreur -->
+    <string name="error_occurred">Une erreur s'est produite</string>
+
+    <!-- Notification de mise à jour -->
+    <string name="update_available">Nouvelle version disponible : %1$s</string>
+    <string name="download_update">Télécharger</string>
+    <string name="ignore_update">Ignorer</string>
+
+    <!-- Titres d’écran temporaires -->
+    <string name="about_screen_title">Écran À propos</string>
+    <string name="bulk_download_screen_title">Écran Téléchargement en lot</string>
+    <string name="settings_screen_title">Écran Paramètres</string>
+    <string name="bulk_download_support_notice">Le téléchargement de playlists et de chaînes YouTube n&#39;est pas encore pris en charge. Si vous aimez AeroDL, vous pouvez contribuer via Ko-fi.</string>
+    <string name="support_on_kofi">Soutenir sur Ko-fi</string>
+    <string name="about_credits_title">Crédits</string>
+    <string name="credits_made_by">Réalisé par Elie Gambache</string>
+    <string name="credits_thank_jetbrains">Un immense merci à JetBrains pour avoir conçu Kotlin et Compose Multiplatform : sans leur travail passionné, cette application n’aurait tout simplement pas vu le jour.</string>
+    <string name="credits_thank_oss">Je tiens également à exprimer ma profonde gratitude à toutes les développeuses et à tous les développeurs qui publient et maintiennent les bibliothèques open-source que j’utilise : votre générosité et votre savoir-faire nourrissent chaque ligne de code de ce projet.</string>
+    <string name="credits_github_prompt">Découvrez mes autres projets sur GitHub</string>
+    <string name="about_versions_title">Versions des outils</string>
+    <string name="ytdlp_version_label">yt-dlp : %1$s</string>
+    <string name="ytdlp_version_missing">yt-dlp : introuvable</string>
+    <string name="ffmpeg_version_label">FFmpeg : %1$s</string>
+    <string name="ffmpeg_version_missing">FFmpeg : introuvable</string>
+
+    <!-- Paramètres -->
+    <string name="settings_no_check_certificate_title">Ne pas vérifier le certificat</string>
+    <string name="settings_no_check_certificate_caption">Ignorer la vérification du certificat SSL (à utiliser uniquement si nécessaire)</string>
+    <string name="onboarding_filtered_network_detected_title">Problème de Certificat Détecté</string>
+    <string name="onboarding_filtered_network_detected_message">Un problème de certificat a été détecté. Cela pourrait être dû à un filtrage de réseau d'entreprise, ou pire, à une attaque MITM. Pour que le programme fonctionne, il est nécessaire de désactiver la vérification des certificats.</string>
+    <string name="onboarding_filtered_network_accept">Je comprends les risques et j'accepte</string>
+    <string name="settings_cookies_from_browser_title">Cookies du navigateur</string>
+    <string name="settings_cookies_from_browser_label">Permet d'utiliser les cookies de votre navigateur pour accéder à des contenus qui nécessitent d'être connecté, comme des vidéos privées sur YouTube. Attention : l'utilisation de cette fonctionnalité peut entraîner le bannissement de votre compte.</string>
+    <string name="settings_browser_select">Sélectionner un navigateur…</string>
+    <string name="settings_browser_disable">Désactivé</string>
+    <string name="settings_browser_chrome">Chrome</string>
+    <string name="settings_browser_firefox">Firefox</string>
+    <string name="settings_browser_safari">Safari</string>
+    <string name="settings_include_preset_in_filename_title">Inclure le preset dans le nom de fichier</string>
+    <string name="settings_include_preset_in_filename_caption">Ajouter la qualité sélectionnée (exemple : 720p) au nom du fichier téléchargé</string>
+    <string name="settings_parallel_downloads_title">Téléchargements parallèles</string>
+    <string name="settings_parallel_downloads_caption">Limiter le nombre de téléchargements simultanés</string>
+
+    <!-- Paramètres : Intégration de la miniature dans le MP3 -->
+    <string name="settings_embed_thumbnail_mp3_title">Intégrer la miniature dans le MP3</string>
+    <string name="settings_embed_thumbnail_mp3_caption">Si activé, intégrer la miniature de la vidéo comme pochette du MP3</string>
+
+    <!-- Paramètres : Fragments concurrents -->
+    <string name="settings_concurrent_fragments_title">Threads de téléchargement de fragments</string>
+    <string name="settings_concurrent_fragments_caption">Fractionne le fichier et télécharge chaque partie simultanément, accélérant grandement les téléchargements. Non recommandé : peut entraîner un bannissement</string>
+
+
+    <!-- Paramètres : section Dossier de téléchargement -->
+    <string name="settings_download_dir_title">Dossier de téléchargement</string>
+    <string name="settings_download_dir_caption">Choisissez le dossier où les téléchargements seront enregistrés par défaut.</string>
+    <string name="settings_download_dir_not_set">Non défini</string>
+    <string name="settings_download_dir_pick_title">Sélectionner le dossier de téléchargement</string>
+    <string name="settings_select">Sélectionner…</string>
+
+    <string name="download_audio">Télécharger l'audio</string>
+    <!-- Ces chaînes appartiennent à l'écran Download (Download screen) -->
+    <string name="download_type_video">Vidéo</string>
+    <string name="download_type_audio">Audio</string>
+    <string name="single_formats">Formats</string>
+    <string name="single_subtitles">Sous-titres</string>
+    <string name="single_no_subtitle">Aucun sous-titre</string>
+    <string name="error_fetch_video_info">Une erreur est survenue lors de la récupération des informations de la vidéo : %1$s</string>
+    <string name="thumbnail_content_desc">Miniature</string>
+    
+    <!-- Écran de téléchargement unique : sélection de format et description -->
+    <string name="single_choose_format">Choisissez le format à télécharger :</string>
+    <string name="single_description">Description</string>
+    
+    <!-- Descriptions de contenu (accessibilité) -->
+    <string name="cd_error_icon">Erreur</string>
+    <string name="cd_filmstrip_play">Icône pellicule lecture</string>
+    <string name="single_audio_quality">Qualité audio</string>
+    <string name="single_auto_generated">automatique</string>
+    <string name="cd_textbox">Icône zone de texte</string>
+    
+    <!-- Notifications de surveillance du presse-papiers -->
+    <string name="clipboard_link_detected_title">Lien détecté</string>
+    <string name="clipboard_link_detected_message">Voulez-vous ouvrir ce lien dans %1$s ?\n%2$s</string>
+    <string name="clipboard_open_in_app">Ouvrir dans %1$s</string>
+    <string name="clipboard_ignore">Ignorer</string>
+
+    <!-- Parcours d'onboarding -->
+    <string name="onboarding_progress_label">Étape %1$d sur %2$d</string>
+    <string name="onboarding_previous">Précédent</string>
+    <string name="onboarding_skip">Ignorer</string>
+    <string name="onboarding_welcome_title">Bienvenue dans AeroDL</string>
+    <string name="onboarding_welcome_subtitle">Configurons quelques réglages pour bien démarrer.</string>
+    <string name="onboarding_start">Commencer</string>
+    <string name="onboarding_parallel_selected">Sélectionné : %1$d</string>
+    <string name="onboarding_complete_message">Configuration terminée…</string>
+    <string name="onboarding_finish_loading_title">Encore quelques instants…</string>
+    <string name="onboarding_finish_loading_message">Nous téléchargeons encore des ressources nécessaires au bon fonctionnement du programme.</string>
+    <string name="onboarding_finish_ready_title">C'est parti !</string>
+    <string name="onboarding_finish_ready_message">Tout est prêt. Vous pouvez maintenant commencer à utiliser AeroDL.</string>
+    <string name="onboarding_finish_ready_button">Commencer</string>
+    <string name="onboarding_gnome_focus_title">Améliorer l'expérience GNOME</string>
+    <string name="onboarding_gnome_focus_caption">GNOME bloque par défaut le focus des fenêtres. Nous recommandons d'installer l'extension "Steal My Focus" pour une meilleure expérience de l'application dans la barre système.</string>
+    <string name="onboarding_gnome_focus_open_extension">Ouvrir la page de l'extension</string>
+    <string name="common_enabled">Activé</string>
+    <string name="common_disabled">Désactivé</string>
+
+    <!-- Écran de téléchargement (historique et en cours) -->
+    <string name="download_clear_history">Vider l'historique</string>
+    <string name="tooltip_clear_history">Vider l'historique</string>
+    <string name="open_directory">Ouvrir le dossier</string>
+    <string name="tooltip_open_directory">Ouvrir le dossier</string>
+    <string name="delete_element">Supprimer cet élément</string>
+    <string name="tooltip_delete_element">Supprimer cet élément</string>
+    <string name="no_downloads">Aucun téléchargement</string>
+    <string name="cancel">Annuler</string>
+    <string name="status_pending">En attente</string>
+    <string name="status_running">En cours</string>
+    <string name="status_completed">Terminé</string>
+    <string name="status_failed">Échec</string>
+    <string name="status_cancelled">Annulé</string>
+    <!-- Paramètres : Lancement automatique -->
+    <string name="settings_auto_launch_title">Lancer au démarrage</string>
+    <string name="settings_auto_launch_caption">Conseillé si vous utilisez souvent AeroDL : il se lance avec votre système et vous n'avez plus à vous en soucier. Couplé à la surveillance du presse-papiers, vous pouvez lancer vos téléchargements dès que vous copiez un lien.</string>
+
+    <!-- Barre d'état / Menu -->
+    <string name="menu_show_window">Afficher la fenêtre</string>
+    <string name="menu_hide_window">Cacher la fenêtre</string>
+
+    <!-- Infos application -->
+    <string name="app_version_label">Version de l'application : %1$s</string>
+    
+    <!-- Paramètres : Surveillance du presse-papiers -->
+    <string name="settings_clipboard_monitoring_title">Surveillance du presse-papiers</string>
+    <string name="settings_clipboard_monitoring_caption">Lorsqu'activé, copier un lien vidéo supporté enverra une notification demandant si vous voulez le télécharger.</string>
+
+    <!-- Paramètres : Notifications -->
+    <string name="settings_notify_on_complete_title">Notifications de fin de téléchargement</string>
+    <string name="settings_notify_on_complete_caption">Envoyer une notification lorsqu'un téléchargement se termine</string>
+
+    <!-- Notification de fin de téléchargement -->
+    <string name="download_completed_title">Téléchargement terminé</string>
+    <string name="download_completed_message">%1$s a été téléchargé</string>
+
+    <!-- Indicateur d'indisponibilité du dossier -->
+    <string name="directory_unavailable">Indisponible</string>
+    <string name="tooltip_directory_unavailable">Le fichier/dossier a été déplacé ou supprimé et n'est plus disponible</string>
+
+    <!-- Dialogue d'erreur de téléchargement -->
+    <string name="download_error_title">Erreur de téléchargement</string>
+    <string name="download_failed_for">Le téléchargement a échoué pour :</string>
+    <string name="error_details">Détails de l'erreur :</string>
+    <string name="unknown_error">Erreur inconnue</string>
+    <string name="ok">OK</string>
+    <string name="view_error_details">Voir les détails de l'erreur</string>
+    <string name="copy_error">Copier l'erreur dans le presse-papiers</string>
+    
+    <!-- Retrait/suppression d'un élément en échec -->
+    <string name="remove_from_list">Supprimer de la liste</string>
+    <string name="tooltip_remove_from_list">Supprimer cet élément de la liste</string>
+
+    <!-- Affichage de la vitesse de téléchargement -->
+    <string name="download_speed">Vitesse : %1$s</string>
+    <string name="unit_bps">o/s</string>
+    <string name="unit_kibps">Kio/s</string>
+    <string name="unit_mibps">Mio/s</string>
+    <string name="unit_gibps">Gio/s</string>
+    <string name="unit_tibps">Tio/s</string>
+
+    <!-- Paramètres : Réinitialisation -->
+    <string name="settings_reset_title">Réinitialiser aux valeurs par défaut</string>
+    <string name="settings_reset_caption">Réinitialiser tous les paramètres aux valeurs par défaut</string>
+    <string name="settings_reset_button">Réinitialiser</string>
+    <string name="settings_reset_dialog_title">Réinitialiser tous les paramètres ?</string>
+    <string name="settings_reset_dialog_message">Cette action réinitialisera tous les paramètres à leurs valeurs par défaut, effacera l'historique des téléchargements et supprimera les binaires yt-dlp/FFmpeg. Les fichiers téléchargés ne seront pas affectés.\n\nVoulez-vous continuer ?</string>
+    <string name="settings_reset_dialog_confirm">Tout réinitialiser</string>
+    <string name="settings_reset_dialog_cancel">Annuler</string>
+    <string name="split_badge">Split</string>
+    <string name="remove_sponsors">Supprimer les sponsors (SponsorBlock)</string>
+</resources>

@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 kotlin {
@@ -7,19 +8,20 @@ kotlin {
 
     sourceSets {
         jvmMain.dependencies {
+            // Network module (provides Ktor, SSL/TLS configuration)
+            implementation(project(":network"))
+            implementation(project(":logging"))
+
             // Coroutines
             implementation(libs.kotlinx.coroutinesSwing)
+
             // Platform tools
             implementation(libs.platformtools.releasefetcher)
             implementation(libs.platformtools.core)
-
-            // Ktor client
-            implementation(libs.ktor.client.core)
-            implementation(libs.ktor.client.content.negotiation)
-            implementation(libs.ktor.client.serialization)
-            implementation(libs.ktor.client.logging)
-            implementation(libs.ktor.client.cio)
+        }
+        jvmTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlin.testJunit)
         }
     }
 }
-

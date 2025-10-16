@@ -1,0 +1,3 @@
+files:
+  - source: /composeApp/src/jvmMain/composeResources/values/strings.xml
+    translation: /composeApp/src/jvmMain/composeResources/values-%two_letters_code%/strings.xml

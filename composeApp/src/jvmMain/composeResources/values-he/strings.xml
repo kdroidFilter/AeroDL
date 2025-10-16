@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Navigation -->
+    <string name="home">דף הבית</string>
+    <string name="download">הורדות</string>
+    <string name="about">אודות</string>
+    <string name="settings">הגדרות</string>
+
+    <!-- חלוניות מידע (Tooltips) -->
+    <string name="tooltip_back">חזור</string>
+    <string name="tooltip_home">עבור לדף הבית</string>
+    <string name="tooltip_github">פרויקט קוד פתוח ב-GitHub</string>
+    <string name="tooltip_support_kofi">תמכו בי ב-Ko-fi!</string>
+
+    <!-- Home screen -->
+    <string name="app_name">אירודיאל</string>
+    <string name="logo_content_desc">לוגו</string>
+    <string name="placeholder_link_example">https://youtu.be/XXXXXXXXX</string>
+    <string name="paste_video_link_header">הדבק קישור לסרטון</string>
+    <string name="paste_link_content_desc">הדבק קישור</string>
+    <string name="loading">בטעינה…</string>
+    <string name="next">הבא</string>
+    <string name="error_single_valid_url">יש להדביק כתובת URL אחת תקינה.</string>
+    <string name="error_invalid_url_format">תבנית כתובת ה-URL אינה תקינה.</string>
+    <string name="error_url_required">נא להזין כתובת URL.</string>
+
+    <!-- הודעות אתחול -->
+    <string name="checking_ytdlp">בודק עדכונים עבור yt-dlp…</string>
+    <string name="checking_ffmpeg">בודק את התקנת FFmpeg…</string>
+    <string name="downloading_ytdlp">מוריד את yt-dlp…</string>
+    <string name="downloading_ffmpeg">מוריד את FFmpeg…</string>
+    <string name="updating_ytdlp">מעדכן את yt-dlp…</string>
+    <string name="updating_ffmpeg">מעדכן את FFmpeg…</string>
+    <string name="status_checking">בודק…</string>
+    <string name="status_downloading">מוריד</string>
+    <string name="status_updating">מעדכן…</string>
+    <string name="status_installed">מותקן</string>
+    <string name="status_error">שגיאה: %1$s</string>
+    <string name="unknown_dependency">תלות לא ידועה</string>
+
+    <!-- סרגל מידע על תלויות -->
+    <string name="dependency_info_title">בזמן שאתה מגדיר את הגדרות AeroDL, אנחנו מורידים את התלויות הדרושות לפעולה תקינה של האפליקציה.</string>
+    <string name="dependency_ytdlp_tooltip">yt-dlp הוא הכלי המרכזי שמוריד סרטונים מאתרים נתמכים. הוא מטפל בכל העבודה הקשה של הורדת התוכן שלך.</string>
+    <string name="dependency_ffmpeg_tooltip">FFmpeg הוא מסגרת מולטימדיה המשמשת להמרה ועיבוד של קבצי אודיו/וידאו. הוא מבטיח שההורדות שלך יהיו בפורמט הרצוי.</string>
+
+    <!-- הודעות שגיאה -->
+    <string name="error_occurred">אירעה שגיאה</string>
+
+    <!-- הודעת עדכון -->
+    <string name="update_available">גרסה חדשה זמינה: %1$s</string>
+    <string name="download_update">הורד</string>
+    <string name="ignore_update">התעלם</string>
+
+    <!-- כותרות מסך זמניות -->
+    <string name="about_screen_title">מסך אודות</string>
+    <string name="bulk_download_screen_title">מסך הורדה מרובה</string>
+    <string name="settings_screen_title">מסך הגדרות</string>
+    <string name="bulk_download_support_notice">הורדת פלייליסטים וערוצי YouTube עדיין אינה נתמכת. אם אתם אוהבים את AeroDL, תוכלו לתמוך בפיתוח דרך Ko-fi.</string>
+    <string name="support_on_kofi">תמכו בנו דרך Ko-fi</string>
+    <string name="about_credits_title">תודות</string>
+    <string name="credits_made_by">נוצר על ידי אלי גמבאש</string>
+    <string name="credits_thank_jetbrains">תודה ענקית ל‑JetBrains על שיצרו את Kotlin ו‑Compose Multiplatform; בלי העבודה המסורה שלהם האפליקציה הזו לא הייתה רואה אור.</string>
+    <string name="credits_thank_oss">אני מודה מכל הלב לכל המפתחות והמפתחים שמפרסמים ומתחזקים את ספריות הקוד הפתוח שעליהן אני מסתמך; הנדיבות והמקצועיות שלכם מזינות כל שורת קוד בפרויקט.</string>
+    <string name="credits_github_prompt">גלו את שאר הפרויקטים שלי ב‑GitHub</string>
+    <string name="about_versions_title">גרסאות הכלים</string>
+    <string name="ytdlp_version_label">yt-dlp: %1$s</string>
+    <string name="ytdlp_version_missing">yt-dlp: לא נמצא</string>
+    <string name="ffmpeg_version_label">FFmpeg: %1$s</string>
+    <string name="ffmpeg_version_missing">FFmpeg: לא נמצא</string>
+
+    <!-- הגדרות -->
+    <string name="settings_no_check_certificate_title">אי-בדיקת תעודות אבטחה</string>
+    <string name="settings_no_check_certificate_caption">דלג על אימות תעודת SSL (להשתמש רק אם הכרחי)</string>
+    <string name="onboarding_filtered_network_detected_title">זוהתה בעיית תעודה</string>
+    <string name="onboarding_filtered_network_detected_message">זוהתה בעיית תעודה. ייתכן שמדובר בסינון רשת תאגידי, או חלילה מתקפת MITM. כדי שהתוכנה תפעל יש לבטל אימות תעודות.</string>
+    <string name="onboarding_filtered_network_accept">אני מבין/ה את הסיכון ומאשר/ת</string>
+    <string name="settings_cookies_from_browser_title">עוגיות מהדפדפן</string>
+    <string name="settings_cookies_from_browser_label">מאפשר שימוש בעוגיות של הדפדפן שלך לצורך גישה לתוכן מאתרים מסוימים.</string>
+    <string name="settings_cookies_from_browser_caption">אם ישנם אתרים שמחייבים התחברות, ניתן להשתמש בעוגיות מהדפדפן כדי לאמת את הבקשות.</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_skip">דלג</string>
+    <string name="onboarding_welcome_title">ברוכים הבאים ל-AeroDL</string>
+    <string name="onboarding_welcome_subtitle">נגדיר כמה הגדרות כדי להתחיל.</string>
+    <string name="onboarding_start">התחל</string>
+    <string name="onboarding_parallel_selected">נבחר: %1$d</string>
+    <string name="onboarding_complete_message">ההגדרה הושלמה…</string>
+    <string name="onboarding_finish_loading_title">רגעים אחרונים…</string>
+    <string name="onboarding_finish_loading_message">אנחנו עדיין מורידים משאבים הנדרשים לפעולת התוכנה.</string>
+    <string name="onboarding_finish_ready_title">קדימה!</string>
+    <string name="onboarding_finish_ready_message">הכל מוכן. כעת תוכלו להתחיל להשתמש ב-AeroDL.</string>
+    <string name="onboarding_finish_ready_button">התחל</string>
+    <string name="onboarding_gnome_focus_title">שיפור החוויה ב-GNOME</string>
+    <string name="onboarding_gnome_focus_caption">GNOME חוסם מיקוד חלונות כברירת מחדל. אנו ממליצים להתקין את התוסף "Steal My Focus" לחוויה טובה יותר של אפליקציה במגש המערכת.</string>
+    <string name="onboarding_gnome_focus_open_extension">פתח דף התוסף</string>
+    <string name="common_enabled">מופעל</string>
+    <string name="common_disabled">מושבת</string>
+
+    <!-- מסך הורדות (היסטוריה ובתהליך) -->
+    <string name="download_clear_history">נקה היסטוריה</string>
+    <string name="tooltip_clear_history">נקה היסטוריה</string>
+    <string name="open_directory">פתח תיקייה</string>
+    <string name="tooltip_open_directory">פתח תיקייה</string>
+    <string name="delete_element">מחק פריט זה</string>
+    <string name="tooltip_delete_element">מחק פריט זה</string>
+    <string name="no_downloads">אין הורדות</string>
+    <string name="cancel">בטל</string>
+    <string name="status_pending">ממתין</string>
+    <string name="status_running">פועל</string>
+    <string name="status_completed">הושלם</string>
+    <string name="status_failed">נכשל</string>
+    <string name="status_cancelled">בוטל</string>
+    <!-- הגדרות: הפעלה אוטומטית -->
+    <string name="settings_auto_launch_title">הפעל בעת עליית המערכת</string>
+    <string name="settings_auto_launch_caption">מומלץ אם אתם משתמשים הרבה ב-AeroDL: הוא יופעל יחד עם המערכת ולא תצטרכו לזכור לפתוח אותו. בשילוב עם ניטור לוח העריכה תוכלו להתחיל הורדות מיד כשאתם מעתיקים קישור.</string>
+
+    <!-- מגש/תפריט -->
+    <string name="menu_show_window">הצג חלון</string>
+    <string name="menu_hide_window">הסתר חלון</string>
+    <string name="quit">יציאה</string>
+
+    <!-- Single download screen -->
+    <string name="download_type_video">וידאו</string>
+    <string name="download_type_audio">שמע</string>
+    <string name="single_formats">פורמטים</string>
+    <string name="single_subtitles">כתוביות</string>
+    <string name="single_no_subtitle">ללא כתוביות</string>
+    <string name="error_fetch_video_info">אירעה שגיאה בעת שליפת פרטי הווידאו: %1$s</string>
+    <string name="thumbnail_content_desc">תמונה ממוזערת</string>
+    <string name="cd_error_icon">סמל שגיאה</string>
+    <string name="cd_textbox">סמל תיבת טקסט</string>
+    <string name="single_choose_format">בחרו פורמט להורדה:</string>
+    <string name="single_description">תיאור</string>
+    <string name="cd_filmstrip_play">סמל ניגון סרט</string>
+    <string name="single_audio_quality">איכות שמע</string>
+    <string name="single_auto_generated">אוטומטי</string>
+
+    <!-- פרטי אפליקציה -->
+    <string name="app_version_label">גרסת אפליקציה: %1$s</string>
+    
+    <!-- הגדרות: ניטור לוח העריכה -->
+    <string name="settings_clipboard_monitoring_title">ניטור לוח העריכה</string>
+    <string name="settings_clipboard_monitoring_caption">כשמופעל, העתקת קישור וידאו נתמך תשלח התראה השואלת אם ברצונך להוריד אותו.</string>
+
+    <!-- הגדרות: התראות -->
+    <string name="settings_notify_on_complete_title">התראות על סיום הורדה</string>
+    <string name="settings_notify_on_complete_caption">שלח התראה כאשר הורדה מסתיימת</string>
+
+    <!-- התראת סיום הורדה -->
+    <string name="download_completed_title">ההורדה הסתיימה</string>
+    <string name="download_completed_message">%1$s הורד</string>
+
+    <!-- התראות ניטור לוח העריכה -->
+    <string name="clipboard_link_detected_title">זוהה קישור</string>
+    <string name="clipboard_link_detected_message">האם לפתוח את הקישור ב-%1$s?‎
+%2$s</string>
+    <string name="clipboard_open_in_app">פתח ב-%1$s</string>
+    <string name="clipboard_ignore">התעלם</string>
+
+    <!-- חיווי: תיקייה אינה זמינה -->
+    <string name="directory_unavailable">לא זמין</string>
+    <string name="tooltip_directory_unavailable">הקובץ/התיקייה הועברו או נמחקו ואינם זמינים עוד</string>
+
+    <!-- דיאלוג שגיאת הורדה -->
+    <string name="download_error_title">שגיאת הורדה</string>
+    <string name="download_failed_for">ההורדה נכשלה עבור:</string>
+    <string name="error_details">פרטי השגיאה:</string>
+    <string name="unknown_error">שגיאה לא ידועה</string>
+    <string name="ok">אישור</string>
+    <string name="view_error_details">הצג פרטי שגיאה</string>
+    <string name="copy_error">העתק שגיאה ללוח</string>
+
+    <!-- הסרה/שחרור של פריט נכשל מהרשימה -->
+    <string name="remove_from_list">הסר מהרשימה</string>
+    <string name="tooltip_remove_from_list">הסר פריט זה מהרשימה</string>
+
+    <!-- תצוגת מהירות הורדה -->
+    <string name="download_speed">מהירות: %1$s</string>
+    <string name="unit_bps">B/s</string>
+    <string name="unit_kibps">KiB/s</string>
+    <string name="unit_mibps">MiB/s</string>
+    <string name="unit_gibps">GiB/s</string>
+    <string name="unit_tibps">TiB/s</string>
+
+    <!-- הגדרות: איפוס להגדרות ברירת מחדל -->
+    <string name="settings_reset_title">אפס להגדרות ברירת המחדל</string>
+    <string name="settings_reset_caption">אפס את כל ההגדרות לערכי ברירת המחדל</string>
+    <string name="settings_reset_button">אפס</string>
+    <string name="settings_reset_dialog_title">לאפס את כל ההגדרות?</string>
+    <string name="settings_reset_dialog_message">פעולה זו תאפס את כל ההגדרות לערכי ברירת המחדל, תמחק את היסטוריית ההורדות ותסיר את קבצי yt-dlp/FFmpeg. קבצים שהורדו לא יושפעו.\n\nהאם להמשיך?</string>
+    <string name="settings_reset_dialog_confirm">אפס הכל</string>
+    <string name="settings_reset_dialog_cancel">ביטול</string>
+
+    <!-- הגדרות: פיצולי קבצים מקבילים -->
+    <string name="settings_concurrent_fragments_title">חוטי הורדת פיצולים</string>
+    <string name="settings_concurrent_fragments_caption">מפצל את הקובץ ומוריד כל חלק בו-זמנית, מאיץ מאוד את ההורדות. לא מומלץ: עלול להוביל לחסימת חשבון</string>
+
+
+</resources>
