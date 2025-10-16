@@ -66,6 +66,9 @@ class SingleDownloadViewModel(
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage = _errorMessage.asStateFlow()
 
+    private val _navigationState = MutableStateFlow<SingleDownloadNavigationState>(SingleDownloadNavigationState.None)
+    val navigationState = _navigationState.asStateFlow()
+
     // Note: This ViewModel uses a combined state from multiple sources, so we override uiState
     override val uiState = combine(
         isLoading,
@@ -80,6 +83,7 @@ class SingleDownloadViewModel(
         splitChapters,
         hasSponsorSegments,
         removeSponsors,
+        navigationState,
     ) { values: Array<Any?> ->
         val loading = values[0] as Boolean
         val error = values[1] as String?
@@ -97,6 +101,7 @@ class SingleDownloadViewModel(
         val split = values[9] as Boolean
         val sponsorAvail = values[10] as Boolean
         val rmSponsor = values[11] as Boolean
+        val navState = values[12] as SingleDownloadNavigationState
         SingleDownloadState(
             isLoading = loading,
             errorMessage = error,
@@ -110,6 +115,7 @@ class SingleDownloadViewModel(
             splitChapters = split,
             hasSponsorSegments = sponsorAvail,
             removeSponsors = rmSponsor,
+            navigationState = navState,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -243,7 +249,7 @@ class SingleDownloadViewModel(
                         downloadManager.start(videoUrl, videoInfo.value, preset, sponsorBlock = _removeSponsors.value)
                     }
                 }
-                update { copy(navigationState = SingleDownloadNavigationState.NavigateToDownloader) }
+                _navigationState.value = SingleDownloadNavigationState.NavigateToDownloader
             }
             SingleDownloadEvents.StartAudioDownload -> {
                 val audioQuality = selectedAudioQualityPreset.value
@@ -254,7 +260,7 @@ class SingleDownloadViewModel(
                     infoln { "[SingleDownloadViewModel] Starting audio download with quality: ${audioQuality?.name}" }
                     downloadManager.startAudio(videoUrl, videoInfo.value, audioQuality, sponsorBlock = _removeSponsors.value)
                 }
-                update { copy(navigationState = SingleDownloadNavigationState.NavigateToDownloader) }
+                _navigationState.value = SingleDownloadNavigationState.NavigateToDownloader
             }
             SingleDownloadEvents.StartSplitChaptersDownload -> {
                 val preset = selectedPreset.value
@@ -276,13 +282,13 @@ class SingleDownloadViewModel(
                         languages = null
                     )
                 }
-                update { copy(navigationState = SingleDownloadNavigationState.NavigateToDownloader) }
+                _navigationState.value = SingleDownloadNavigationState.NavigateToDownloader
             }
             SingleDownloadEvents.StartAudioSplitChaptersDownload -> {
                 val audioQuality = selectedAudioQualityPreset.value
                 infoln { "[SingleDownloadViewModel] Starting audio split-chapters download with quality: ${audioQuality?.name}" }
                 downloadManager.startAudioSplitChapters(videoUrl, videoInfo.value, audioQuality)
-                update { copy(navigationState = SingleDownloadNavigationState.NavigateToDownloader) }
+                _navigationState.value = SingleDownloadNavigationState.NavigateToDownloader
             }
             SingleDownloadEvents.ScreenDisposed -> {
                 infoln { "[SingleDownloadViewModel] Screen disposed: clearing heavy state" }
@@ -303,7 +309,7 @@ class SingleDownloadViewModel(
                 }
             }
             SingleDownloadEvents.OnNavigationConsumed -> {
-                update { copy(navigationState = SingleDownloadNavigationState.None) }
+                _navigationState.value = SingleDownloadNavigationState.None
             }
         }
     }
