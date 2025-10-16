@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.sqlDelight)
     alias(libs.plugins.hydraulicConveyor)
+    alias(libs.plugins.metro)
 }
 
 val ref = System.getenv("GITHUB_REF") ?: ""
@@ -45,10 +46,8 @@ kotlin {
             implementation(libs.coil)
             implementation(libs.coil.network)
 
-            // DI
-            implementation(libs.koin.core)
-            implementation(libs.koin.compose)
-            implementation(libs.koin.compose.viewmodel)
+            // DI - Metro
+            implementation(libs.metro.runtime)
 
             // Platform tools
             implementation(libs.platformtools.core)
@@ -124,6 +123,7 @@ compose.desktop {
                 iconFile.set(project.file("icons/logo.ico"))
                 shortcut = true
                 upgradeUuid = "ada57c09-11e1-4d56-9d5d-0c480f6968ec"
+                perUserInstall = true
             }
             macOS {
                 bundleID = "io.github.kdroidfilter.ytdlpgui"
@@ -152,4 +152,11 @@ sqldelight {
             dialect("app.cash.sqldelight:sqlite-3-24-dialect:${libs.versions.sqlDelight.get()}")
         }
     }
+}
+
+tasks.withType<Jar> {
+    exclude("META-INF/*.SF")
+    exclude("META-INF/*.DSA")
+    exclude("META-INF/*.RSA")
+    exclude("META-INF/*.EC")
 }

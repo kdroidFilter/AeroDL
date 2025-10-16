@@ -18,6 +18,7 @@ import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -26,13 +27,14 @@ import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.HyperlinkButton
 import io.github.composefluent.component.Text
 import io.github.kdroidfilter.ytdlpgui.core.platform.browser.openUrlInBrowser
+import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.viewmodel.koinViewModel
 import ytdlpgui.composeapp.generated.resources.*
 
 @Composable
 fun AboutScreen() {
-    val viewModel = koinViewModel<AboutViewModel>()
+    val appGraph = LocalAppGraph.current
+        val viewModel = remember(appGraph) { appGraph.aboutViewModel }
     val state by viewModel.uiState.collectAsState()
     AboutView(
         state = state,

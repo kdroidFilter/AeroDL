@@ -27,8 +27,6 @@ platformtools = "0.7.3"
 metro = "0.6.6"
 jvmNativeTrustedRoots = "1.1.7"
 
-# Koin
-koin = "4.1.1"
 
 # Database
 sqlDelight = "2.1.0"
@@ -96,10 +94,8 @@ ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "k
 ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 
-# Koin
-koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
-koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
-koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koin" }
+# Metro
+metro-runtime = { module = "dev.zacsweers.metro:runtime", version.ref = "metro" }
 
 
 # Serialization

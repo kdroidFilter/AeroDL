@@ -26,6 +26,7 @@ data class VideoInfo(
     val formatNote: String? = null,
     val availableSubtitles: Map<String, SubtitleInfo> = emptyMap(),
     val automaticCaptions: Map<String, SubtitleInfo> = emptyMap(),
+    val hasChapters: Boolean = false,
     val chapters: List<ChapterInfo> = emptyList(),
     val tags: List<String> = emptyList(),
     val categories: List<String> = emptyList(),

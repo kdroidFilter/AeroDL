@@ -91,9 +91,10 @@
     <string name="settings_embed_thumbnail_mp3_title">Intégrer la miniature dans le MP3</string>
     <string name="settings_embed_thumbnail_mp3_caption">Si activé, intégrer la miniature de la vidéo comme pochette du MP3</string>
 
-    <!-- Paramètres : SponsorBlock -->
-    <string name="settings_sponsorblock_title">Supprimer les segments sponsorisés</string>
-    <string name="settings_sponsorblock_caption">De nombreuses vidéos YouTube contiennent des segments sponsorisés, qui sont généralement des publicités. Cette option les supprime de la vidéo finale</string>
+    <!-- Paramètres : Fragments concurrents -->
+    <string name="settings_concurrent_fragments_title">Threads de téléchargement de fragments</string>
+    <string name="settings_concurrent_fragments_caption">Fractionne le fichier et télécharge chaque partie simultanément, accélérant grandement les téléchargements. Non recommandé : peut entraîner un bannissement</string>
+
 
     <!-- Paramètres : section Dossier de téléchargement -->
     <string name="settings_download_dir_title">Dossier de téléchargement</string>
@@ -219,4 +220,10 @@
     <string name="settings_reset_dialog_message">Cette action réinitialisera tous les paramètres à leurs valeurs par défaut, effacera l'historique des téléchargements et supprimera les binaires yt-dlp/FFmpeg. Les fichiers téléchargés ne seront pas affectés.\n\nVoulez-vous continuer ?</string>
     <string name="settings_reset_dialog_confirm">Tout réinitialiser</string>
     <string name="settings_reset_dialog_cancel">Annuler</string>
+    <string name="split_badge">Split</string>
+    <string name="remove_sponsors">Supprimer les sponsors (SponsorBlock)</string>
+    
+    <!-- Écran téléchargement simple : légendes conviviales -->
+    <string name="single_sponsorblock_caption">Nous avons détecté des segments sponsorisés dans cette vidéo. Activez cette option pour les supprimer automatiquement du téléchargement. Dans de nombreux cas, il s’agit de publicités sans lien direct avec le contenu principal.</string>
+    <string name="single_split_chapters_caption">Nous avons détecté que cette vidéo est divisée en chapitres. Activez cette option pour enregistrer un fichier par chapitre — particulièrement utile pour les sets ou longs mixes afin d’obtenir un fichier par morceau.</string>
 </resources>

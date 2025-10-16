@@ -4,7 +4,13 @@ import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlp.model.ResolutionAvailability
 import io.github.kdroidfilter.ytdlp.model.SubtitleInfo
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
+import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import java.time.Duration
+
+sealed class SingleDownloadNavigationState {
+    data object None : SingleDownloadNavigationState()
+    data object NavigateToDownloader : SingleDownloadNavigationState()
+}
 
 data class SingleDownloadState(
     val isLoading: Boolean = false,
@@ -16,6 +22,10 @@ data class SingleDownloadState(
     val selectedSubtitles: List<String> = emptyList(),
     val availableAudioQualityPresets: List<YtDlpWrapper.AudioQualityPreset> = emptyList(),
     val selectedAudioQualityPreset: YtDlpWrapper.AudioQualityPreset? = null,
+    val splitChapters: Boolean = false,
+    val hasSponsorSegments: Boolean = false,
+    val removeSponsors: Boolean = false,
+    val navigationState: SingleDownloadNavigationState = SingleDownloadNavigationState.None
 ) {
     companion object {
         val loadingState = SingleDownloadState(

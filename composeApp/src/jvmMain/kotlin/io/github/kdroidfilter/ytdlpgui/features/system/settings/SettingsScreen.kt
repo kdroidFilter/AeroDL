@@ -16,13 +16,14 @@ import io.github.composefluent.icons.regular.*
 import io.github.kdroidfilter.ytdlpgui.core.design.components.BrowserSelector
 import io.github.kdroidfilter.ytdlpgui.core.design.components.EllipsizedTextWithTooltip
 import io.github.kdroidfilter.ytdlpgui.core.design.components.Switcher
+import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.viewmodel.koinViewModel
 import ytdlpgui.composeapp.generated.resources.*
 
 @Composable
 fun SettingsScreen() {
-    val viewModel = koinViewModel<SettingsViewModel>()
+    val appGraph = LocalAppGraph.current
+        val viewModel = remember(appGraph) { appGraph.settingsViewModel }
     val state by viewModel.uiState.collectAsState()
     SettingsView(
         state = state,
@@ -64,9 +65,9 @@ fun SettingsView(
                 )
             }
             item {
-                SponsorBlockRemoveSetting(
-                    sponsorBlockRemove = state.sponsorBlockRemove,
-                    onSponsorBlockChange = { onEvent(SettingsEvents.SetSponsorBlockRemove(it)) },
+                ConcurrentFragmentsSetting(
+                    concurrentFragments = state.concurrentFragments,
+                    onConcurrentFragmentsSelected = { onEvent(SettingsEvents.SetConcurrentFragments(it)) },
                 )
             }
             item {
@@ -227,29 +228,38 @@ fun EmbedThumbnailInMp3SettingPreview() {
     EmbedThumbnailInMp3Setting(embedThumbnailInMp3 = true, onEmbedThumbnailChange = {})
 }
 
+
 @Composable
-private fun SponsorBlockRemoveSetting(
-    sponsorBlockRemove: Boolean,
-    onSponsorBlockChange: (Boolean) -> Unit,
+private fun ConcurrentFragmentsSetting(
+    concurrentFragments: Int,
+    onConcurrentFragmentsSelected: (Int) -> Unit,
 ) {
+    val options = (1..5).toList()
+    val items = options.map { it.toString() }
+    var selected by remember(concurrentFragments) {
+        mutableStateOf(options.indexOf(concurrentFragments))
+    }
+
     CardExpanderItem(
-        heading = {
-            Text(
-                stringResource(Res.string.settings_sponsorblock_title),
-                modifier = Modifier.fillMaxWidth(0.8f)
-            )
-        },
+        heading = { Text(stringResource(Res.string.settings_concurrent_fragments_title), modifier = Modifier.fillMaxWidth(0.75f)) },
         caption = {
             EllipsizedTextWithTooltip(
-                text = stringResource(Res.string.settings_sponsorblock_caption),
-                modifier = Modifier.fillMaxWidth(0.8f)
+                text = stringResource(Res.string.settings_concurrent_fragments_caption),
+                modifier = Modifier.fillMaxWidth(0.75f)
             )
         },
-        icon = { Icon(Icons.Filled.Cut, null) },
+        icon = { Icon(Icons.Filled.Flash, null) },
         trailing = {
-            Switcher(
-                checked = sponsorBlockRemove,
-                onCheckStateChange = onSponsorBlockChange,
+            ComboBox(
+                modifier = Modifier.width(80.dp),
+                header = null,
+                placeholder = "",
+                selected = selected,
+                items = items,
+                onSelectionChange = { index, _ ->
+                    selected = index
+                    onConcurrentFragmentsSelected(options[index])
+                }
             )
         }
     )
@@ -257,8 +267,8 @@ private fun SponsorBlockRemoveSetting(
 
 @Preview
 @Composable
-fun SponsorBlockRemoveSettingPreview() {
-    SponsorBlockRemoveSetting(sponsorBlockRemove = true, onSponsorBlockChange = {})
+fun ConcurrentFragmentsSettingPreview() {
+    ConcurrentFragmentsSetting(concurrentFragments = 1, onConcurrentFragmentsSelected = {})
 }
 
 @Composable
@@ -267,7 +277,10 @@ private fun ParallelDownloadsSetting(
     onParallelDownloadsSelected: (Int) -> Unit,
 ) {
     val options = (1..5).toList()
-    val selectionLabel = parallelDownloads.toString()
+    val items = options.map { it.toString() }
+    var selected by remember(parallelDownloads) {
+        mutableStateOf(options.indexOf(parallelDownloads))
+    }
 
     CardExpanderItem(
         heading = { Text(stringResource(Res.string.settings_parallel_downloads_title)) },
@@ -279,34 +292,16 @@ private fun ParallelDownloadsSetting(
         },
         icon = { Icon(Icons.Filled.TopSpeed, null) },
         trailing = {
-            MenuFlyoutContainer(
-                flyout = {
-                    options.forEach { count ->
-                        MenuFlyoutItem(
-                            modifier = Modifier.width(56.dp),
-                            text = { Text(count.toString()) },
-                            onClick = {
-                                onParallelDownloadsSelected(count)
-                                isFlyoutVisible = false
-                            }
-                        )
-                    }
-                },
-                content = {
-                    DropDownButton(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 1.dp),
-                        onClick = { isFlyoutVisible = !isFlyoutVisible },
-                        content = {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(0.9f),
-                                horizontalArrangement = Arrangement.SpaceEvenly
-                            ) {
-                                Text(selectionLabel)
-                            }
-                        },
-                    )
-                },
-                placement = FlyoutPlacement.Bottom
+            ComboBox(
+                modifier = Modifier.width(80.dp),
+                header = null,
+                placeholder = "",
+                selected = selected,
+                items = items,
+                onSelectionChange = { index, _ ->
+                    selected = index
+                    onParallelDownloadsSelected(options[index])
+                }
             )
         }
     )

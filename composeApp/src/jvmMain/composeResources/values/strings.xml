@@ -3,6 +3,9 @@
     <!-- Navigation -->
     <string name="home">Home</string>
     <string name="download">Download</string>
+    <string name="split_chapters">Split chapters</string>
+    <string name="split_badge">Split</string>
+    <string name="remove_sponsors">Remove sponsors (SponsorBlock)</string>
     <string name="about">About</string>
     <string name="settings">Settings</string>
 
@@ -90,9 +93,10 @@
     <string name="settings_embed_thumbnail_mp3_title">Embed thumbnail in MP3</string>
     <string name="settings_embed_thumbnail_mp3_caption">When enabled, embed the video thumbnail as MP3 cover art</string>
 
-    <!-- Settings: SponsorBlock -->
-    <string name="settings_sponsorblock_title">Remove sponsored segments</string>
-    <string name="settings_sponsorblock_caption">Many YouTube videos contain sponsored segments, which are typically advertisements. This option removes them from the final video</string>
+
+    <!-- Settings: Concurrent fragments -->
+    <string name="settings_concurrent_fragments_title">Fragment download threads</string>
+    <string name="settings_concurrent_fragments_caption">Splits the file and downloads each part simultaneously, greatly speeding up downloads. Not recommended: may result in account bans</string>
 
     <!-- Settings: Download directory section -->
     <string name="settings_download_dir_title">Download directory</string>
@@ -174,6 +178,7 @@
     <string name="menu_show_window">Show window</string>
     <string name="menu_hide_window">Hide window</string>
     <string name="quit">Quit</string>
+    <string name="tray_downloading_suffix"> - Downloading...</string>
 
     <!-- App info -->
     <string name="app_version_label">App version: %1$s</string>
@@ -219,4 +224,8 @@
     <string name="settings_reset_dialog_message">This action will reset all settings to their default values, clear download history, and remove yt-dlp/FFmpeg binaries. Downloaded files will not be affected.\n\nDo you want to continue?</string>
     <string name="settings_reset_dialog_confirm">Reset everything</string>
     <string name="settings_reset_dialog_cancel">Cancel</string>
+
+    <!-- Single download: friendly captions -->
+    <string name="single_sponsorblock_caption">We detected sponsored segments in this video. Enable to automatically remove them from the download — often these are ads not directly related to the main content.</string>
+    <string name="single_split_chapters_caption">We detected that this video is divided into chapters. Enable to save one file per chapter — especially useful for DJ sets or long mixes to get one file per track.</string>
 </resources>

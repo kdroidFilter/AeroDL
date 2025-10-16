@@ -11,6 +11,9 @@
     <string name="tooltip_home">עבור לדף הבית</string>
     <string name="tooltip_github">פרויקט קוד פתוח ב-GitHub</string>
     <string name="tooltip_support_kofi">תמכו בי ב-Ko-fi!</string>
+    <string name="split_chapters">פיצול פרקים</string>
+    <string name="split_badge">פיצול</string>
+    <string name="remove_sponsors">הסר נותני חסות (SponsorBlock)</string>
 
     <!-- Home screen -->
     <string name="app_name">אירודיאל</string>
@@ -79,6 +82,8 @@
     <string name="settings_cookies_from_browser_caption">אם ישנם אתרים שמחייבים התחברות, ניתן להשתמש בעוגיות מהדפדפן כדי לאמת את הבקשות.</string>
 
     <!-- Onboarding -->
+    <string name="onboarding_progress_label">שלב %1$d מתוך %2$d</string>
+    <string name="onboarding_previous">הקודם</string>
     <string name="onboarding_skip">דלג</string>
     <string name="onboarding_welcome_title">ברוכים הבאים ל-AeroDL</string>
     <string name="onboarding_welcome_subtitle">נגדיר כמה הגדרות כדי להתחיל.</string>
@@ -118,6 +123,7 @@
     <string name="menu_show_window">הצג חלון</string>
     <string name="menu_hide_window">הסתר חלון</string>
     <string name="quit">יציאה</string>
+    <string name="download_audio">הורד שמע</string>
 
     <!-- Single download screen -->
     <string name="download_type_video">וידאו</string>
@@ -145,6 +151,28 @@
     <!-- הגדרות: התראות -->
     <string name="settings_notify_on_complete_title">התראות על סיום הורדה</string>
     <string name="settings_notify_on_complete_caption">שלח התראה כאשר הורדה מסתיימת</string>
+    
+    <!-- הגדרות: דפדפן וקבצים -->
+    <string name="settings_browser_select">בחר דפדפן…</string>
+    <string name="settings_browser_disable">מושבת</string>
+    <string name="settings_browser_chrome">Chrome</string>
+    <string name="settings_browser_firefox">Firefox</string>
+    <string name="settings_browser_safari">Safari</string>
+    
+    <string name="settings_include_preset_in_filename_title">כלול איכות בשם הקובץ</string>
+    <string name="settings_include_preset_in_filename_caption">הוסף את האיכות הנבחרת (למשל 720p) לשם הקובץ המורד</string>
+    
+    <string name="settings_parallel_downloads_title">הורדות מקבילות</string>
+    <string name="settings_parallel_downloads_caption">הגבל כמה הורדות יכולות לרוץ בו-זמנית</string>
+    
+    <string name="settings_embed_thumbnail_mp3_title">הטמע תמונה ממוזערת ב‑MP3</string>
+    <string name="settings_embed_thumbnail_mp3_caption">כאשר מופעל, הטמע את תמונת הווידאו כעטיפת MP3</string>
+    
+    <string name="settings_download_dir_title">תיקיית הורדה</string>
+    <string name="settings_download_dir_caption">בחר את התיקייה שבה יישמרו ההורדות כברירת מחדל.</string>
+    <string name="settings_download_dir_not_set">לא הוגדר</string>
+    <string name="settings_download_dir_pick_title">בחר תיקיית הורדה</string>
+    <string name="settings_select">בחרו…</string>
 
     <!-- התראת סיום הורדה -->
     <string name="download_completed_title">ההורדה הסתיימה</string>
@@ -191,8 +219,16 @@
     <string name="settings_reset_dialog_confirm">אפס הכל</string>
     <string name="settings_reset_dialog_cancel">ביטול</string>
 
-    <!-- הגדרות: SponsorBlock -->
-    <string name="settings_sponsorblock_title">הסר קטעי ספונסרים</string>
-    <string name="settings_sponsorblock_caption">סרטוני יוטיוב רבים מכילים קטעי חסות, שהם בדרך כלל פרסומות. אפשרות זו מסירה אותם מהווידאו הסופי</string>
+    <!-- הגדרות: פיצולי קבצים מקבילים -->
+    <string name="settings_concurrent_fragments_title">חוטי הורדת פיצולים</string>
+    <string name="settings_concurrent_fragments_caption">מפצל את הקובץ ומוריד כל חלק בו-זמנית, מאיץ מאוד את ההורדות. לא מומלץ: עלול להוביל לחסימת חשבון</string>
+
+    <!-- מגש מערכת: הורדה פעילה -->
+    <string name="tray_downloading_suffix"> - בהורדה…</string>
+
+    <!-- מסך הורדה בודדת: טקסטים ידידותיים -->
+    <string name="single_sponsorblock_caption">זיהינו קטעים ממומנים בסרטון הזה. הפעלת האפשרות תסיר אותם אוטומטית מההורדה – ברוב המקרים מדובר בפרסומות שאינן קשורות ישירות לתוכן המרכזי.</string>
+    <string name="single_split_chapters_caption">זיהינו שהסרטון מחולק לפרקים. הפעלת האפשרות תשמור קובץ נפרד לכל פרק – שימושי במיוחד בסטים או מיקסים ארוכים כדי לקבל קובץ אחד לכל שיר.</string>
+
 
 </resources>

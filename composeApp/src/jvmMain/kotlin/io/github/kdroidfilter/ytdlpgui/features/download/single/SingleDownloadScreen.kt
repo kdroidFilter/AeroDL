@@ -30,6 +30,7 @@ import coil3.compose.AsyncImage
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.AccentButton
 import io.github.composefluent.component.Button
+import io.github.composefluent.component.CardExpanderItem
 import io.github.composefluent.component.FlyoutPlacement
 import io.github.composefluent.component.Icon
 import io.github.composefluent.component.ListItemDefaults
@@ -51,16 +52,33 @@ import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.runtime.collectAsState
 import ytdlpgui.composeapp.generated.resources.*
+import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
+import io.github.kdroidfilter.ytdlpgui.core.design.components.EllipsizedTextWithTooltip
+import io.github.kdroidfilter.ytdlpgui.core.design.components.Switcher
 import java.time.Duration
 import java.util.*
 
 @Composable
-fun SingleDownloadScreen() {
-    val viewModel = koinViewModel<SingleDownloadViewModel>()
+fun SingleDownloadScreen(navController: androidx.navigation.NavHostController, backStackEntry: androidx.navigation.NavBackStackEntry) {
+    val appGraph = LocalAppGraph.current
+    val viewModel = remember(backStackEntry) { appGraph.singleDownloadViewModel(backStackEntry.savedStateHandle) }
     val state by viewModel.uiState.collectAsState()
+
+    // Handle navigation to Downloader directly via NavController
+    LaunchedEffect(state.navigationState) {
+        when (state.navigationState) {
+            is SingleDownloadNavigationState.NavigateToDownloader -> {
+                navController.navigate(io.github.kdroidfilter.ytdlpgui.core.navigation.Destination.MainNavigation.Downloader)
+                viewModel.handleEvent(SingleDownloadEvents.OnNavigationConsumed)
+            }
+            SingleDownloadNavigationState.None -> {
+                // no-op
+            }
+        }
+    }
+
     SingleDownloadView(
         state = state,
         onEvent = viewModel::handleEvent
@@ -89,10 +107,15 @@ fun SingleDownloadView(
         selectedSubtitles = state.selectedSubtitles,
         availableAudioQualityPresets = state.availableAudioQualityPresets,
         selectedAudioQualityPreset = state.selectedAudioQualityPreset,
+        splitChapters = state.splitChapters,
+        hasSponsorSegments = state.hasSponsorSegments,
+        removeSponsors = state.removeSponsors,
         onSelectPreset = { onEvent(SingleDownloadEvents.SelectPreset(it)) },
         onSelectAudioQualityPreset = { onEvent(SingleDownloadEvents.SelectAudioQualityPreset(it)) },
         onToggleSubtitle = { onEvent(SingleDownloadEvents.ToggleSubtitle(it)) },
         onClearSubtitles = { onEvent(SingleDownloadEvents.ClearSubtitles) },
+        onSetSplitChapters = { onEvent(SingleDownloadEvents.SetSplitChapters(it)) },
+        onSetRemoveSponsors = { onEvent(SingleDownloadEvents.SetRemoveSponsors(it)) },
         onStartDownload = { onEvent(SingleDownloadEvents.StartDownload) },
         onStartAudioDownload = { onEvent(SingleDownloadEvents.StartAudioDownload) }
     )
@@ -138,10 +161,15 @@ private fun SingleVideoDownloadView(
     selectedSubtitles: List<String>,
     availableAudioQualityPresets: List<YtDlpWrapper.AudioQualityPreset>,
     selectedAudioQualityPreset: YtDlpWrapper.AudioQualityPreset?,
+    splitChapters: Boolean,
+    hasSponsorSegments: Boolean,
+    removeSponsors: Boolean,
     onSelectPreset: (YtDlpWrapper.Preset) -> Unit,
     onSelectAudioQualityPreset: (YtDlpWrapper.AudioQualityPreset) -> Unit,
     onToggleSubtitle: (String) -> Unit,
     onClearSubtitles: () -> Unit,
+    onSetSplitChapters: (Boolean) -> Unit,
+    onSetRemoveSponsors: (Boolean) -> Unit,
     onStartDownload: () -> Unit,
     onStartAudioDownload: () -> Unit
 ) {
@@ -272,6 +300,57 @@ private fun SingleVideoDownloadView(
                         }
                         Spacer(Modifier.height(16.dp))
                     }
+                    // Option: Split chapters (video) — friendlier CardExpander with caption
+                    if (videoInfo?.hasChapters == true) {
+                        CardExpanderItem(
+                            heading = {
+                                Text(
+                                    stringResource(Res.string.split_chapters),
+                                    modifier = Modifier.fillMaxWidth(0.75f)
+                                )
+                            },
+                            caption = {
+                                EllipsizedTextWithTooltip(
+                                    text = stringResource(Res.string.single_split_chapters_caption),
+                                    modifier = Modifier.fillMaxWidth(0.75f)
+                                )
+                            },
+                            icon = { Icon(Icons.Regular.FilmstripPlay, null) },
+                            trailing = {
+                                Switcher(
+                                    checked = splitChapters,
+                                    onCheckStateChange = onSetSplitChapters,
+                                )
+                            }
+                        )
+                        Spacer(Modifier.height(8.dp))
+                    }
+
+                    // Option: SponsorBlock (video) — friendlier CardExpander with caption
+                    if (hasSponsorSegments) {
+                        CardExpanderItem(
+                            heading = {
+                                Text(
+                                    stringResource(Res.string.remove_sponsors),
+                                    modifier = Modifier.fillMaxWidth(0.75f)
+                                )
+                            },
+                            caption = {
+                                EllipsizedTextWithTooltip(
+                                    text = stringResource(Res.string.single_sponsorblock_caption),
+                                    modifier = Modifier.fillMaxWidth(0.75f)
+                                )
+                            },
+                            icon = { Icon(Icons.Regular.Info, null) },
+                            trailing = {
+                                Switcher(
+                                    checked = removeSponsors,
+                                    onCheckStateChange = onSetRemoveSponsors,
+                                )
+                            }
+                        )
+                        Spacer(Modifier.height(8.dp))
+                    }
                 }
 
                 // Afficher le sélecteur de qualité audio si "Audio" est sélectionné
@@ -297,19 +376,70 @@ private fun SingleVideoDownloadView(
                         }
                     }
                     Spacer(Modifier.height(16.dp))
+                    // Option: Split chapters (audio) — friendlier CardExpander with caption
+                    if (videoInfo?.hasChapters == true) {
+                        CardExpanderItem(
+                            heading = {
+                                Text(
+                                    stringResource(Res.string.split_chapters),
+                                    modifier = Modifier.fillMaxWidth(0.75f)
+                                )
+                            },
+                            caption = {
+                                EllipsizedTextWithTooltip(
+                                    text = stringResource(Res.string.single_split_chapters_caption),
+                                    modifier = Modifier.fillMaxWidth(0.75f)
+                                )
+                            },
+                            icon = { Icon(Icons.Regular.FilmstripPlay, null) },
+                            trailing = {
+                                Switcher(
+                                    checked = splitChapters,
+                                    onCheckStateChange = onSetSplitChapters,
+                                )
+                            }
+                        )
+                    }
+
+                    // Option: SponsorBlock (audio) — friendlier CardExpander with caption
+                    if (hasSponsorSegments) {
+                        Spacer(Modifier.height(8.dp))
+                        CardExpanderItem(
+                            heading = {
+                                Text(
+                                    stringResource(Res.string.remove_sponsors),
+                                    modifier = Modifier.fillMaxWidth(0.75f)
+                                )
+                            },
+                            caption = {
+                                EllipsizedTextWithTooltip(
+                                    text = stringResource(Res.string.single_sponsorblock_caption),
+                                    modifier = Modifier.fillMaxWidth(0.75f)
+                                )
+                            },
+                            icon = { Icon(Icons.Regular.Info, null) },
+                            trailing = {
+                                Switcher(
+                                    checked = removeSponsors,
+                                    onCheckStateChange = onSetRemoveSponsors,
+                                )
+                            }
+                        )
+                    }
                 }
 
                 // Bouton de téléchargement centré
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
+                    horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-
                     AccentButton(onClick = if (selectedFormatIndex == 0) onStartDownload else onStartAudioDownload) {
                         Icon(Icons.Default.ArrowDownload, null)
                         Text(stringResource(Res.string.download))
                     }
 
+                    // Split-chapters now controlled by a checkbox above
                 }
                 Spacer(Modifier.height(16.dp))
             }

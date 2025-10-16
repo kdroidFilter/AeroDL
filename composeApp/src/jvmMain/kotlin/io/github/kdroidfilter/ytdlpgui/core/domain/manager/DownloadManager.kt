@@ -7,7 +7,7 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.kdroid.composetray.tray.api.TrayAppState
-import com.russhwolf.settings.Settings
+import dev.zacsweers.metro.Inject
 import io.github.kdroidfilter.knotify.builder.ExperimentalNotificationsApi
 import io.github.kdroidfilter.knotify.compose.builder.notification
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
@@ -23,6 +23,7 @@ import io.github.kdroidfilter.logging.errorln
 import io.github.kdroidfilter.logging.infoln
 import io.github.kdroidfilter.logging.warnln
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
+import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -52,10 +53,10 @@ import kotlin.collections.ArrayDeque
  * @param historyRepository Stores the history of completed downloads.
  * @param trayAppState The tray application state for managing window visibility.
  */
+@Inject
 class DownloadManager(
-    private val getNavController: () -> NavHostController,
     private val ytDlpWrapper: YtDlpWrapper,
-    private val settings: Settings,
+    private val settingsRepository: SettingsRepository,
     private val historyRepository: DownloadHistoryRepository,
     private val trayAppState: TrayAppState,
 ) {
@@ -67,6 +68,8 @@ class DownloadManager(
         val url: String,
         val videoInfo: VideoInfo? = null,
         val preset: YtDlpWrapper.Preset? = null,
+        val splitChapters: Boolean = false,
+        val sponsorBlock: Boolean = false,
         val progress: Float = 0f,
         val speedBytesPerSec: Long? = null,
         val status: Status = Status.Pending,
@@ -88,36 +91,65 @@ class DownloadManager(
 
     private val pendingQueue: ArrayDeque<String> = ArrayDeque()
 
-    private fun maxParallel(): Int = settings.getInt(SettingsKeys.PARALLEL_DOWNLOADS, 2).coerceIn(1, 10)
+    private fun maxParallel(): Int = settingsRepository.parallelDownloads.value
     private fun runningCount(): Int = _items.value.count { it.status == DownloadItem.Status.Running }
 
-    fun start(url: String, videoInfo: VideoInfo? = null, preset: YtDlpWrapper.Preset? = null): String =
-        enqueueDownload(url, videoInfo, preset ?: YtDlpWrapper.Preset.P720, null)
+    fun start(url: String, videoInfo: VideoInfo? = null, preset: YtDlpWrapper.Preset? = null, sponsorBlock: Boolean = false): String =
+        enqueueDownload(url, videoInfo, preset ?: YtDlpWrapper.Preset.P720, null, null, splitChapters = false, sponsorBlock = sponsorBlock)
 
     fun startWithSubtitles(
         url: String,
         videoInfo: VideoInfo? = null,
         preset: YtDlpWrapper.Preset? = null,
-        languages: List<String>
-    ): String = enqueueDownload(url, videoInfo, preset ?: YtDlpWrapper.Preset.P720, languages.filter { it.isNotBlank() })
+        languages: List<String>,
+        sponsorBlock: Boolean = false,
+    ): String = enqueueDownload(url, videoInfo, preset ?: YtDlpWrapper.Preset.P720, languages.filter { it.isNotBlank() }, null, splitChapters = false, sponsorBlock = sponsorBlock)
 
     fun startAudio(
         url: String,
         videoInfo: VideoInfo? = null,
-        audioQualityPreset: YtDlpWrapper.AudioQualityPreset? = null
-    ): String = enqueueDownload(url, videoInfo, null, null, audioQualityPreset)
+        audioQualityPreset: YtDlpWrapper.AudioQualityPreset? = null,
+        sponsorBlock: Boolean = false,
+    ): String = enqueueDownload(url, videoInfo, null, null, audioQualityPreset, splitChapters = false, sponsorBlock = sponsorBlock)
+
+    fun startAudioSplitChapters(
+        url: String,
+        videoInfo: VideoInfo? = null,
+        audioQualityPreset: YtDlpWrapper.AudioQualityPreset? = null,
+        sponsorBlock: Boolean = false
+    ): String = enqueueDownload(url, videoInfo, null, null, audioQualityPreset, splitChapters = true, sponsorBlock = sponsorBlock)
+
+    fun startSplitChapters(
+        url: String,
+        videoInfo: VideoInfo? = null,
+        preset: YtDlpWrapper.Preset? = null,
+        languages: List<String>? = null,
+        sponsorBlock: Boolean = false,
+    ): String = enqueueDownload(
+        url = url,
+        videoInfo = videoInfo,
+        preset = preset ?: YtDlpWrapper.Preset.P720,
+        subtitles = languages?.filter { it.isNotBlank() },
+        audioQualityPreset = null,
+        splitChapters = true,
+        sponsorBlock = sponsorBlock,
+    )
 
     private fun enqueueDownload(
         url: String,
         videoInfo: VideoInfo?,
         preset: YtDlpWrapper.Preset?,
         subtitles: List<String>?,
-        audioQualityPreset: YtDlpWrapper.AudioQualityPreset? = null
+        audioQualityPreset: YtDlpWrapper.AudioQualityPreset? = null,
+        splitChapters: Boolean = false,
+        sponsorBlock: Boolean = false,
     ): String {
         val item = DownloadItem(
             url = url,
             videoInfo = videoInfo,
             preset = preset,
+            splitChapters = splitChapters,
+            sponsorBlock = sponsorBlock,
             subtitleLanguages = subtitles,
             audioQualityPreset = audioQualityPreset
         )
@@ -182,7 +214,9 @@ class DownloadManager(
         )
 
         val handle = when {
+            item.preset == null && item.splitChapters -> downloadAudioSplitChapters(item, eventHandler)
             item.preset == null -> downloadAudio(item, eventHandler)
+            item.splitChapters -> downloadVideoSplitChapters(item, eventHandler)
             !item.subtitleLanguages.isNullOrEmpty() -> downloadVideoWithSubtitles(item, eventHandler)
             else -> downloadVideo(item, eventHandler)
         }
@@ -234,16 +268,15 @@ class DownloadManager(
                         warnln { "[DownloadManager] Could not determine final output path for item $id" }
                     }
 
+                    // If split-chapters, delete the non-split base file (keep only chapter files)
+                    if (item.splitChapters) {
+                        deleteBaseFileIfSplit(item, finalPathSink)
+                    }
+
                     saveToHistory(id, item, absolutePath)
 
-                    // Notify when window hidden or not on downloader screen (using type-safe hasRoute())
-                    val currentDestination = getNavController().currentBackStackEntry?.destination
-                    val isOnDownloaderScreen = currentDestination?.hierarchy?.any {
-                        it.hasRoute(Destination.MainNavigation.Downloader::class)
-                    } == true
-
-                    if ((settings.getBoolean(SettingsKeys.NOTIFY_ON_DOWNLOAD_COMPLETE, true) && !trayAppState.isVisible.value) ||
-                        (settings.getBoolean(SettingsKeys.NOTIFY_ON_DOWNLOAD_COMPLETE, true) && trayAppState.isVisible.value && !isOnDownloaderScreen)) {
+                    // Notify when enabled in settings and window is hidden
+                    if (settingsRepository.notifyOnComplete.value && !trayAppState.isVisible.value) {
                         scope.launch { sendCompletionNotification(item, absolutePath) }
                     }
                 }
@@ -304,6 +337,35 @@ class DownloadManager(
         }
     }
 
+    private fun readAllPathsFromSink(file: File): List<String> = try {
+        if (!file.exists()) emptyList()
+        else file.readLines().mapNotNull { line ->
+            val p = line.trim().trim('"')
+            if (p.isBlank()) null else p
+        }
+    } catch (_: Exception) { emptyList() }
+
+    private fun deleteBaseFileIfSplit(item: DownloadItem, finalPathSink: File) {
+        val outputs = readAllPathsFromSink(finalPathSink)
+        if (outputs.isEmpty()) return
+
+        val ext = if (item.preset == null) "mp3" else "mp4"
+        val candidates = outputs.filter { path ->
+            path.endsWith(".$ext", ignoreCase = true) &&
+                    // Exclude chapter files that live under a directory named like a file with extension
+                    (File(path).parentFile?.name?.endsWith(".$ext", ignoreCase = true) != true)
+        }
+        val baseToDelete = candidates.lastOrNull() ?: return
+        runCatching {
+            val f = File(baseToDelete)
+            if (f.exists()) {
+                val ok = f.delete()
+                if (ok) infoln { "[DownloadManager] Deleted base file after split: ${f.absolutePath}" }
+                else warnln { "[DownloadManager] Failed to delete base file after split: ${f.absolutePath}" }
+            }
+        }
+    }
+
     private fun computeAbsoluteFromFallbacks(item: DownloadItem, loggedPath: String?): String? {
         loggedPath?.let {
             val p = File(it.trim('"'))
@@ -331,6 +393,7 @@ class DownloadManager(
             url = item.url,
             preset = item.audioQualityPreset ?: YtDlpWrapper.AudioQualityPreset.HIGH,
             outputTemplate = buildOutputTemplateForAudio(item.audioQualityPreset),
+            extraArgs = if (item.sponsorBlock) listOf("--sponsorblock-remove", "default") else emptyList(),
             onEvent = onEvent
         )
 
@@ -339,8 +402,62 @@ class DownloadManager(
             url = item.url,
             preset = item.preset ?: YtDlpWrapper.Preset.P720,
             outputTemplate = buildOutputTemplate(item.preset),
+            extraArgs = if (item.sponsorBlock) listOf("--sponsorblock-remove", "default") else emptyList(),
             onEvent = onEvent
         )
+
+    private fun downloadAudioSplitChapters(item: DownloadItem, onEvent: (Event) -> Unit): Handle {
+        val directoryTemplate = buildDirectoryTemplateForAudio(item.audioQualityPreset)
+        val splitFileTemplate = buildOutputTemplateForAudioSplitChapters(item.audioQualityPreset)
+        val dir = ytDlpWrapper.downloadDir
+        val chapterTemplate = if (dir != null) {
+            val basePath = File(dir, directoryTemplate).absolutePath
+            "chapter:$basePath/$splitFileTemplate"
+        } else {
+            "chapter:$directoryTemplate/$splitFileTemplate"
+        }
+
+        return ytDlpWrapper.downloadAudioMp3WithPreset(
+            url = item.url,
+            preset = item.audioQualityPreset ?: YtDlpWrapper.AudioQualityPreset.HIGH,
+            // Do NOT set a base output; only chapter outputs
+            outputTemplate = null,
+            extraArgs = buildList {
+                add("--split-chapters"); add("-o"); add(chapterTemplate)
+                if (item.sponsorBlock) { add("--sponsorblock-remove"); add("default") }
+            },
+            onEvent = onEvent
+        )
+    }
+
+    private fun downloadVideoSplitChapters(item: DownloadItem, onEvent: (Event) -> Unit): Handle {
+        val subtitleOptions = item.subtitleLanguages?.let { langs ->
+            if (langs.isNotEmpty()) SubtitleOptions(
+                languages = langs,
+                writeAutoSubtitles = true,
+                embedSubtitles = true,
+                writeSubtitles = false,
+                subFormat = "srt"
+            ) else null
+        }
+
+        val directoryTemplate = buildDirectoryTemplateForVideo(item.preset)
+        val splitFileTemplate = buildOutputTemplateForSplitChapters(item.preset)
+        val chapterTemplate = "chapter:$directoryTemplate/$splitFileTemplate"
+
+        return ytDlpWrapper.downloadMp4SplitChapters(
+            url = item.url,
+            preset = item.preset ?: YtDlpWrapper.Preset.P720,
+            // Do NOT set a base output; only chapter outputs
+            outputTemplate = null,
+            extraArgs = buildList {
+                add("-o"); add(chapterTemplate)
+                if (item.sponsorBlock) { add("--sponsorblock-remove"); add("default") }
+            },
+            subtitles = subtitleOptions,
+            onEvent = onEvent
+        )
+    }
 
     private fun downloadVideoWithSubtitles(item: DownloadItem, onEvent: (Event) -> Unit): Handle {
         infoln { "[DownloadManager] Initiating video download with subtitles for: ${item.url}" }
@@ -361,13 +478,14 @@ class DownloadManager(
             url = item.url,
             preset = item.preset ?: YtDlpWrapper.Preset.P720,
             outputTemplate = buildOutputTemplate(item.preset),
+            extraArgs = if (item.sponsorBlock) listOf("--sponsorblock-remove", "default") else emptyList(),
             subtitles = subtitleOptions,
             onEvent = onEvent
         )
     }
 
     private fun buildOutputTemplate(preset: YtDlpWrapper.Preset?): String {
-        val includePreset = settings.getBoolean(SettingsKeys.INCLUDE_PRESET_IN_FILENAME, true)
+        val includePreset = settingsRepository.includePresetInFilename.value
         return if (includePreset && preset != null) {
             "%(title)s_${preset.height}p.%(ext)s"
         } else {
@@ -376,11 +494,47 @@ class DownloadManager(
     }
 
     private fun buildOutputTemplateForAudio(preset: YtDlpWrapper.AudioQualityPreset?): String {
-        val includePreset = settings.getBoolean(SettingsKeys.INCLUDE_PRESET_IN_FILENAME, true)
+        val includePreset = settingsRepository.includePresetInFilename.value
         return if (includePreset && preset != null) {
             "%(title)s_${preset.bitrate}.%(ext)s"
         } else {
             "%(title)s.%(ext)s"
+        }
+    }
+
+    private fun buildOutputTemplateForSplitChapters(preset: YtDlpWrapper.Preset?): String {
+        val includePreset = settingsRepository.includePresetInFilename.value
+        return if (includePreset && preset != null) {
+            "%(title)s_%(section_number)02d_%(section_title)s_${preset.height}p.%(ext)s"
+        } else {
+            "%(title)s_%(section_number)02d_%(section_title)s.%(ext)s"
+        }
+    }
+
+    private fun buildOutputTemplateForAudioSplitChapters(preset: YtDlpWrapper.AudioQualityPreset?): String {
+        val includePreset = settingsRepository.includePresetInFilename.value
+        return if (includePreset && preset != null) {
+            "%(title)s_%(section_number)02d_%(section_title)s_${preset.bitrate}.%(ext)s"
+        } else {
+            "%(title)s_%(section_number)02d_%(section_title)s.%(ext)s"
+        }
+    }
+
+    private fun buildDirectoryTemplateForVideo(preset: YtDlpWrapper.Preset?): String {
+        val includePreset = settingsRepository.includePresetInFilename.value
+        return if (includePreset && preset != null) {
+            "%(title)s_${preset.height}p"
+        } else {
+            "%(title)s"
+        }
+    }
+
+    private fun buildDirectoryTemplateForAudio(preset: YtDlpWrapper.AudioQualityPreset?): String {
+        val includePreset = settingsRepository.includePresetInFilename.value
+        return if (includePreset && preset != null) {
+            "%(title)s_${preset.bitrate}"
+        } else {
+            "%(title)s"
         }
     }
 
@@ -391,6 +545,7 @@ class DownloadManager(
             videoInfo = item.videoInfo,
             outputPath = outputFilePath,
             isAudio = item.preset == null,
+            isSplit = item.splitChapters,
             presetHeight = item.preset?.height,
             createdAt = System.currentTimeMillis()
         )

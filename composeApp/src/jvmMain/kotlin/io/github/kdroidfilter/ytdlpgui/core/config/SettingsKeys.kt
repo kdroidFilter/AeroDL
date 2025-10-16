@@ -15,5 +15,5 @@ object SettingsKeys {
     const val AUTO_LAUNCH_ENABLED = "auto_launch_enabled"
     const val NOTIFY_ON_DOWNLOAD_COMPLETE = "notify_on_download_complete"
     const val ONBOARDING_COMPLETED = "onboarding_completed"
-    const val SPONSORBLOCK_REMOVE = "sponsorblock_remove"
+    const val CONCURRENT_FRAGMENTS = "concurrent_fragments"
 }

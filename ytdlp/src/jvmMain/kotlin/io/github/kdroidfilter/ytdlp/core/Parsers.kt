@@ -250,6 +250,7 @@ fun parseVideoInfoFromJson(
         formatNote = root["format_note"].strOrNull(),
         availableSubtitles = availableSubtitles,
         automaticCaptions = automaticCaptions,
+        hasChapters = chapters.isNotEmpty(),
         chapters = chapters,
         tags = (root["tags"].arrOrNull()?.mapNotNull { it.strOrNull() }) ?: emptyList(),
         categories = (root["categories"].arrOrNull()?.mapNotNull { it.strOrNull() }) ?: emptyList(),

@@ -66,6 +66,44 @@
 -dontwarn org.conscrypt.**
 -dontwarn org.bouncycastle.**
 -dontwarn org.openjsse.**
+# Keep BouncyCastle and NativeCerts classes intact to avoid bytecode changes
+# that can invalidate signed JAR digests during release optimization.
+-keep class org.bouncycastle.** { *; }
+-keep class org.jetbrains.nativecerts.** { *; }
+
+# Keep Ktor Kotlinx Serialization provider loaded via ServiceLoader
+-keep class io.ktor.serialization.kotlinx.json.KotlinxSerializationJsonExtensionProvider { *; }
+-keep class io.ktor.serialization.kotlinx.** { *; }
+
+# Keep SQLite JDBC driver and any Driver implementations discoverable by DriverManager
+-keep class org.sqlite.** { *; }
+-keep class * implements java.sql.Driver { *; }
+-dontwarn org.sqlite.**
+
+# Keep GStreamer Java bindings (avoid enum unboxing/optimization)
+-keep class org.freedesktop.gstreamer.** { *; }
+-keep enum org.freedesktop.gstreamer.** { *; }
+-dontwarn org.freedesktop.gstreamer.**
+
+# Coil, OkHttp, and Okio are used for AsyncImage. Keep them to prevent
+# release-only issues where fetchers/decoders or compose adapters are removed.
+-keep class coil3.** { *; }
+-keep class coil3.compose.** { *; }
+-keep class coil3.network.** { *; }
+-keep class okhttp3.** { *; }
+-keep class okio.** { *; }
+-dontwarn coil3.**
+-dontwarn okhttp3.**
+-dontwarn okio.**
+
+# FileKit dialogs (folder/file pickers). Keep providers and dialog implementations
+# as they may be loaded reflectively (or via ServiceLoader) and get stripped.
+-keep class io.github.vinceglb.filekit.** { *; }
+-dontwarn io.github.vinceglb.filekit.**
+
+# D-Bus bindings may be used on Linux via portals. Keep to be safe in release.
+-keep class org.freedesktop.dbus.** { *; }
+-dontwarn org.freedesktop.dbus.**
 #################################### SLF4J #####################################
 -dontwarn org.slf4j.**
 

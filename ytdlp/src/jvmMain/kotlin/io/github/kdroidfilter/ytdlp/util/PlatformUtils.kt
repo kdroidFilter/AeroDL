@@ -220,10 +220,16 @@ object PlatformUtils {
     ): String? = withContext(Dispatchers.IO) {
         val baseDir = File(getCacheDir(), "ffmpeg")
         val binDir = File(baseDir, "bin")
-        val targetExe = File(binDir, if (getOperatingSystem() == OperatingSystem.WINDOWS) "ffmpeg.exe" else "ffmpeg")
+        val targetFfmpeg = File(binDir, if (getOperatingSystem() == OperatingSystem.WINDOWS) "ffmpeg.exe" else "ffmpeg")
+        val targetFfprobe = File(binDir, if (getOperatingSystem() == OperatingSystem.WINDOWS) "ffprobe.exe" else "ffprobe")
 
-        if (targetExe.exists() && ffmpegVersion(targetExe.absolutePath) != null && !forceDownload) {
-            return@withContext targetExe.absolutePath
+        if (!forceDownload && targetFfmpeg.exists() && ffmpegVersion(targetFfmpeg.absolutePath) != null) {
+            if (getOperatingSystem() == OperatingSystem.MACOS || targetFfprobe.exists()) {
+                // On macOS, eugeneware provides only ffmpeg; allow early return.
+                // On other OSes, early return only if ffprobe is also present.
+                return@withContext targetFfmpeg.absolutePath
+            }
+            // Otherwise, continue to (re)install to retrieve ffprobe as well.
         }
 
         baseDir.mkdirs(); binDir.mkdirs()
@@ -247,24 +253,34 @@ object PlatformUtils {
             downloadFile(url, archive, onProgress)
 
             if (os == OperatingSystem.MACOS) {
-                // macOS assets are plain binaries (no archive)
-                archive.copyTo(targetExe, overwrite = true)
+                // macOS assets from eugeneware are plain ffmpeg binaries (no ffprobe in this repo)
+                archive.copyTo(targetFfmpeg, overwrite = true)
             } else {
                 if (archive.name.endsWith(".zip")) NetAndArchive.extractZip(archive, baseDir)
                 else if (archive.name.endsWith(".tar.xz")) NetAndArchive.extractTarXzWithSystemTar(archive, baseDir)
                 else error("Unsupported FFmpeg archive: ${archive.name}")
 
-                val found = baseDir.walkTopDown()
-                    .firstOrNull { it.isFile && it.name.startsWith("ffmpeg") && it.canRead() }
+                // Locate ffmpeg and ffprobe within the extracted tree
+                val foundFfmpeg = baseDir.walkTopDown()
+                    .firstOrNull { it.isFile && it.name.matches(Regex("^ffmpeg(\\.exe)?$")) && it.canRead() }
                     ?: error("FFmpeg binary not found after extraction")
+                foundFfmpeg.copyTo(targetFfmpeg, overwrite = true)
 
-                found.copyTo(targetExe, overwrite = true)
+                val foundFfprobe = baseDir.walkTopDown()
+                    .firstOrNull { it.isFile && it.name.matches(Regex("^ffprobe(\\.exe)?$")) && it.canRead() }
+                // Some builds (should) include ffprobe; if found, install it alongside ffmpeg
+                if (foundFfprobe != null) {
+                    foundFfprobe.copyTo(targetFfprobe, overwrite = true)
+                }
             }
 
-            if (getOperatingSystem() != OperatingSystem.WINDOWS) makeExecutable(targetExe)
+            if (getOperatingSystem() != OperatingSystem.WINDOWS) {
+                makeExecutable(targetFfmpeg)
+                if (targetFfprobe.exists()) makeExecutable(targetFfprobe)
+            }
 
-            ffmpegVersion(targetExe.absolutePath) ?: error("FFmpeg is not runnable after installation")
-            targetExe.absolutePath
+            ffmpegVersion(targetFfmpeg.absolutePath) ?: error("FFmpeg is not runnable after installation")
+            targetFfmpeg.absolutePath
         } catch (t: Throwable) {
             errorln { "Failed to download/install FFmpeg: ${t.stackTraceToString()}" }
             null
