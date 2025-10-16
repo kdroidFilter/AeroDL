@@ -1,41 +1,46 @@
-name: Build and Release Compose Desktop App with temurin JDK
-
+name: Build and Release Compose Desktop App with Temurin JDK (JBR for Windows)
 on:
   push:
     tags:
       - 'v*'
-
 jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-
     steps:
       # 1. Check out the source code
       - name: Checkout source
         uses: actions/checkout@v4
-
-      # 2. Set up jetbrains JDK with proper authentication
-      - name: Set up jetbrains JDK
+      
+      # 2. Set up Temurin JDK for Linux and macOS
+      - name: Set up Temurin JDK
+        if: matrix.os != 'windows-latest'
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      
+      # 2b. Set up JetBrains JDK for Windows only
+      - name: Set up JetBrains JDK
+        if: matrix.os == 'windows-latest'
         uses: actions/setup-java@v4
         with:
           distribution: 'jetbrains'
           java-version: '21'
           token: ${{ secrets.GITHUB_TOKEN }}
-
-
+      
       # 3. Configure Gradle
       - name: Set up Gradle
         uses: gradle/gradle-build-action@v2
         with:
           gradle-version: '8.12'
-
+      
       # 4. Build the application
       - name: Build with Gradle
         run: ./gradlew packageReleaseDistributionForCurrentOS
-
+      
       # 5. Upload OS-specific artifacts
       - name: Upload Linux artifact
         if: matrix.os == 'ubuntu-latest'
@@ -43,52 +48,51 @@ jobs:
         with:
           name: linux-deb
           path: composeApp/build/compose/binaries/main-release/deb/*.deb
-
+      
       - name: Upload macOS artifact
         if: matrix.os == 'macos-latest'
         uses: actions/upload-artifact@v4
         with:
           name: macos-pkg
           path: composeApp/build/compose/binaries/main-release/pkg/*.pkg
-
+      
       - name: Upload Windows artifact
         if: matrix.os == 'windows-latest'
         uses: actions/upload-artifact@v4
         with:
           name: windows-msi
           path: composeApp/build/compose/binaries/main-release/msi/*.msi
-
+  
   release:
     needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: write
-
     steps:
       # 1. Check out the source code
       - name: Checkout source
         uses: actions/checkout@v4
-
+      
       # 2. Download artifacts from all platforms
       - name: Download Linux artifact
         uses: actions/download-artifact@v4
         with:
           name: linux-deb
-
+      
       - name: Download macOS artifact
         uses: actions/download-artifact@v4
         with:
           name: macos-pkg
-
+      
       - name: Download Windows artifact
         uses: actions/download-artifact@v4
         with:
           name: windows-msi
-
+      
       # 3. List downloaded artifacts
       - name: Check downloaded artifacts
         run: ls -R
-
+      
       # 4. Create GitHub Release
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
