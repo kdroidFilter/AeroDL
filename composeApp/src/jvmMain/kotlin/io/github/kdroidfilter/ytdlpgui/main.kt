@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -88,8 +89,10 @@ fun main() = application {
             )
             TrayAppStateHolder.set(trayAppState)
 
-            // Eagerly initialize clipboard monitoring so it uses the real TrayAppState and starts if enabled
-            val _clipboardMonitorManager = remember(appGraph) { appGraph.clipboardMonitorManager }
+            // Eagerly instantiate clipboard monitoring once, as a side effect
+            LaunchedEffect(appGraph) {
+                appGraph.clipboardMonitorManager
+            }
 
             // Initialize Coil with native trusted roots
             val imageLoader = appGraph.imageLoader
