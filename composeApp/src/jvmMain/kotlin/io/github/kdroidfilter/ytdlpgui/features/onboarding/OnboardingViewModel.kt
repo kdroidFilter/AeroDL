@@ -9,7 +9,6 @@ import com.kdroid.composetray.tray.api.TrayWindowDismissMode
 import io.github.kdroidfilter.network.CertificateValidator
 import io.github.kdroidfilter.platformtools.LinuxDesktopEnvironment
 import io.github.kdroidfilter.platformtools.detectLinuxDesktopEnvironment
-import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
 import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
 import io.github.kdroidfilter.ytdlpgui.features.init.InitViewModel
@@ -23,6 +22,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import dev.zacsweers.metro.Inject
+import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 
 @Inject
 class OnboardingViewModel(
@@ -42,6 +42,7 @@ class OnboardingViewModel(
     private val _shouldSkipNoCheckCert = MutableStateFlow(true)
     private val shouldSkipNoCheckCert: Boolean
         get() = _shouldSkipNoCheckCert.value
+
 
     override fun initialState(): OnboardingState = OnboardingState()
 
@@ -231,7 +232,13 @@ class OnboardingViewModel(
 
     private fun navigateToStep(step: OnboardingStep) {
         if (uiState.value.currentStep == step) return
-        update { copy(currentStep = step, navigationState = OnboardingNavigationState.NavigateToStep(step.toDestination())) }
+        println("OnboardingViewModel: Navigating from ${uiState.value.currentStep} to $step")
+        update { 
+            copy(
+                currentStep = step,
+                navigationState = OnboardingNavigationState.NavigateToStep(step.toDestination())
+            )
+        }
     }
 
     private fun OnboardingStep.toDestination(): Destination.Onboarding = when (this) {

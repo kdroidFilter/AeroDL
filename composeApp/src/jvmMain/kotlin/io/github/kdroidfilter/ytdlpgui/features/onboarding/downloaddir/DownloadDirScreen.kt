@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -23,6 +24,8 @@ import io.github.composefluent.component.Text
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.filled.FolderOpen
 import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
+import androidx.navigation.NavHostController
+import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.HeaderRow
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.NavigationRow
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents
@@ -41,7 +44,7 @@ import ytdlpgui.composeapp.generated.resources.settings_select
 import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 
 @Composable
-fun DownloadDirScreen() {
+fun DownloadDirScreen(navController: NavHostController) {
     val appGraph = LocalAppGraph.current
     val viewModel = remember(appGraph) { appGraph.onboardingViewModel }
     val downloadDirPath by viewModel.downloadDirPath.collectAsState()
@@ -51,6 +54,8 @@ fun DownloadDirScreen() {
     val currentStep by viewModel.currentStep.collectAsState()
     val initState by viewModel.initState.collectAsState()
     val dependencyInfoBarDismissed by viewModel.dependencyInfoBarDismissed.collectAsState()
+    
+    
     DownloadDirView(
         state = state,
         onEvent = viewModel::handleEvent,

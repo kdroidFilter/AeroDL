@@ -57,25 +57,6 @@ fun App() {
         }
     }
 
-    // Observe onboarding navigation intents and route them via NavController
-    val onboardingViewModel = remember(appGraph) { appGraph.onboardingViewModel }
-    LaunchedEffect(navController, onboardingViewModel) {
-        onboardingViewModel.uiState.collect { state ->
-            when (val nav = state.navigationState) {
-                is io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingNavigationState.NavigateToStep -> {
-                    runCatching { navController.navigate(nav.destination) }
-                    onboardingViewModel.handleEvent(io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents.OnNavigationConsumed)
-                }
-                io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingNavigationState.NavigateToHome -> {
-                    runCatching { navController.navigate(Destination.MainNavigation.Home) }
-                    onboardingViewModel.handleEvent(io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents.OnNavigationConsumed)
-                }
-                io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingNavigationState.None -> {
-                    // no-op
-                }
-            }
-        }
-    }
 
     // Observe current back stack entry to determine which header to show
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -127,28 +108,28 @@ fun App() {
 
             navigation<Destination.Onboarding.Graph>(startDestination = Destination.Onboarding.Welcome) {
                 noAnimatedComposable<Destination.Onboarding.Welcome> { backStackEntry ->
-                    WithParentViewModelStoreOwner(navController, backStackEntry) { WelcomeScreen() }
+                    WithParentViewModelStoreOwner(navController, backStackEntry) { WelcomeScreen(navController) }
                 }
                 noAnimatedComposable<Destination.Onboarding.DownloadDir> { backStackEntry ->
-                    WithParentViewModelStoreOwner(navController, backStackEntry) { DownloadDirScreen() }
+                    WithParentViewModelStoreOwner(navController, backStackEntry) { DownloadDirScreen(navController) }
                 }
                 noAnimatedComposable<Destination.Onboarding.Cookies> { backStackEntry ->
-                    WithParentViewModelStoreOwner(navController, backStackEntry) { CookiesScreen() }
+                    WithParentViewModelStoreOwner(navController, backStackEntry) { CookiesScreen(navController) }
                 }
                 noAnimatedComposable<Destination.Onboarding.NoCheckCert> { backStackEntry ->
-                    WithParentViewModelStoreOwner(navController, backStackEntry) { NoCheckCertScreen() }
+                    WithParentViewModelStoreOwner(navController, backStackEntry) { NoCheckCertScreen(navController) }
                 }
                 noAnimatedComposable<Destination.Onboarding.GnomeFocus> { backStackEntry ->
-                    WithParentViewModelStoreOwner(navController, backStackEntry) { GnomeFocusScreen() }
+                    WithParentViewModelStoreOwner(navController, backStackEntry) { GnomeFocusScreen(navController) }
                 }
                 noAnimatedComposable<Destination.Onboarding.Clipboard> { backStackEntry ->
-                    WithParentViewModelStoreOwner(navController, backStackEntry) { ClipboardScreen() }
+                    WithParentViewModelStoreOwner(navController, backStackEntry) { ClipboardScreen(navController) }
                 }
                 noAnimatedComposable<Destination.Onboarding.Autostart> { backStackEntry ->
-                    WithParentViewModelStoreOwner(navController, backStackEntry) { AutostartScreen() }
+                    WithParentViewModelStoreOwner(navController, backStackEntry) { AutostartScreen(navController) }
                 }
                 noAnimatedComposable<Destination.Onboarding.Finish> { backStackEntry ->
-                    WithParentViewModelStoreOwner(navController, backStackEntry) { FinishScreen() }
+                    WithParentViewModelStoreOwner(navController, backStackEntry) { FinishScreen(navController) }
                 }
             }
 

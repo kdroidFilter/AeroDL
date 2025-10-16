@@ -10,8 +10,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -21,6 +23,7 @@ import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.Power
 import io.github.kdroidfilter.ytdlpgui.core.design.components.Switcher
 import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
+import androidx.navigation.NavHostController
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingStep
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingViewModel
@@ -38,9 +41,9 @@ import ytdlpgui.composeapp.generated.resources.settings_auto_launch_caption
 import ytdlpgui.composeapp.generated.resources.settings_auto_launch_title
 
 @Composable
-fun AutostartScreen(
-    viewModel : OnboardingViewModel = LocalAppGraph.current.onboardingViewModel
-) {
+fun AutostartScreen(navController: NavHostController) {
+    val appGraph = LocalAppGraph.current
+    val viewModel = remember(appGraph) { appGraph.onboardingViewModel }
     val autoLaunchEnabled by viewModel.autoLaunchEnabled.collectAsState()
     val state = AutostartState(
         autoLaunchEnabled = autoLaunchEnabled
@@ -48,6 +51,7 @@ fun AutostartScreen(
     val currentStep by viewModel.currentStep.collectAsState()
     val initState by viewModel.initState.collectAsState()
     val dependencyInfoBarDismissed by viewModel.dependencyInfoBarDismissed.collectAsState()
+    
 
     AutostartView(
         state = state,

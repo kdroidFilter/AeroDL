@@ -15,6 +15,8 @@ import io.github.composefluent.component.AccentButton
 import io.github.composefluent.component.Text
 import io.github.kdroidfilter.ytdlpgui.core.design.components.ProgressBar
 import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
+import androidx.navigation.NavHostController
+import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingStep
@@ -31,6 +33,7 @@ import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun FinishScreen(
+    navController: NavHostController,
     viewModel: OnboardingViewModel = LocalAppGraph.current.onboardingViewModel,
 ) {
     val currentStep by viewModel.currentStep.collectAsState()
@@ -41,7 +44,10 @@ fun FinishScreen(
         initState = initState,
         totalSteps = viewModel.getTotalSteps(),
         currentStepIndex = viewModel.getCurrentStepIndex(),
-        onComplete = { viewModel.completeOnboarding() }
+        onComplete = { 
+            viewModel.completeOnboarding()
+            navController.navigate(Destination.MainNavigation.Home)
+        }
     )
 }
 

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -17,6 +18,7 @@ import io.github.composefluent.component.AccentButton
 import io.github.composefluent.component.HyperlinkButton
 import io.github.composefluent.component.Text
 import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
+import androidx.navigation.NavHostController
 import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.HeaderRow
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.NavigationRow
@@ -33,12 +35,14 @@ import ytdlpgui.composeapp.generated.resources.onboarding_gnome_focus_open_exten
 import ytdlpgui.composeapp.generated.resources.onboarding_gnome_focus_title
 
 @Composable
-fun GnomeFocusScreen() {
+fun GnomeFocusScreen(navController: NavHostController) {
     val appGraph = LocalAppGraph.current
     val viewModel = remember(appGraph) { appGraph.onboardingViewModel }
     val currentStep by viewModel.currentStep.collectAsState()
     val initState by viewModel.initState.collectAsState()
     val dependencyInfoBarDismissed by viewModel.dependencyInfoBarDismissed.collectAsState()
+    
+    
     GnomeFocusView(
         onEvent = viewModel::handleEvent,
         currentStep = currentStep,

@@ -2,6 +2,7 @@ package io.github.kdroidfilter.ytdlpgui.features.onboarding.clipboard
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -14,6 +15,7 @@ import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.Clipboard
 import io.github.kdroidfilter.ytdlpgui.core.design.components.Switcher
 import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
+import androidx.navigation.NavHostController
 import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingStep
@@ -27,7 +29,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 import ytdlpgui.composeapp.generated.resources.*
 
 @Composable
-fun ClipboardScreen() {
+fun ClipboardScreen(navController: NavHostController) {
     val appGraph = LocalAppGraph.current
     val viewModel = remember(appGraph) { appGraph.onboardingViewModel }
     val clipboardMonitoringEnabled by viewModel.clipboardMonitoringEnabled.collectAsState()
@@ -37,6 +39,8 @@ fun ClipboardScreen() {
     val currentStep by viewModel.currentStep.collectAsState()
     val initState by viewModel.initState.collectAsState()
     val dependencyInfoBarDismissed by viewModel.dependencyInfoBarDismissed.collectAsState()
+    
+    
     ClipboardView(
         state = state,
         onEvent = viewModel::handleEvent,

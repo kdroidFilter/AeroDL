@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -19,6 +20,8 @@ import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.filled.Cookies
 import io.github.kdroidfilter.ytdlpgui.core.design.components.BrowserSelector
 import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
+import androidx.navigation.NavHostController
+import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.HeaderRow
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.NavigationRow
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents
@@ -34,7 +37,7 @@ import ytdlpgui.composeapp.generated.resources.settings_cookies_from_browser_tit
 import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 
 @Composable
-fun CookiesScreen() {
+fun CookiesScreen(navController: NavHostController) {
     val appGraph = LocalAppGraph.current
     val viewModel = remember(appGraph) { appGraph.onboardingViewModel }
     val cookiesFromBrowser by viewModel.cookiesFromBrowser.collectAsState()
@@ -44,6 +47,8 @@ fun CookiesScreen() {
     val currentStep by viewModel.currentStep.collectAsState()
     val initState by viewModel.initState.collectAsState()
     val dependencyInfoBarDismissed by viewModel.dependencyInfoBarDismissed.collectAsState()
+    
+    
     CookiesView(
         state = state,
         onEvent = viewModel::handleEvent,
