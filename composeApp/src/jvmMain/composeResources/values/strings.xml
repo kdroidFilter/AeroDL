@@ -3,6 +3,9 @@
     <!-- Navigation -->
     <string name="home">Home</string>
     <string name="download">Download</string>
+    <string name="split_chapters">Split chapters</string>
+    <string name="split_badge">Split</string>
+    <string name="remove_sponsors">Remove sponsors (SponsorBlock)</string>
     <string name="about">About</string>
     <string name="settings">Settings</string>
 
@@ -90,9 +93,6 @@
     <string name="settings_embed_thumbnail_mp3_title">Embed thumbnail in MP3</string>
     <string name="settings_embed_thumbnail_mp3_caption">When enabled, embed the video thumbnail as MP3 cover art</string>
 
-    <!-- Settings: SponsorBlock -->
-    <string name="settings_sponsorblock_title">Remove sponsored segments</string>
-    <string name="settings_sponsorblock_caption">Many YouTube videos contain sponsored segments, which are typically advertisements. This option removes them from the final video</string>
 
     <!-- Settings: Concurrent fragments -->
     <string name="settings_concurrent_fragments_title">Fragment download threads</string>

@@ -97,13 +97,34 @@ object NetAndArchive {
         if (options.noCheckCertificate) cmd.add("--no-check-certificate")
         options.cookiesFromBrowser?.takeIf { it.isNotBlank() }?.let { cmd.addAll(listOf("--cookies-from-browser", it)) }
 
-        // Output template (kept as-is)
-        downloadDir?.let { dir ->
-            if (!dir.exists()) dir.mkdirs()
-            val tpl = options.outputTemplate ?: "%(title)s.%(ext)s"
-            cmd.addAll(listOf("-o", File(dir, tpl).absolutePath))
-        } ?: run {
-            options.outputTemplate?.let { tpl -> cmd.addAll(listOf("-o", tpl)) }
+        // Detect if caller provided a chapter-only output via extra args.
+        // If so, suppress the base "-o" to avoid creating a non-split file.
+        val (hasChapterOutput, hasNonChapterOutput) = run {
+            var chapterO = false
+            var nonChapterO = false
+            val args = options.extraArgs
+            var i = 0
+            while (i < args.size) {
+                val a = args[i]
+                if (a == "-o" || a == "--output") {
+                    val b = args.getOrNull(i + 1) ?: ""
+                    if (b.startsWith("chapter:")) chapterO = true else nonChapterO = true
+                    i += 2
+                } else i++
+            }
+            Pair(chapterO, nonChapterO)
+        }
+        val suppressBaseOutput = hasChapterOutput && !hasNonChapterOutput
+
+        // Output template (skip base when only chapter output is specified)
+        if (!suppressBaseOutput) {
+            downloadDir?.let { dir ->
+                if (!dir.exists()) dir.mkdirs()
+                val tpl = options.outputTemplate ?: "%(title)s.%(ext)s"
+                cmd.addAll(listOf("-o", File(dir, tpl).absolutePath))
+            } ?: run {
+                options.outputTemplate?.let { tpl -> cmd.addAll(listOf("-o", tpl)) }
+            }
         }
 
         options.format?.let { cmd.addAll(listOf("-f", it)) }

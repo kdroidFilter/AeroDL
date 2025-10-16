@@ -3,14 +3,12 @@
 package io.github.kdroidfilter.ytdlpgui.features.onboarding
 
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavHostController
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.kdroid.composetray.tray.api.TrayAppState
 import com.kdroid.composetray.tray.api.TrayWindowDismissMode
 import io.github.kdroidfilter.network.CertificateValidator
 import io.github.kdroidfilter.platformtools.LinuxDesktopEnvironment
 import io.github.kdroidfilter.platformtools.detectLinuxDesktopEnvironment
-import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
 import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
 import io.github.kdroidfilter.ytdlpgui.features.init.InitViewModel
@@ -23,16 +21,21 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
+import dev.zacsweers.metro.Inject
+import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
+import dev.zacsweers.metro.SingleIn
+import io.github.kdroidfilter.ytdlpgui.di.AppScope
 
+@Inject
+@SingleIn(AppScope::class)
 class OnboardingViewModel(
     private val settingsRepository: SettingsRepository,
-    private val navController: NavHostController,
+    private val supportedSitesRepository: io.github.kdroidfilter.ytdlpgui.data.SupportedSitesRepository,
+    private val initViewModel: InitViewModel,
     private val trayAppState: TrayAppState,
-) : MVIViewModel<OnboardingState, OnboardingEvents>(), KoinComponent {
+) : MVIViewModel<OnboardingState, OnboardingEvents>() {
 
-    private val initViewModel: InitViewModel by inject()
+
     val initState = initViewModel.uiState
 
     // Check if user is running GNOME desktop environment
@@ -42,6 +45,7 @@ class OnboardingViewModel(
     private val _shouldSkipNoCheckCert = MutableStateFlow(true)
     private val shouldSkipNoCheckCert: Boolean
         get() = _shouldSkipNoCheckCert.value
+
 
     override fun initialState(): OnboardingState = OnboardingState()
 
@@ -109,6 +113,9 @@ class OnboardingViewModel(
             is OnboardingEvents.OnSetClipboardMonitoring -> handleSetClipboardMonitoring(event.enabled)
             is OnboardingEvents.OnSetAutoLaunchEnabled -> handleSetAutoLaunchEnabled(event.enabled)
             is OnboardingEvents.OnDismissDependencyInfoBar -> handleDismissDependencyInfoBar()
+            is OnboardingEvents.OnNavigationConsumed -> {
+                update { copy(navigationState = OnboardingNavigationState.None) }
+            }
         }
     }
 
@@ -177,10 +184,7 @@ class OnboardingViewModel(
     fun completeOnboarding() {
         viewModelScope.launch {
             settingsRepository.setOnboardingCompleted(true)
-            navController.navigate(Destination.MainNavigation.Home) {
-                popUpTo(Destination.InitScreen) { inclusive = true }
-                launchSingleTop = true
-            }
+            update { copy(navigationState = OnboardingNavigationState.NavigateToHome) }
         }
     }
 
@@ -231,9 +235,12 @@ class OnboardingViewModel(
 
     private fun navigateToStep(step: OnboardingStep) {
         if (uiState.value.currentStep == step) return
-        update { copy(currentStep = step) }
-        viewModelScope.launch {
-            navController.navigate(step.toDestination())
+        println("OnboardingViewModel: Navigating from ${uiState.value.currentStep} to $step")
+        update {
+            copy(
+                currentStep = step,
+                navigationState = OnboardingNavigationState.NavigateToStep(step.toDestination())
+            )
         }
     }
 

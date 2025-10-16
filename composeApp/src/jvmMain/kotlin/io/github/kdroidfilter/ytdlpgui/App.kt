@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -19,9 +20,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
+import androidx.navigation.compose.rememberNavController
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.navigation.noAnimatedComposable
+import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
 import io.github.kdroidfilter.ytdlpgui.core.ui.Footer
 import io.github.kdroidfilter.ytdlpgui.core.ui.MainNavigationHeader
 import io.github.kdroidfilter.ytdlpgui.core.ui.SecondaryNavigationHeader
@@ -40,12 +43,20 @@ import io.github.kdroidfilter.ytdlpgui.features.onboarding.nocheckcert.NoCheckCe
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.welcome.WelcomeScreen
 import io.github.kdroidfilter.ytdlpgui.features.system.about.AboutScreen
 import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsScreen
-import org.koin.compose.koinInject
 
 @OptIn(ExperimentalFluentApi::class)
 @Composable
 fun App() {
-    val navController = koinInject<NavHostController>()
+    val navController = rememberNavController()
+
+    // Bridge: observe DI-backed navigation events and apply to NavController
+    val appGraph = LocalAppGraph.current
+    LaunchedEffect(navController) {
+        appGraph.navigationEventBus.events.collect { destination ->
+            runCatching { navController.navigate(destination) }
+        }
+    }
+
 
     // Observe current back stack entry to determine which header to show
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -75,18 +86,18 @@ fun App() {
         verticalArrangement = Arrangement.Center
     ) {
 
-        if (isMainNavigation) MainNavigationHeader()
-        if (isSecondaryNavigation || isDownload) SecondaryNavigationHeader()
+        if (isMainNavigation) MainNavigationHeader(navController)
+        if (isSecondaryNavigation || isDownload) SecondaryNavigationHeader(navController)
 
         NavHost(
             navController = navController,
             startDestination = Destination.InitScreen,
             modifier = Modifier.fillMaxSize().weight(1f).padding(start = 16.dp, end = 16.dp, top = 8.dp)
         ) {
-            noAnimatedComposable<Destination.InitScreen> { InitScreen() }
+            noAnimatedComposable<Destination.InitScreen> { InitScreen(navController) }
 
             navigation<Destination.MainNavigation.Graph>(startDestination = Destination.MainNavigation.Home) {
-                noAnimatedComposable<Destination.MainNavigation.Home> { HomeScreen() }
+                noAnimatedComposable<Destination.MainNavigation.Home> { HomeScreen(navController) }
                 noAnimatedComposable<Destination.MainNavigation.Downloader> { DownloaderScreen() }
             }
 
@@ -97,33 +108,33 @@ fun App() {
 
             navigation<Destination.Onboarding.Graph>(startDestination = Destination.Onboarding.Welcome) {
                 noAnimatedComposable<Destination.Onboarding.Welcome> { backStackEntry ->
-                    WithParentViewModelStoreOwner(navController, backStackEntry) { WelcomeScreen() }
+                    WithParentViewModelStoreOwner(navController, backStackEntry) { WelcomeScreen(navController) }
                 }
                 noAnimatedComposable<Destination.Onboarding.DownloadDir> { backStackEntry ->
-                    WithParentViewModelStoreOwner(navController, backStackEntry) { DownloadDirScreen() }
+                    WithParentViewModelStoreOwner(navController, backStackEntry) { DownloadDirScreen(navController) }
                 }
                 noAnimatedComposable<Destination.Onboarding.Cookies> { backStackEntry ->
-                    WithParentViewModelStoreOwner(navController, backStackEntry) { CookiesScreen() }
+                    WithParentViewModelStoreOwner(navController, backStackEntry) { CookiesScreen(navController) }
                 }
                 noAnimatedComposable<Destination.Onboarding.NoCheckCert> { backStackEntry ->
-                    WithParentViewModelStoreOwner(navController, backStackEntry) { NoCheckCertScreen() }
+                    WithParentViewModelStoreOwner(navController, backStackEntry) { NoCheckCertScreen(navController) }
                 }
                 noAnimatedComposable<Destination.Onboarding.GnomeFocus> { backStackEntry ->
-                    WithParentViewModelStoreOwner(navController, backStackEntry) { GnomeFocusScreen() }
+                    WithParentViewModelStoreOwner(navController, backStackEntry) { GnomeFocusScreen(navController) }
                 }
                 noAnimatedComposable<Destination.Onboarding.Clipboard> { backStackEntry ->
-                    WithParentViewModelStoreOwner(navController, backStackEntry) { ClipboardScreen() }
+                    WithParentViewModelStoreOwner(navController, backStackEntry) { ClipboardScreen(navController) }
                 }
                 noAnimatedComposable<Destination.Onboarding.Autostart> { backStackEntry ->
-                    WithParentViewModelStoreOwner(navController, backStackEntry) { AutostartScreen() }
+                    WithParentViewModelStoreOwner(navController, backStackEntry) { AutostartScreen(navController) }
                 }
                 noAnimatedComposable<Destination.Onboarding.Finish> { backStackEntry ->
-                    WithParentViewModelStoreOwner(navController, backStackEntry) { FinishScreen() }
+                    WithParentViewModelStoreOwner(navController, backStackEntry) { FinishScreen(navController) }
                 }
             }
 
             navigation<Destination.Download.Graph>(startDestination = Destination.Download.Single("")) {
-                noAnimatedComposable<Destination.Download.Single> { SingleDownloadScreen() }
+                noAnimatedComposable<Destination.Download.Single> { backStackEntry -> SingleDownloadScreen(navController, backStackEntry) }
                 noAnimatedComposable<Destination.Download.Bulk> { BulkDownloadScreen() }
             }
         }

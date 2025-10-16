@@ -3,7 +3,6 @@
 package io.github.kdroidfilter.ytdlpgui.features.system.settings
 
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavHostController
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.kdroid.composetray.tray.api.TrayAppState
 import com.kdroid.composetray.tray.api.TrayWindowDismissMode
@@ -21,13 +20,16 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.File
+import dev.zacsweers.metro.Inject
 
+@Inject
 class SettingsViewModel(
-    private val navController: NavHostController,
     private val settingsRepository: SettingsRepository,
+    private val supportedSitesRepository: io.github.kdroidfilter.ytdlpgui.data.SupportedSitesRepository,
     private val downloadHistoryRepository: DownloadHistoryRepository,
     private val trayAppState: TrayAppState,
 ) : MVIViewModel<SettingsState, SettingsEvents>() {
+
 
     override fun initialState(): SettingsState = SettingsState.defaultState
 
@@ -43,7 +45,6 @@ class SettingsViewModel(
     val clipboardMonitoring: StateFlow<Boolean> = settingsRepository.clipboardMonitoringEnabled
     val notifyOnComplete: StateFlow<Boolean> = settingsRepository.notifyOnComplete
     val autoLaunchEnabled: StateFlow<Boolean> = settingsRepository.autoLaunchEnabled
-    val sponsorBlockRemove: StateFlow<Boolean> = settingsRepository.sponsorBlockRemove
     val concurrentFragments: StateFlow<Int> = settingsRepository.concurrentFragments
 
     // Note: This ViewModel uses a combined state from multiple sources, so we override uiState
@@ -58,7 +59,6 @@ class SettingsViewModel(
         clipboardMonitoring,
         autoLaunchEnabled,
         notifyOnComplete,
-        sponsorBlockRemove,
         concurrentFragments,
     ) { values: Array<Any?> ->
         val loading = values[0] as Boolean
@@ -71,8 +71,7 @@ class SettingsViewModel(
         val clipboard = values[7] as Boolean
         val autoLaunch = values[8] as Boolean
         val notify = values[9] as Boolean
-        val sponsorBlock = values[10] as Boolean
-        val concurrent = values[11] as Int
+        val concurrent = values[10] as Int
         SettingsState(
             isLoading = loading,
             noCheckCertificate = noCheck,
@@ -84,7 +83,6 @@ class SettingsViewModel(
             clipboardMonitoringEnabled = clipboard,
             autoLaunchEnabled = autoLaunch,
             notifyOnComplete = notify,
-            sponsorBlockRemove = sponsorBlock,
             concurrentFragments = concurrent,
         )
     }.stateIn(
@@ -131,9 +129,6 @@ class SettingsViewModel(
             }
             is SettingsEvents.SetAutoLaunchEnabled -> {
                 viewModelScope.launch { settingsRepository.setAutoLaunchEnabled(event.enabled) }
-            }
-            is SettingsEvents.SetSponsorBlockRemove -> {
-                settingsRepository.setSponsorBlockRemove(event.enabled)
             }
             is SettingsEvents.SetConcurrentFragments -> {
                 settingsRepository.setConcurrentFragments(event.count)

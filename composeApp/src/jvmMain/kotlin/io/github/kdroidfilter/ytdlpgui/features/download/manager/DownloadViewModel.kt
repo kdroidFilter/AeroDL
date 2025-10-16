@@ -1,7 +1,6 @@
 package io.github.kdroidfilter.ytdlpgui.features.download.manager
 
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavHostController
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.core.platform.filesystem.FileExplorerUtils
 import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
@@ -18,11 +17,11 @@ import kotlinx.coroutines.flow.stateIn
 import java.io.File
 
 class DownloadViewModel(
-    private val navController: NavHostController,
     private val downloadManager: DownloadManager,
     private val historyRepository: DownloadHistoryRepository,
     private val initViewModel: io.github.kdroidfilter.ytdlpgui.features.init.InitViewModel,
 ) : MVIViewModel<DownloadState, DownloadEvents>() {
+
 
     override fun initialState(): DownloadState = DownloadState.emptyState
 
@@ -37,7 +36,17 @@ class DownloadViewModel(
 
     // Availability of output directories by history id (derived from history)
     val directoryAvailability = history.map { list ->
-        list.associate { it.id to (it.outputPath?.let { path -> File(path).exists() } == true) }
+        list.associate { h ->
+            val exists = h.outputPath?.let { p ->
+                val f = File(p)
+                if (h.isSplit) {
+                    f.parentFile?.exists() == true
+                } else {
+                    f.exists()
+                }
+            } == true
+            h.id to exists
+        }
     }
 
     // Combined UI state
@@ -114,6 +123,10 @@ class DownloadViewModel(
     private fun openDirectoryFor(historyId: String) {
         val item = historyRepository.history.value.firstOrNull { it.id == historyId } ?: return
         val path = item.outputPath ?: return
-        FileExplorerUtils.openDirectoryForPath(path)
+        val toOpen = if (item.isSplit) {
+            val parent = File(path).parentFile
+            parent?.absolutePath ?: path
+        } else path
+        FileExplorerUtils.openDirectoryForPath(toOpen)
     }
 }

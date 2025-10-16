@@ -2,14 +2,17 @@ package io.github.kdroidfilter.ytdlpgui.features.home
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.*
 import io.github.composefluent.icons.Icons
@@ -17,15 +20,30 @@ import io.github.composefluent.icons.filled.ClipboardPaste
 import io.github.composefluent.icons.regular.ArrowLeft
 import io.github.composefluent.icons.regular.ArrowRight
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnly
+import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.koin.compose.koinInject
 import ytdlpgui.composeapp.generated.resources.*
 
 @Composable
-fun HomeScreen() {
-    val viewModel = koinInject<HomeViewModel>()
+fun HomeScreen(navController: NavHostController) {
+    val appGraph = LocalAppGraph.current
+        val viewModel = remember(appGraph) { appGraph.homeViewModel }
     val state by viewModel.uiState.collectAsState()
+    
+    // Handle navigation
+    LaunchedEffect(state.navigationState) {
+        when (val navigationState = state.navigationState) {
+            is HomeNavigationState.NavigateToDownload -> {
+                navController.navigate(navigationState.destination)
+                viewModel.handleEvent(HomeEvents.OnNavigationConsumed)
+            }
+            HomeNavigationState.None -> {
+                // No navigation needed
+            }
+        }
+    }
+    
     HomeView(
         state = state,
         onEvent = viewModel::handleEvent,

@@ -69,7 +69,8 @@ data class DownloadState(
                     outputPath = "/home/user/Downloads/video1.mp4",
                     isAudio = false,
                     presetHeight = 1080,
-                    createdAt = System.currentTimeMillis() - 3600000 // 1 hour ago
+                    createdAt = System.currentTimeMillis() - 3600000, // 1 hour ago
+                    isSplit = false
                 ),
                 DownloadHistoryRepository.HistoryItem(
                     id = "history-2",
@@ -84,7 +85,8 @@ data class DownloadState(
                     outputPath = "/home/user/Downloads/audio1.mp3",
                     isAudio = true,
                     presetHeight = null,
-                    createdAt = System.currentTimeMillis() - 7200000 // 2 hours ago
+                    createdAt = System.currentTimeMillis() - 7200000, // 2 hours ago
+                    isSplit = false
                 ),
                 DownloadHistoryRepository.HistoryItem(
                     id = "history-3",
@@ -99,7 +101,8 @@ data class DownloadState(
                     outputPath = "/old/path/video.mp4",
                     isAudio = false,
                     presetHeight = 720,
-                    createdAt = System.currentTimeMillis() - 86400000 // 1 day ago
+                    createdAt = System.currentTimeMillis() - 86400000, // 1 day ago
+                    isSplit = false
                 )
             ),
             directoryAvailability = mapOf(
@@ -140,7 +143,8 @@ data class DownloadState(
                     outputPath = "/home/user/Downloads/recent.mp4",
                     isAudio = false,
                     presetHeight = 2160,
-                    createdAt = System.currentTimeMillis() - 1800000 // 30 minutes ago
+                    createdAt = System.currentTimeMillis() - 1800000, // 30 minutes ago
+                    isSplit = false
                 )
             ),
             directoryAvailability = mapOf("history-recent" to true)

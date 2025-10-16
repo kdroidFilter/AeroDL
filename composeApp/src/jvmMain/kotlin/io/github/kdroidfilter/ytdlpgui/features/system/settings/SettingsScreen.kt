@@ -16,13 +16,14 @@ import io.github.composefluent.icons.regular.*
 import io.github.kdroidfilter.ytdlpgui.core.design.components.BrowserSelector
 import io.github.kdroidfilter.ytdlpgui.core.design.components.EllipsizedTextWithTooltip
 import io.github.kdroidfilter.ytdlpgui.core.design.components.Switcher
+import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.viewmodel.koinViewModel
 import ytdlpgui.composeapp.generated.resources.*
 
 @Composable
 fun SettingsScreen() {
-    val viewModel = koinViewModel<SettingsViewModel>()
+    val appGraph = LocalAppGraph.current
+        val viewModel = remember(appGraph) { appGraph.settingsViewModel }
     val state by viewModel.uiState.collectAsState()
     SettingsView(
         state = state,
@@ -61,12 +62,6 @@ fun SettingsView(
                 EmbedThumbnailInMp3Setting(
                     embedThumbnailInMp3 = state.embedThumbnailInMp3,
                     onEmbedThumbnailChange = { onEvent(SettingsEvents.SetEmbedThumbnailInMp3(it)) },
-                )
-            }
-            item {
-                SponsorBlockRemoveSetting(
-                    sponsorBlockRemove = state.sponsorBlockRemove,
-                    onSponsorBlockChange = { onEvent(SettingsEvents.SetSponsorBlockRemove(it)) },
                 )
             }
             item {
@@ -233,39 +228,6 @@ fun EmbedThumbnailInMp3SettingPreview() {
     EmbedThumbnailInMp3Setting(embedThumbnailInMp3 = true, onEmbedThumbnailChange = {})
 }
 
-@Composable
-private fun SponsorBlockRemoveSetting(
-    sponsorBlockRemove: Boolean,
-    onSponsorBlockChange: (Boolean) -> Unit,
-) {
-    CardExpanderItem(
-        heading = {
-            Text(
-                stringResource(Res.string.settings_sponsorblock_title),
-                modifier = Modifier.fillMaxWidth(0.8f)
-            )
-        },
-        caption = {
-            EllipsizedTextWithTooltip(
-                text = stringResource(Res.string.settings_sponsorblock_caption),
-                modifier = Modifier.fillMaxWidth(0.8f)
-            )
-        },
-        icon = { Icon(Icons.Filled.Cut, null) },
-        trailing = {
-            Switcher(
-                checked = sponsorBlockRemove,
-                onCheckStateChange = onSponsorBlockChange,
-            )
-        }
-    )
-}
-
-@Preview
-@Composable
-fun SponsorBlockRemoveSettingPreview() {
-    SponsorBlockRemoveSetting(sponsorBlockRemove = true, onSponsorBlockChange = {})
-}
 
 @Composable
 private fun ConcurrentFragmentsSetting(

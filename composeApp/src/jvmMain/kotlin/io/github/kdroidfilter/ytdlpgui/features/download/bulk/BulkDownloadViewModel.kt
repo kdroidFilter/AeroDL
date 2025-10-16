@@ -1,14 +1,14 @@
 package io.github.kdroidfilter.ytdlpgui.features.download.bulk
 
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavHostController
 import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
-class BulkDownloadViewModel(navController: NavHostController) : MVIViewModel<BulkDownloadState, BulkDownloadEvents>() {
+class BulkDownloadViewModel : MVIViewModel<BulkDownloadState, BulkDownloadEvents>() {
+
 
     override fun initialState(): BulkDownloadState = BulkDownloadState()
 

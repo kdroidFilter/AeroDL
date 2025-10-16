@@ -7,37 +7,58 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import io.github.composefluent.component.AccentButton
 import io.github.composefluent.component.HyperlinkButton
 import io.github.composefluent.component.Text
+import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
+import androidx.navigation.NavHostController
 import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.HeaderRow
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.NavigationRow
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents
+import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents.*
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.OnboardingProgress
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingStep
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingViewModel
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.DependencyInfoBar
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.koin.compose.viewmodel.koinViewModel
 import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.onboarding_gnome_focus_caption
 import ytdlpgui.composeapp.generated.resources.onboarding_gnome_focus_open_extension
 import ytdlpgui.composeapp.generated.resources.onboarding_gnome_focus_title
 
 @Composable
-fun GnomeFocusScreen(
-    viewModel: OnboardingViewModel = koinViewModel(),
-) {
+fun GnomeFocusScreen(navController: NavHostController) {
+    val appGraph = LocalAppGraph.current
+    val viewModel = remember(appGraph) { appGraph.onboardingViewModel }
+    val onboardingUiState by viewModel.uiState.collectAsState()
     val currentStep by viewModel.currentStep.collectAsState()
     val initState by viewModel.initState.collectAsState()
     val dependencyInfoBarDismissed by viewModel.dependencyInfoBarDismissed.collectAsState()
+    
+    // Navigation driven by ViewModel state
+    LaunchedEffect(onboardingUiState.navigationState) {
+        when (val navState = onboardingUiState.navigationState) {
+            is io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingNavigationState.NavigateToStep -> {
+                navController.navigate(navState.destination)
+                viewModel.handleEvent(OnNavigationConsumed)
+            }
+            is io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingNavigationState.NavigateToHome -> {
+                navController.navigate(io.github.kdroidfilter.ytdlpgui.core.navigation.Destination.MainNavigation.Home)
+                viewModel.handleEvent(OnNavigationConsumed)
+            }
+            io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingNavigationState.None -> Unit
+        }
+    }
+    
     GnomeFocusView(
         onEvent = viewModel::handleEvent,
         currentStep = currentStep,
@@ -85,12 +106,12 @@ fun GnomeFocusView(
             DependencyInfoBar(
                 initState = initState,
                 isDismissed = dependencyInfoBarDismissed,
-                onDismiss = { onEvent(OnboardingEvents.OnDismissDependencyInfoBar) }
+                onDismiss = { onEvent(OnDismissDependencyInfoBar) }
             )
         }
         NavigationRow(
-            onNext = { onEvent(OnboardingEvents.OnNext) },
-            onPrevious = { onEvent(OnboardingEvents.OnPrevious) }
+            onNext = { onEvent(OnNext) },
+            onPrevious = { onEvent(OnPrevious) }
         )
     }
 }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -20,8 +21,6 @@ import androidx.compose.ui.window.application
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
@@ -31,7 +30,6 @@ import com.kdroid.composetray.tray.api.rememberTrayAppState
 import com.kdroid.composetray.utils.SingleInstanceManager
 import com.kdroid.composetray.utils.allowComposeNativeTrayLogging
 import com.kdroid.composetray.utils.isMenuBarInDarkMode
-import com.russhwolf.settings.Settings
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.background.Mica
@@ -49,16 +47,14 @@ import io.github.kdroidfilter.platformtools.getOperatingSystem
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnly
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnlyRtl
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
-import io.github.kdroidfilter.ytdlpgui.di.appModule
+import com.russhwolf.settings.Settings
+import dev.zacsweers.metro.createGraph
+import io.github.kdroidfilter.ytdlpgui.di.AppGraph
+import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
+import io.github.kdroidfilter.ytdlpgui.di.TrayAppStateHolder
 import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsEvents
-import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsViewModel
-import io.github.vinceglb.autolaunch.AutoLaunch
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.getString
-import org.koin.compose.KoinApplication
-import org.koin.compose.getKoin
-import org.koin.compose.koinInject
-import org.koin.compose.viewmodel.koinViewModel
 import ytdlpgui.composeapp.generated.resources.*
 import java.io.File
 
@@ -71,9 +67,8 @@ fun main() = application {
         clearJavaTempDir()
     }
 //    Locale.setDefault(Locale("en"))
-    KoinApplication(application = {
-        modules(appModule)
-    }) {
+    val appGraph = remember { createGraph<AppGraph>() }
+    run {
         val vmStore = remember { ViewModelStore() }
         val viewModelStoreOwner = remember {
             object : ViewModelStoreOwner {
@@ -87,24 +82,24 @@ fun main() = application {
                     appName = runBlocking { getString(Res.string.app_name) },
                 )
             )
-            val koin = getKoin()
-            val autoLaunch = koinInject<AutoLaunch>()
-            val existingTrayState = remember { runCatching { koin.get<TrayAppState>() }.getOrNull() }
-            val trayAppState = existingTrayState ?: rememberTrayAppState(
+            val autoLaunch = appGraph.autoLaunch
+            val trayAppState = rememberTrayAppState(
                 initialWindowSize = DpSize(350.dp, 500.dp),
                 initiallyVisible = !autoLaunch.isStartedViaAutostart()
             )
-            if (existingTrayState == null) {
-                // Register as a singleton in Koin immediately to make it available to DI consumers
-                runCatching { koin.declare(trayAppState) }
+            TrayAppStateHolder.set(trayAppState)
+
+            // Eagerly instantiate clipboard monitoring once, as a side effect
+            LaunchedEffect(appGraph) {
+                appGraph.clipboardMonitorManager
             }
 
             // Initialize Coil with native trusted roots
-            val imageLoader = koinInject<ImageLoader>()
+            val imageLoader = appGraph.imageLoader
             SingletonImageLoader.setSafe { imageLoader }
 
             if (cleanInstall) {
-                clearSettings(koin.get())
+                clearSettings(appGraph.settings)
             }
 
             val isSingleInstance = SingleInstanceManager.isSingleInstance(
@@ -114,16 +109,11 @@ fun main() = application {
             )
             if (!isSingleInstance) exitApplication()
 
-            val existingNavController = remember { runCatching { koin.get<NavHostController>() }.getOrNull() }
-            val navController = existingNavController ?: rememberNavController()
-            if (existingNavController == null) {
-                runCatching { koin.declare(navController) }
-            }
 
-            val downloadManager = koinInject<DownloadManager>()
+            val downloadManager = appGraph.downloadManager
             val isDownloading by downloadManager.isDownloading.collectAsState()
 
-            val settingsVm = koinViewModel<SettingsViewModel>()
+            val settingsVm = appGraph.settingsViewModel
             val autoStartEnabled by settingsVm.autoLaunchEnabled.collectAsState()
             val clipboardEnabled by settingsVm.clipboardMonitoring.collectAsState()
 
@@ -188,7 +178,9 @@ fun main() = application {
                                 RoundedCornerShape(12.dp)
                             )
                     ) {
-                        App()
+                        CompositionLocalProvider(LocalAppGraph provides appGraph) {
+                            App()
+                        }
                     }
                 }
             }

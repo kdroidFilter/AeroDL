@@ -191,9 +191,6 @@
     <string name="settings_reset_dialog_confirm">אפס הכל</string>
     <string name="settings_reset_dialog_cancel">ביטול</string>
 
-    <!-- הגדרות: SponsorBlock -->
-    <string name="settings_sponsorblock_title">הסר קטעי ספונסרים</string>
-    <string name="settings_sponsorblock_caption">סרטוני יוטיוב רבים מכילים קטעי חסות, שהם בדרך כלל פרסומות. אפשרות זו מסירה אותם מהווידאו הסופי</string>
     <!-- הגדרות: פיצולי קבצים מקבילים -->
     <string name="settings_concurrent_fragments_title">חוטי הורדת פיצולים</string>
     <string name="settings_concurrent_fragments_caption">מפצל את הקובץ ומוריד כל חלק בו-זמנית, מאיץ מאוד את ההורדות. לא מומלץ: עלול להוביל לחסימת חשבון</string>

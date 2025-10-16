@@ -1,5 +1,13 @@
 package io.github.kdroidfilter.ytdlpgui.features.init
 
+import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
+
+sealed class InitNavigationState {
+    data object None : InitNavigationState()
+    data object NavigateToOnboarding : InitNavigationState()
+    data object NavigateToHome : InitNavigationState()
+}
+
 data class InitState(
     val checkingYtDlp: Boolean = false,
     val checkingFFmpeg: Boolean = false,
@@ -23,6 +31,7 @@ data class InitState(
     val downloadUrl: String? = null,
     val releaseBody: String? = null,
     val updateDismissed: Boolean = false,
+    val navigationState: InitNavigationState = InitNavigationState.None
 ) {
     companion object {
         // Preview States

@@ -28,6 +28,9 @@ import coil3.request.ImageRequest
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.Button
+import io.github.composefluent.component.Badge
+import io.github.composefluent.component.BadgeDefaults
+import io.github.composefluent.component.BadgeStatus
 import io.github.composefluent.component.ContentDialog
 import io.github.composefluent.component.DialogSize
 import io.github.composefluent.component.Icon
@@ -42,9 +45,9 @@ import io.github.kdroidfilter.ytdlpgui.core.design.components.UpdateInfoBar
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository.HistoryItem
 import io.github.kdroidfilter.ytdlpgui.core.design.components.UpdateInfoBar
+import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.koin.compose.viewmodel.koinViewModel
 import ytdlpgui.composeapp.generated.resources.*
 import java.time.Instant
 import java.time.ZoneId
@@ -54,7 +57,8 @@ import java.util.Locale
 
 @Composable
 fun DownloaderScreen() {
-    val viewModel = koinViewModel<DownloadViewModel>()
+    val appGraph = LocalAppGraph.current
+        val viewModel = remember(appGraph) { appGraph.downloadViewModel }
     val state by viewModel.uiState.collectAsState()
     DownloadView(
         state = state,
@@ -334,7 +338,7 @@ private fun HistoryThumbnail(h: HistoryItem) {
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
-            val overlay = if (h.isAudio) "MP3" else h.presetHeight?.let { "${it}P" } ?: ""
+            val overlay = if (h.isSplit) "Split" else if (h.isAudio) "MP3" else h.presetHeight?.let { "${it}P" } ?: ""
             Text(
                 overlay,
                 textAlign = TextAlign.Center,

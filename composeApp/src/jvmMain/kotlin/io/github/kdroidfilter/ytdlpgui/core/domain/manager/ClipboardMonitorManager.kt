@@ -3,9 +3,7 @@
 package io.github.kdroidfilter.ytdlpgui.core.domain.manager
 
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
-import com.russhwolf.settings.Settings
-import androidx.navigation.NavHostController
-import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
+import dev.zacsweers.metro.Inject
 import io.github.kdroidfilter.platformtools.clipboardmanager.ClipboardContent
 import io.github.kdroidfilter.platformtools.clipboardmanager.ClipboardListener
 import io.github.kdroidfilter.platformtools.clipboardmanager.ClipboardMonitor
@@ -27,7 +25,7 @@ import ytdlpgui.composeapp.generated.resources.clipboard_open_in_app
 import androidx.compose.runtime.*
 import io.github.kdroidfilter.ytdlpgui.core.platform.notifications.NotificationThumbUtils
 import io.github.kdroidfilter.ytdlpgui.data.SupportedSitesRepository
-import io.github.kdroidfilter.ytdlpgui.core.config.SettingsKeys
+import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 
 /**
  * Manages clipboard monitoring functionality, allowing detection and handling
@@ -48,15 +46,16 @@ import io.github.kdroidfilter.ytdlpgui.core.config.SettingsKeys
  * - Coordinating user interaction through notifications for recognized URLs.
  *
  * @constructor Initializes the manager with the required dependencies.
- * @param settings Provides access to user-configurable settings.
+ * @param settingsRepository Provides access to user-configurable settings.
  * @param trayAppState Manages the application tray state for notifications and UI interaction.
  * @param supportedSitesRepository Repository containing information about recognized or supported sites.
  */
+@Inject
 class ClipboardMonitorManager(
-    private val navController: () -> NavHostController,
-    private val settings: Settings,
+    private val settingsRepository: io.github.kdroidfilter.ytdlpgui.data.SettingsRepository,
     private val trayAppState: TrayAppState,
     private val supportedSitesRepository: SupportedSitesRepository,
+    private val navigationEventBus: io.github.kdroidfilter.ytdlpgui.core.navigation.NavigationEventBus,
 ) {
 
     private val scope = CoroutineScope(Dispatchers.Default)
@@ -66,12 +65,11 @@ class ClipboardMonitorManager(
 
     init {
         // Start immediately if enabled in persisted settings
-        val enabled = settings.getBoolean(SettingsKeys.CLIPBOARD_MONITORING_ENABLED, true)
+        val enabled = settingsRepository.clipboardMonitoringEnabled.value
         if (enabled) start()
     }
 
     fun onSettingChanged(enabled: Boolean) {
-        settings.putBoolean(SettingsKeys.CLIPBOARD_MONITORING_ENABLED, enabled)
         if (enabled) start() else stop()
     }
 
@@ -130,7 +128,8 @@ class ClipboardMonitorManager(
             scope.launch(Dispatchers.Main) {
                 trayAppState.setDismissMode(TrayWindowDismissMode.MANUAL)
                 runCatching { trayAppState.show() }
-                navController().navigate(Destination.Download.Single(url))
+                // Request navigation to the Single Download screen for this URL
+                navigationEventBus.navigateTo(Destination.Download.Single(url))
                 trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
             }
         }
