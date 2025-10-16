@@ -95,6 +95,15 @@
 -dontwarn coil3.**
 -dontwarn okhttp3.**
 -dontwarn okio.**
+
+# FileKit dialogs (folder/file pickers). Keep providers and dialog implementations
+# as they may be loaded reflectively (or via ServiceLoader) and get stripped.
+-keep class io.github.vinceglb.filekit.** { *; }
+-dontwarn io.github.vinceglb.filekit.**
+
+# D-Bus bindings may be used on Linux via portals. Keep to be safe in release.
+-keep class org.freedesktop.dbus.** { *; }
+-dontwarn org.freedesktop.dbus.**
 #################################### SLF4J #####################################
 -dontwarn org.slf4j.**
 
