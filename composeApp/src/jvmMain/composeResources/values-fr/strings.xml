@@ -153,6 +153,7 @@
     <!-- Écran de téléchargement (historique et en cours) -->
     <string name="download_clear_history">Vider l'historique</string>
     <string name="tooltip_clear_history">Vider l'historique</string>
+    <string name="download_search_placeholder">Rechercher dans l'historique</string>
     <string name="open_directory">Ouvrir le dossier</string>
     <string name="tooltip_open_directory">Ouvrir le dossier</string>
     <string name="delete_element">Supprimer cet élément</string>
