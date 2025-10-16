@@ -224,4 +224,8 @@
     <string name="settings_reset_dialog_message">This action will reset all settings to their default values, clear download history, and remove yt-dlp/FFmpeg binaries. Downloaded files will not be affected.\n\nDo you want to continue?</string>
     <string name="settings_reset_dialog_confirm">Reset everything</string>
     <string name="settings_reset_dialog_cancel">Cancel</string>
+
+    <!-- Single download: friendly captions -->
+    <string name="single_sponsorblock_caption">We detected sponsored segments in this video. Enable to automatically remove them from the download — often these are ads not directly related to the main content.</string>
+    <string name="single_split_chapters_caption">We detected that this video is divided into chapters. Enable to save one file per chapter — especially useful for DJ sets or long mixes to get one file per track.</string>
 </resources>
