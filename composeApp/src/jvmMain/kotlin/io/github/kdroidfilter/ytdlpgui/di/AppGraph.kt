@@ -121,12 +121,14 @@ interface AppGraph {
         trayAppState: TrayAppState,
         supportedSitesRepository: SupportedSitesRepository,
         navigationEventBus: NavigationEventBus,
+        ytDlpWrapper: YtDlpWrapper,
     ): ClipboardMonitorManager {
         val manager = ClipboardMonitorManager(
             settingsRepository,
             trayAppState,
             supportedSitesRepository,
             navigationEventBus,
+            ytDlpWrapper,
         )
         // Connect SettingsRepository to ClipboardMonitorManager after creation
         settingsRepository.setClipboardMonitorManager(manager)
