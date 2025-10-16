@@ -270,7 +270,10 @@ fun SecondaryNavigationHeader(
                     onClick = { navController.navigateUp() },
                     modifier = Modifier.padding(top = 12.dp, start = 4.dp)
                 ) {
-                    Icon(if (isRtl) Icons.Default.ArrowRight else Icons.Default.ArrowLeft, "Back")
+                    Icon(
+                        if (isRtl) Icons.Default.ArrowRight else Icons.Default.ArrowLeft,
+                        stringResource(Res.string.tooltip_back)
+                    )
                 }
             }
         },
@@ -307,7 +310,7 @@ fun SecondaryNavigationHeader(
                             }
                         },
                         modifier = Modifier.padding(top = 12.dp, end = 4.dp)
-                    ) { Icon(Icons.Default.Home, "Home") }
+                    ) { Icon(Icons.Default.Home, stringResource(Res.string.home)) }
                 }
             }
         }

@@ -131,7 +131,7 @@ fun main() = application {
                         }
                     )
                 },
-                tooltip = runBlocking { getString(Res.string.app_name) } + if (isDownloading) " - Downloading..." else "",
+                tooltip = runBlocking { getString(Res.string.app_name) } + if (isDownloading) runBlocking { getString(Res.string.tray_downloading_suffix) } else "",
                 menu = {
                     if (!trayAppState.isVisible.value) Item(
                         label = runBlocking { getString(Res.string.menu_show_window) },
