@@ -66,6 +66,10 @@
 -dontwarn org.conscrypt.**
 -dontwarn org.bouncycastle.**
 -dontwarn org.openjsse.**
+# Keep BouncyCastle and NativeCerts classes intact to avoid bytecode changes
+# that can invalidate signed JAR digests during release optimization.
+-keep class org.bouncycastle.** { *; }
+-keep class org.jetbrains.nativecerts.** { *; }
 #################################### SLF4J #####################################
 -dontwarn org.slf4j.**
 

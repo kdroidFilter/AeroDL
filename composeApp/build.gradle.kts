@@ -157,4 +157,5 @@ tasks.withType<Jar> {
     exclude("META-INF/*.SF")
     exclude("META-INF/*.DSA")
     exclude("META-INF/*.RSA")
+    exclude("META-INF/*.EC")
 }
