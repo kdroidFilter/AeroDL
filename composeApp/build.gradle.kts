@@ -113,7 +113,7 @@ compose.desktop {
 
         nativeDistributions {
             vendor = "KDroidFilter"
-            targetFormats(TargetFormat.Pkg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Exe)
+            targetFormats(TargetFormat.Pkg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "AeroDl"
             packageVersion = version
             description = "An awesome GUI for yt-dlp!"
