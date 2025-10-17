@@ -183,6 +183,10 @@
 
     <!-- App info -->
     <string name="app_version_label">App version: %1$s</string>
+
+    <!-- Onboarding finish: error handling -->
+    <string name="onboarding_finish_retry">Retry download</string>
+    <string name="onboarding_finish_error_hint">You can continue; AeroDL will keep trying in the background.</string>
     
     <!-- Settings: Notifications -->
     <string name="settings_notify_on_complete_title">Download completion notifications</string>

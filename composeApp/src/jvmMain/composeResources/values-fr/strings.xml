@@ -176,6 +176,10 @@
     <!-- Infos application -->
     <string name="app_version_label">Version de l'application : %1$s</string>
     
+    <!-- Onboarding fin : gestion des erreurs -->
+    <string name="onboarding_finish_retry">Réessayer le téléchargement</string>
+    <string name="onboarding_finish_error_hint">Vous pouvez continuer ; AeroDL continuera d’essayer en arrière-plan.</string>
+    
     <!-- Paramètres : Surveillance du presse-papiers -->
     <string name="settings_clipboard_monitoring_title">Surveillance du presse-papiers</string>
     <string name="settings_clipboard_monitoring_caption">Lorsqu'activé, copier un lien vidéo supporté enverra une notification demandant si vous voulez le télécharger.</string>
