@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -22,6 +23,10 @@ import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingStep
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingViewModel
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.OnboardingProgress
+import io.github.composefluent.component.ContentDialog
+import io.github.composefluent.component.DialogSize
+import io.github.composefluent.component.SubtleButton
+import io.github.kdroidfilter.ytdlpgui.core.design.components.TerminalView
 import io.github.vinceglb.confettikit.compose.ConfettiKit
 import io.github.vinceglb.confettikit.core.Party
 import io.github.vinceglb.confettikit.core.emitter.Emitter
@@ -29,6 +34,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import ytdlpgui.composeapp.generated.resources.*
+import io.github.kdroidfilter.ytdlpgui.features.init.InitEvent
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
@@ -36,6 +42,7 @@ fun FinishScreen(
     navController: NavHostController,
     viewModel: OnboardingViewModel = LocalAppGraph.current.onboardingViewModel,
 ) {
+    val appGraph = LocalAppGraph.current
     val currentStep by viewModel.currentStep.collectAsState()
     val initState by viewModel.initState.collectAsState()
     val state by viewModel.uiState.collectAsState()
@@ -59,7 +66,8 @@ fun FinishScreen(
         initState = initState,
         totalSteps = viewModel.getTotalSteps(),
         currentStepIndex = viewModel.getCurrentStepIndex(),
-        onComplete = { viewModel.completeOnboarding() }
+        onComplete = { viewModel.completeOnboarding() },
+        onRetryInit = { appGraph.initViewModel.handleEvent(InitEvent.StartInitialization) }
     )
 }
 
@@ -69,7 +77,8 @@ private fun FinishView(
     initState: InitState? = null,
     totalSteps: Int? = null,
     currentStepIndex: Int? = null,
-    onComplete: () -> Unit = {}
+    onComplete: () -> Unit = {},
+    onRetryInit: () -> Unit = {}
 ) {
     Column(
         Modifier.fillMaxSize().padding(16.dp),
@@ -86,29 +95,53 @@ private fun FinishView(
         if (initState?.initCompleted == true) {
             ReadyToGoScreen(onComplete = onComplete)
         } else {
-            LoadingResourcesScreen(initState = initState)
+            LoadingResourcesScreen(
+                initState = initState,
+                onRetryInit = onRetryInit,
+            )
         }
     }
 }
 
 @Composable
 private fun LoadingResourcesScreen(
-    initState: InitState? = null
+    initState: InitState? = null,
+    onRetryInit: () -> Unit = {},
 ) {
+    var showErrorDetails by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(
-            text = stringResource(Res.string.onboarding_finish_loading_title),
-            style = FluentTheme.typography.subtitle
-        )
+        if (initState?.errorMessage != null) {
+            Text(
+                text = stringResource(Res.string.error_occurred),
+                style = FluentTheme.typography.subtitle,
+                color = FluentTheme.colors.system.critical,
+            )
+            Text(
+                text = initState.errorMessage,
+                style = FluentTheme.typography.bodyStrong,
+                textAlign = TextAlign.Center,
+            )
+            Text(
+                text = stringResource(Res.string.onboarding_finish_error_hint),
+                style = FluentTheme.typography.body,
+                textAlign = TextAlign.Center,
+            )
+        } else {
+            Text(
+                text = stringResource(Res.string.onboarding_finish_loading_title),
+                style = FluentTheme.typography.subtitle
+            )
 
-        Text(
-            text = stringResource(Res.string.onboarding_finish_loading_message),
-            style = FluentTheme.typography.bodyStrong
-        )
+            Text(
+                text = stringResource(Res.string.onboarding_finish_loading_message),
+                style = FluentTheme.typography.bodyStrong
+            )
+        }
 
         Spacer(Modifier.height(16.dp))
 
@@ -137,6 +170,30 @@ private fun LoadingResourcesScreen(
                 ProgressBar(modifier = Modifier.fillMaxWidth())
             }
         }
+
+        // Action when error occurs
+        if (initState?.errorMessage != null) {
+            Spacer(Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                AccentButton(onClick = onRetryInit) { Text(stringResource(Res.string.onboarding_finish_retry)) }
+                SubtleButton(onClick = { showErrorDetails = true }) {
+                    Text(stringResource(Res.string.view_error_details))
+                }
+            }
+        }
+    }
+
+    if (showErrorDetails && (initState?.errorMessage != null)) {
+        ContentDialog(
+            title = stringResource(Res.string.download_error_title),
+            visible = true,
+            size = DialogSize.Min,
+            primaryButtonText = stringResource(Res.string.ok),
+            onButtonClick = { showErrorDetails = false },
+            content = {
+                TerminalView(text = initState.errorMessage)
+            }
+        )
     }
 }
 

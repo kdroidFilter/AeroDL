@@ -95,6 +95,10 @@
     <string name="onboarding_finish_ready_title">קדימה!</string>
     <string name="onboarding_finish_ready_message">הכל מוכן. כעת תוכלו להתחיל להשתמש ב-AeroDL.</string>
     <string name="onboarding_finish_ready_button">התחל</string>
+    
+    <!-- סיום תהליך ההגדרה: טיפול בשגיאות -->
+    <string name="onboarding_finish_retry">נסה להוריד שוב</string>
+    <string name="onboarding_finish_error_hint">אפשר להמשיך; AeroDL תמשיך לנסות ברקע.</string>
     <string name="onboarding_gnome_focus_title">שיפור החוויה ב-GNOME</string>
     <string name="onboarding_gnome_focus_caption">GNOME חוסם מיקוד חלונות כברירת מחדל. אנו ממליצים להתקין את התוסף "Steal My Focus" לחוויה טובה יותר של אפליקציה במגש המערכת.</string>
     <string name="onboarding_gnome_focus_open_extension">פתח דף התוסף</string>

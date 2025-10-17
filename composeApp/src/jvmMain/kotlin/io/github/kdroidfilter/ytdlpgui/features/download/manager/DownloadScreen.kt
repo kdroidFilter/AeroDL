@@ -43,6 +43,7 @@ import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.*
 import io.github.kdroidfilter.ytdlp.util.YouTubeThumbnailHelper
 import io.github.kdroidfilter.ytdlpgui.core.design.components.UpdateInfoBar
+import io.github.kdroidfilter.ytdlpgui.core.design.components.TerminalView
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository.HistoryItem
 import io.github.kdroidfilter.ytdlpgui.core.design.components.UpdateInfoBar
@@ -243,87 +244,7 @@ private fun ErrorDialog(
     )
 }
 
-@OptIn(ExperimentalFluentApi::class)
-@Composable
-private fun TerminalView(text: String) {
-    @Suppress("DEPRECATION")
-    val clipboardManager = LocalClipboardManager.current
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = 150.dp, max = 300.dp)
-            .background(
-                Color(0xFF1E1E1E), // Dark terminal background
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
-            )
-            .border(
-                width = 1.dp,
-                color = Color(0xFF3E3E3E),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
-            )
-    ) {
-        Column(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            // Terminal header
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFF2D2D2D))
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    "Error Output",
-                    style = FluentTheme.typography.caption,
-                    color = Color(0xFFB0B0B0),
-                    fontSize = 11.sp
-                )
-
-                // Copy button
-                @OptIn(ExperimentalFoundationApi::class)
-                TooltipBox(tooltip = { Text(stringResource(Res.string.copy_error)) }) {
-                    SubtleButton(
-                        iconOnly = true,
-                        onClick = {
-                            clipboardManager.setText(buildAnnotatedString { append(text) })
-                        },
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.Copy,
-                            stringResource(Res.string.copy_error),
-                            tint = Color(0xFFB0B0B0),
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
-            }
-
-            // Terminal content
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-                    .padding(12.dp)
-            ) {
-                Text(
-                    text,
-                    style = FluentTheme.typography.caption.copy(
-                        fontFamily = FontFamily.Monospace,
-                        lineHeight = 18.sp
-                    ),
-                    color = Color(0xFFD4D4D4), // Terminal text color
-                    fontSize = 12.sp,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        }
-    }
-}
+// TerminalView moved to core.design.components.TerminalView for reuse
 
 @Composable
 private fun NoDownloads() {

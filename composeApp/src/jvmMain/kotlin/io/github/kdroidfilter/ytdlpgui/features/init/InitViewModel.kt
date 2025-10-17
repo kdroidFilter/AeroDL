@@ -256,6 +256,7 @@ class InitViewModel(
                         }
                     }
                     is YtDlpWrapper.InitEvent.Error -> {
+                        isInitializing = false
                         update {
                             copy(
                                 errorMessage = event.message,
@@ -270,6 +271,7 @@ class InitViewModel(
                         }
                     }
                     is YtDlpWrapper.InitEvent.Completed -> {
+                        isInitializing = false
                         update {
                             copy(
                                 checkingYtDlp = false,
