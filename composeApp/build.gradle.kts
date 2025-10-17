@@ -309,8 +309,8 @@ tasks.register("packageReleaseMsix") {
                 DisplayName="AeroDl"
                 Description="AeroDl"
                 BackgroundColor="transparent"
-                Square150x150Logo="icons\logo.png"
-                Square44x44Logo="icons\logo.png">
+                Square150x150Logo="assets\icon_150.png"
+                Square44x44Logo="assets\icon_44.png">
               </uap:VisualElements>
             </Application>
           </Applications>
