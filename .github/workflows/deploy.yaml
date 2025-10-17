@@ -59,6 +59,11 @@ jobs:
       - name: Package MSIX (Windows)
         if: matrix.os == 'windows-latest'
         shell: pwsh
+        env:
+          MSIX_IDENTITY_NAME: ${{ secrets.MSIX_IDENTITY_NAME }}
+          MSIX_PUBLISHER: ${{ secrets.MSIX_PUBLISHER }}
+          MSIX_CERT_CN: ${{ secrets.MSIX_CERT_CN }}
+          MSIX_PFX_PASSWORD: ${{ secrets.MSIX_PFX_PASSWORD }}
         run: .\gradlew.bat :composeApp:createReleaseDistributable :composeApp:packageReleaseMsix
       
       - name: Upload Windows MSI artifact

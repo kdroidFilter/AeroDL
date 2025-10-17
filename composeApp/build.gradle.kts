@@ -17,7 +17,7 @@ val ref = System.getenv("GITHUB_REF") ?: ""
 val version = if (ref.startsWith("refs/tags/")) {
     val tag = ref.removePrefix("refs/tags/")
     if (tag.startsWith("v")) tag.substring(1) else tag
-} else "1.3.2"
+} else "1.3.5"
 
 kotlin {
     jvm()
@@ -266,6 +266,13 @@ tasks.register("packageReleaseMsix") {
         }
         logger.lifecycle("packageReleaseMsix: Resolved MSIX version: $msixVersion")
 
+        // Read MSIX configuration from environment (for CI via GitHub Secrets)
+        val msixIdentityName: String = System.getenv("MSIX_IDENTITY_NAME") ?: "KdroidFilter.AeroDL"
+        val msixPublisher: String = System.getenv("MSIX_PUBLISHER") ?: "CN=D541E802-6D30-446A-864E-2E8ABD2DAA5E"
+        val msixCertCN: String = System.getenv("MSIX_CERT_CN")
+            ?: msixPublisher.removePrefix("CN=").trim()
+        val msixPfxPassword: String = System.getenv("MSIX_PFX_PASSWORD") ?: "ChangeMe-Temp123!"
+
         fun createManifest(ver: String): String = """
         <?xml version="1.0" encoding="utf-8"?>
         <Package
@@ -275,8 +282,8 @@ tasks.register("packageReleaseMsix") {
           IgnorableNamespaces="uap rescap">
 
           <Identity
-            Name="io.github.kdroidfilter.ytdlpgui"
-            Publisher="CN=KDroidFilter"
+            Name="$msixIdentityName"
+            Publisher="$msixPublisher"
             Version="$ver"
             ProcessorArchitecture="x64" />
 
@@ -302,8 +309,8 @@ tasks.register("packageReleaseMsix") {
                 DisplayName="AeroDl"
                 Description="AeroDl"
                 BackgroundColor="transparent"
-                Square150x150Logo="assets\icon_150.png"
-                Square44x44Logo="assets\icon_44.png">
+                Square150x150Logo="icons\logo.png"
+                Square44x44Logo="icons\logo.png">
               </uap:VisualElements>
             </Application>
           </Applications>
@@ -377,11 +384,11 @@ tasks.register("packageReleaseMsix") {
           - Locates signtool.exe from Windows SDK and signs the MSIX package
 
           Usage:
-            ./Sign-AeroDl.ps1 -PackagePath "path\\to\\AeroDl_X_Y_Z.msix" -CN "KDroidFilter" -PfxPassword "your-pass"
+            ./Sign-AeroDl.ps1 -PackagePath "path\\to\\AeroDl_X_Y_Z.msix" -CN "D541E802-6D30-446A-864E-2E8ABD2DAA5E" -PfxPassword "your-pass"
         #>
         param(
           [Parameter(Mandatory=${'$'}false)] [string]${'$'}PackagePath = "${outputMsix.canonicalPath}",
-          [Parameter(Mandatory=${'$'}false)] [string]${'$'}CN = "KDroidFilter",
+          [Parameter(Mandatory=${'$'}false)] [string]${'$'}CN = "$msixCertCN",
           [Parameter(Mandatory=${'$'}false)] [string]${'$'}PfxPassword = "ChangeMe-Temp123!"
         )
         ${'$'}ErrorActionPreference = "Stop"
