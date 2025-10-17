@@ -1,6 +1,6 @@
 # 🚀 **AeroDL**
 
-### The Modern YouTube-DL GUI for Windows, macOS & Linux
+### The Modern YTDLP-DL GUI for Windows, macOS & Linux
 
 > **AeroDL** is a sleek, cross-platform YouTube-DL frontend built with **JetBrains Compose Multiplatform**.
 > It combines the power of `yt-dlp` with a beautiful, native-feeling interface for fast and reliable video & audio downloads.
