@@ -267,11 +267,24 @@ tasks.register("packageReleaseMsix") {
         logger.lifecycle("packageReleaseMsix: Resolved MSIX version: $msixVersion")
 
         // Read MSIX configuration from environment (for CI via GitHub Secrets)
-        val msixIdentityName: String = System.getenv("MSIX_IDENTITY_NAME") ?: "KdroidFilter.AeroDL"
-        val msixPublisher: String = System.getenv("MSIX_PUBLISHER") ?: "CN=D541E802-6D30-446A-864E-2E8ABD2DAA5E"
-        val msixCertCN: String = System.getenv("MSIX_CERT_CN")
-            ?: msixPublisher.removePrefix("CN=").trim()
-        val msixPfxPassword: String = System.getenv("MSIX_PFX_PASSWORD") ?: "ChangeMe-Temp123!"
+        fun envOrDefault(name: String, default: String): String {
+            val v = System.getenv(name)?.trim()
+            return if (v.isNullOrBlank()) default else v
+        }
+        val msixIdentityName: String = envOrDefault("MSIX_IDENTITY_NAME", "KdroidFilter.AeroDL")
+        val msixPublisherRaw: String = envOrDefault("MSIX_PUBLISHER", "CN=D541E802-6D30-446A-864E-2E8ABD2DAA5E")
+        // Ensure Publisher starts with CN=
+        val msixPublisher: String = if (msixPublisherRaw.startsWith("CN=")) msixPublisherRaw else "CN=$msixPublisherRaw"
+        val msixCertCN: String = run {
+            val cn = System.getenv("MSIX_CERT_CN")?.trim()
+            when {
+                !cn.isNullOrBlank() -> cn
+                else -> msixPublisher.removePrefix("CN=").trim().ifEmpty { "D541E802-6D30-446A-864E-2E8ABD2DAA5E" }
+            }
+        }
+        val msixPfxPassword: String = envOrDefault("MSIX_PFX_PASSWORD", "ChangeMe-Temp123!")
+
+        logger.lifecycle("packageReleaseMsix: Identity.Name=$msixIdentityName, Publisher=$msixPublisher")
 
         fun createManifest(ver: String): String = """
         <?xml version="1.0" encoding="utf-8"?>
