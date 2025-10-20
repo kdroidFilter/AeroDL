@@ -133,7 +133,7 @@
     <!-- Single download screen -->
     <string name="download_type_video">וידאו</string>
     <string name="download_type_audio">שמע</string>
-    <string name="single_formats">פורמטים</string>
+    <string name="single_formats">בחרו איכות להורדה:</string>
     <string name="single_subtitles">כתוביות</string>
     <string name="single_no_subtitle">ללא כתוביות</string>
     <string name="error_fetch_video_info">אירעה שגיאה בעת שליפת פרטי הווידאו: %1$s</string>
@@ -233,7 +233,7 @@
 
     <!-- מסך הורדה בודדת: טקסטים ידידותיים -->
     <string name="single_sponsorblock_caption">זיהינו קטעים ממומנים בסרטון הזה. הפעלת האפשרות תסיר אותם אוטומטית מההורדה – ברוב המקרים מדובר בפרסומות שאינן קשורות ישירות לתוכן המרכזי.</string>
-    <string name="single_split_chapters_caption">זיהינו שהסרטון מחולק לפרקים. הפעלת האפשרות תשמור קובץ נפרד לכל פרק – שימושי במיוחד בסטים או מיקסים ארוכים כדי לקבל קובץ אחד לכל שיר.</string>
+    <string name="single_split_chapters_caption">זיהינו שהסרטון מחולק לפרקים. הפעלת האפשרות תשמור קובץ נפרד לכל פרק – שימושי במיוחד במחרוזות או מיקסים ארוכים כדי לקבל קובץ אחד לכל שיר.</string>
 
 
 </resources>
