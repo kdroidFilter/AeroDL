@@ -49,6 +49,7 @@ import io.github.kdroidfilter.ytdlpgui.di.AppGraph
 import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
 import io.github.kdroidfilter.ytdlpgui.di.TrayAppStateHolder
 import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsEvents
+import io.github.vinceglb.filekit.FileKit
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.getString
 import ytdlpgui.composeapp.generated.resources.*
@@ -65,6 +66,9 @@ fun main() = application {
     if (cleanInstall) {
         clearJavaTempDir()
     }
+
+    FileKit.init(appId = "ada57c09-11e1-4d56-9d5d-0c480f6968ec")
+
 //    Locale.setDefault(Locale("en"))
     val appGraph = remember { createGraph<AppGraph>() }
     run {

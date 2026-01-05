@@ -2,10 +2,12 @@ package io.github.kdroidfilter.ytdlp.util
 
 import io.github.kdroidfilter.network.HttpsConnectionFactory
 import io.github.kdroidfilter.platformtools.OperatingSystem
-import io.github.kdroidfilter.platformtools.getCacheDir
 import io.github.kdroidfilter.platformtools.getOperatingSystem
 import io.github.kdroidfilter.logging.debugln
 import io.github.kdroidfilter.logging.errorln
+import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.databasesDir
+import io.github.vinceglb.filekit.path
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
@@ -20,8 +22,10 @@ object PlatformUtils {
 
     // --- yt-dlp ---
 
+    private fun getDataDir(): String = FileKit.databasesDir.path
+
     fun getDefaultBinaryPath(): String {
-        val dir = getCacheDir()
+        val dir = getDataDir()
         val os = getOperatingSystem()
         val binaryName = when (os) {
             OperatingSystem.WINDOWS -> "yt-dlp.exe"
@@ -148,7 +152,7 @@ object PlatformUtils {
     // --- FFmpeg ---
 
     fun getDefaultFfmpegPath(): String {
-        val dir = File(getCacheDir(), "ffmpeg/bin")
+        val dir = File(getDataDir(), "ffmpeg/bin")
         val exe = if (getOperatingSystem() == OperatingSystem.WINDOWS) "ffmpeg.exe" else "ffmpeg"
         return File(dir, exe).absolutePath
     }
@@ -218,7 +222,7 @@ object PlatformUtils {
         ffmpegFetcher: io.github.kdroidfilter.platformtools.releasefetcher.github.GitHubReleaseFetcher,
         onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null
     ): String? = withContext(Dispatchers.IO) {
-        val baseDir = File(getCacheDir(), "ffmpeg")
+        val baseDir = File(getDataDir(), "ffmpeg")
         val binDir = File(baseDir, "bin")
         val targetFfmpeg = File(binDir, if (getOperatingSystem() == OperatingSystem.WINDOWS) "ffmpeg.exe" else "ffmpeg")
         val targetFfprobe = File(binDir, if (getOperatingSystem() == OperatingSystem.WINDOWS) "ffprobe.exe" else "ffprobe")

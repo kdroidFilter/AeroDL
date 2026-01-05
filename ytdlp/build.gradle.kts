@@ -18,6 +18,9 @@ kotlin {
             // Platform tools
             implementation(libs.platformtools.releasefetcher)
             implementation(libs.platformtools.core)
+
+            // FileKit for app data directory
+            implementation(libs.filekit.core)
         }
         jvmTest.dependencies {
             implementation(libs.kotlin.test)
