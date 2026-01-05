@@ -13,8 +13,9 @@ import androidx.compose.ui.unit.dp
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.AccentButton
 import io.github.composefluent.component.Text
+import dev.zacsweers.metrox.viewmodel.metroViewModel
 import io.github.kdroidfilter.ytdlpgui.core.design.components.ProgressBar
-import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
+import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import androidx.navigation.NavHostController
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents
@@ -40,9 +41,10 @@ import kotlin.time.Duration.Companion.seconds
 @Composable
 fun FinishScreen(
     navController: NavHostController,
-    viewModel: OnboardingViewModel = LocalAppGraph.current.onboardingViewModel,
 ) {
-    val appGraph = LocalAppGraph.current
+    val viewModel: OnboardingViewModel = metroViewModel(
+        viewModelStoreOwner = LocalWindowViewModelStoreOwner.current
+    )
     val currentStep by viewModel.currentStep.collectAsState()
     val initState by viewModel.initState.collectAsState()
     val state by viewModel.uiState.collectAsState()
@@ -61,13 +63,16 @@ fun FinishScreen(
             OnboardingNavigationState.None -> Unit
         }
     }
+    val initViewModel: io.github.kdroidfilter.ytdlpgui.features.init.InitViewModel = metroViewModel(
+        viewModelStoreOwner = LocalWindowViewModelStoreOwner.current
+    )
     FinishView(
         currentStep = currentStep,
         initState = initState,
         totalSteps = viewModel.getTotalSteps(),
         currentStepIndex = viewModel.getCurrentStepIndex(),
         onComplete = { viewModel.completeOnboarding() },
-        onRetryInit = { appGraph.initViewModel.handleEvent(InitEvent.StartInitialization) }
+        onRetryInit = { initViewModel.handleEvent(InitEvent.StartInitialization) }
     )
 }
 

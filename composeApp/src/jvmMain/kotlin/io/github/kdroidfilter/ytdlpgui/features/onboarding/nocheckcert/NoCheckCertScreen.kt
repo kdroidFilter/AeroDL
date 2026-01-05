@@ -24,8 +24,9 @@ import io.github.composefluent.icons.Icons
 import io.github.composefluent.component.CheckBox
 
 import io.github.composefluent.icons.regular.LockShield
+import dev.zacsweers.metrox.viewmodel.metroViewModel
 import io.github.composefluent.icons.regular.Warning
-import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
+import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import androidx.navigation.NavHostController
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.NavigationRow
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents
@@ -44,8 +45,9 @@ import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents.*
 
 @Composable
 fun NoCheckCertScreen(navController: NavHostController) {
-    val appGraph = LocalAppGraph.current
-    val viewModel = remember(appGraph) { appGraph.onboardingViewModel }
+    val viewModel: OnboardingViewModel = metroViewModel(
+        viewModelStoreOwner = LocalWindowViewModelStoreOwner.current
+    )
     val onboardingUiState by viewModel.uiState.collectAsState()
     val noCheckCertificate by viewModel.noCheckCertificate.collectAsState()
     val state = NoCheckCertState(

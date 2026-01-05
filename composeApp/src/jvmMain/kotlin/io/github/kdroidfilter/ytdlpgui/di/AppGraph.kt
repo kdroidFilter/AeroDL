@@ -9,8 +9,8 @@ import com.russhwolf.settings.Settings
 import dev.zacsweers.metro.DependencyGraph
 import dev.zacsweers.metro.Provides
 import dev.zacsweers.metro.SingleIn
+import dev.zacsweers.metrox.viewmodel.ViewModelGraph
 import io.github.kdroidfilter.network.CoilConfig
-import androidx.lifecycle.SavedStateHandle
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.ClipboardMonitorManager
 import io.github.kdroidfilter.ytdlpgui.core.navigation.NavigationEventBus
@@ -19,37 +19,25 @@ import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
 import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
 import io.github.kdroidfilter.ytdlpgui.data.SupportedSitesRepository
 import io.github.kdroidfilter.ytdlpgui.db.Database
-import io.github.kdroidfilter.ytdlpgui.features.download.bulk.BulkDownloadViewModel
-import io.github.kdroidfilter.ytdlpgui.features.download.manager.DownloadViewModel
-import io.github.kdroidfilter.ytdlpgui.features.download.single.SingleDownloadViewModel
-import io.github.kdroidfilter.ytdlpgui.features.home.HomeViewModel
-import io.github.kdroidfilter.ytdlpgui.features.init.InitViewModel
-import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingViewModel
-import io.github.kdroidfilter.ytdlpgui.features.system.about.AboutViewModel
-import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsViewModel
 import io.github.vinceglb.autolaunch.AutoLaunch
 
 @DependencyGraph(AppScope::class)
-interface AppGraph {
-    
-    // Entry points for the application
-    val initViewModel: InitViewModel
-    val homeViewModel: HomeViewModel
-    val aboutViewModel: AboutViewModel
-    val onboardingViewModel: OnboardingViewModel
-    val settingsViewModel: SettingsViewModel
-    val bulkDownloadViewModel: BulkDownloadViewModel
-    val downloadViewModel: DownloadViewModel
-    val downloadManager: DownloadManager
-    val clipboardMonitorManager: ClipboardMonitorManager
-    
-    // Additional exposed dependencies
-    val autoLaunch: AutoLaunch
-    val settings: Settings
-    val imageLoader: ImageLoader
-    val ytDlpWrapper: YtDlpWrapper
-    val downloadHistoryRepository: DownloadHistoryRepository
-    val navigationEventBus: NavigationEventBus
+abstract class AppGraph : ViewModelGraph {
+
+    // Managers
+    abstract val downloadManager: DownloadManager
+    abstract val clipboardMonitorManager: ClipboardMonitorManager
+
+    // Core dependencies
+    abstract val autoLaunch: AutoLaunch
+    abstract val settings: Settings
+    abstract val imageLoader: ImageLoader
+    abstract val ytDlpWrapper: YtDlpWrapper
+    abstract val downloadHistoryRepository: DownloadHistoryRepository
+    abstract val navigationEventBus: NavigationEventBus
+
+    // Factory for SingleDownloadViewModel (needs SavedStateHandle via assisted injection)
+    abstract val singleDownloadViewModelFactory: io.github.kdroidfilter.ytdlpgui.features.download.single.SingleDownloadViewModel.Factory
 
     @Provides
     @SingleIn(AppScope::class)
@@ -134,53 +122,6 @@ interface AppGraph {
         settingsRepository.setClipboardMonitorManager(manager)
         return manager
     }
-
-    @Provides
-    fun provideBulkDownloadViewModel(): BulkDownloadViewModel = BulkDownloadViewModel()
-
-    @Provides
-    @SingleIn(AppScope::class)
-    fun provideInitViewModel(
-        ytDlpWrapper: YtDlpWrapper,
-        settingsRepository: SettingsRepository,
-        supportedSitesRepository: SupportedSitesRepository,
-        downloadHistoryRepository: DownloadHistoryRepository,
-    ): InitViewModel = InitViewModel(
-        ytDlpWrapper = ytDlpWrapper,
-        settingsRepository = settingsRepository,
-        supportedSitesRepository = supportedSitesRepository,
-        downloadHistoryRepository = downloadHistoryRepository,
-    )
-
-    @Provides
-    fun provideDownloadViewModel(
-        downloadManager: DownloadManager,
-        downloadHistoryRepository: DownloadHistoryRepository,
-        initViewModel: InitViewModel
-    ): DownloadViewModel = DownloadViewModel(
-        downloadManager = downloadManager,
-        historyRepository = downloadHistoryRepository,
-        initViewModel = initViewModel
-    )
-
-    @Provides
-    fun provideSingleDownloadViewModel(
-        savedStateHandle: SavedStateHandle,
-        ytDlpWrapper: YtDlpWrapper,
-        downloadManager: DownloadManager,
-    ): SingleDownloadViewModel = SingleDownloadViewModel(
-        savedStateHandle = savedStateHandle,
-        ytDlpWrapper = ytDlpWrapper,
-        downloadManager = downloadManager,
-    )
-
-    // Convenience factory to create a route-scoped SingleDownloadViewModel from a NavBackStackEntry
-    fun singleDownloadViewModel(savedStateHandle: SavedStateHandle): SingleDownloadViewModel =
-        provideSingleDownloadViewModel(
-            savedStateHandle = savedStateHandle,
-            ytDlpWrapper = ytDlpWrapper,
-            downloadManager = downloadManager,
-        )
 
     @Provides
     @SingleIn(AppScope::class)

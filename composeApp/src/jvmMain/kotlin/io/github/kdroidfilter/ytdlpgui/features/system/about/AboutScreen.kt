@@ -26,15 +26,17 @@ import androidx.compose.ui.unit.dp
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.HyperlinkButton
 import io.github.composefluent.component.Text
+import dev.zacsweers.metrox.viewmodel.metroViewModel
 import io.github.kdroidfilter.ytdlpgui.core.platform.browser.openUrlInBrowser
-import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
+import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.*
 
 @Composable
 fun AboutScreen() {
-    val appGraph = LocalAppGraph.current
-        val viewModel = remember(appGraph) { appGraph.aboutViewModel }
+    val viewModel: AboutViewModel = metroViewModel(
+        viewModelStoreOwner = LocalWindowViewModelStoreOwner.current
+    )
     val state by viewModel.uiState.collectAsState()
     AboutView(
         state = state,

@@ -49,6 +49,8 @@ kotlin {
 
             // DI - Metro
             implementation(libs.metro.runtime)
+            implementation(libs.metro.viewmodel)
+            implementation(libs.metro.viewmodel.compose)
 
             // Platform tools
             implementation(libs.platformtools.core)

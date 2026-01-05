@@ -23,11 +23,12 @@ import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.Icon
 import io.github.composefluent.component.ProgressRing
 import io.github.composefluent.component.Text
+import dev.zacsweers.metrox.viewmodel.metroViewModel
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnly
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
+import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
 import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.checking_ffmpeg
 import ytdlpgui.composeapp.generated.resources.checking_ytdlp
@@ -40,8 +41,9 @@ import ytdlpgui.composeapp.generated.resources.updating_ytdlp
 
 @Composable
 fun InitScreen(navController: NavHostController) {
-    val appGraph = LocalAppGraph.current
-    val viewModel = appGraph.initViewModel
+    val viewModel: InitViewModel = metroViewModel(
+        viewModelStoreOwner = LocalWindowViewModelStoreOwner.current
+    )
     val state by viewModel.uiState.collectAsState()
     
     // Handle navigation based on state

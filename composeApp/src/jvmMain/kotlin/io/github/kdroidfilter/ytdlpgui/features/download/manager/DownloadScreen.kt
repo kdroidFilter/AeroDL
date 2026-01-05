@@ -46,8 +46,9 @@ import io.github.kdroidfilter.ytdlpgui.core.design.components.UpdateInfoBar
 import io.github.kdroidfilter.ytdlpgui.core.design.components.TerminalView
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository.HistoryItem
+import dev.zacsweers.metrox.viewmodel.metroViewModel
 import io.github.kdroidfilter.ytdlpgui.core.design.components.UpdateInfoBar
-import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
+import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import ytdlpgui.composeapp.generated.resources.*
@@ -59,8 +60,9 @@ import java.util.Locale
 
 @Composable
 fun DownloaderScreen() {
-    val appGraph = LocalAppGraph.current
-    val viewModel = remember(appGraph) { appGraph.downloadViewModel }
+    val viewModel: DownloadViewModel = metroViewModel(
+        viewModelStoreOwner = LocalWindowViewModelStoreOwner.current
+    )
     val state by viewModel.uiState.collectAsState()
     DownloadView(
         state = state,

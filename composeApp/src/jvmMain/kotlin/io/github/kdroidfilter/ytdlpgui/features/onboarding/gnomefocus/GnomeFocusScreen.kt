@@ -16,8 +16,9 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import io.github.composefluent.component.AccentButton
 import io.github.composefluent.component.HyperlinkButton
+import dev.zacsweers.metrox.viewmodel.metroViewModel
 import io.github.composefluent.component.Text
-import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
+import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import androidx.navigation.NavHostController
 import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.HeaderRow
@@ -37,8 +38,9 @@ import ytdlpgui.composeapp.generated.resources.onboarding_gnome_focus_title
 
 @Composable
 fun GnomeFocusScreen(navController: NavHostController) {
-    val appGraph = LocalAppGraph.current
-    val viewModel = remember(appGraph) { appGraph.onboardingViewModel }
+    val viewModel: OnboardingViewModel = metroViewModel(
+        viewModelStoreOwner = LocalWindowViewModelStoreOwner.current
+    )
     val onboardingUiState by viewModel.uiState.collectAsState()
     val currentStep by viewModel.currentStep.collectAsState()
     val initState by viewModel.initState.collectAsState()
