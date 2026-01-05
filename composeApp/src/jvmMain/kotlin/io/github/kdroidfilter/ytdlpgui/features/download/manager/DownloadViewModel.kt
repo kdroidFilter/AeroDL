@@ -16,7 +16,16 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import java.io.File
 import java.util.Locale
+import androidx.lifecycle.ViewModel
+import dev.zacsweers.metro.ContributesIntoMap
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.binding
+import dev.zacsweers.metrox.viewmodel.ViewModelKey
+import io.github.kdroidfilter.ytdlpgui.di.AppScope
 
+@ContributesIntoMap(AppScope::class, binding = binding<ViewModel>())
+@ViewModelKey(DownloadViewModel::class)
+@Inject
 class DownloadViewModel(
     private val downloadManager: DownloadManager,
     private val historyRepository: DownloadHistoryRepository,
