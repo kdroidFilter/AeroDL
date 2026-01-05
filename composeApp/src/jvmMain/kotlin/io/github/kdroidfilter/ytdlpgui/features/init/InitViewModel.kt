@@ -1,7 +1,11 @@
 package io.github.kdroidfilter.ytdlpgui.features.init
 
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.ViewModel
+import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.binding
+import dev.zacsweers.metrox.viewmodel.ViewModelKey
 import io.github.kdroidfilter.network.KtorConfig
 import io.github.kdroidfilter.platformtools.OperatingSystem
 import io.github.kdroidfilter.platformtools.getAppVersion
@@ -11,12 +15,15 @@ import io.github.kdroidfilter.platformtools.releasefetcher.github.model.Asset
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
 import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
+import io.github.kdroidfilter.ytdlpgui.di.AppScope
 import io.github.kevincianfarini.cardiologist.PulseBackpressureStrategy
 import io.github.kevincianfarini.cardiologist.fixedPeriodPulse
 import kotlinx.coroutines.launch
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
 
+@ContributesIntoMap(AppScope::class, binding = binding<ViewModel>())
+@ViewModelKey(InitViewModel::class)
 @Inject
 class InitViewModel(
     private val ytDlpWrapper: YtDlpWrapper,

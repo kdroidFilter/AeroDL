@@ -19,12 +19,21 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import io.github.kdroidfilter.logging.errorln
 import io.github.kdroidfilter.logging.infoln
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
+import io.github.kdroidfilter.ytdlpgui.di.AppScope
 
-class SingleDownloadViewModel(
-    savedStateHandle: SavedStateHandle,
+class SingleDownloadViewModel @AssistedInject constructor(
+    @Assisted savedStateHandle: SavedStateHandle,
     private val ytDlpWrapper: YtDlpWrapper,
     private val downloadManager: DownloadManager,
 ) : MVIViewModel<SingleDownloadState, SingleDownloadEvents>(savedStateHandle) {
+
+    @AssistedFactory
+    interface Factory {
+        fun create(savedStateHandle: SavedStateHandle): SingleDownloadViewModel
+    }
 
 
     override fun initialState(): SingleDownloadState = SingleDownloadState.loadingState

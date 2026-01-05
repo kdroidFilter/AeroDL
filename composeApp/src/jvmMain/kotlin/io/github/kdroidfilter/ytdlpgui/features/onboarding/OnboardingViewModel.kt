@@ -21,13 +21,17 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import androidx.lifecycle.ViewModel
+import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.binding
+import dev.zacsweers.metrox.viewmodel.ViewModelKey
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
-import dev.zacsweers.metro.SingleIn
 import io.github.kdroidfilter.ytdlpgui.di.AppScope
 
+@ContributesIntoMap(AppScope::class, binding = binding<ViewModel>())
+@ViewModelKey(OnboardingViewModel::class)
 @Inject
-@SingleIn(AppScope::class)
 class OnboardingViewModel(
     private val settingsRepository: SettingsRepository,
     private val supportedSitesRepository: io.github.kdroidfilter.ytdlpgui.data.SupportedSitesRepository,

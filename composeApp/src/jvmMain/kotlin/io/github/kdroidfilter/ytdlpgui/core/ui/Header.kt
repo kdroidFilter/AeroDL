@@ -24,9 +24,11 @@ import io.github.composefluent.component.*
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.filled.MoreVertical
 import io.github.composefluent.icons.regular.*
+import dev.zacsweers.metrox.viewmodel.metroViewModel
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnly
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
-import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
+import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
+import io.github.kdroidfilter.ytdlpgui.features.init.InitViewModel
 import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.*
 
@@ -39,7 +41,9 @@ fun MainNavigationHeader(
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
     // App update badge state (from InitViewModel)
-    val initViewModel = LocalAppGraph.current.initViewModel
+    val initViewModel: InitViewModel = metroViewModel(
+        viewModelStoreOwner = LocalWindowViewModelStoreOwner.current
+    )
     val initState by initViewModel.uiState.collectAsState()
     val showUpdateBadge = initState.updateAvailable && !initState.updateDismissed
 

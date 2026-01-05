@@ -66,7 +66,9 @@ fun SingleDownloadScreen(
     backStackEntry: androidx.navigation.NavBackStackEntry
 ) {
     val appGraph = LocalAppGraph.current
-    val viewModel = remember(backStackEntry) { appGraph.singleDownloadViewModel(backStackEntry.savedStateHandle) }
+    val viewModel = remember(backStackEntry) {
+        appGraph.singleDownloadViewModelFactory.create(backStackEntry.savedStateHandle)
+    }
     val state by viewModel.uiState.collectAsState()
 
     // Handle navigation to Downloader directly via NavController

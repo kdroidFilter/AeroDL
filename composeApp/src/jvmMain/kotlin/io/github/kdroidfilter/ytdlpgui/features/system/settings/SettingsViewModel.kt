@@ -2,6 +2,7 @@
 
 package io.github.kdroidfilter.ytdlpgui.features.system.settings
 
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.kdroid.composetray.tray.api.TrayAppState
@@ -20,8 +21,14 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.File
+import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.binding
+import dev.zacsweers.metrox.viewmodel.ViewModelKey
+import io.github.kdroidfilter.ytdlpgui.di.AppScope
 
+@ContributesIntoMap(AppScope::class, binding = binding<ViewModel>())
+@ViewModelKey(SettingsViewModel::class)
 @Inject
 class SettingsViewModel(
     private val settingsRepository: SettingsRepository,

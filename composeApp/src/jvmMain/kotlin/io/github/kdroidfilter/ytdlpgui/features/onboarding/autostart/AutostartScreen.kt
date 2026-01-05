@@ -21,8 +21,9 @@ import io.github.composefluent.component.Icon
 import io.github.composefluent.component.Text
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.Power
+import dev.zacsweers.metrox.viewmodel.metroViewModel
 import io.github.kdroidfilter.ytdlpgui.core.design.components.Switcher
-import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
+import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import androidx.navigation.NavHostController
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingStep
@@ -42,8 +43,9 @@ import ytdlpgui.composeapp.generated.resources.settings_auto_launch_title
 
 @Composable
 fun AutostartScreen(navController: NavHostController) {
-    val appGraph = LocalAppGraph.current
-    val viewModel = remember(appGraph) { appGraph.onboardingViewModel }
+    val viewModel: OnboardingViewModel = metroViewModel(
+        viewModelStoreOwner = LocalWindowViewModelStoreOwner.current
+    )
     val onboardingUiState by viewModel.uiState.collectAsState()
     val autoLaunchEnabled by viewModel.autoLaunchEnabled.collectAsState()
     val state = AutostartState(

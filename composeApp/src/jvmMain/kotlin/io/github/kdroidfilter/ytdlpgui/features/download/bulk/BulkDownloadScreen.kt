@@ -23,14 +23,14 @@ import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.*
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
+import dev.zacsweers.metrox.viewmodel.metroViewModel
+import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 
 @Composable
 fun BulkDownloadScreen() {
-    val appGraph = LocalAppGraph.current
-        val viewModel = remember(appGraph) { appGraph.bulkDownloadViewModel }
-
+    val viewModel: BulkDownloadViewModel = metroViewModel(
+        viewModelStoreOwner = LocalWindowViewModelStoreOwner.current
+    )
     val state by viewModel.uiState.collectAsState()
     BulkDownloadView(
         state = state,

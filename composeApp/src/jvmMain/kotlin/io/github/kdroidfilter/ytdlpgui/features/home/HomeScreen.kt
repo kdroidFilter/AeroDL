@@ -19,16 +19,18 @@ import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.filled.ClipboardPaste
 import io.github.composefluent.icons.regular.ArrowLeft
 import io.github.composefluent.icons.regular.ArrowRight
+import dev.zacsweers.metrox.viewmodel.metroViewModel
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnly
-import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
+import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import ytdlpgui.composeapp.generated.resources.*
 
 @Composable
 fun HomeScreen(navController: NavHostController) {
-    val appGraph = LocalAppGraph.current
-        val viewModel = remember(appGraph) { appGraph.homeViewModel }
+    val viewModel: HomeViewModel = metroViewModel(
+        viewModelStoreOwner = LocalWindowViewModelStoreOwner.current
+    )
     val state by viewModel.uiState.collectAsState()
     
     // Handle navigation

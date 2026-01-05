@@ -14,9 +14,12 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.application
-import androidx.lifecycle.ViewModelStore
-import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import dev.zacsweers.metrox.viewmodel.LocalMetroViewModelFactory
+import dev.zacsweers.metrox.viewmodel.metroViewModel
+import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
+import io.github.kdroidfilter.ytdlpgui.di.rememberWindowViewModelStoreOwner
+import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsViewModel
 import coil3.SingletonImageLoader
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.kdroid.composetray.tray.api.TrayApp
@@ -65,14 +68,12 @@ fun main() = application {
 //    Locale.setDefault(Locale("en"))
     val appGraph = remember { createGraph<AppGraph>() }
     run {
-        val vmStore = remember { ViewModelStore() }
-        val viewModelStoreOwner = remember {
-            object : ViewModelStoreOwner {
-                override val viewModelStore: ViewModelStore
-                    get() = vmStore
-            }
-        }
-        CompositionLocalProvider(LocalViewModelStoreOwner provides viewModelStoreOwner) {
+        val windowViewModelOwner = rememberWindowViewModelStoreOwner()
+        CompositionLocalProvider(
+            LocalWindowViewModelStoreOwner provides windowViewModelOwner,
+            LocalViewModelStoreOwner provides windowViewModelOwner,
+            LocalMetroViewModelFactory provides appGraph.metroViewModelFactory,
+        ) {
             NotificationInitializer.configure(
                 AppConfig(
                     appName = runBlocking { getString(Res.string.app_name) },
@@ -110,7 +111,9 @@ fun main() = application {
             val downloadManager = appGraph.downloadManager
             val isDownloading by downloadManager.isDownloading.collectAsState()
 
-            val settingsVm = appGraph.settingsViewModel
+            val settingsVm: SettingsViewModel = metroViewModel(
+                viewModelStoreOwner = LocalWindowViewModelStoreOwner.current
+            )
             val autoStartEnabled by settingsVm.autoLaunchEnabled.collectAsState()
             val clipboardEnabled by settingsVm.clipboardMonitoring.collectAsState()
 

@@ -13,8 +13,9 @@ import io.github.composefluent.component.Icon
 import io.github.composefluent.component.Text
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.Clipboard
+import dev.zacsweers.metrox.viewmodel.metroViewModel
 import io.github.kdroidfilter.ytdlpgui.core.design.components.Switcher
-import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
+import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import androidx.navigation.NavHostController
 import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents
@@ -30,8 +31,9 @@ import ytdlpgui.composeapp.generated.resources.*
 
 @Composable
 fun ClipboardScreen(navController: NavHostController) {
-    val appGraph = LocalAppGraph.current
-    val viewModel = remember(appGraph) { appGraph.onboardingViewModel }
+    val viewModel: OnboardingViewModel = metroViewModel(
+        viewModelStoreOwner = LocalWindowViewModelStoreOwner.current
+    )
     val onboardingUiState by viewModel.uiState.collectAsState()
     val clipboardMonitoringEnabled by viewModel.clipboardMonitoringEnabled.collectAsState()
     val state = ClipboardState(
