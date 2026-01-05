@@ -6,16 +6,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import io.github.composefluent.component.ComboBox
-import io.github.kdroidfilter.platformtools.OperatingSystem
-import io.github.kdroidfilter.platformtools.getOperatingSystem
+import io.github.kdroidfilter.ytdlpgui.core.platform.browser.BrowserDetector
+import io.github.kdroidfilter.ytdlpgui.core.platform.browser.SupportedBrowser
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.Res
+import ytdlpgui.composeapp.generated.resources.settings_browser_brave
 import ytdlpgui.composeapp.generated.resources.settings_browser_chrome
+import ytdlpgui.composeapp.generated.resources.settings_browser_chromium
 import ytdlpgui.composeapp.generated.resources.settings_browser_disable
+import ytdlpgui.composeapp.generated.resources.settings_browser_edge
 import ytdlpgui.composeapp.generated.resources.settings_browser_firefox
+import ytdlpgui.composeapp.generated.resources.settings_browser_opera
 import ytdlpgui.composeapp.generated.resources.settings_browser_safari
 import ytdlpgui.composeapp.generated.resources.settings_browser_select
+import ytdlpgui.composeapp.generated.resources.settings_browser_vivaldi
 import ytdlpgui.composeapp.generated.resources.settings_cookies_from_browser_title
 
 /**
@@ -36,7 +41,7 @@ fun BrowserSelector(
     placeholder: String? = null,
     useDefaultPlaceholder: Boolean = false,
 ) {
-    val availableBrowsers = getPlatformBrowserOptions()
+    val availableBrowsers = remember { getInstalledBrowserOptions() }
     val browserLabels = availableBrowsers.map { stringResource(it.labelRes) }
     val browserValues = availableBrowsers.map { it.value }
 
@@ -73,27 +78,26 @@ data class BrowserOption(
 )
 
 /**
- * Get browser options based on the current operating system.
- * - Linux: Firefox, Chrome, Disable
- * - Windows: Firefox, Disable
- * - macOS: Firefox, Safari, Disable
+ * Get browser options based on installed browsers on the system.
+ * Only returns browsers that are actually installed, plus a disable option.
  */
-@Composable
-private fun getPlatformBrowserOptions(): List<BrowserOption> {
-    return when (getOperatingSystem()) {
-        OperatingSystem.WINDOWS -> listOf(
-            BrowserOption("firefox", Res.string.settings_browser_firefox),
-            BrowserOption("", Res.string.settings_browser_disable)
-        )
-        OperatingSystem.MACOS -> listOf(
-            BrowserOption("firefox", Res.string.settings_browser_firefox),
-            BrowserOption("safari", Res.string.settings_browser_safari),
-            BrowserOption("", Res.string.settings_browser_disable)
-        )
-        else -> listOf(
-            BrowserOption("firefox", Res.string.settings_browser_firefox),
-            BrowserOption("chrome", Res.string.settings_browser_chrome),
-            BrowserOption("", Res.string.settings_browser_disable)
-        )
+private fun getInstalledBrowserOptions(): List<BrowserOption> {
+    val installedBrowsers = BrowserDetector.getInstalledBrowsers()
+
+    val browserOptions = installedBrowsers.mapNotNull { browser ->
+        val labelRes = when (browser) {
+            SupportedBrowser.FIREFOX -> Res.string.settings_browser_firefox
+            SupportedBrowser.CHROME -> Res.string.settings_browser_chrome
+            SupportedBrowser.SAFARI -> Res.string.settings_browser_safari
+            SupportedBrowser.EDGE -> Res.string.settings_browser_edge
+            SupportedBrowser.BRAVE -> Res.string.settings_browser_brave
+            SupportedBrowser.OPERA -> Res.string.settings_browser_opera
+            SupportedBrowser.VIVALDI -> Res.string.settings_browser_vivaldi
+            SupportedBrowser.CHROMIUM -> Res.string.settings_browser_chromium
+        }
+        BrowserOption(browser.value, labelRes)
     }
+
+    // Always add the disable option at the end
+    return browserOptions + BrowserOption("", Res.string.settings_browser_disable)
 }

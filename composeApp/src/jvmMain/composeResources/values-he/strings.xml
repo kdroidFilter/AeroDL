@@ -163,6 +163,11 @@
     <string name="settings_browser_chrome">Chrome</string>
     <string name="settings_browser_firefox">Firefox</string>
     <string name="settings_browser_safari">Safari</string>
+    <string name="settings_browser_edge">Edge</string>
+    <string name="settings_browser_brave">Brave</string>
+    <string name="settings_browser_opera">Opera</string>
+    <string name="settings_browser_vivaldi">Vivaldi</string>
+    <string name="settings_browser_chromium">Chromium</string>
     
     <string name="settings_include_preset_in_filename_title">כלול איכות בשם הקובץ</string>
     <string name="settings_include_preset_in_filename_caption">הוסף את האיכות הנבחרת (למשל 720p) לשם הקובץ המורד</string>
