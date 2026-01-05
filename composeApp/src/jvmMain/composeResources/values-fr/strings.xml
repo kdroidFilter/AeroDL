@@ -101,6 +101,12 @@
     <string name="settings_concurrent_fragments_caption">Fractionne le fichier et télécharge chaque partie simultanément, accélérant grandement les téléchargements. Non recommandé : peut entraîner un bannissement</string>
 
 
+    <!-- Paramètres : Proxy -->
+    <string name="settings_proxy_title">Proxy</string>
+    <string name="settings_proxy_caption">Acheminer les téléchargements via un serveur proxy. Supporte les proxys HTTP, HTTPS et SOCKS5.</string>
+    <string name="settings_proxy_placeholder">http://127.0.0.1:8080</string>
+    <string name="settings_proxy_not_set">Aucun proxy configuré</string>
+
     <!-- Paramètres : section Dossier de téléchargement -->
     <string name="settings_download_dir_title">Dossier de téléchargement</string>
     <string name="settings_download_dir_caption">Choisissez le dossier où les téléchargements seront enregistrés par défaut.</string>

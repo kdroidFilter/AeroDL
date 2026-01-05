@@ -96,6 +96,7 @@ object NetAndArchive {
         }
         if (options.noCheckCertificate) cmd.add("--no-check-certificate")
         options.cookiesFromBrowser?.takeIf { it.isNotBlank() }?.let { cmd.addAll(listOf("--cookies-from-browser", it)) }
+        options.proxy?.takeIf { it.isNotBlank() }?.let { cmd.addAll(listOf("--proxy", it)) }
 
         // Detect if caller provided a chapter-only output via extra args.
         // If so, suppress the base "-o" to avoid creating a non-split file.

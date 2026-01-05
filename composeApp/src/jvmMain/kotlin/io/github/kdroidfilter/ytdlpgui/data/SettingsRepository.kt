@@ -51,6 +51,9 @@ class SettingsRepository(
     private val _concurrentFragments = MutableStateFlow(settings.getInt(SettingsKeys.CONCURRENT_FRAGMENTS, 1).coerceIn(1, 5))
     val concurrentFragments: StateFlow<Int> = _concurrentFragments.asStateFlow()
 
+    private val _proxy = MutableStateFlow(settings.getString(SettingsKeys.PROXY, ""))
+    val proxy: StateFlow<String> = _proxy.asStateFlow()
+
     init {
         // Apply initial settings to dependencies
         applyToYtDlpWrapper()
@@ -112,6 +115,13 @@ class SettingsRepository(
         ytDlpWrapper.concurrentFragments = clamped
     }
 
+    fun setProxy(proxyUrl: String) {
+        val value = proxyUrl.trim()
+        _proxy.value = value
+        settings.putString(SettingsKeys.PROXY, value)
+        ytDlpWrapper.proxy = value.ifBlank { null }
+    }
+
     fun setOnboardingCompleted(completed: Boolean) {
         settings.putBoolean(SettingsKeys.ONBOARDING_COMPLETED, completed)
     }
@@ -135,6 +145,7 @@ class SettingsRepository(
         _notifyOnComplete.value = settings.getBoolean(SettingsKeys.NOTIFY_ON_DOWNLOAD_COMPLETE, true)
         _autoLaunchEnabled.value = settings.getBoolean(SettingsKeys.AUTO_LAUNCH_ENABLED, false)
         _concurrentFragments.value = settings.getInt(SettingsKeys.CONCURRENT_FRAGMENTS, 1).coerceIn(1, 5)
+        _proxy.value = settings.getString(SettingsKeys.PROXY, "")
 
         applyToYtDlpWrapper()
         clipboardMonitorManager?.let { applyToClipboardMonitor(it) }
@@ -178,6 +189,7 @@ class SettingsRepository(
         ytDlpWrapper.downloadDir = path.takeIf { it.isNotBlank() }?.let { File(it) }
         ytDlpWrapper.embedThumbnailInMp3 = _embedThumbnailInMp3.value
         ytDlpWrapper.concurrentFragments = _concurrentFragments.value
+        ytDlpWrapper.proxy = _proxy.value.ifBlank { null }
     }
 
     private fun applyToClipboardMonitor(clipboardMonitor: io.github.kdroidfilter.ytdlpgui.core.domain.manager.ClipboardMonitorManager) {
@@ -209,6 +221,7 @@ class SettingsRepository(
         _notifyOnComplete.value = true
         _autoLaunchEnabled.value = false
         _concurrentFragments.value = 1
+        _proxy.value = ""
 
         // Apply defaults to dependencies
         applyToYtDlpWrapper()

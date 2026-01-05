@@ -16,6 +16,7 @@ data class SettingsState(
     val autoLaunchEnabled: Boolean = false,
     val notifyOnComplete: Boolean = true,
     val concurrentFragments: Int = 1,
+    val proxy: String = "",
 ) {
     companion object {
         val defaultState = SettingsState()
@@ -65,7 +66,8 @@ data class SettingsState(
             downloadDirPath = "/media/storage/Downloads/Videos",
             clipboardMonitoringEnabled = true,
             autoLaunchEnabled = true,
-            notifyOnComplete = true
+            notifyOnComplete = true,
+            proxy = "http://127.0.0.1:8080"
         )
     }
 }

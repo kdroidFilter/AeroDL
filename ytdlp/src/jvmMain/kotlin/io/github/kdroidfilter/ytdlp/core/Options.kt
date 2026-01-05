@@ -29,6 +29,7 @@ data class SubtitleOptions(
  * @property subtitles Subtitle download configuration. Null to skip subtitle downloading.
  * @property sponsorBlockRemove If true, removes SponsorBlock segments (default categories).
  * @property concurrentFragments Number of threads for downloading m3u8/mpd fragments in parallel (1-5). 1 = disabled.
+ * @property proxy Proxy URL to use for the download (e.g., "http://127.0.0.1:8080", "socks5://127.0.0.1:1080"). Null to disable.
  */
 data class Options(
     val format: String? = null,
@@ -39,7 +40,8 @@ data class Options(
     val timeout: Duration? = Duration.ofMinutes(30),
     val targetContainer: String? = null,
     val allowRecode: Boolean = false,
-    val subtitles: SubtitleOptions? = null,  // NEW: Subtitle configuration
-    val sponsorBlockRemove: Boolean = false,  // NEW: SponsorBlock segment removal
-    val concurrentFragments: Int = 1  // NEW: Multi-threaded fragment downloads
+    val subtitles: SubtitleOptions? = null,
+    val sponsorBlockRemove: Boolean = false,
+    val concurrentFragments: Int = 1,
+    val proxy: String? = null
 )

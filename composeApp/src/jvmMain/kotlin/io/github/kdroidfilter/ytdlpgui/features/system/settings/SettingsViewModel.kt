@@ -53,6 +53,7 @@ class SettingsViewModel(
     val notifyOnComplete: StateFlow<Boolean> = settingsRepository.notifyOnComplete
     val autoLaunchEnabled: StateFlow<Boolean> = settingsRepository.autoLaunchEnabled
     val concurrentFragments: StateFlow<Int> = settingsRepository.concurrentFragments
+    val proxy: StateFlow<String> = settingsRepository.proxy
 
     // Note: This ViewModel uses a combined state from multiple sources, so we override uiState
     override val uiState = combine(
@@ -67,6 +68,7 @@ class SettingsViewModel(
         autoLaunchEnabled,
         notifyOnComplete,
         concurrentFragments,
+        proxy,
     ) { values: Array<Any?> ->
         val loading = values[0] as Boolean
         val noCheck = values[1] as Boolean
@@ -79,6 +81,7 @@ class SettingsViewModel(
         val autoLaunch = values[8] as Boolean
         val notify = values[9] as Boolean
         val concurrent = values[10] as Int
+        val proxyUrl = values[11] as String
         SettingsState(
             isLoading = loading,
             noCheckCertificate = noCheck,
@@ -91,6 +94,7 @@ class SettingsViewModel(
             autoLaunchEnabled = autoLaunch,
             notifyOnComplete = notify,
             concurrentFragments = concurrent,
+            proxy = proxyUrl,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -139,6 +143,9 @@ class SettingsViewModel(
             }
             is SettingsEvents.SetConcurrentFragments -> {
                 settingsRepository.setConcurrentFragments(event.count)
+            }
+            is SettingsEvents.SetProxy -> {
+                settingsRepository.setProxy(event.proxyUrl)
             }
             is SettingsEvents.PickDownloadDir -> {
                 viewModelScope.launch {

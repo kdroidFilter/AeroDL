@@ -233,6 +233,12 @@
     <string name="settings_concurrent_fragments_title">חוטי הורדת פיצולים</string>
     <string name="settings_concurrent_fragments_caption">מפצל את הקובץ ומוריד כל חלק בו-זמנית, מאיץ מאוד את ההורדות. לא מומלץ: עלול להוביל לחסימת חשבון</string>
 
+    <!-- הגדרות: פרוקסי -->
+    <string name="settings_proxy_title">פרוקסי</string>
+    <string name="settings_proxy_caption">נתב הורדות דרך שרת פרוקסי. תומך ב-HTTP, HTTPS ו-SOCKS5.</string>
+    <string name="settings_proxy_placeholder">http://127.0.0.1:8080</string>
+    <string name="settings_proxy_not_set">לא הוגדר פרוקסי</string>
+
     <!-- מגש מערכת: הורדה פעילה -->
     <string name="tray_downloading_suffix"> - בהורדה…</string>
 
