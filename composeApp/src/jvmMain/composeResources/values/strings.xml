@@ -103,6 +103,12 @@
     <string name="settings_concurrent_fragments_title">Fragment download threads</string>
     <string name="settings_concurrent_fragments_caption">Splits the file and downloads each part simultaneously, greatly speeding up downloads. Not recommended: may result in account bans</string>
 
+    <!-- Settings: Proxy -->
+    <string name="settings_proxy_title">Proxy</string>
+    <string name="settings_proxy_caption">Route downloads through a proxy server. Supports HTTP, HTTPS, and SOCKS5 proxies.</string>
+    <string name="settings_proxy_placeholder">http://127.0.0.1:8080</string>
+    <string name="settings_proxy_not_set">No proxy configured</string>
+
     <!-- Settings: Download directory section -->
     <string name="settings_download_dir_title">Download directory</string>
     <string name="settings_download_dir_caption">Choose the folder where downloads will be saved by default.</string>

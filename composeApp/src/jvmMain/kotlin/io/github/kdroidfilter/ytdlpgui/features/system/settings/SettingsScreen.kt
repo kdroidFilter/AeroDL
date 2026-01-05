@@ -85,6 +85,12 @@ fun SettingsView(
                 )
             }
             item {
+                ProxySetting(
+                    proxy = state.proxy,
+                    onProxyChange = { onEvent(SettingsEvents.SetProxy(it)) },
+                )
+            }
+            item {
                 NoCheckCertificateSetting(
                     noCheckCertificate = state.noCheckCertificate,
                     onNoCheckCertificateChange = { onEvent(SettingsEvents.SetNoCheckCertificate(it)) },
@@ -350,6 +356,53 @@ private fun DownloadDirectorySetting(
 @Composable
 fun DownloadDirectorySettingPreview() {
     DownloadDirectorySetting(downloadDirPath = "/home/user/Downloads", onPickDownloadDir = {})
+}
+
+@Composable
+private fun ProxySetting(
+    proxy: String,
+    onProxyChange: (String) -> Unit,
+) {
+    var currentValue by remember(proxy) { mutableStateOf(proxy) }
+
+    CardExpanderItem(
+        heading = {
+            Text(
+                stringResource(Res.string.settings_proxy_title),
+                modifier = Modifier.fillMaxWidth(0.50f)
+            )
+        },
+        caption = {
+            Column(Modifier.fillMaxWidth(0.6f)) {
+                EllipsizedTextWithTooltip(
+                    text = stringResource(Res.string.settings_proxy_caption),
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    proxy.ifBlank { stringResource(Res.string.settings_proxy_not_set) },
+                )
+            }
+        },
+        icon = { Icon(Icons.Regular.Globe, null) },
+        trailing = {
+            TextField(
+                value = currentValue,
+                onValueChange = {
+                    currentValue = it
+                    onProxyChange(it)
+                },
+                modifier = Modifier.width(200.dp),
+                placeholder = { Text(stringResource(Res.string.settings_proxy_placeholder), maxLines = 1) },
+                singleLine = true,
+            )
+        }
+    )
+}
+
+@Preview
+@Composable
+fun ProxySettingPreview() {
+    ProxySetting(proxy = "http://127.0.0.1:8080", onProxyChange = {})
 }
 
 @Composable
