@@ -107,15 +107,15 @@ class ClipboardMonitorManager(
 
         val lower = url.lowercase()
         val isYouTube = listOf("youtube.com", "youtu.be").any { lower.contains(it) }
-        val isKnown = supportedSitesRepository.matchesKnownSite(url)
-        if (!isYouTube && !isKnown) return
-        val isPlaylist = if (isYouTube) (lower.contains("list=") || lower.contains("/playlist")) else false
-        val isChannel = if (isYouTube) (
-            lower.contains("/channel/") || lower.contains("/c/") || lower.contains("youtube.com/@")
-        ) else false
 
-        // For YouTube, avoid bulk (playlist/channel) prompts which can be noisy.
-        if (isYouTube && (isPlaylist || isChannel)) return
+        // Only accept YouTube links for clipboard monitoring
+        if (!isYouTube) return
+
+        val isPlaylist = lower.contains("list=") || lower.contains("/playlist")
+        val isChannel = lower.contains("/channel/") || lower.contains("/c/") || lower.contains("youtube.com/@")
+
+        // Avoid bulk (playlist/channel) prompts which can be noisy.
+        if (isPlaylist || isChannel) return
 
         // Only send notification if app is configured and initialized
         if (!settingsRepository.isOnboardingCompleted()) return
