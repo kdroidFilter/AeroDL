@@ -1,3 +1,6 @@
+import io.github.kdroidfilter.buildsrc.RenameMacPkgTask
+import io.github.kdroidfilter.buildsrc.RenameMsiTask
+import io.github.kdroidfilter.buildsrc.Versioning
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import java.util.Locale
 import java.io.File as JFile
@@ -11,17 +14,31 @@ plugins {
     alias(libs.plugins.sqlDelight)
     alias(libs.plugins.hydraulicConveyor)
     alias(libs.plugins.metro)
+    alias(libs.plugins.linuxDeps)
 }
 
-val ref = System.getenv("GITHUB_REF") ?: ""
-val version = if (ref.startsWith("refs/tags/")) {
-    val tag = ref.removePrefix("refs/tags/")
-    if (tag.startsWith("v")) tag.substring(1) else tag
-} else "1.3.5"
+val version = Versioning.resolveVersion(project)
+
+// Turn 0.x[.y] into 1.x[.y] for macOS (DMG/PKG require MAJOR > 0)
+fun macSafeVersion(ver: String): String {
+    // Strip prerelease/build metadata for packaging (e.g., 0.1.0-beta -> 0.1.0)
+    val core = ver.substringBefore('-').substringBefore('+')
+    val parts = core.split('.')
+
+    return if (parts.isNotEmpty() && parts[0] == "0") {
+        when (parts.size) {
+            1 -> "1.0"                 // "0"      -> "1.0"
+            2 -> "1.${parts[1]}"       // "0.1"    -> "1.1"
+            else -> "1.${parts[1]}.${parts[2]}" // "0.1.2" -> "1.1.2"
+        }
+    } else {
+        core // already >= 1.x or something else; leave as-is
+    }
+}
 
 kotlin {
     jvm()
-    jvmToolchain(21)
+    jvmToolchain(libs.versions.jvmToolchain.get().toInt())
 
     sourceSets {
         commonMain.dependencies {
@@ -115,11 +132,22 @@ compose.desktop {
 
         nativeDistributions {
             vendor = "KDroidFilter"
-            targetFormats(TargetFormat.Pkg, TargetFormat.Msi, TargetFormat.Deb)
+            targetFormats(TargetFormat.Pkg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm, TargetFormat.Dmg)
             packageName = "AeroDl"
             packageVersion = version
             description = "An awesome GUI for yt-dlp!"
-            modules("jdk.accessibility", "java.sql", "jdk.security.auth")
+
+            // JVM args for performance optimization
+            jvmArgs += listOf(
+                "--enable-native-access=ALL-UNNAMED",
+                "--add-modules=jdk.incubator.vector",
+                "-XX:+UseCompactObjectHeaders",
+                "-XX:+UseStringDeduplication",
+                "-XX:MaxGCPauseMillis=50"
+            )
+
+            modules("jdk.accessibility", "java.sql", "jdk.security.auth", "jdk.unsupported", "jdk.incubator.vector")
+
             windows {
                 dirChooser = true
                 menuGroup = "start-menu-group"
@@ -127,16 +155,21 @@ compose.desktop {
                 shortcut = true
                 upgradeUuid = "ada57c09-11e1-4d56-9d5d-0c480f6968ec"
                 perUserInstall = true
+                packageVersion = version
             }
             macOS {
                 bundleID = "io.github.kdroidfilter.ytdlpgui"
                 dockName = "AeroDl"
                 iconFile.set(project.file("icons/logo.icns"))
+                packageVersion = macSafeVersion(version)
             }
             linux {
+                packageName = "aerodl"
                 iconFile.set(project.file("icons/logo.png"))
+                packageVersion = version
             }
             buildTypes.release.proguard {
+                version.set("7.8.1")
                 isEnabled = true
                 obfuscate.set(false)
                 optimize.set(true)
@@ -155,6 +188,13 @@ sqldelight {
             dialect("app.cash.sqldelight:sqlite-3-24-dialect:${libs.versions.sqlDelight.get()}")
         }
     }
+}
+
+linuxDebConfig {
+    // Set StartupWMClass to fix dock/taskbar icon
+    startupWMClass.set("io.github.kdroidfilter.ytdlpgui.MainKt")
+    // For Ubuntu 24 t64 dependencies compatibility with older OSes
+    enableT64AlternativeDeps.set(true)
 }
 
 tasks.withType<Jar> {
@@ -513,4 +553,49 @@ tasks.register("packageReleaseMsix") {
         installScript.writeText(installPs1)
         logger.lifecycle("packageReleaseMsix: Wrote ${installScript.absolutePath}")
     }
+}
+
+// --- macOS: rename generated .pkg/.dmg to include architecture suffix (_arm64 or _x64)
+val isMacHost: Boolean = System.getProperty("os.name").lowercase().contains("mac")
+val macArchSuffix: String = run {
+    val arch = System.getProperty("os.arch").lowercase()
+    if (arch.contains("aarch64") || arch.contains("arm")) "_arm64" else "_x64"
+}
+
+// Finds all .pkg/.dmg files under build/compose/binaries and appends arch suffix if missing
+val renameMacPkg = tasks.register<RenameMacPkgTask>("renameMacPkg") {
+    enabled = isMacHost
+    group = "distribution"
+    description = "Rename generated macOS .pkg/.dmg files to include architecture suffix (e.g., _arm64 or _x64)."
+    archSuffix.set(macArchSuffix)
+}
+
+// Ensure the rename runs after any Compose Desktop task that produces a PKG or DMG
+// Exclude the renamer itself to avoid circular finalizer
+tasks.matching { it.name.endsWith("Pkg") && it.name != "renameMacPkg" }.configureEach {
+    finalizedBy(renameMacPkg)
+}
+tasks.matching { it.name.endsWith("Dmg") && it.name != "renameMacPkg" }.configureEach {
+    finalizedBy(renameMacPkg)
+}
+
+// --- Windows: rename generated .msi to include architecture suffix (_arm64 or _x64)
+val isWindowsHost: Boolean = System.getProperty("os.name").lowercase().contains("windows")
+val windowsArchSuffix: String = run {
+    val arch = System.getProperty("os.arch").lowercase()
+    if (arch.contains("aarch64") || arch.contains("arm")) "_arm64" else "_x64"
+}
+
+// Finds all .msi files under build/compose/binaries and appends arch suffix if missing
+val renameMsi = tasks.register<RenameMsiTask>("renameMsi") {
+    enabled = isWindowsHost
+    group = "distribution"
+    description = "Rename generated Windows .msi files to include architecture suffix (e.g., _arm64 or _x64)."
+    archSuffix.set(windowsArchSuffix)
+}
+
+// Ensure the rename runs after any Compose Desktop task that produces an MSI
+// Exclude the renamer itself to avoid circular finalizer
+tasks.matching { it.name.endsWith("Msi") && it.name != "renameMsi" }.configureEach {
+    finalizedBy(renameMsi)
 }

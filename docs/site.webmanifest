@@ -1,0 +1,14 @@
+{
+  "name": "AeroDL",
+  "short_name": "AeroDL",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#6495ed",
+  "background_color": "#050509",
+  "display": "standalone"
+}

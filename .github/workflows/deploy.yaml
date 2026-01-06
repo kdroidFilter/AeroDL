@@ -1,130 +1,288 @@
-name: Build and Release Compose Desktop App with Temurin JDK (JBR for Windows)
+name: Build and Release Compose Desktop App (Linux deb/rpm, Windows msi, macOS pkg/dmg with JBR)
+
 on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          # Linux x64 (DEB)
+          - os: ubuntu-latest
+            jdk_url: "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-25-linux-x64-b176.4.tar.gz"
+            arch: amd64
+            pkg: deb
+
+          # Linux ARM64 (DEB)
+          - os: ubuntu-24.04-arm
+            jdk_url: "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-25-linux-aarch64-b176.4.tar.gz"
+            arch: arm64
+            pkg: deb
+
+          # Linux x64 (RPM)
+          - os: ubuntu-latest
+            jdk_url: "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-25-linux-x64-b176.4.tar.gz"
+            arch: amd64
+            pkg: rpm
+
+          # Linux ARM64 (RPM)
+          - os: ubuntu-24.04-arm
+            jdk_url: "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-25-linux-aarch64-b176.4.tar.gz"
+            arch: arm64
+            pkg: rpm
+
+          # Windows x64
+          - os: windows-latest
+            jdk_url: "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-25-windows-x64-b176.4.zip"
+            arch: amd64
+
+          # Windows ARM64
+          - os: windows-11-arm
+            jdk_url: "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-25-windows-aarch64-b176.4.zip"
+            arch: arm64
+
+          # macOS Apple Silicon (ARM64)
+          - os: macos-latest  # runner Apple Silicon (ARM64)
+            jdk_url: "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-25-osx-aarch64-b176.4.tar.gz"
+            jdk_arch: aarch64
+
+          # macOS Intel (x64)
+          - os: macos-15-intel      # runner MacIntel (x64)
+            jdk_url: "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-25-osx-x64-b176.4.tar.gz"
+            jdk_arch: x64
+
     steps:
-      # 1. Check out the source code
-      - name: Checkout source
-        uses: actions/checkout@v4
-      
-      # 2. Set up Temurin JDK for Linux and macOS
-      - name: Set up Temurin JDK
-        if: matrix.os != 'windows-latest'
-        uses: actions/setup-java@v4
+      - name: Checkout source (with submodules)
+        uses: actions/checkout@v6
         with:
-          distribution: 'temurin'
-          java-version: '21'
-      
-      # 2b. Set up JetBrains JDK for Windows only
-      - name: Set up JetBrains JDK
-        if: matrix.os == 'windows-latest'
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'jetbrains'
-          java-version: '21'
-          token: ${{ secrets.GITHUB_TOKEN }}
-      
-      # 3. Configure Gradle
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Normalize version for manual runs
+        if: github.event_name == 'workflow_dispatch'
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag=$(git describe --tags --abbrev=0)
+          echo "Using latest tag for version: $tag"
+          echo "GITHUB_REF=refs/tags/$tag" >> "$GITHUB_ENV"
+
+      # Install RPM tools on Ubuntu (for .rpm builds)
+      - name: Install RPM tools
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm rpm2cpio alien
+
+      # Linux JDK Install (x64 + ARM64)
+      - name: Install JBR on Linux
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -L -o jbr.tar.gz "${{ matrix.jdk_url }}"
+          mkdir -p "$RUNNER_TEMP/jbr"
+          tar -xzf jbr.tar.gz -C "$RUNNER_TEMP/jbr"
+          JBR_DIR=$(find "$RUNNER_TEMP/jbr" -mindepth 1 -maxdepth 1 -type d -name "jbr*" -o -name "jbrsdk*" | head -n 1)
+          echo "JAVA_HOME=$JBR_DIR" >> "$GITHUB_ENV"
+          echo "$JBR_DIR/bin" >> "$GITHUB_PATH"
+
+      # Windows JDK Install (x64 + ARM64)
+      - name: Install JBR on Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $ProgressPreference = 'SilentlyContinue'
+          Invoke-WebRequest -Uri "${{ matrix.jdk_url }}" -OutFile "$env:RUNNER_TEMP\jbr.zip"
+          Expand-Archive -Path "$env:RUNNER_TEMP\jbr.zip" -DestinationPath "$env:RUNNER_TEMP\jbr" -Force
+          $jbrDir = Get-ChildItem "$env:RUNNER_TEMP\jbr" | Where-Object { $_.PSIsContainer } | Select-Object -First 1
+          "$([string]::Format('JAVA_HOME={0}', $jbrDir.FullName))" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "$($jbrDir.FullName)\bin" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+
+      # macOS JDK Install via tar.gz
+      - name: Install JBR on macOS
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -L -o jbr.tar.gz "${{ matrix.jdk_url }}"
+          mkdir -p "$RUNNER_TEMP/jbr"
+          tar -xzf jbr.tar.gz -C "$RUNNER_TEMP/jbr"
+          ROOT_DIR=$(find "$RUNNER_TEMP/jbr" -mindepth 1 -maxdepth 1 -type d | head -n 1)
+          JAVA_HOME="$ROOT_DIR/Contents/Home"
+          echo "JAVA_HOME=$JAVA_HOME" >> "$GITHUB_ENV"
+          echo "$JAVA_HOME/bin" >> "$GITHUB_PATH"
+          echo "Detected JBR at: $JAVA_HOME"
+
+      # Gradle Setup
       - name: Set up Gradle
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
         with:
           gradle-version: '8.14'
-      
-      # 4. Build the application
-      - name: Build with Gradle
-        run: ./gradlew packageReleaseDistributionForCurrentOS
-      
-      # 5. Upload OS-specific artifacts
-      - name: Upload Linux artifact
-        if: matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-deb
-          path: composeApp/build/compose/binaries/main-release/deb/*.deb
-      
-      - name: Upload macOS artifact
-        if: matrix.os == 'macos-latest'
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-pkg
-          path: composeApp/build/compose/binaries/main-release/pkg/*.pkg
-      
-      - name: Package MSIX (Windows)
-        if: matrix.os == 'windows-latest'
+
+      # Builds
+      - name: Build Linux .deb
+        if: startsWith(matrix.os, 'ubuntu') && matrix.pkg == 'deb'
+        run: |
+          chmod +x ./gradlew
+          ./gradlew :composeApp:createReleaseDistributable :composeApp:packageReleaseDeb
+
+      - name: Build Linux .rpm
+        if: startsWith(matrix.os, 'ubuntu') && matrix.pkg == 'rpm'
+        run: |
+          chmod +x ./gradlew
+          ./gradlew :composeApp:createReleaseDistributable :composeApp:packageReleaseRpm
+
+      - name: Build Windows .msi
+        if: startsWith(matrix.os, 'windows')
         shell: pwsh
-        env:
-          MSIX_IDENTITY_NAME: ${{ secrets.MSIX_IDENTITY_NAME }}
-          MSIX_PUBLISHER: ${{ secrets.MSIX_PUBLISHER }}
-          MSIX_CERT_CN: ${{ secrets.MSIX_CERT_CN }}
-          MSIX_PFX_PASSWORD: ${{ secrets.MSIX_PFX_PASSWORD }}
-        run: .\gradlew.bat :composeApp:createReleaseDistributable :composeApp:packageReleaseMsix
-      
-      - name: Upload Windows MSI artifact
-        if: matrix.os == 'windows-latest'
-        uses: actions/upload-artifact@v4
+        run: .\gradlew.bat :composeApp:createReleaseDistributable :composeApp:packageReleaseMsi
+
+      - name: Build macOS .pkg + .dmg + .zip
+        if: startsWith(matrix.os, 'macos')
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x ./gradlew
+          ./gradlew :composeApp:createReleaseDistributable :composeApp:packageReleasePkg :composeApp:packageReleaseDmg
+          APP_DIR="composeApp/build/compose/binaries/main-release/app"
+          APP_BUNDLE=$(find "$APP_DIR" -mindepth 1 -maxdepth 1 -type d -name '*.app' | head -n 1 || true)
+          if [ -z "$APP_BUNDLE" ]; then
+            echo "No .app bundle found in $APP_DIR"
+            exit 1
+          fi
+          echo "Found app bundle at: $APP_BUNDLE"
+          ARCH="${{ matrix.jdk_arch }}"
+          BASENAME="$(basename "$APP_BUNDLE" .app)"
+          ZIP_NAME="${BASENAME}-mac-${ARCH}.zip"
+          echo "Creating ZIP $ZIP_NAME from $(basename "$APP_BUNDLE") in $(dirname "$APP_BUNDLE")"
+          (cd "$(dirname "$APP_BUNDLE")" && zip -r "$ZIP_NAME" "$(basename "$APP_BUNDLE")")
+
+      # Upload Artifacts
+      - name: Upload Linux .deb (amd64/arm64)
+        if: startsWith(matrix.os, 'ubuntu') && matrix.pkg == 'deb'
+        uses: actions/upload-artifact@v5
         with:
-          name: windows-msi
-          path: composeApp/build/compose/binaries/main-release/msi/*.msi
-      
-      - name: Upload Windows MSIX artifact
-        if: matrix.os == 'windows-latest'
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-msix
-          path: |
-            composeApp/build/compose/binaries/main-release/msix/*.msix
+          name: linux-deb-${{ matrix.arch }}
+          path: composeApp/build/compose/binaries/main-release/deb/*.deb
           if-no-files-found: error
-  
+
+      - name: Upload Linux .rpm (amd64/arm64)
+        if: startsWith(matrix.os, 'ubuntu') && matrix.pkg == 'rpm'
+        uses: actions/upload-artifact@v5
+        with:
+          name: linux-rpm-${{ matrix.arch }}
+          path: composeApp/build/compose/binaries/main-release/rpm/*.rpm
+          if-no-files-found: error
+
+      - name: Upload Windows .msi (amd64/arm64)
+        if: startsWith(matrix.os, 'windows')
+        uses: actions/upload-artifact@v5
+        with:
+          name: windows-msi-${{ matrix.arch }}
+          path: composeApp/build/compose/binaries/main-release/msi/*.msi
+          if-no-files-found: error
+
+      - name: Upload macOS .pkg
+        if: startsWith(matrix.os, 'macos')
+        uses: actions/upload-artifact@v5
+        with:
+          name: macos-pkg-${{ matrix.jdk_arch }}
+          path: composeApp/build/compose/binaries/main-release/pkg/*.pkg
+          if-no-files-found: error
+
+      - name: Upload macOS .dmg
+        if: startsWith(matrix.os, 'macos')
+        uses: actions/upload-artifact@v5
+        with:
+          name: macos-dmg-${{ matrix.jdk_arch }}
+          path: composeApp/build/compose/binaries/main-release/dmg/*.dmg
+          if-no-files-found: error
+
+      - name: Upload macOS .zip
+        if: startsWith(matrix.os, 'macos')
+        uses: actions/upload-artifact@v5
+        with:
+          name: macos-zip-${{ matrix.jdk_arch }}
+          path: composeApp/build/compose/binaries/main-release/app/*.zip
+          if-no-files-found: error
+
   release:
     needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
-      # 1. Check out the source code
-      - name: Checkout source
-        uses: actions/checkout@v4
-      
-      # 2. Download artifacts from all platforms
-      - name: Download Linux artifact
-        uses: actions/download-artifact@v4
+      - name: Checkout (for tag/notes context)
+        uses: actions/checkout@v6
         with:
-          name: linux-deb
-      
-      - name: Download macOS artifact
-        uses: actions/download-artifact@v4
+          fetch-depth: 0
+
+      # Download Artifacts
+      - name: Download Linux DEB artefacts (amd64 + arm64)
+        uses: actions/download-artifact@v6
         with:
-          name: macos-pkg
-      
-      - name: Download Windows artifact
-        uses: actions/download-artifact@v4
+          pattern: linux-deb-*
+          merge-multiple: true
+
+      - name: Download Linux RPM artefacts (amd64 + arm64)
+        uses: actions/download-artifact@v6
         with:
-          name: windows-msi
-      
-      - name: Download Windows MSIX artifact
-        uses: actions/download-artifact@v4
+          pattern: linux-rpm-*
+          merge-multiple: true
+
+      - name: Download Windows artefacts (amd64 + arm64)
+        uses: actions/download-artifact@v6
         with:
-          name: windows-msix
-      
-      # 3. List downloaded artifacts
-      - name: Check downloaded artifacts
+          pattern: windows-msi-*
+          merge-multiple: true
+
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v6
+        with:
+          pattern: macos-pkg-*
+          merge-multiple: true
+
+      - name: Download macOS dmg artifacts
+        uses: actions/download-artifact@v6
+        with:
+          pattern: macos-dmg-*
+          merge-multiple: true
+
+      - name: Download macOS zip artifacts
+        uses: actions/download-artifact@v6
+        with:
+          pattern: macos-zip-*
+          merge-multiple: true
+
+      # List files
+      - name: List downloaded files
         run: ls -R
-      
-      # 4. Create GitHub Release
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+
+      # Get the latest tag (used in manual workflow dispatch)
+      - name: Get latest tag
+        id: get_tag
+        run: |
+          tag=$(git describe --tags --abbrev=0)
+          echo "TAG=$tag" >> $GITHUB_ENV
+
+      # Upload to latest release (attach to the correct tag)
+      - name: Upload to Latest Release
+        uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ env.TAG }}
           files: |
             *.deb
-            *.pkg
+            *.rpm
             *.msi
-            *.msix
+            *.pkg
+            *.dmg
+            *.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
