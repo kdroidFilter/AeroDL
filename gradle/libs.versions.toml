@@ -1,4 +1,7 @@
 [versions]
+# JVM Toolchain
+jvmToolchain = "25"
+
 # Kotlin & Compose
 kotlin = "2.3.0"
 composeMultiplatform = "1.10.0-rc02"
@@ -42,6 +45,7 @@ confettikit = "0.7.0"
 
 hydraulicConveyor = "1.12"
 buildConfig = "6.0.7"
+linuxDeps = "0.2.4"
 
 
 [libraries]
@@ -118,4 +122,5 @@ kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", versio
 sqlDelight = { id = "app.cash.sqldelight", version.ref = "sqlDelight" }
 hydraulicConveyor = { id = "dev.hydraulic.conveyor", version.ref = "hydraulicConveyor" }
 buildConfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildConfig" }
+linuxDeps = { id = "io.github.kdroidfilter.compose.linux.packagedeps", version.ref = "linuxDeps" }
 caupain = "com.deezer.caupain:1.7.1"
