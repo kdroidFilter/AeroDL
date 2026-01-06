@@ -373,7 +373,7 @@ private fun ProxySetting(
             )
         },
         caption = {
-            Column(Modifier.fillMaxWidth(0.6f)) {
+            Column(Modifier.fillMaxWidth(0.4f)) {
                 EllipsizedTextWithTooltip(
                     text = stringResource(Res.string.settings_proxy_caption),
                 )
@@ -391,7 +391,7 @@ private fun ProxySetting(
                     currentValue = it
                     onProxyChange(it)
                 },
-                modifier = Modifier.width(200.dp),
+                modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text(stringResource(Res.string.settings_proxy_placeholder), maxLines = 1) },
                 singleLine = true,
             )
