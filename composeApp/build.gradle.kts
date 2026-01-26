@@ -1,3 +1,4 @@
+import io.github.kdroidfilter.buildsrc.NativeCleanupTransformHelper
 import io.github.kdroidfilter.buildsrc.RenameMacPkgTask
 import io.github.kdroidfilter.buildsrc.RenameMsiTask
 import io.github.kdroidfilter.buildsrc.Versioning
@@ -116,7 +117,37 @@ kotlin {
     }
 }
 
+// Exclude duplicate JNA non-JPMS modules (keep JPMS versions for JVM 21+)
+// and exclude Skiko runtimes for other platforms
+configurations.all {
+    exclude(group = "net.java.dev.jna", module = "jna")
+    exclude(group = "net.java.dev.jna", module = "jna-platform")
+    // Exclude Skiko runtimes for non-current platforms
+    val os = System.getProperty("os.name").lowercase()
+    when {
+        os.contains("mac") -> {
+            exclude(group = "org.jetbrains.skiko", module = "skiko-awt-runtime-windows-x64")
+            exclude(group = "org.jetbrains.skiko", module = "skiko-awt-runtime-windows-arm64")
+            exclude(group = "org.jetbrains.skiko", module = "skiko-awt-runtime-linux-x64")
+            exclude(group = "org.jetbrains.skiko", module = "skiko-awt-runtime-linux-arm64")
+        }
+        os.contains("windows") -> {
+            exclude(group = "org.jetbrains.skiko", module = "skiko-awt-runtime-macos-arm64")
+            exclude(group = "org.jetbrains.skiko", module = "skiko-awt-runtime-macos-x64")
+            exclude(group = "org.jetbrains.skiko", module = "skiko-awt-runtime-linux-x64")
+            exclude(group = "org.jetbrains.skiko", module = "skiko-awt-runtime-linux-arm64")
+        }
+        else -> { // Linux
+            exclude(group = "org.jetbrains.skiko", module = "skiko-awt-runtime-macos-arm64")
+            exclude(group = "org.jetbrains.skiko", module = "skiko-awt-runtime-macos-x64")
+            exclude(group = "org.jetbrains.skiko", module = "skiko-awt-runtime-windows-x64")
+            exclude(group = "org.jetbrains.skiko", module = "skiko-awt-runtime-windows-arm64")
+        }
+    }
+}
 
+// Register artifact transform to clean native binaries from JARs during dependency resolution
+NativeCleanupTransformHelper.registerTransform(project)
 
 compose.desktop {
     application {
