@@ -7,9 +7,7 @@ import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.binding
 import dev.zacsweers.metrox.viewmodel.ViewModelKey
 import io.github.kdroidfilter.network.KtorConfig
-import io.github.kdroidfilter.platformtools.OperatingSystem
 import io.github.kdroidfilter.platformtools.getAppVersion
-import io.github.kdroidfilter.platformtools.getOperatingSystem
 import io.github.kdroidfilter.platformtools.releasefetcher.github.GitHubReleaseFetcher
 import io.github.kdroidfilter.platformtools.releasefetcher.github.model.Asset
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
@@ -111,19 +109,13 @@ class InitViewModel(
 
             // Compare versions
             if (isNewerVersion(currentVersion, latestVersion)) {
-                // Determine the appropriate download URL based on OS
-                val downloadUrl = getDownloadUrlForPlatform(latestRelease.assets)
-
-                // Only show update if there's an asset available for this platform
-                if (downloadUrl != null) {
-                    update {
-                        copy(
-                            updateAvailable = true,
-                            latestVersion = latestVersion,
-                            downloadUrl = downloadUrl,
-                            releaseBody = latestRelease.body
-                        )
-                    }
+                update {
+                    copy(
+                        updateAvailable = true,
+                        latestVersion = latestVersion,
+                        downloadUrl = getDownloadUrlForPlatform(latestRelease.assets),
+                        releaseBody = latestRelease.body
+                    )
                 }
             }
         }
@@ -149,20 +141,11 @@ class InitViewModel(
     }
 
     /**
-     * Get the appropriate download URL for the current platform
+     * Get the download URL - redirects to the website for all platforms
      */
-    private fun getDownloadUrlForPlatform(assets: List<Asset>): String? {
-        val os = getOperatingSystem()
-        val extension = when (os) {
-            OperatingSystem.WINDOWS -> ".msi"
-            OperatingSystem.MACOS -> ".pkg"
-            OperatingSystem.LINUX -> ".deb"
-            else -> null
-        }
-
-        return extension?.let { ext ->
-            assets.firstOrNull { it.name.endsWith(ext, ignoreCase = true) }?.browser_download_url
-        }
+    @Suppress("UNUSED_PARAMETER")
+    private fun getDownloadUrlForPlatform(assets: List<Asset>): String {
+        return "https://kdroidfilter.github.io/AeroDL/"
     }
 
     /**
