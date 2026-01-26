@@ -50,6 +50,8 @@ import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
 import io.github.kdroidfilter.ytdlpgui.di.TrayAppStateHolder
 import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsEvents
 import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.databasesDir
+import io.github.vinceglb.filekit.path
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.getString
 import ytdlpgui.composeapp.generated.resources.*
@@ -73,11 +75,11 @@ fun main() {
             lockIdentifier = "aerodl"
         )
 
-        if (cleanInstall) {
-            clearJavaTempDir()
-        }
-
         FileKit.init(appId = "ada57c09-11e1-4d56-9d5d-0c480f6968ec")
+
+        if (cleanInstall) {
+            clearAppData()
+        }
 
 //    Locale.setDefault(Locale("en"))
         val appGraph = remember { createGraph<AppGraph>() }
@@ -210,18 +212,21 @@ fun main() {
     }
 }
 
-fun clearJavaTempDir() {
-    val tmpDir = System.getProperty("java.io.tmpdir")
-    val dir = File(tmpDir)
-    dir.listFiles()?.forEach { file ->
-        try {
-            if (file.isDirectory) file.deleteRecursively()
-            else file.delete()
-        } catch (e: Exception) {
-            errorln { "Failed to delete ${file.absolutePath}: ${e.message}" }
+fun clearAppData() {
+    // Clear only AeroDL's data directory (yt-dlp/FFmpeg binaries)
+    // Do NOT clear the shared java.io.tmpdir as it affects other applications
+    val dataDir = File(FileKit.databasesDir.path)
+    if (dataDir.exists()) {
+        dataDir.listFiles()?.forEach { file ->
+            try {
+                if (file.isDirectory) file.deleteRecursively()
+                else file.delete()
+            } catch (e: Exception) {
+                errorln { "Failed to delete ${file.absolutePath}: ${e.message}" }
+            }
         }
     }
-    infoln { "Cache cleared: $tmpDir" }
+    infoln { "App data cleared: ${dataDir.absolutePath}" }
 }
 
 private fun clearSettings(settings: Settings) {
