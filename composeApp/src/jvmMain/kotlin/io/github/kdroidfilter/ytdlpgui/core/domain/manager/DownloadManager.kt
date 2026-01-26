@@ -10,6 +10,10 @@ import com.kdroid.composetray.tray.api.TrayAppState
 import dev.zacsweers.metro.Inject
 import io.github.kdroidfilter.knotify.builder.ExperimentalNotificationsApi
 import io.github.kdroidfilter.knotify.compose.builder.notification
+import io.github.kdroidfilter.ffmpeg.FfmpegWrapper
+import io.github.kdroidfilter.ffmpeg.core.ConversionEvent
+import io.github.kdroidfilter.ffmpeg.core.ConversionHandle
+import io.github.kdroidfilter.ffmpeg.core.ConversionOptions
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlp.core.Event
 import io.github.kdroidfilter.ytdlp.core.Handle
@@ -35,6 +39,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import ytdlpgui.composeapp.generated.resources.Res
+import ytdlpgui.composeapp.generated.resources.conversion_completed_message
+import ytdlpgui.composeapp.generated.resources.conversion_completed_title
 import ytdlpgui.composeapp.generated.resources.download_completed_message
 import ytdlpgui.composeapp.generated.resources.download_completed_title
 import ytdlpgui.composeapp.generated.resources.open_directory
@@ -53,9 +59,18 @@ import kotlin.collections.ArrayDeque
  * @param historyRepository Stores the history of completed downloads.
  * @param trayAppState The tray application state for managing window visibility.
  */
+/**
+ * Task type enum to differentiate between downloads and conversions.
+ */
+enum class TaskType {
+    DOWNLOAD,
+    CONVERSION
+}
+
 @Inject
 class DownloadManager(
     private val ytDlpWrapper: YtDlpWrapper,
+    private val ffmpegWrapper: FfmpegWrapper,
     private val settingsRepository: SettingsRepository,
     private val historyRepository: DownloadHistoryRepository,
     private val trayAppState: TrayAppState,
@@ -65,7 +80,8 @@ class DownloadManager(
 
     data class DownloadItem(
         val id: String = UUID.randomUUID().toString(),
-        val url: String,
+        val taskType: TaskType = TaskType.DOWNLOAD,
+        val url: String = "",
         val videoInfo: VideoInfo? = null,
         val preset: YtDlpWrapper.Preset? = null,
         val splitChapters: Boolean = false,
@@ -77,8 +93,21 @@ class DownloadManager(
         val handle: Handle? = null,
         val subtitleLanguages: List<String>? = null,
         val audioQualityPreset: YtDlpWrapper.AudioQualityPreset? = null,
+        // Conversion-specific fields
+        val inputFile: File? = null,
+        val outputFile: File? = null,
+        val conversionHandle: ConversionHandle? = null,
+        val outputFormat: String? = null,
+        val totalDuration: java.time.Duration? = null,
     ) {
         enum class Status { Pending, Running, Completed, Failed, Cancelled }
+
+        /** Display name for UI: video title, file name, or URL */
+        val displayName: String
+            get() = when (taskType) {
+                TaskType.DOWNLOAD -> videoInfo?.title ?: url
+                TaskType.CONVERSION -> inputFile?.name ?: "Conversion"
+            }
     }
 
     private val _items = MutableStateFlow<List<DownloadItem>>(emptyList())
@@ -135,6 +164,46 @@ class DownloadManager(
         sponsorBlock = sponsorBlock,
     )
 
+    /**
+     * Starts a file conversion task.
+     * @param inputFile The source file to convert
+     * @param outputFile The destination file
+     * @param options Conversion options (codec, quality, etc.)
+     * @param totalDuration Duration of the input file for progress calculation
+     * @return The task ID
+     */
+    fun startConversion(
+        inputFile: File,
+        outputFile: File,
+        options: ConversionOptions,
+        totalDuration: java.time.Duration? = null
+    ): String = enqueueConversion(inputFile, outputFile, options, totalDuration)
+
+    private fun enqueueConversion(
+        inputFile: File,
+        outputFile: File,
+        options: ConversionOptions,
+        totalDuration: java.time.Duration?
+    ): String {
+        val outputFormat = outputFile.extension.uppercase()
+        val item = DownloadItem(
+            taskType = TaskType.CONVERSION,
+            inputFile = inputFile,
+            outputFile = outputFile,
+            outputFormat = outputFormat,
+            totalDuration = totalDuration
+        )
+        // Store options in a temporary map for retrieval during launch
+        conversionOptionsMap[item.id] = options
+        _items.value += item
+        pendingQueue.addLast(item.id)
+        maybeStartPending()
+        return item.id
+    }
+
+    // Temporary storage for conversion options (cleared after launch)
+    private val conversionOptionsMap = mutableMapOf<String, ConversionOptions>()
+
     private fun enqueueDownload(
         url: String,
         videoInfo: VideoInfo?,
@@ -161,30 +230,117 @@ class DownloadManager(
 
     fun cancel(id: String) {
         pendingQueue.remove(id)
-        _items.value.find { it.id == id }?.handle?.cancel()
+        val item = _items.value.find { it.id == id }
+        item?.handle?.cancel()
+        item?.conversionHandle?.cancel()
         update(id) { it.copy(status = DownloadItem.Status.Cancelled) }
         maybeStartPending()
     }
 
     /**
-     * Removes a download item from the in-memory list. If the item is currently running,
+     * Removes a task item from the in-memory list. If the item is currently running,
      * its handle is cancelled first. Also ensures it is removed from the pending queue.
      */
     fun remove(id: String) {
         pendingQueue.remove(id)
         // Cancel if still running
-        _items.value.find { it.id == id }?.handle?.cancel()
+        val item = _items.value.find { it.id == id }
+        item?.handle?.cancel()
+        item?.conversionHandle?.cancel()
         // Drop the item from the list
         _items.value = _items.value.filterNot { it.id == id }
+        conversionOptionsMap.remove(id)
         maybeStartPending()
     }
 
     private fun maybeStartPending() {
         while (runningCount() < maxParallel() && pendingQueue.isNotEmpty()) {
-            launchDownload(pendingQueue.removeFirst())
+            val id = pendingQueue.removeFirst()
+            val item = _items.value.find { it.id == id }
+            when (item?.taskType) {
+                TaskType.DOWNLOAD -> launchDownload(id)
+                TaskType.CONVERSION -> launchConversion(id)
+                null -> {} // Item not found, skip
+            }
         }
     }
 
+    private fun launchConversion(id: String) {
+        val item = _items.value.find { it.id == id } ?: return
+        if (item.status != DownloadItem.Status.Pending) return
+        if (item.taskType != TaskType.CONVERSION) return
+
+        val inputFile = item.inputFile ?: return
+        val outputFile = item.outputFile ?: return
+        val options = conversionOptionsMap.remove(id) ?: return
+
+        update(id) { it.copy(status = DownloadItem.Status.Running) }
+
+        val conversionHandle = ffmpegWrapper.convert(
+            inputFile = inputFile,
+            outputFile = outputFile,
+            options = options
+        ) { event ->
+            when (event) {
+                is ConversionEvent.Started -> {
+                    infoln { "[DownloadManager] Conversion started for item $id" }
+                }
+                is ConversionEvent.Progress -> {
+                    // Calculate progress using stored totalDuration from media analysis
+                    val totalMs = item.totalDuration?.toMillis()?.toFloat()
+                    val processedMs = event.timeProcessed.toMillis().toFloat()
+
+                    if (totalMs != null && totalMs > 0) {
+                        val progress = (processedMs / totalMs * 100f).coerceIn(0f, 100f)
+                        update(id) { it.copy(progress = progress) }
+                    }
+                }
+                is ConversionEvent.Log -> {
+                    // Optionally log for debugging
+                }
+                is ConversionEvent.Completed -> {
+                    infoln { "[DownloadManager] Conversion completed for item $id: ${event.outputFile.absolutePath}" }
+                    update(id) {
+                        it.copy(
+                            status = DownloadItem.Status.Completed,
+                            progress = 100f,
+                            outputFile = event.outputFile
+                        )
+                    }
+                    // Save to history
+                    saveConversionToHistory(id, item, event.outputFile.absolutePath)
+
+                    // Notify when enabled in settings and window is hidden
+                    if (settingsRepository.notifyOnComplete.value && !trayAppState.isVisible.value) {
+                        scope.launch { sendConversionCompletionNotification(item, event.outputFile.absolutePath) }
+                    }
+
+                    // Remove completed conversion from memory after a short delay
+                    scope.launch {
+                        kotlinx.coroutines.delay(500)
+                        remove(id)
+                    }
+                }
+                is ConversionEvent.Error -> {
+                    errorln { "[DownloadManager] Conversion error for item $id: ${event.message}" }
+                    update(id) {
+                        it.copy(
+                            status = DownloadItem.Status.Failed,
+                            message = event.message
+                        )
+                    }
+                    maybeStartPending()
+                }
+                is ConversionEvent.Cancelled -> {
+                    infoln { "[DownloadManager] Conversion cancelled for item $id" }
+                    update(id) { it.copy(status = DownloadItem.Status.Cancelled) }
+                    remove(id)
+                }
+            }
+        }
+
+        update(id) { it.copy(conversionHandle = conversionHandle) }
+    }
 
     private fun launchDownload(id: String) {
         val item = _items.value.find { it.id == id } ?: return
@@ -549,6 +705,40 @@ class DownloadManager(
             presetHeight = item.preset?.height,
             createdAt = System.currentTimeMillis()
         )
+    }
+
+    private fun saveConversionToHistory(id: String, item: DownloadItem, outputFilePath: String?) {
+        historyRepository.add(
+            id = id,
+            url = item.inputFile?.absolutePath ?: "",
+            videoInfo = null,
+            outputPath = outputFilePath,
+            isAudio = item.outputFormat?.equals("MP3", ignoreCase = true) == true,
+            isSplit = false,
+            presetHeight = null,
+            createdAt = System.currentTimeMillis()
+        )
+    }
+
+    @OptIn(ExperimentalNotificationsApi::class)
+    private suspend fun sendConversionCompletionNotification(item: DownloadItem, absolutePath: String?) {
+        val title = getString(Res.string.conversion_completed_title)
+        val fileName = absolutePath?.let { File(it).name } ?: item.inputFile?.name ?: "File"
+        val message = getString(Res.string.conversion_completed_message, fileName)
+        val openBtn = getString(Res.string.open_directory)
+
+        fun openDirAction() { absolutePath?.let { FileExplorerUtils.openDirectoryForPath(it) } }
+
+        val notif = notification(
+            title = title,
+            message = message,
+            onActivated = { openDirAction() },
+            onDismissed = { },
+            onFailed = { }
+        ) {
+            button(title = openBtn) { openDirAction() }
+        }
+        notif.send()
     }
 
     @OptIn(ExperimentalNotificationsApi::class)

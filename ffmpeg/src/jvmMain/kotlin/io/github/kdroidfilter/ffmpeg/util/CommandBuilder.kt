@@ -9,6 +9,10 @@ import java.io.File
  */
 object CommandBuilder {
 
+    // Cache for detected hardware encoder
+    private var detectedH264Encoder: String? = null
+    private var detectedHevcEncoder: String? = null
+
     /**
      * Build the complete FFmpeg command.
      *
@@ -33,10 +37,23 @@ object CommandBuilder {
         // Enable progress stats
         add("-stats")
 
-        // Hardware acceleration
+        // Determine encoder to use (hardware or software)
+        val resolvedEncoder = if (options.useHardwareAcceleration && options.video != null) {
+            resolveHardwareEncoder(ffmpegPath, options.video.encoder)
+        } else {
+            options.video?.encoder?.ffmpegName
+        }
+
+        // Hardware acceleration input option
         options.hwAccel?.let {
             add("-hwaccel")
             add(it)
+        }
+
+        // VA-API device for Linux
+        if (resolvedEncoder != null) {
+            val extraArgs = HardwareAcceleration.getEncoderExtraArgs(resolvedEncoder)
+            addAll(extraArgs)
         }
 
         // Input time trimming (before input for efficiency)
@@ -66,7 +83,7 @@ object CommandBuilder {
 
         // Video encoding options
         if (options.video != null) {
-            addVideoOptions(this, options.video)
+            addVideoOptions(this, options.video, resolvedEncoder)
         } else {
             add("-vn") // No video
         }
@@ -121,6 +138,27 @@ object CommandBuilder {
         add(outputFile.absolutePath)
     }
 
+    /**
+     * Resolves the best encoder to use, preferring hardware acceleration.
+     */
+    private fun resolveHardwareEncoder(ffmpegPath: String, encoder: VideoEncoder): String {
+        return when (encoder) {
+            VideoEncoder.H264 -> {
+                if (detectedH264Encoder == null) {
+                    detectedH264Encoder = HardwareAcceleration.getBestH264Encoder(ffmpegPath)
+                }
+                detectedH264Encoder!!
+            }
+            VideoEncoder.H265 -> {
+                if (detectedHevcEncoder == null) {
+                    detectedHevcEncoder = HardwareAcceleration.getBestHevcEncoder(ffmpegPath)
+                }
+                detectedHevcEncoder!!
+            }
+            else -> encoder.ffmpegName
+        }
+    }
+
     private fun addStreamMapping(cmd: MutableList<String>, selection: StreamSelection) {
         // Video stream
         when (selection.videoStream) {
@@ -162,7 +200,10 @@ object CommandBuilder {
         }
     }
 
-    private fun addVideoOptions(cmd: MutableList<String>, video: VideoOptions) {
+    private fun addVideoOptions(cmd: MutableList<String>, video: VideoOptions, resolvedEncoder: String? = null) {
+        val encoderName = resolvedEncoder ?: video.encoder.ffmpegName
+        val isHwEncoder = HardwareAcceleration.isHardwareEncoder(encoderName)
+
         when (video.compressionType) {
             CompressionType.COPY -> {
                 cmd.add("-c:v")
@@ -171,15 +212,58 @@ object CommandBuilder {
             }
             CompressionType.CRF -> {
                 cmd.add("-c:v")
-                cmd.add(video.encoder.ffmpegName)
+                cmd.add(encoderName)
 
-                val crf = video.crf ?: video.encoder.defaultCrf
-                cmd.add("-crf")
-                cmd.add(crf.coerceIn(video.encoder.minCrf, video.encoder.maxCrf).toString())
+                // Hardware encoders use different quality parameters
+                if (isHwEncoder) {
+                    // NVENC uses -cq for constant quality, QSV uses -global_quality
+                    when {
+                        encoderName.contains("nvenc") -> {
+                            val cq = video.crf ?: video.encoder.defaultCrf
+                            cmd.add("-cq")
+                            cmd.add(cq.coerceIn(0, 51).toString())
+                            cmd.add("-preset")
+                            cmd.add("p4") // NVENC preset (p1-p7, p4 is balanced)
+                        }
+                        encoderName.contains("qsv") -> {
+                            val quality = video.crf ?: video.encoder.defaultCrf
+                            cmd.add("-global_quality")
+                            cmd.add(quality.coerceIn(1, 51).toString())
+                        }
+                        encoderName.contains("amf") -> {
+                            val quality = video.crf ?: video.encoder.defaultCrf
+                            cmd.add("-quality")
+                            cmd.add("quality") // AMF quality mode
+                            cmd.add("-rc")
+                            cmd.add("cqp")
+                            cmd.add("-qp_i")
+                            cmd.add(quality.coerceIn(0, 51).toString())
+                            cmd.add("-qp_p")
+                            cmd.add(quality.coerceIn(0, 51).toString())
+                        }
+                        encoderName.contains("videotoolbox") -> {
+                            // VideoToolbox uses -q:v for quality (1-100, higher is better)
+                            val crf = video.crf ?: video.encoder.defaultCrf
+                            val quality = (100 - (crf * 2)).coerceIn(1, 100)
+                            cmd.add("-q:v")
+                            cmd.add(quality.toString())
+                        }
+                        encoderName.contains("vaapi") -> {
+                            val quality = video.crf ?: video.encoder.defaultCrf
+                            cmd.add("-qp")
+                            cmd.add(quality.coerceIn(0, 51).toString())
+                        }
+                    }
+                } else {
+                    // Software encoder - use standard CRF
+                    val crf = video.crf ?: video.encoder.defaultCrf
+                    cmd.add("-crf")
+                    cmd.add(crf.coerceIn(video.encoder.minCrf, video.encoder.maxCrf).toString())
+                }
             }
             CompressionType.CBR -> {
                 cmd.add("-c:v")
-                cmd.add(video.encoder.ffmpegName)
+                cmd.add(encoderName)
 
                 video.bitrate?.let {
                     cmd.add("-b:v")
@@ -188,18 +272,20 @@ object CommandBuilder {
             }
         }
 
-        // Preset
-        if (video.encoder.supportsPreset) {
+        // Preset - only for software encoders (HW encoders have their own preset handling above)
+        if (!isHwEncoder && video.encoder.supportsPreset) {
             val preset = video.preset ?: video.encoder.defaultPreset
             cmd.add("-preset")
             cmd.add(preset.ffmpegValue)
         }
 
-        // Profile
-        val profile = video.profile ?: video.encoder.getProfile(video.pixelFormat)
-        profile?.let {
-            cmd.add("-profile:v")
-            cmd.add(it)
+        // Profile - skip for some hardware encoders that auto-detect
+        if (!isHwEncoder) {
+            val profile = video.profile ?: video.encoder.getProfile(video.pixelFormat)
+            profile?.let {
+                cmd.add("-profile:v")
+                cmd.add(it)
+            }
         }
 
         // Pixel format

@@ -143,6 +143,14 @@ fun MainNavigationHeader(
                         MenuFlyoutItem(
                             onClick = {
                                 isFlyoutVisible = false
+                                navController.navigate(Destination.Converter.Main)
+                            },
+                            icon = { Icon(Icons.Default.ConvertRange, contentDescription = null) },
+                            text = { Text(stringResource(Res.string.converter)) }
+                        )
+                        MenuFlyoutItem(
+                            onClick = {
+                                isFlyoutVisible = false
                                 navController.navigate(Destination.SecondaryNavigation.Settings)
                             },
                             icon = { Icon(Icons.Default.Settings, contentDescription = null) },
@@ -295,6 +303,14 @@ fun SecondaryNavigationHeader(
                 currentDestination?.hasRoute(Destination.SecondaryNavigation.About::class) == true ->
                     Text(
                         stringResource(Res.string.about),
+                        style = FluentTheme.typography.subtitle,
+                        modifier = Modifier.padding(top = 12.dp),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                currentDestination?.hasRoute(Destination.Converter.Main::class) == true ->
+                    Text(
+                        stringResource(Res.string.converter),
                         style = FluentTheme.typography.subtitle,
                         modifier = Modifier.padding(top = 12.dp),
                         maxLines = 1,

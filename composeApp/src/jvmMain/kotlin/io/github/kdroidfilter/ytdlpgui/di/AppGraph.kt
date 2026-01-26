@@ -13,6 +13,7 @@ import dev.zacsweers.metro.Provides
 import dev.zacsweers.metro.SingleIn
 import dev.zacsweers.metrox.viewmodel.ViewModelGraph
 import io.github.kdroidfilter.network.CoilConfig
+import io.github.kdroidfilter.ffmpeg.FfmpegWrapper
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.ClipboardMonitorManager
 import io.github.kdroidfilter.ytdlpgui.core.navigation.NavigationEventBus
@@ -35,6 +36,7 @@ abstract class AppGraph : ViewModelGraph {
     abstract val settings: Settings
     abstract val imageLoader: ImageLoader
     abstract val ytDlpWrapper: YtDlpWrapper
+    abstract val ffmpegWrapper: FfmpegWrapper
     abstract val downloadHistoryRepository: DownloadHistoryRepository
     abstract val navigationEventBus: NavigationEventBus
 
@@ -44,6 +46,10 @@ abstract class AppGraph : ViewModelGraph {
     @Provides
     @SingleIn(AppScope::class)
     fun provideYtDlpWrapper(): YtDlpWrapper = YtDlpWrapper()
+
+    @Provides
+    @SingleIn(AppScope::class)
+    fun provideFfmpegWrapper(): FfmpegWrapper = FfmpegWrapper()
 
     @Provides
     @SingleIn(AppScope::class)
@@ -97,13 +103,15 @@ abstract class AppGraph : ViewModelGraph {
     @SingleIn(AppScope::class)
     fun provideDownloadManager(
         ytDlpWrapper: YtDlpWrapper,
+        ffmpegWrapper: FfmpegWrapper,
         settingsRepository: SettingsRepository,
         downloadHistoryRepository: DownloadHistoryRepository,
         trayAppState: TrayAppState
     ): DownloadManager = DownloadManager(
         ytDlpWrapper,
-        settingsRepository, 
-        downloadHistoryRepository, 
+        ffmpegWrapper,
+        settingsRepository,
+        downloadHistoryRepository,
         trayAppState
     )
 

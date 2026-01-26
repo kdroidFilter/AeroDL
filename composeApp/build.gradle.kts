@@ -108,6 +108,7 @@ kotlin {
 
             // Project dependencies
             implementation(project(":ytdlp"))
+            implementation(project(":ffmpeg"))
             implementation(project(":network"))
             implementation(project(":logging"))
 
