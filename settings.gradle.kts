@@ -35,5 +35,6 @@ plugins {
 
 include(":composeApp")
 include(":ytdlp")
+include(":ffmpeg")
 include(":network")
 include(":logging")

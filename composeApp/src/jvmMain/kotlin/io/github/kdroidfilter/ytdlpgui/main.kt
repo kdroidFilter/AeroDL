@@ -56,140 +56,157 @@ import ytdlpgui.composeapp.generated.resources.*
 import java.io.File
 
 @OptIn(ExperimentalTrayAppApi::class, ExperimentalFluentApi::class)
-fun main() = application {
-    allowComposeNativeTrayLogging = LoggerConfig.enabled
-    val cleanInstall = System.getProperty("cleanInstall", "false").toBoolean()
-    SingleInstanceManager.configuration = SingleInstanceManager.Configuration(
-        lockIdentifier = "aerodl"
-    )
-
-    if (cleanInstall) {
-        clearJavaTempDir()
+fun main() {
+    // Configure Skiko render API based on platform
+    when (getOperatingSystem()) {
+        OperatingSystem.WINDOWS -> System.setProperty("skiko.renderApi", "OPENGL")
+        OperatingSystem.LINUX -> if (isNvidiaGpuPresent()) {
+            System.setProperty("skiko.renderApi", "SOFTWARE")
+        }
+        else -> { /* Use default render API */ }
     }
 
-    FileKit.init(appId = "ada57c09-11e1-4d56-9d5d-0c480f6968ec")
+    application {
+        allowComposeNativeTrayLogging = LoggerConfig.enabled
+        val cleanInstall = System.getProperty("cleanInstall", "false").toBoolean()
+        SingleInstanceManager.configuration = SingleInstanceManager.Configuration(
+            lockIdentifier = "aerodl"
+        )
+
+        if (cleanInstall) {
+            clearJavaTempDir()
+        }
+
+        FileKit.init(appId = "ada57c09-11e1-4d56-9d5d-0c480f6968ec")
 
 //    Locale.setDefault(Locale("en"))
-    val appGraph = remember { createGraph<AppGraph>() }
-    run {
-        val windowViewModelOwner = rememberWindowViewModelStoreOwner()
-        CompositionLocalProvider(
-            LocalWindowViewModelStoreOwner provides windowViewModelOwner,
-            LocalViewModelStoreOwner provides windowViewModelOwner,
-            LocalMetroViewModelFactory provides appGraph.metroViewModelFactory,
-        ) {
-            NotificationInitializer.configure(
-                AppConfig(
-                    appName = runBlocking { getString(Res.string.app_name) },
-                )
-            )
-            val autoLaunch = appGraph.autoLaunch
-            val trayAppState = rememberTrayAppState(
-                initialWindowSize = DpSize(350.dp, 500.dp),
-                initiallyVisible = !autoLaunch.isStartedViaAutostart()
-            )
-            TrayAppStateHolder.set(trayAppState)
-
-            // Eagerly instantiate clipboard monitoring once, as a side effect
-            LaunchedEffect(appGraph) {
-                appGraph.clipboardMonitorManager
-            }
-
-            // Initialize Coil with native trusted roots
-            val imageLoader = appGraph.imageLoader
-            SingletonImageLoader.setSafe { imageLoader }
-
-            if (cleanInstall) {
-                clearSettings(appGraph.settings)
-            }
-
-
-            val isSingleInstance = SingleInstanceManager.isSingleInstance(
-                onRestoreRequest = {
-                    trayAppState.show()
-                }
-            )
-            if (!isSingleInstance) exitApplication()
-
-
-            val downloadManager = appGraph.downloadManager
-            val isDownloading by downloadManager.isDownloading.collectAsState()
-
-            val settingsVm: SettingsViewModel = metroViewModel(
-                viewModelStoreOwner = LocalWindowViewModelStoreOwner.current
-            )
-            val autoStartEnabled by settingsVm.autoLaunchEnabled.collectAsState()
-            val clipboardEnabled by settingsVm.clipboardMonitoring.collectAsState()
-
-            val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
-
-            TrayApp(
-                state = trayAppState,
-                iconContent = {
-
-                    Icon(
-                        if (!isRtl) AeroDlLogoOnly else AeroDlLogoOnlyRtl,
-                        null,
-                        modifier = Modifier
-                            .padding(if (getOperatingSystem() != OperatingSystem.WINDOWS) 12.dp else 2.dp)
-                            .fillMaxSize(),
-                        tint = if (isDownloading) FluentTheme.colors.system.success else {
-                            if (isMenuBarInDarkMode()) Color.White else Color.Black
-                        }
-                    )
-                },
-                tooltip = runBlocking { getString(Res.string.app_name) } + if (isDownloading) runBlocking { getString(Res.string.tray_downloading_suffix) } else "",
-                menu = {
-                    if (!trayAppState.isVisible.value) Item(
-                        label = runBlocking { getString(Res.string.menu_show_window) },
-                    ) { trayAppState.show() } else Item(
-                        label = runBlocking { getString(Res.string.menu_hide_window) },
-                    ) { trayAppState.hide() }
-                    Divider()
-                    CheckableItem(
-                        label = runBlocking { getString(Res.string.settings_auto_launch_title) },
-                        checked = autoStartEnabled,
-                        onCheckedChange = { checked ->
-                            settingsVm.handleEvent(SettingsEvents.SetAutoLaunchEnabled(checked))
-                        },
-                    )
-                    CheckableItem(
-                        label = runBlocking { getString(Res.string.settings_clipboard_monitoring_title) },
-                        checked = clipboardEnabled,
-                        onCheckedChange = { checked ->
-                            settingsVm.handleEvent(SettingsEvents.SetClipboardMonitoring(checked))
-                        },
-                    )
-                    Divider()
-                    Item(
-                        label = runBlocking { getString(Res.string.quit) },
-                        onClick = { exitApplication() },
-                    )
-                    Item(
-                        label = runBlocking { getString(Res.string.app_version_label, getAppVersion()) },
-                        isEnabled = false,
-                    )
-                }
+        val appGraph = remember { createGraph<AppGraph>() }
+        run {
+            val windowViewModelOwner = rememberWindowViewModelStoreOwner()
+            CompositionLocalProvider(
+                LocalWindowViewModelStoreOwner provides windowViewModelOwner,
+                LocalViewModelStoreOwner provides windowViewModelOwner,
+                LocalMetroViewModelFactory provides appGraph.metroViewModelFactory,
             ) {
-                FluentTheme(colors = if (isSystemInDarkMode()) darkColors() else lightColors()) {
-                    Mica(
-                        Modifier
-                            .fillMaxSize()
-                            .clip(RoundedCornerShape(12.dp))
-                            .border(
-                                1.dp,
-                                if (isSystemInDarkMode()) Color.DarkGray else Color.LightGray,
-                                RoundedCornerShape(12.dp)
-                            )
-                    ) {
-                        CompositionLocalProvider(LocalAppGraph provides appGraph) {
-                            App()
+                NotificationInitializer.configure(
+                    AppConfig(
+                        appName = runBlocking { getString(Res.string.app_name) },
+                    )
+                )
+                val autoLaunch = appGraph.autoLaunch
+                val trayAppState = rememberTrayAppState(
+                    initialWindowSize = DpSize(350.dp, 500.dp),
+                    initiallyVisible = !autoLaunch.isStartedViaAutostart()
+                )
+                TrayAppStateHolder.set(trayAppState)
+
+                // Eagerly instantiate clipboard monitoring once, as a side effect
+                LaunchedEffect(appGraph) {
+                    appGraph.clipboardMonitorManager
+                }
+
+                // Initialize Coil with native trusted roots
+                val imageLoader = appGraph.imageLoader
+                SingletonImageLoader.setSafe { imageLoader }
+
+                if (cleanInstall) {
+                    clearSettings(appGraph.settings)
+                }
+
+
+                val isSingleInstance = SingleInstanceManager.isSingleInstance(
+                    onRestoreRequest = {
+                        trayAppState.show()
+                    }
+                )
+                if (!isSingleInstance) exitApplication()
+
+
+                val downloadManager = appGraph.downloadManager
+                val isDownloading by downloadManager.isDownloading.collectAsState()
+
+                val settingsVm: SettingsViewModel = metroViewModel(
+                    viewModelStoreOwner = LocalWindowViewModelStoreOwner.current
+                )
+                val autoStartEnabled by settingsVm.autoLaunchEnabled.collectAsState()
+                val clipboardEnabled by settingsVm.clipboardMonitoring.collectAsState()
+
+                val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+
+                TrayApp(
+                    state = trayAppState,
+                    iconContent = {
+
+                        Icon(
+                            if (!isRtl) AeroDlLogoOnly else AeroDlLogoOnlyRtl,
+                            null,
+                            modifier = Modifier
+                                .padding(if (getOperatingSystem() != OperatingSystem.WINDOWS) 12.dp else 2.dp)
+                                .fillMaxSize(),
+                            tint = if (isDownloading) FluentTheme.colors.system.success else {
+                                if (isMenuBarInDarkMode()) Color.White else Color.Black
+                            }
+                        )
+                    },
+                    tooltip = runBlocking { getString(Res.string.app_name) } + if (isDownloading) runBlocking {
+                        getString(
+                            Res.string.tray_downloading_suffix
+                        )
+                    } else "",
+                    menu = {
+                        if (!trayAppState.isVisible.value) Item(
+                            label = runBlocking { getString(Res.string.menu_show_window) },
+                        ) { trayAppState.show() } else Item(
+                            label = runBlocking { getString(Res.string.menu_hide_window) },
+                        ) { trayAppState.hide() }
+                        Divider()
+                        CheckableItem(
+                            label = runBlocking { getString(Res.string.settings_auto_launch_title) },
+                            checked = autoStartEnabled,
+                            onCheckedChange = { checked ->
+                                settingsVm.handleEvent(SettingsEvents.SetAutoLaunchEnabled(checked))
+                            },
+                        )
+                        CheckableItem(
+                            label = runBlocking { getString(Res.string.settings_clipboard_monitoring_title) },
+                            checked = clipboardEnabled,
+                            onCheckedChange = { checked ->
+                                settingsVm.handleEvent(SettingsEvents.SetClipboardMonitoring(checked))
+                            },
+                        )
+                        Divider()
+                        Item(
+                            label = runBlocking { getString(Res.string.quit) },
+                            onClick = { exitApplication() },
+                        )
+                        Item(
+                            label = runBlocking { getString(Res.string.app_version_label, getAppVersion()) },
+                            isEnabled = false,
+                        )
+                    }
+                ) {
+
+                   println(this.window.renderApi)
+                    FluentTheme(colors = if (isSystemInDarkMode()) darkColors() else lightColors()) {
+                        Mica(
+                            Modifier
+                                .fillMaxSize()
+                                .clip(RoundedCornerShape(12.dp))
+                                .border(
+                                    1.dp,
+                                    if (isSystemInDarkMode()) Color.DarkGray else Color.LightGray,
+                                    RoundedCornerShape(12.dp)
+                                )
+                        ) {
+                            CompositionLocalProvider(LocalAppGraph provides appGraph) {
+                                App()
+                            }
                         }
                     }
                 }
             }
-        }
 
+        }
     }
 }
 
@@ -210,4 +227,21 @@ fun clearJavaTempDir() {
 private fun clearSettings(settings: Settings) {
     settings.clear()
     infoln { "Settings cleared" }
+}
+
+private fun isNvidiaGpuPresent(): Boolean {
+    // Check if NVIDIA driver is loaded by looking for the driver version file
+    val nvidiaDriverFile = File("/proc/driver/nvidia/version")
+    if (nvidiaDriverFile.exists()) return true
+
+    // Fallback: try running nvidia-smi
+    return try {
+        val process = ProcessBuilder("nvidia-smi", "-L")
+            .redirectErrorStream(true)
+            .start()
+        val exitCode = process.waitFor()
+        exitCode == 0
+    } catch (_: Exception) {
+        false
+    }
 }
