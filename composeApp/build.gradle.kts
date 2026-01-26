@@ -150,7 +150,6 @@ compose.desktop {
 
             windows {
                 dirChooser = true
-                menuGroup = "start-menu-group"
                 iconFile.set(project.file("icons/logo.ico"))
                 shortcut = true
                 upgradeUuid = "ada57c09-11e1-4d56-9d5d-0c480f6968ec"
