@@ -12,6 +12,7 @@ import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
 import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
 import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.databasesDir
 import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
 import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,6 +27,7 @@ import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.binding
 import dev.zacsweers.metrox.viewmodel.ViewModelKey
 import io.github.kdroidfilter.ytdlpgui.di.AppScope
+import io.github.vinceglb.filekit.path
 
 @ContributesIntoMap(AppScope::class, binding = binding<ViewModel>())
 @ViewModelKey(SettingsViewModel::class)
@@ -181,13 +183,16 @@ class SettingsViewModel(
     }
 
     private fun clearBinariesAndTemp() {
-        // Clear java temp directory
-        val tmpDir = System.getProperty("java.io.tmpdir")
+        // Clear only AeroDL's data directory (yt-dlp/FFmpeg binaries)
+        // Do NOT clear the shared java.io.tmpdir as it affects other applications
         try {
-            File(tmpDir).listFiles()?.forEach { file ->
-                try {
-                    if (file.isDirectory) file.deleteRecursively() else file.delete()
-                } catch (_: Exception) { /* ignore */ }
+            val dataDir = File(FileKit.databasesDir.path)
+            if (dataDir.exists()) {
+                dataDir.listFiles()?.forEach { file ->
+                    try {
+                        if (file.isDirectory) file.deleteRecursively() else file.delete()
+                    } catch (_: Exception) { /* ignore */ }
+                }
             }
         } catch (_: Exception) { /* ignore */ }
     }

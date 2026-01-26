@@ -5,7 +5,9 @@ package io.github.kdroidfilter.ytdlpgui.di
 import coil3.ImageLoader
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.kdroid.composetray.tray.api.TrayAppState
+import com.russhwolf.settings.PreferencesSettings
 import com.russhwolf.settings.Settings
+import java.util.prefs.Preferences
 import dev.zacsweers.metro.DependencyGraph
 import dev.zacsweers.metro.Provides
 import dev.zacsweers.metro.SingleIn
@@ -45,7 +47,10 @@ abstract class AppGraph : ViewModelGraph {
 
     @Provides
     @SingleIn(AppScope::class)
-    fun provideSettings(): Settings = Settings()
+    fun provideSettings(): Settings {
+        val prefs = Preferences.userRoot().node("io/github/kdroidfilter/aerodl")
+        return PreferencesSettings(prefs)
+    }
 
     @Provides
     @SingleIn(AppScope::class)
