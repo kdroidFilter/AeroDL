@@ -79,8 +79,8 @@ object NativeCleanupTransformHelper {
             }
         }
 
-        // Request cleaned-jar for runtime classpaths as they are created
-        project.configurations.whenObjectAdded {
+        // Request cleaned-jar for all runtime classpaths (existing and future)
+        project.configurations.configureEach {
             if (name.contains("RuntimeClasspath", ignoreCase = true)) {
                 attributes {
                     attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, "cleaned-jar")
