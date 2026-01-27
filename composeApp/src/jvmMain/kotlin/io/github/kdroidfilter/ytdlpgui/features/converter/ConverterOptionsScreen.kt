@@ -1,9 +1,15 @@
 package io.github.kdroidfilter.ytdlpgui.features.converter
 
+import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.RangeSlider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -120,6 +126,7 @@ private fun ConversionOptionsContent(
     onEvent: (ConverterOptionsEvents) -> Unit
 ) {
     val mediaInfo = state.mediaInfo ?: return
+    val listState = rememberLazyListState()
 
     Column(
         modifier = Modifier
@@ -127,161 +134,67 @@ private fun ConversionOptionsContent(
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // File info card
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(8.dp))
-                .background(FluentTheme.colors.background.layer.default)
-                .border(1.dp, FluentTheme.colors.stroke.control.default, RoundedCornerShape(8.dp))
-                .padding(16.dp)
+        Row(
+            modifier = Modifier.weight(1f)
         ) {
-            Column {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = if (state.mediaType == MediaType.VIDEO) Icons.Regular.Video else Icons.Regular.MusicNote1,
-                        contentDescription = null,
-                        modifier = Modifier.size(32.dp)
-                    )
-                    Spacer(Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f)) {
+            LazyColumn(
+                state = listState,
+                verticalArrangement = Arrangement.spacedBy(24.dp),
+                modifier = Modifier.weight(1f).fillMaxHeight()
+            ) {
+                // File info card
+                item {
+                    FileInfoCard(state, mediaInfo)
+                }
+
+                // Format selector (only for video files)
+                if (state.showFormatSelector) {
+                    item {
+                        FormatSelector(state, onEvent)
+                    }
+                }
+
+                // Video quality selector
+                if (state.showVideoOptions) {
+                    item {
+                        VideoQualitySelector(state, onEvent)
+                    }
+                }
+
+                // Audio quality selector
+                if (state.showAudioOptions) {
+                    item {
+                        AudioQualitySelector(state, onEvent)
+                    }
+                }
+
+                // Trim slider
+                if (state.showTrimSlider) {
+                    item {
+                        TrimSlider(state, onEvent)
+                    }
+                }
+
+                // Error message
+                if (state.errorMessage != null) {
+                    item {
                         Text(
-                            text = state.selectedFile?.name ?: "",
-                            style = FluentTheme.typography.bodyStrong,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        val infoText = buildString {
-                            mediaInfo.duration?.let { append(formatDuration(it.toMillis())) }
-                            if (state.mediaType == MediaType.VIDEO) {
-                                mediaInfo.videoStreams.firstOrNull()?.let { video ->
-                                    if (isNotEmpty()) append(" • ")
-                                    append("${video.width}x${video.height}")
-                                }
-                            }
-                            mediaInfo.audioStreams.firstOrNull()?.let { audio ->
-                                audio.sampleRate?.let {
-                                    if (isNotEmpty()) append(" • ")
-                                    append("${it / 1000} kHz")
-                                }
-                            }
-                        }
-                        Text(
-                            text = infoText,
-                            style = FluentTheme.typography.caption,
-                            color = FluentTheme.colors.text.text.secondary
-                        )
-                    }
-                }
-            }
-        }
-
-        Spacer(Modifier.height(24.dp))
-
-        // Format selector (only for video files)
-        if (state.showFormatSelector) {
-            Text(
-                text = stringResource(Res.string.converter_output_format),
-                style = FluentTheme.typography.bodyStrong,
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                SegmentedControl {
-                    SegmentedButton(
-                        checked = state.outputFormat == OutputFormat.VIDEO_MP4,
-                        onCheckedChanged = { onEvent(ConverterOptionsEvents.SetOutputFormat(OutputFormat.VIDEO_MP4)) },
-                        position = SegmentedItemPosition.Start,
-                        text = { Text(stringResource(Res.string.converter_video)) }
-                    )
-                    SegmentedButton(
-                        checked = state.outputFormat == OutputFormat.AUDIO_MP3,
-                        onCheckedChanged = { onEvent(ConverterOptionsEvents.SetOutputFormat(OutputFormat.AUDIO_MP3)) },
-                        position = SegmentedItemPosition.End,
-                        text = { Text(stringResource(Res.string.converter_audio)) }
-                    )
-                }
-            }
-
-            Spacer(Modifier.height(24.dp))
-        }
-
-        // Video quality selector
-        if (state.showVideoOptions) {
-            Text(
-                text = stringResource(Res.string.converter_video_quality),
-                style = FluentTheme.typography.bodyStrong,
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(Modifier.height(8.dp))
-
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                VideoQuality.entries.forEach { quality ->
-                    SegmentedControl {
-                        SegmentedButton(
-                            checked = state.selectedVideoQuality == quality,
-                            onCheckedChanged = { onEvent(ConverterOptionsEvents.SetVideoQuality(quality)) },
-                            position = SegmentedItemPosition.Center,
-                            text = { Text(quality.displayName) }
+                            text = state.errorMessage,
+                            color = FluentTheme.colors.system.critical,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
                 }
             }
 
-            Spacer(Modifier.height(24.dp))
-        }
-
-        // Audio quality selector
-        if (state.showAudioOptions) {
-            Text(
-                text = stringResource(Res.string.converter_audio_quality),
-                style = FluentTheme.typography.bodyStrong,
-                modifier = Modifier.fillMaxWidth()
+            VerticalScrollbar(
+                adapter = rememberScrollbarAdapter(listState),
+                modifier = Modifier.fillMaxHeight().padding(start = 8.dp)
             )
-            Spacer(Modifier.height(8.dp))
-
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                AudioQuality.entries.forEach { quality ->
-                    SegmentedControl {
-                        SegmentedButton(
-                            checked = state.selectedAudioQuality == quality,
-                            onCheckedChanged = { onEvent(ConverterOptionsEvents.SetAudioQuality(quality)) },
-                            position = SegmentedItemPosition.Center,
-                            text = { Text(quality.displayName) }
-                        )
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(24.dp))
         }
 
-        // Error message
-        if (state.errorMessage != null) {
-            Text(
-                text = state.errorMessage,
-                color = FluentTheme.colors.system.critical,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(Modifier.height(16.dp))
-        }
-
-        Spacer(Modifier.weight(1f))
+        Spacer(Modifier.height(16.dp))
 
         // Convert button
         AccentButton(
@@ -290,8 +203,223 @@ private fun ConversionOptionsContent(
         ) {
             Text(stringResource(Res.string.converter_start))
         }
+    }
+}
 
-        Spacer(Modifier.height(16.dp))
+@Composable
+private fun FileInfoCard(
+    state: ConverterOptionsState,
+    mediaInfo: io.github.kdroidfilter.ffmpeg.model.MediaInfo
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .background(FluentTheme.colors.background.layer.default)
+            .border(1.dp, FluentTheme.colors.stroke.control.default, RoundedCornerShape(8.dp))
+            .padding(16.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = if (state.mediaType == MediaType.VIDEO) Icons.Regular.Video else Icons.Regular.MusicNote1,
+                contentDescription = null,
+                modifier = Modifier.size(32.dp)
+            )
+            Spacer(Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = state.selectedFile?.name ?: "",
+                    style = FluentTheme.typography.bodyStrong,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                val infoText = buildString {
+                    mediaInfo.duration?.let { append(formatDuration(it.toMillis())) }
+                    if (state.mediaType == MediaType.VIDEO) {
+                        mediaInfo.videoStreams.firstOrNull()?.let { video ->
+                            if (isNotEmpty()) append(" • ")
+                            append("${video.width}x${video.height}")
+                        }
+                    }
+                    mediaInfo.audioStreams.firstOrNull()?.let { audio ->
+                        audio.sampleRate?.let {
+                            if (isNotEmpty()) append(" • ")
+                            append("${it / 1000} kHz")
+                        }
+                    }
+                }
+                Text(
+                    text = infoText,
+                    style = FluentTheme.typography.caption,
+                    color = FluentTheme.colors.text.text.secondary
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun FormatSelector(
+    state: ConverterOptionsState,
+    onEvent: (ConverterOptionsEvents) -> Unit
+) {
+    Column {
+        Text(
+            text = stringResource(Res.string.converter_output_format),
+            style = FluentTheme.typography.bodyStrong,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            SegmentedControl {
+                SegmentedButton(
+                    checked = state.outputFormat == OutputFormat.VIDEO_MP4,
+                    onCheckedChanged = { onEvent(ConverterOptionsEvents.SetOutputFormat(OutputFormat.VIDEO_MP4)) },
+                    position = SegmentedItemPosition.Start,
+                    text = { Text(stringResource(Res.string.converter_video)) }
+                )
+                SegmentedButton(
+                    checked = state.outputFormat == OutputFormat.AUDIO_MP3,
+                    onCheckedChanged = { onEvent(ConverterOptionsEvents.SetOutputFormat(OutputFormat.AUDIO_MP3)) },
+                    position = SegmentedItemPosition.End,
+                    text = { Text(stringResource(Res.string.converter_audio)) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun VideoQualitySelector(
+    state: ConverterOptionsState,
+    onEvent: (ConverterOptionsEvents) -> Unit
+) {
+    Column {
+        Text(
+            text = stringResource(Res.string.converter_video_quality),
+            style = FluentTheme.typography.bodyStrong,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(Modifier.height(8.dp))
+
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            VideoQuality.entries.forEach { quality ->
+                SegmentedControl {
+                    SegmentedButton(
+                        checked = state.selectedVideoQuality == quality,
+                        onCheckedChanged = { onEvent(ConverterOptionsEvents.SetVideoQuality(quality)) },
+                        position = SegmentedItemPosition.Center,
+                        text = { Text(quality.displayName) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AudioQualitySelector(
+    state: ConverterOptionsState,
+    onEvent: (ConverterOptionsEvents) -> Unit
+) {
+    Column {
+        Text(
+            text = stringResource(Res.string.converter_audio_quality),
+            style = FluentTheme.typography.bodyStrong,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(Modifier.height(8.dp))
+
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            AudioQuality.entries.forEach { quality ->
+                SegmentedControl {
+                    SegmentedButton(
+                        checked = state.selectedAudioQuality == quality,
+                        onCheckedChanged = { onEvent(ConverterOptionsEvents.SetAudioQuality(quality)) },
+                        position = SegmentedItemPosition.Center,
+                        text = { Text(quality.displayName) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TrimSlider(
+    state: ConverterOptionsState,
+    onEvent: (ConverterOptionsEvents) -> Unit
+) {
+    Column {
+        Text(
+            text = stringResource(Res.string.converter_trim),
+            style = FluentTheme.typography.bodyStrong,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(Modifier.height(8.dp))
+
+        // Time labels
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = formatDuration(state.trimStartMs),
+                style = FluentTheme.typography.caption,
+                color = FluentTheme.colors.text.text.secondary
+            )
+            Text(
+                text = formatDuration(state.trimEndMs),
+                style = FluentTheme.typography.caption,
+                color = FluentTheme.colors.text.text.secondary
+            )
+        }
+
+        // RangeSlider
+        RangeSlider(
+            value = state.trimStartMs.toFloat()..state.trimEndMs.toFloat(),
+            onValueChange = { range ->
+                onEvent(ConverterOptionsEvents.SetTrimRange(
+                    startMs = range.start.toLong(),
+                    endMs = range.endInclusive.toLong()
+                ))
+            },
+            valueRange = 0f..state.totalDurationMs.toFloat(),
+            modifier = Modifier.fillMaxWidth(),
+            colors = SliderDefaults.colors(
+                thumbColor = FluentTheme.colors.fillAccent.default,
+                activeTrackColor = FluentTheme.colors.fillAccent.default,
+                inactiveTrackColor = FluentTheme.colors.stroke.control.default
+            )
+        )
+
+        // Duration info
+        if (state.isTrimmed) {
+            Text(
+                text = stringResource(
+                    Res.string.converter_trim_duration,
+                    formatDuration(state.trimEndMs - state.trimStartMs)
+                ),
+                style = FluentTheme.typography.caption,
+                color = FluentTheme.colors.text.text.secondary,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
 

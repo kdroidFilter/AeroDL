@@ -272,4 +272,6 @@
     <string name="converter_open_folder">Open folder</string>
     <string name="converter_error">Conversion failed: %1$s</string>
     <string name="converter_reset">Convert another file</string>
+    <string name="converter_trim">Trim</string>
+    <string name="converter_trim_duration">Duration: %1$s</string>
 </resources>
