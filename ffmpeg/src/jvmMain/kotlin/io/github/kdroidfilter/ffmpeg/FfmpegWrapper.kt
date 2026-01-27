@@ -108,7 +108,11 @@ class FfmpegWrapper {
                 val assetPattern = PlatformUtils.getFfmpegAssetPatternForSystem()
                     ?: error("Unsupported platform for FFmpeg download")
 
-                val ffmpegFetcher = GitHubReleaseFetcher("yt-dlp", "FFmpeg-Builds")
+                val ffmpegFetcher = if (io.github.kdroidfilter.platformtools.getOperatingSystem() == io.github.kdroidfilter.platformtools.OperatingSystem.MACOS) {
+                    GitHubReleaseFetcher("kdroidFilter", "FFmpeg-Builds")
+                } else {
+                    GitHubReleaseFetcher("yt-dlp", "FFmpeg-Builds")
+                }
 
                 val installedPath = PlatformUtils.downloadAndInstallFfmpeg(
                     assetPattern = assetPattern,

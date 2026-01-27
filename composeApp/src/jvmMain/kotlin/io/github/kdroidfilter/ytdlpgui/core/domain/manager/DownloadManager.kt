@@ -106,7 +106,11 @@ class DownloadManager(
         val displayName: String
             get() = when (taskType) {
                 TaskType.DOWNLOAD -> videoInfo?.title ?: url
-                TaskType.CONVERSION -> inputFile?.name ?: "Conversion"
+                TaskType.CONVERSION -> {
+                    val fileName = inputFile?.name ?: "File"
+                    val format = outputFormat ?: "?"
+                    "$fileName → $format"
+                }
             }
     }
 

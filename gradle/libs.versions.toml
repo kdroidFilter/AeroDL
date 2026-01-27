@@ -25,7 +25,7 @@ composemediaplayer = "0.8.6"
 composenativetray = "1.0.4"
 
 # Network & Tools
-ktor = "3.3.3"
+ktor = "3.4.0"
 platformtools = "0.7.4"
 metro = "0.9.3"
 jvmNativeTrustedRoots = "1.1.7"

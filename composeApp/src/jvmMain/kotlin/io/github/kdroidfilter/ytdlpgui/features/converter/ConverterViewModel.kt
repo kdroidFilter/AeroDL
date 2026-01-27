@@ -101,8 +101,14 @@ class ConverterViewModel(
         analysisJob = viewModelScope.launch {
             ffmpegWrapper.analyze(file).fold(
                 onSuccess = { mediaInfo ->
+                    // Filter out cover art/artwork streams (mjpeg, png, etc.) - they're not real video
+                    val coverArtCodecs = setOf("mjpeg", "png", "gif", "bmp", "webp", "tiff")
+                    val realVideoStreams = mediaInfo.videoStreams.filter { stream ->
+                        stream.codec?.lowercase() !in coverArtCodecs
+                    }
+
                     val mediaType = when {
-                        mediaInfo.videoStreams.isNotEmpty() -> MediaType.VIDEO
+                        realVideoStreams.isNotEmpty() -> MediaType.VIDEO
                         mediaInfo.audioStreams.isNotEmpty() -> MediaType.AUDIO
                         else -> MediaType.UNKNOWN
                     }
