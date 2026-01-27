@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.File
+import java.time.Duration
 
 /**
  * Navigation state for ConverterOptionsScreen
@@ -47,6 +48,7 @@ sealed class ConverterOptionsEvents {
     data class SetOutputFormat(val format: OutputFormat) : ConverterOptionsEvents()
     data class SetVideoQuality(val quality: VideoQuality) : ConverterOptionsEvents()
     data class SetAudioQuality(val quality: AudioQuality) : ConverterOptionsEvents()
+    data class SetTrimRange(val startMs: Long, val endMs: Long) : ConverterOptionsEvents()
     data object StartConversion : ConverterOptionsEvents()
     data object CancelConversion : ConverterOptionsEvents()
     data object OpenOutputFolder : ConverterOptionsEvents()
@@ -72,7 +74,10 @@ data class ConverterOptionsState(
     val conversionProgress: Float? = null,
     val conversionCompleted: Boolean = false,
     val outputFile: File? = null,
-    val navigationState: ConverterOptionsNavigationState = ConverterOptionsNavigationState.None
+    val navigationState: ConverterOptionsNavigationState = ConverterOptionsNavigationState.None,
+    val trimStartMs: Long = 0L,
+    val trimEndMs: Long = 0L,
+    val totalDurationMs: Long = 0L
 ) {
     val canConvert: Boolean
         get() = selectedFile != null && mediaInfo != null && !isConverting && !conversionCompleted
@@ -85,6 +90,12 @@ data class ConverterOptionsState(
 
     val showFormatSelector: Boolean
         get() = mediaType == MediaType.VIDEO
+
+    val showTrimSlider: Boolean
+        get() = totalDurationMs > 0L
+
+    val isTrimmed: Boolean
+        get() = trimStartMs > 0L || (trimEndMs > 0L && trimEndMs < totalDurationMs)
 
     companion object {
         val loadingState = ConverterOptionsState(isAnalyzing = true)
@@ -120,6 +131,9 @@ class ConverterOptionsViewModel @AssistedInject constructor(
     private val _conversionCompleted = MutableStateFlow(false)
     private val _outputFile = MutableStateFlow<File?>(null)
     private val _navigationState = MutableStateFlow<ConverterOptionsNavigationState>(ConverterOptionsNavigationState.None)
+    private val _trimStartMs = MutableStateFlow(0L)
+    private val _trimEndMs = MutableStateFlow(0L)
+    private val _totalDurationMs = MutableStateFlow(0L)
 
     override val uiState = combine(
         _isAnalyzing,
@@ -134,7 +148,10 @@ class ConverterOptionsViewModel @AssistedInject constructor(
         _conversionProgress,
         _conversionCompleted,
         _outputFile,
-        _navigationState
+        _navigationState,
+        _trimStartMs,
+        _trimEndMs,
+        _totalDurationMs
     ) { values: Array<Any?> ->
         ConverterOptionsState(
             isAnalyzing = values[0] as Boolean,
@@ -149,7 +166,10 @@ class ConverterOptionsViewModel @AssistedInject constructor(
             conversionProgress = values[9] as Float?,
             conversionCompleted = values[10] as Boolean,
             outputFile = values[11] as File?,
-            navigationState = values[12] as ConverterOptionsNavigationState
+            navigationState = values[12] as ConverterOptionsNavigationState,
+            trimStartMs = values[13] as Long,
+            trimEndMs = values[14] as Long,
+            totalDurationMs = values[15] as Long
         )
     }.stateIn(
         scope = viewModelScope,
@@ -169,6 +189,10 @@ class ConverterOptionsViewModel @AssistedInject constructor(
             is ConverterOptionsEvents.SetOutputFormat -> _outputFormat.value = event.format
             is ConverterOptionsEvents.SetVideoQuality -> _selectedVideoQuality.value = event.quality
             is ConverterOptionsEvents.SetAudioQuality -> _selectedAudioQuality.value = event.quality
+            is ConverterOptionsEvents.SetTrimRange -> {
+                _trimStartMs.value = event.startMs
+                _trimEndMs.value = event.endMs
+            }
             ConverterOptionsEvents.StartConversion -> startConversion()
             ConverterOptionsEvents.CancelConversion -> cancelConversion()
             ConverterOptionsEvents.OpenOutputFolder -> openOutputFolder()
@@ -193,6 +217,9 @@ class ConverterOptionsViewModel @AssistedInject constructor(
         _conversionCompleted.value = false
         _outputFile.value = null
         _conversionProgress.value = null
+        _trimStartMs.value = 0L
+        _trimEndMs.value = 0L
+        _totalDurationMs.value = 0L
 
         analysisJob = viewModelScope.launch {
             ffmpegWrapper.analyze(file).fold(
@@ -214,6 +241,12 @@ class ConverterOptionsViewModel @AssistedInject constructor(
                         MediaType.AUDIO -> OutputFormat.AUDIO_MP3
                         MediaType.UNKNOWN -> OutputFormat.VIDEO_MP4
                     }
+
+                    // Initialize trim values based on media duration
+                    val durationMs = mediaInfo.duration?.toMillis() ?: 0L
+                    _totalDurationMs.value = durationMs
+                    _trimStartMs.value = 0L
+                    _trimEndMs.value = durationMs
 
                     _isAnalyzing.value = false
                     _mediaInfo.value = mediaInfo
@@ -238,12 +271,23 @@ class ConverterOptionsViewModel @AssistedInject constructor(
         val outputFile = generateOutputFile(inputFile, _outputFormat.value)
         val options = buildConversionOptions()
 
+        // Calculate actual duration for progress (trimmed if applicable)
+        val totalMs = _totalDurationMs.value
+        val startMs = _trimStartMs.value
+        val endMs = _trimEndMs.value
+        val isTrimmed = startMs > 0L || (endMs > 0L && endMs < totalMs)
+        val effectiveDuration = if (isTrimmed) {
+            Duration.ofMillis(endMs - startMs)
+        } else {
+            mediaInfo.duration
+        }
+
         // Start conversion via DownloadManager (appears in Tasks screen)
         downloadManager.startConversion(
             inputFile = inputFile,
             outputFile = outputFile,
             options = options,
-            totalDuration = mediaInfo.duration
+            totalDuration = effectiveDuration
         )
 
         // Signal navigation to Tasks screen
@@ -251,6 +295,15 @@ class ConverterOptionsViewModel @AssistedInject constructor(
     }
 
     private fun buildConversionOptions(): ConversionOptions {
+        // Check if trim is needed (range differs from full duration)
+        val totalMs = _totalDurationMs.value
+        val startMs = _trimStartMs.value
+        val endMs = _trimEndMs.value
+        val isTrimmed = startMs > 0L || (endMs > 0L && endMs < totalMs)
+
+        val startTime = if (isTrimmed && startMs > 0L) Duration.ofMillis(startMs) else null
+        val duration = if (isTrimmed && endMs < totalMs) Duration.ofMillis(endMs - startMs) else null
+
         return when (_outputFormat.value) {
             OutputFormat.VIDEO_MP4 -> {
                 val videoQuality = _selectedVideoQuality.value
@@ -271,11 +324,16 @@ class ConverterOptionsViewModel @AssistedInject constructor(
                     audio = AudioOptions(
                         encoder = AudioEncoder.AAC,
                         bitrate = AudioBitrate.K128
-                    )
+                    ),
+                    startTime = startTime,
+                    duration = duration
                 )
             }
             OutputFormat.AUDIO_MP3 -> {
-                ConversionOptions.audioMp3(_selectedAudioQuality.value.bitrate)
+                ConversionOptions.audioMp3(_selectedAudioQuality.value.bitrate).copy(
+                    startTime = startTime,
+                    duration = duration
+                )
             }
         }
     }

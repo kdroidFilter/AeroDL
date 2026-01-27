@@ -270,4 +270,6 @@
     <string name="converter_open_folder">Ouvrir le dossier</string>
     <string name="converter_error">Échec de la conversion : %1$s</string>
     <string name="converter_reset">Convertir un autre fichier</string>
+    <string name="converter_trim">Découper</string>
+    <string name="converter_trim_duration">Durée : %1$s</string>
 </resources>
