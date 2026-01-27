@@ -43,6 +43,9 @@ abstract class AppGraph : ViewModelGraph {
     // Factory for SingleDownloadViewModel (needs SavedStateHandle via assisted injection)
     abstract val singleDownloadViewModelFactory: io.github.kdroidfilter.ytdlpgui.features.download.single.SingleDownloadViewModel.Factory
 
+    // Factory for BulkDownloadViewModel (needs SavedStateHandle via assisted injection)
+    abstract val bulkDownloadViewModelFactory: io.github.kdroidfilter.ytdlpgui.features.download.bulk.BulkDownloadViewModel.Factory
+
     // Factory for ConverterOptionsViewModel (needs SavedStateHandle via assisted injection)
     abstract val converterOptionsViewModelFactory: io.github.kdroidfilter.ytdlpgui.features.converter.ConverterOptionsViewModel.Factory
 

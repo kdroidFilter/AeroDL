@@ -1,40 +1,340 @@
 package io.github.kdroidfilter.ytdlpgui.features.download.bulk
 
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
+import io.github.kdroidfilter.ytdlp.YtDlpWrapper
+import io.github.kdroidfilter.ytdlp.model.PlaylistInfo
+import io.github.kdroidfilter.ytdlp.model.VideoInfo
+import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
+import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import dev.zacsweers.metro.ContributesIntoMap
-import dev.zacsweers.metro.Inject
-import dev.zacsweers.metro.binding
-import dev.zacsweers.metrox.viewmodel.ViewModelKey
-import io.github.kdroidfilter.ytdlpgui.di.AppScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import io.github.kdroidfilter.logging.errorln
+import io.github.kdroidfilter.logging.infoln
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
+import java.net.HttpURLConnection
+import java.net.URI
 
-@ContributesIntoMap(AppScope::class, binding = binding<ViewModel>())
-@ViewModelKey(BulkDownloadViewModel::class)
-@Inject
-class BulkDownloadViewModel : MVIViewModel<BulkDownloadState, BulkDownloadEvents>() {
+class BulkDownloadViewModel @AssistedInject constructor(
+    @Assisted savedStateHandle: SavedStateHandle,
+    private val ytDlpWrapper: YtDlpWrapper,
+    private val downloadManager: DownloadManager,
+) : MVIViewModel<BulkDownloadState, BulkDownloadEvents>(savedStateHandle) {
 
+    @AssistedFactory
+    interface Factory {
+        fun create(savedStateHandle: SavedStateHandle): BulkDownloadViewModel
+    }
 
-    override fun initialState(): BulkDownloadState = BulkDownloadState()
+    override fun initialState(): BulkDownloadState = BulkDownloadState.loadingState
 
-    private val _isLoading = MutableStateFlow(false)
+    val playlistUrl = savedStateHandle.toRoute<Destination.Download.Bulk>().url
 
-    // Single UI state for the screen - Note: This ViewModel uses a simple mapped state, so we override uiState
-    override val uiState = _isLoading
-        .map { loading -> BulkDownloadState(isLoading = loading) }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = BulkDownloadState()
+    private val _isLoading = MutableStateFlow(true)
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    private val _playlistInfo = MutableStateFlow<PlaylistInfo?>(null)
+    private val _videos = MutableStateFlow<List<BulkVideoItem>>(emptyList())
+    private val _availablePresets = MutableStateFlow<List<YtDlpWrapper.Preset>>(emptyList())
+    private val _selectedPreset = MutableStateFlow<YtDlpWrapper.Preset?>(null)
+    private val _availableAudioQualityPresets = MutableStateFlow<List<YtDlpWrapper.AudioQualityPreset>>(emptyList())
+    private val _selectedAudioQualityPreset = MutableStateFlow<YtDlpWrapper.AudioQualityPreset?>(null)
+    private val _isAudioMode = MutableStateFlow(false)
+    private val _isCheckingAvailability = MutableStateFlow(false)
+    private val _checkedCount = MutableStateFlow(0)
+    private val _navigationState = MutableStateFlow<BulkDownloadNavigationState>(BulkDownloadNavigationState.None)
+    private val _isStartingDownloads = MutableStateFlow(false)
+
+    override val uiState = combine(
+        _isLoading,
+        _errorMessage,
+        _playlistInfo,
+        _videos,
+        _availablePresets,
+        _selectedPreset,
+        _availableAudioQualityPresets,
+        _selectedAudioQualityPreset,
+        _isAudioMode,
+        _isCheckingAvailability,
+        _checkedCount,
+        _navigationState,
+        _isStartingDownloads,
+    ) { values: Array<Any?> ->
+        val loading = values[0] as Boolean
+        val error = values[1] as String?
+        val playlist = values[2] as PlaylistInfo?
+        @Suppress("UNCHECKED_CAST")
+        val videos = values[3] as List<BulkVideoItem>
+        @Suppress("UNCHECKED_CAST")
+        val presets = values[4] as List<YtDlpWrapper.Preset>
+        val preset = values[5] as YtDlpWrapper.Preset?
+        @Suppress("UNCHECKED_CAST")
+        val audioPresets = values[6] as List<YtDlpWrapper.AudioQualityPreset>
+        val audioPreset = values[7] as YtDlpWrapper.AudioQualityPreset?
+        val audioMode = values[8] as Boolean
+        val checkingAvail = values[9] as Boolean
+        val checked = values[10] as Int
+        val navState = values[11] as BulkDownloadNavigationState
+        val startingDownloads = values[12] as Boolean
+
+        BulkDownloadState(
+            isLoading = loading,
+            errorMessage = error,
+            playlistInfo = playlist,
+            videos = videos,
+            availablePresets = presets,
+            selectedPreset = preset,
+            availableAudioQualityPresets = audioPresets,
+            selectedAudioQualityPreset = audioPreset,
+            isAudioMode = audioMode,
+            isCheckingAvailability = checkingAvail,
+            checkedCount = checked,
+            navigationState = navState,
+            isStartingDownloads = startingDownloads,
         )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = BulkDownloadState.loadingState,
+    )
+
+    init {
+        loadPlaylist()
+    }
+
+    private fun loadPlaylist() {
+        val scope = CoroutineScope(Dispatchers.IO)
+        scope.launch {
+            infoln { "[BulkDownloadViewModel] Loading playlist info for $playlistUrl" }
+            _isLoading.value = true
+            _errorMessage.value = null
+
+            // Use getVideoInfoList which properly handles both flat playlist formats
+            ytDlpWrapper.getVideoInfoList(
+                url = playlistUrl,
+                extractFlat = true,
+                timeoutSec = 120
+            )
+                .onSuccess { videoList ->
+                    infoln { "[BulkDownloadViewModel] Got video list successfully" }
+                    infoln { "[BulkDownloadViewModel] Entries: ${videoList.size}" }
+
+                    // Create a PlaylistInfo from the video list
+                    val playlistInfo = PlaylistInfo(
+                        id = null,
+                        title = "Playlist",
+                        entries = videoList,
+                        entryCount = videoList.size
+                    )
+                    _playlistInfo.value = playlistInfo
+
+                    // Convert entries to BulkVideoItems (all selected by default, checking state)
+                    val items = videoList.map { videoInfo ->
+                        BulkVideoItem(
+                            videoInfo = videoInfo,
+                            isSelected = true,
+                            isAvailable = true, // Will be verified
+                            isChecking = true
+                        )
+                    }
+                    _videos.value = items
+
+                    // Set default presets
+                    _availablePresets.value = YtDlpWrapper.Preset.entries
+                        .filter { it.height in listOf(360, 480, 720, 1080, 1440, 2160) }
+                        .sortedBy { it.height }
+                    _selectedPreset.value = YtDlpWrapper.Preset.P720
+
+                    _availableAudioQualityPresets.value = YtDlpWrapper.AudioQualityPreset.entries
+                    _selectedAudioQualityPreset.value = YtDlpWrapper.AudioQualityPreset.HIGH
+
+                    _isLoading.value = false
+
+                    // Start availability check
+                    checkVideosAvailability(videoList)
+                }
+                .onFailure { e ->
+                    val detail = e.localizedMessage ?: e.message ?: e.toString()
+                    errorln { "[BulkDownloadViewModel] Error getting video list: $detail" }
+                    _errorMessage.value = detail
+                    _isLoading.value = false
+                }
+        }
+    }
+
+    private fun checkVideosAvailability(entries: List<VideoInfo>) {
+        val scope = CoroutineScope(Dispatchers.IO)
+        scope.launch {
+            _isCheckingAvailability.value = true
+            _checkedCount.value = 0
+
+            entries.forEachIndexed { index, videoInfo ->
+                val isAvailable = checkVideoAvailability(videoInfo)
+
+                // Update the specific video item
+                _videos.value = _videos.value.map { item ->
+                    if (item.videoInfo.id == videoInfo.id) {
+                        item.copy(
+                            isAvailable = isAvailable,
+                            isChecking = false,
+                            isSelected = isAvailable, // Deselect if not available
+                            errorMessage = if (!isAvailable) "Video unavailable" else null
+                        )
+                    } else {
+                        item
+                    }
+                }
+                _checkedCount.value = index + 1
+            }
+
+            _isCheckingAvailability.value = false
+            infoln { "[BulkDownloadViewModel] Availability check completed. Available: ${_videos.value.count { it.isAvailable }}/${entries.size}" }
+        }
+    }
+
+    private suspend fun checkVideoAvailability(videoInfo: VideoInfo): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                // Try to check if the video URL is accessible
+                val urlToCheck = videoInfo.url
+                if (urlToCheck.isBlank()) return@withContext false
+
+                val uri = URI(urlToCheck)
+                val url = uri.toURL()
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "HEAD"
+                connection.connectTimeout = 5000
+                connection.readTimeout = 5000
+                connection.instanceFollowRedirects = true
+                connection.setRequestProperty("User-Agent", "Mozilla/5.0 (compatible; AeroDL)")
+
+                try {
+                    connection.connect()
+                    val responseCode = connection.responseCode
+                    connection.disconnect()
+
+                    // Consider 2xx and 3xx as available
+                    responseCode in 200..399
+                } catch (e: Exception) {
+                    connection.disconnect()
+                    // If HEAD fails, the video might still be available via yt-dlp
+                    // Let's be optimistic and mark it as available
+                    true
+                }
+            } catch (e: Exception) {
+                // If we can't even parse the URL, assume it's available
+                // yt-dlp will handle the actual availability check
+                infoln { "[BulkDownloadViewModel] URL check failed for ${videoInfo.id}: ${e.message}, assuming available" }
+                true
+            }
+        }
+    }
 
     override fun handleEvent(event: BulkDownloadEvents) {
         when (event) {
-            BulkDownloadEvents.Refresh -> { /* TODO */ }
+            BulkDownloadEvents.Refresh -> loadPlaylist()
+
+            is BulkDownloadEvents.ToggleVideoSelection -> {
+                _videos.value = _videos.value.map { item ->
+                    if (item.videoInfo.id == event.videoId && item.isAvailable) {
+                        item.copy(isSelected = !item.isSelected)
+                    } else {
+                        item
+                    }
+                }
+            }
+
+            BulkDownloadEvents.SelectAll -> {
+                _videos.value = _videos.value.map { item ->
+                    if (item.isAvailable) item.copy(isSelected = true) else item
+                }
+            }
+
+            BulkDownloadEvents.DeselectAll -> {
+                _videos.value = _videos.value.map { item ->
+                    item.copy(isSelected = false)
+                }
+            }
+
+            is BulkDownloadEvents.SelectPreset -> {
+                infoln { "[BulkDownloadViewModel] Preset selected: ${event.preset.height}p" }
+                _selectedPreset.value = event.preset
+            }
+
+            is BulkDownloadEvents.SelectAudioQualityPreset -> {
+                infoln { "[BulkDownloadViewModel] Audio quality preset selected: ${event.preset.name}" }
+                _selectedAudioQualityPreset.value = event.preset
+            }
+
+            is BulkDownloadEvents.SetAudioMode -> {
+                infoln { "[BulkDownloadViewModel] Audio mode set to: ${event.isAudioMode}" }
+                _isAudioMode.value = event.isAudioMode
+            }
+
+            BulkDownloadEvents.StartDownloads -> {
+                startDownloads()
+            }
+
+            BulkDownloadEvents.ScreenDisposed -> {
+                infoln { "[BulkDownloadViewModel] Screen disposed: clearing state" }
+                _playlistInfo.value = null
+                _videos.value = emptyList()
+                _errorMessage.value = null
+                _isLoading.value = false
+            }
+
+            BulkDownloadEvents.OnNavigationConsumed -> {
+                _navigationState.value = BulkDownloadNavigationState.None
+            }
+        }
+    }
+
+    private fun startDownloads() {
+        val selectedVideos = _videos.value.filter { it.isSelected && it.isAvailable }
+        if (selectedVideos.isEmpty()) {
+            infoln { "[BulkDownloadViewModel] No videos selected for download" }
+            return
+        }
+
+        _isStartingDownloads.value = true
+        infoln { "[BulkDownloadViewModel] Starting downloads for ${selectedVideos.size} videos" }
+
+        val scope = CoroutineScope(Dispatchers.IO)
+        scope.launch {
+            val isAudio = _isAudioMode.value
+            val preset = _selectedPreset.value
+            val audioPreset = _selectedAudioQualityPreset.value
+
+            selectedVideos.forEach { item ->
+                val videoUrl = item.videoInfo.url
+                infoln { "[BulkDownloadViewModel] Queueing download: ${item.videoInfo.title}" }
+
+                if (isAudio) {
+                    downloadManager.startAudio(
+                        url = videoUrl,
+                        videoInfo = item.videoInfo,
+                        audioQualityPreset = audioPreset
+                    )
+                } else {
+                    downloadManager.start(
+                        url = videoUrl,
+                        videoInfo = item.videoInfo,
+                        preset = preset
+                    )
+                }
+            }
+
+            _isStartingDownloads.value = false
+            _navigationState.value = BulkDownloadNavigationState.NavigateToDownloader
         }
     }
 }
