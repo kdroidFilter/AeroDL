@@ -2,7 +2,7 @@
 <resources>
     <!-- Navigation -->
     <string name="home">Home</string>
-    <string name="download">Tasks</string>
+    <string name="tasks">Tasks</string>
     <string name="split_chapters">Split chapters</string>
     <string name="split_badge">Split</string>
     <string name="remove_sponsors">Remove sponsors (SponsorBlock)</string>
@@ -116,6 +116,7 @@
     <string name="settings_download_dir_pick_title">Select download folder</string>
     <string name="settings_select">Select…</string>
 
+    <string name="download_button">Download</string>
     <string name="download_audio">Download audio</string>
     <!-- Ces chaînes appartiennent à l'écran Download (Download screen) -->
     <string name="download_type_video">Video</string>

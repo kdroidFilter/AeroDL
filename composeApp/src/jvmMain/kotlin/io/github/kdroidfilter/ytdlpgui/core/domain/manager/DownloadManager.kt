@@ -15,6 +15,7 @@ import io.github.kdroidfilter.ffmpeg.core.ConversionEvent
 import io.github.kdroidfilter.ffmpeg.core.ConversionHandle
 import io.github.kdroidfilter.ffmpeg.core.ConversionOptions
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
+import io.github.kdroidfilter.ytdlp.core.DownloadSection
 import io.github.kdroidfilter.ytdlp.core.Event
 import io.github.kdroidfilter.ytdlp.core.Handle
 import io.github.kdroidfilter.ytdlp.core.SubtitleOptions
@@ -93,6 +94,8 @@ class DownloadManager(
         val handle: Handle? = null,
         val subtitleLanguages: List<String>? = null,
         val audioQualityPreset: YtDlpWrapper.AudioQualityPreset? = null,
+        // Trim/cut section (downloads only the specified time range)
+        val downloadSection: DownloadSection? = null,
         // Conversion-specific fields
         val inputFile: File? = null,
         val outputFile: File? = null,
@@ -127,8 +130,13 @@ class DownloadManager(
     private fun maxParallel(): Int = settingsRepository.parallelDownloads.value
     private fun runningCount(): Int = _items.value.count { it.status == DownloadItem.Status.Running }
 
-    fun start(url: String, videoInfo: VideoInfo? = null, preset: YtDlpWrapper.Preset? = null, sponsorBlock: Boolean = false): String =
-        enqueueDownload(url, videoInfo, preset ?: YtDlpWrapper.Preset.P720, null, null, splitChapters = false, sponsorBlock = sponsorBlock)
+    fun start(
+        url: String,
+        videoInfo: VideoInfo? = null,
+        preset: YtDlpWrapper.Preset? = null,
+        sponsorBlock: Boolean = false,
+        downloadSection: DownloadSection? = null
+    ): String = enqueueDownload(url, videoInfo, preset ?: YtDlpWrapper.Preset.P720, null, null, splitChapters = false, sponsorBlock = sponsorBlock, downloadSection = downloadSection)
 
     fun startWithSubtitles(
         url: String,
@@ -136,21 +144,23 @@ class DownloadManager(
         preset: YtDlpWrapper.Preset? = null,
         languages: List<String>,
         sponsorBlock: Boolean = false,
-    ): String = enqueueDownload(url, videoInfo, preset ?: YtDlpWrapper.Preset.P720, languages.filter { it.isNotBlank() }, null, splitChapters = false, sponsorBlock = sponsorBlock)
+        downloadSection: DownloadSection? = null
+    ): String = enqueueDownload(url, videoInfo, preset ?: YtDlpWrapper.Preset.P720, languages.filter { it.isNotBlank() }, null, splitChapters = false, sponsorBlock = sponsorBlock, downloadSection = downloadSection)
 
     fun startAudio(
         url: String,
         videoInfo: VideoInfo? = null,
         audioQualityPreset: YtDlpWrapper.AudioQualityPreset? = null,
         sponsorBlock: Boolean = false,
-    ): String = enqueueDownload(url, videoInfo, null, null, audioQualityPreset, splitChapters = false, sponsorBlock = sponsorBlock)
+        downloadSection: DownloadSection? = null
+    ): String = enqueueDownload(url, videoInfo, null, null, audioQualityPreset, splitChapters = false, sponsorBlock = sponsorBlock, downloadSection = downloadSection)
 
     fun startAudioSplitChapters(
         url: String,
         videoInfo: VideoInfo? = null,
         audioQualityPreset: YtDlpWrapper.AudioQualityPreset? = null,
         sponsorBlock: Boolean = false
-    ): String = enqueueDownload(url, videoInfo, null, null, audioQualityPreset, splitChapters = true, sponsorBlock = sponsorBlock)
+    ): String = enqueueDownload(url, videoInfo, null, null, audioQualityPreset, splitChapters = true, sponsorBlock = sponsorBlock, downloadSection = null)
 
     fun startSplitChapters(
         url: String,
@@ -166,6 +176,7 @@ class DownloadManager(
         audioQualityPreset = null,
         splitChapters = true,
         sponsorBlock = sponsorBlock,
+        downloadSection = null
     )
 
     /**
@@ -216,6 +227,7 @@ class DownloadManager(
         audioQualityPreset: YtDlpWrapper.AudioQualityPreset? = null,
         splitChapters: Boolean = false,
         sponsorBlock: Boolean = false,
+        downloadSection: DownloadSection? = null
     ): String {
         val item = DownloadItem(
             url = url,
@@ -224,7 +236,8 @@ class DownloadManager(
             splitChapters = splitChapters,
             sponsorBlock = sponsorBlock,
             subtitleLanguages = subtitles,
-            audioQualityPreset = audioQualityPreset
+            audioQualityPreset = audioQualityPreset,
+            downloadSection = downloadSection
         )
         _items.value += item
         pendingQueue.addLast(item.id)
@@ -548,12 +561,26 @@ class DownloadManager(
     }
 
 
+    /** Builds extra args including sponsorblock and download section (trim) if applicable */
+    private fun buildExtraArgs(item: DownloadItem): List<String> = buildList {
+        if (item.sponsorBlock) {
+            add("--sponsorblock-remove")
+            add("default")
+        }
+        item.downloadSection?.let { section ->
+            add("--download-sections")
+            add(section.toYtDlpFormat())
+            add("--force-keyframes-at-cuts")
+            infoln { "[DownloadManager] Adding trim section: ${section.toYtDlpFormat()}" }
+        }
+    }
+
     private fun downloadAudio(item: DownloadItem, onEvent: (Event) -> Unit): Handle =
         ytDlpWrapper.downloadAudioMp3WithPreset(
             url = item.url,
             preset = item.audioQualityPreset ?: YtDlpWrapper.AudioQualityPreset.HIGH,
             outputTemplate = buildOutputTemplateForAudio(item.audioQualityPreset),
-            extraArgs = if (item.sponsorBlock) listOf("--sponsorblock-remove", "default") else emptyList(),
+            extraArgs = buildExtraArgs(item),
             onEvent = onEvent
         )
 
@@ -562,7 +589,7 @@ class DownloadManager(
             url = item.url,
             preset = item.preset ?: YtDlpWrapper.Preset.P720,
             outputTemplate = buildOutputTemplate(item.preset),
-            extraArgs = if (item.sponsorBlock) listOf("--sponsorblock-remove", "default") else emptyList(),
+            extraArgs = buildExtraArgs(item),
             onEvent = onEvent
         )
 
@@ -638,7 +665,7 @@ class DownloadManager(
             url = item.url,
             preset = item.preset ?: YtDlpWrapper.Preset.P720,
             outputTemplate = buildOutputTemplate(item.preset),
-            extraArgs = if (item.sponsorBlock) listOf("--sponsorblock-remove", "default") else emptyList(),
+            extraArgs = buildExtraArgs(item),
             subtitles = subtitleOptions,
             onEvent = onEvent
         )

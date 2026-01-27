@@ -143,15 +143,28 @@ object NetAndArchive {
             cmd.addAll(listOf("--concurrent-fragments", options.concurrentFragments.coerceIn(1, 5).toString()))
         }
 
-        // Container enforcement (kept)
+        // Container enforcement with optional hardware acceleration
         options.targetContainer?.let { container ->
-            if (container.equals("mp4", ignoreCase = true)) {
-                if (options.allowRecode) cmd.addAll(listOf("--recode-video", "mp4"))
-                else cmd.addAll(listOf("--remux-video", "mp4"))
+            if (options.allowRecode) {
+                cmd.addAll(listOf("--recode-video", container))
+                // Add hardware acceleration for re-encoding if available and enabled
+                if (options.useHardwareAcceleration && ffmpegPath != null) {
+                    HwAccelDetector.getHwPostprocessorArgs(ffmpegPath)?.let { hwArgs ->
+                        infoln { "[NetAndArchive] Using hardware acceleration: $hwArgs" }
+                        cmd.addAll(listOf("--postprocessor-args", hwArgs))
+                    }
+                }
             } else {
-                if (options.allowRecode) cmd.addAll(listOf("--recode-video", container))
-                else cmd.addAll(listOf("--remux-video", container))
+                cmd.addAll(listOf("--remux-video", container))
             }
+        }
+
+        // Download sections (trim/cut) - downloads only the specified time range
+        options.downloadSection?.let { section ->
+            infoln { "[NetAndArchive] Adding download section: ${section.toYtDlpFormat()}" }
+            cmd.addAll(listOf("--download-sections", section.toYtDlpFormat()))
+            // Force keyframes at cut points for cleaner cuts
+            cmd.add("--force-keyframes-at-cuts")
         }
 
         // --- NEW: Write the final absolute path to a temp file (no shell redirection)

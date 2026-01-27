@@ -57,6 +57,7 @@ import ytdlpgui.composeapp.generated.resources.*
 import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
 import io.github.kdroidfilter.ytdlpgui.core.design.components.EllipsizedTextWithTooltip
 import io.github.kdroidfilter.ytdlpgui.core.design.components.Switcher
+import io.github.kdroidfilter.ytdlpgui.core.design.components.TrimSlider
 import java.time.Duration
 import java.util.*
 
@@ -116,12 +117,19 @@ fun SingleDownloadView(
         splitChapters = state.splitChapters,
         hasSponsorSegments = state.hasSponsorSegments,
         removeSponsors = state.removeSponsors,
+        // Trim state
+        trimStartMs = state.trimStartMs,
+        trimEndMs = state.trimEndMs,
+        totalDurationMs = state.totalDurationMs,
+        showTrimSlider = state.showTrimSlider,
+        isTrimmed = state.isTrimmed,
         onSelectPreset = { onEvent(SingleDownloadEvents.SelectPreset(it)) },
         onSelectAudioQualityPreset = { onEvent(SingleDownloadEvents.SelectAudioQualityPreset(it)) },
         onToggleSubtitle = { onEvent(SingleDownloadEvents.ToggleSubtitle(it)) },
         onClearSubtitles = { onEvent(SingleDownloadEvents.ClearSubtitles) },
         onSetSplitChapters = { onEvent(SingleDownloadEvents.SetSplitChapters(it)) },
         onSetRemoveSponsors = { onEvent(SingleDownloadEvents.SetRemoveSponsors(it)) },
+        onSetTrimRange = { start, end -> onEvent(SingleDownloadEvents.SetTrimRange(start, end)) },
         onStartDownload = { onEvent(SingleDownloadEvents.StartDownload) },
         onStartAudioDownload = { onEvent(SingleDownloadEvents.StartAudioDownload) }
     )
@@ -170,12 +178,19 @@ private fun SingleVideoDownloadView(
     splitChapters: Boolean,
     hasSponsorSegments: Boolean,
     removeSponsors: Boolean,
+    // Trim state
+    trimStartMs: Long,
+    trimEndMs: Long,
+    totalDurationMs: Long,
+    showTrimSlider: Boolean,
+    isTrimmed: Boolean,
     onSelectPreset: (YtDlpWrapper.Preset) -> Unit,
     onSelectAudioQualityPreset: (YtDlpWrapper.AudioQualityPreset) -> Unit,
     onToggleSubtitle: (String) -> Unit,
     onClearSubtitles: () -> Unit,
     onSetSplitChapters: (Boolean) -> Unit,
     onSetRemoveSponsors: (Boolean) -> Unit,
+    onSetTrimRange: (Long, Long) -> Unit,
     onStartDownload: () -> Unit,
     onStartAudioDownload: () -> Unit
 ) {
@@ -362,6 +377,18 @@ private fun SingleVideoDownloadView(
                         )
                         Spacer(Modifier.height(8.dp))
                     }
+
+                    // Trim slider (video mode, when not using split-chapters)
+                    if (showTrimSlider && !splitChapters) {
+                        TrimSlider(
+                            trimStartMs = trimStartMs,
+                            trimEndMs = trimEndMs,
+                            totalDurationMs = totalDurationMs,
+                            isTrimmed = isTrimmed,
+                            onTrimRangeChange = onSetTrimRange
+                        )
+                        Spacer(Modifier.height(16.dp))
+                    }
                 }
 
                 // Afficher le sélecteur de qualité audio si "Audio" est sélectionné
@@ -437,6 +464,18 @@ private fun SingleVideoDownloadView(
                             }
                         )
                     }
+
+                    // Trim slider (audio mode, when not using split-chapters)
+                    if (showTrimSlider && !splitChapters) {
+                        Spacer(Modifier.height(16.dp))
+                        TrimSlider(
+                            trimStartMs = trimStartMs,
+                            trimEndMs = trimEndMs,
+                            totalDurationMs = totalDurationMs,
+                            isTrimmed = isTrimmed,
+                            onTrimRangeChange = onSetTrimRange
+                        )
+                    }
                 }
 
                 // Bouton de téléchargement centré
@@ -447,7 +486,7 @@ private fun SingleVideoDownloadView(
                 ) {
                     AccentButton(onClick = if (selectedFormatIndex == 0) onStartDownload else onStartAudioDownload) {
                         Icon(Icons.Default.ArrowDownload, null)
-                        Text(stringResource(Res.string.download))
+                        Text(stringResource(Res.string.download_button))
                     }
 
                     // Split-chapters now controlled by a checkbox above

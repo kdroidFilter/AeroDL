@@ -83,7 +83,7 @@ fun MainNavigationHeader(
                 val (titleRes, icon, destForIndex) = when (index) {
                     0 -> Triple(Res.string.home, Icons.Default.Home, Destination.MainNavigation.Home as Destination)
                     else -> Triple(
-                        Res.string.download,
+                        Res.string.tasks,
                         Icons.Default.History,
                         Destination.MainNavigation.Downloader as Destination
                     )
