@@ -306,7 +306,12 @@ private fun HistoryThumbnail(h: HistoryItem) {
                 )
             }
 
-            val overlay = if (h.isSplit) "Split" else if (h.isAudio) "MP3" else h.presetHeight?.let { "${it}P" } ?: ""
+            val overlay = when {
+                h.isSplit -> "Split"
+                h.isAudio -> "MP3"
+                isConversion -> "MP4"
+                else -> h.presetHeight?.let { "${it}P" } ?: ""
+            }
             Text(
                 overlay,
                 textAlign = TextAlign.Center,
