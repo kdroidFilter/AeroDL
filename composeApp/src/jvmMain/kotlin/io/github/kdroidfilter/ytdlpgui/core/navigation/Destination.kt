@@ -81,7 +81,10 @@ sealed interface Destination {
         data object Graph : Converter
 
         @Serializable
-        data object Main : Converter
+        data object Input : Converter
+
+        @Serializable
+        data class Options(val filePath: String) : Converter
     }
 
 }

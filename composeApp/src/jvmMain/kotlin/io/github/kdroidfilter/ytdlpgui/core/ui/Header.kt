@@ -143,7 +143,7 @@ fun MainNavigationHeader(
                         MenuFlyoutItem(
                             onClick = {
                                 isFlyoutVisible = false
-                                navController.navigate(Destination.Converter.Main)
+                                navController.navigate(Destination.Converter.Input)
                             },
                             icon = { Icon(Icons.Default.ConvertRange, contentDescription = null) },
                             text = { Text(stringResource(Res.string.converter)) }
@@ -308,7 +308,10 @@ fun SecondaryNavigationHeader(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                currentDestination?.hasRoute(Destination.Converter.Main::class) == true ->
+                currentDestination?.hierarchy?.any {
+                    it.hasRoute(Destination.Converter.Input::class) ||
+                    it.hasRoute(Destination.Converter.Options::class)
+                } == true ->
                     Text(
                         stringResource(Res.string.converter),
                         style = FluentTheme.typography.subtitle,
