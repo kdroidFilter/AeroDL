@@ -3,7 +3,7 @@
     <!-- Navigation -->
     <string name="quit">Quitter</string>
     <string name="home">Accueil</string>
-    <string name="download">Tâches</string>
+    <string name="tasks">Tâches</string>
     <string name="about">À propos</string>
     <string name="settings">Paramètres</string>
 
@@ -114,6 +114,7 @@
     <string name="settings_download_dir_pick_title">Sélectionner le dossier de téléchargement</string>
     <string name="settings_select">Sélectionner…</string>
 
+    <string name="download_button">Télécharger</string>
     <string name="download_audio">Télécharger l'audio</string>
     <!-- Ces chaînes appartiennent à l'écran Download (Download screen) -->
     <string name="download_type_video">Vidéo</string>

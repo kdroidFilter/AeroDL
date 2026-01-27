@@ -2,7 +2,7 @@
 <resources>
     <!-- Navigation -->
     <string name="home">דף הבית</string>
-    <string name="download">משימות</string>
+    <string name="tasks">משימות</string>
     <string name="about">אודות</string>
     <string name="settings">הגדרות</string>
 

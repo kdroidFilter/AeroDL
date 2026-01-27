@@ -8,8 +8,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.RangeSlider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,6 +22,8 @@ import io.github.composefluent.component.*
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.MusicNote1
 import io.github.composefluent.icons.regular.Video
+import io.github.kdroidfilter.ytdlpgui.core.design.components.TrimSlider
+import io.github.kdroidfilter.ytdlpgui.core.design.components.formatDuration
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
 import org.jetbrains.compose.resources.stringResource
@@ -171,7 +171,15 @@ private fun ConversionOptionsContent(
                 // Trim slider
                 if (state.showTrimSlider) {
                     item {
-                        TrimSlider(state, onEvent)
+                        TrimSlider(
+                            trimStartMs = state.trimStartMs,
+                            trimEndMs = state.trimEndMs,
+                            totalDurationMs = state.totalDurationMs,
+                            isTrimmed = state.isTrimmed,
+                            onTrimRangeChange = { startMs, endMs ->
+                                onEvent(ConverterOptionsEvents.SetTrimRange(startMs, endMs))
+                            }
+                        )
                     }
                 }
 
@@ -356,82 +364,5 @@ private fun AudioQualitySelector(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun TrimSlider(
-    state: ConverterOptionsState,
-    onEvent: (ConverterOptionsEvents) -> Unit
-) {
-    Column {
-        Text(
-            text = stringResource(Res.string.converter_trim),
-            style = FluentTheme.typography.bodyStrong,
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(Modifier.height(8.dp))
-
-        // Time labels
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = formatDuration(state.trimStartMs),
-                style = FluentTheme.typography.caption,
-                color = FluentTheme.colors.text.text.secondary
-            )
-            Text(
-                text = formatDuration(state.trimEndMs),
-                style = FluentTheme.typography.caption,
-                color = FluentTheme.colors.text.text.secondary
-            )
-        }
-
-        // RangeSlider
-        RangeSlider(
-            value = state.trimStartMs.toFloat()..state.trimEndMs.toFloat(),
-            onValueChange = { range ->
-                onEvent(ConverterOptionsEvents.SetTrimRange(
-                    startMs = range.start.toLong(),
-                    endMs = range.endInclusive.toLong()
-                ))
-            },
-            valueRange = 0f..state.totalDurationMs.toFloat(),
-            modifier = Modifier.fillMaxWidth(),
-            colors = SliderDefaults.colors(
-                thumbColor = FluentTheme.colors.fillAccent.default,
-                activeTrackColor = FluentTheme.colors.fillAccent.default,
-                inactiveTrackColor = FluentTheme.colors.stroke.control.default
-            )
-        )
-
-        // Duration info
-        if (state.isTrimmed) {
-            Text(
-                text = stringResource(
-                    Res.string.converter_trim_duration,
-                    formatDuration(state.trimEndMs - state.trimStartMs)
-                ),
-                style = FluentTheme.typography.caption,
-                color = FluentTheme.colors.text.text.secondary,
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
-            )
-        }
-    }
-}
-
-private fun formatDuration(millis: Long): String {
-    val totalSeconds = millis / 1000
-    val hours = totalSeconds / 3600
-    val minutes = (totalSeconds % 3600) / 60
-    val seconds = totalSeconds % 60
-
-    return if (hours > 0) {
-        String.format("%d:%02d:%02d", hours, minutes, seconds)
-    } else {
-        String.format("%d:%02d", minutes, seconds)
     }
 }

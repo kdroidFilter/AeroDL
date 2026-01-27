@@ -25,8 +25,19 @@ data class SingleDownloadState(
     val splitChapters: Boolean = false,
     val hasSponsorSegments: Boolean = false,
     val removeSponsors: Boolean = false,
-    val navigationState: SingleDownloadNavigationState = SingleDownloadNavigationState.None
+    val navigationState: SingleDownloadNavigationState = SingleDownloadNavigationState.None,
+    // Trim/cut state
+    val trimStartMs: Long = 0L,
+    val trimEndMs: Long = 0L,
+    val totalDurationMs: Long = 0L
 ) {
+    /** True if duration is known and trim slider can be shown */
+    val showTrimSlider: Boolean
+        get() = totalDurationMs > 0L
+
+    /** True if user has modified the default range (i.e., trimmed the video) */
+    val isTrimmed: Boolean
+        get() = trimStartMs > 0L || (trimEndMs > 0L && trimEndMs < totalDurationMs)
     companion object {
         val loadingState = SingleDownloadState(
             isLoading = true
