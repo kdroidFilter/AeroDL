@@ -3,7 +3,7 @@
     <!-- Navigation -->
     <string name="quit">Quitter</string>
     <string name="home">Accueil</string>
-    <string name="download">Téléchargement</string>
+    <string name="download">Tâches</string>
     <string name="about">À propos</string>
     <string name="settings">Paramètres</string>
 
@@ -164,18 +164,21 @@
     <!-- Écran de téléchargement (historique et en cours) -->
     <string name="download_clear_history">Vider l'historique</string>
     <string name="tooltip_clear_history">Vider l'historique</string>
-    <string name="download_search_placeholder">Rechercher dans l'historique</string>
+    <string name="download_search_placeholder">Rechercher dans les tâches</string>
     <string name="open_directory">Ouvrir le dossier</string>
     <string name="tooltip_open_directory">Ouvrir le dossier</string>
     <string name="delete_element">Supprimer cet élément</string>
     <string name="tooltip_delete_element">Supprimer cet élément</string>
-    <string name="no_downloads">Aucun téléchargement</string>
+    <string name="no_downloads">Aucune tâche</string>
     <string name="cancel">Annuler</string>
     <string name="status_pending">En attente</string>
     <string name="status_running">En cours</string>
     <string name="status_completed">Terminé</string>
     <string name="status_failed">Échec</string>
     <string name="status_cancelled">Annulé</string>
+    <string name="status_converting">Conversion en cours</string>
+    <string name="task_type_download">Téléchargement</string>
+    <string name="task_type_conversion">Conversion</string>
     <!-- Paramètres : Lancement automatique -->
     <string name="settings_auto_launch_title">Lancer au démarrage</string>
     <string name="settings_auto_launch_caption">Conseillé si vous utilisez souvent AeroDL : il se lance avec votre système et vous n'avez plus à vous en soucier. Couplé à la surveillance du presse-papiers, vous pouvez lancer vos téléchargements dès que vous copiez un lien.</string>
@@ -202,6 +205,10 @@
     <!-- Notification de fin de téléchargement -->
     <string name="download_completed_title">Téléchargement terminé</string>
     <string name="download_completed_message">%1$s a été téléchargé</string>
+
+    <!-- Notification de fin de conversion -->
+    <string name="conversion_completed_title">Conversion terminée</string>
+    <string name="conversion_completed_message">%1$s a été converti</string>
 
     <!-- Indicateur d'indisponibilité du dossier -->
     <string name="directory_unavailable">Indisponible</string>
@@ -240,6 +247,27 @@
     <string name="remove_sponsors">Supprimer les sponsors (SponsorBlock)</string>
     
     <!-- Écran téléchargement simple : légendes conviviales -->
-    <string name="single_sponsorblock_caption">Nous avons détecté des segments sponsorisés dans cette vidéo. Activez cette option pour les supprimer automatiquement du téléchargement. Dans de nombreux cas, il s’agit de publicités sans lien direct avec le contenu principal.</string>
-    <string name="single_split_chapters_caption">Nous avons détecté que cette vidéo est divisée en chapitres. Activez cette option pour enregistrer un fichier par chapitre — particulièrement utile pour les sets ou longs mixes afin d’obtenir un fichier par morceau.</string>
+    <string name="single_sponsorblock_caption">Nous avons détecté des segments sponsorisés dans cette vidéo. Activez cette option pour les supprimer automatiquement du téléchargement. Dans de nombreux cas, il s'agit de publicités sans lien direct avec le contenu principal.</string>
+    <string name="single_split_chapters_caption">Nous avons détecté que cette vidéo est divisée en chapitres. Activez cette option pour enregistrer un fichier par chapitre — particulièrement utile pour les sets ou longs mixes afin d'obtenir un fichier par morceau.</string>
+
+    <!-- Écran Convertisseur -->
+    <string name="converter">Convertisseur</string>
+    <string name="converter_title">Convertissez vos fichiers multimédias</string>
+    <string name="converter_subtitle">Convertissez des vidéos en MP4 ou extrayez l'audio en MP3</string>
+    <string name="converter_drop_zone">Glissez un fichier ici</string>
+    <string name="converter_or">ou</string>
+    <string name="converter_select_file">Parcourir</string>
+    <string name="converter_supported_formats">Formats supportés : MP4, MKV, AVI, MOV, WebM, MP3, WAV, FLAC…</string>
+    <string name="converter_analyzing">Analyse du fichier…</string>
+    <string name="converter_output_format">Format de sortie</string>
+    <string name="converter_video">Vidéo (MP4)</string>
+    <string name="converter_audio">Audio (MP3)</string>
+    <string name="converter_video_quality">Qualité vidéo</string>
+    <string name="converter_audio_quality">Qualité audio</string>
+    <string name="converter_start">Convertir</string>
+    <string name="converter_converting">Conversion en cours…</string>
+    <string name="converter_success">Conversion terminée !</string>
+    <string name="converter_open_folder">Ouvrir le dossier</string>
+    <string name="converter_error">Échec de la conversion : %1$s</string>
+    <string name="converter_reset">Convertir un autre fichier</string>
 </resources>

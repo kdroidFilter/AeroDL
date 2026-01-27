@@ -13,7 +13,6 @@ plugins {
     alias(libs.plugins.composeHotReload)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.sqlDelight)
-    alias(libs.plugins.hydraulicConveyor)
     alias(libs.plugins.metro)
     alias(libs.plugins.linuxDeps)
 }
@@ -108,6 +107,7 @@ kotlin {
 
             // Project dependencies
             implementation(project(":ytdlp"))
+            implementation(project(":ffmpeg"))
             implementation(project(":network"))
             implementation(project(":logging"))
 

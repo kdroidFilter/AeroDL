@@ -11,6 +11,7 @@ import io.github.kdroidfilter.platformtools.getAppVersion
 import io.github.kdroidfilter.platformtools.releasefetcher.github.GitHubReleaseFetcher
 import io.github.kdroidfilter.platformtools.releasefetcher.github.model.Asset
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
+import io.github.kdroidfilter.ffmpeg.FfmpegWrapper
 import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
 import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
 import io.github.kdroidfilter.ytdlpgui.di.AppScope
@@ -25,6 +26,7 @@ import kotlin.time.Duration.Companion.hours
 @Inject
 class InitViewModel(
     private val ytDlpWrapper: YtDlpWrapper,
+    private val ffmpegWrapper: FfmpegWrapper,
     private val settingsRepository: SettingsRepository,
     private val supportedSitesRepository: io.github.kdroidfilter.ytdlpgui.data.SupportedSitesRepository,
     private val downloadHistoryRepository: io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
@@ -262,6 +264,18 @@ class InitViewModel(
                     }
                     is YtDlpWrapper.InitEvent.Completed -> {
                         isInitializing = false
+
+                        // Sync FFmpeg path from YtDlpWrapper to FfmpegWrapper
+                        ytDlpWrapper.ffmpegPath?.let { path ->
+                            ffmpegWrapper.ffmpegPath = path
+                            // Also sync ffprobe path (same directory)
+                            val ffprobeExe = if (path.endsWith(".exe")) "ffprobe.exe" else "ffprobe"
+                            val ffprobePath = java.io.File(path).parentFile?.let {
+                                java.io.File(it, ffprobeExe).absolutePath
+                            }
+                            ffprobePath?.let { ffmpegWrapper.ffprobePath = it }
+                        }
+
                         update {
                             copy(
                                 checkingYtDlp = false,

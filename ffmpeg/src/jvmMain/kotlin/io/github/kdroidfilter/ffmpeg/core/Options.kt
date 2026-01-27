@@ -72,6 +72,7 @@ data class StreamSelection(
  * @property logLevel FFmpeg log level.
  * @property twoPass Enable two-pass encoding for better quality at target bitrate.
  * @property hwAccel Hardware acceleration (e.g., "cuda", "vaapi", "videotoolbox").
+ * @property useHardwareAcceleration Auto-detect and use hardware encoding if available (default: true).
  */
 data class ConversionOptions(
     val video: VideoOptions? = VideoOptions(),
@@ -90,7 +91,8 @@ data class ConversionOptions(
     val timeout: Duration? = Duration.ofHours(4),
     val logLevel: LogLevel = LogLevel.INFO,
     val twoPass: Boolean = false,
-    val hwAccel: String? = null
+    val hwAccel: String? = null,
+    val useHardwareAcceleration: Boolean = true
 ) {
     companion object {
         /** Quick audio extraction to MP3. */

@@ -100,7 +100,7 @@ class YtDlpWrapper {
     private val httpClient = KtorConfig.createHttpClient()
     private val ytdlpFetcher = GitHubReleaseFetcher(owner = "yt-dlp", repo = "yt-dlp", httpClient = httpClient)
     private val ffmpegFetcher = GitHubReleaseFetcher(owner = "yt-dlp", repo = "FFmpeg-Builds", httpClient = httpClient)
-    private val ffmpegMacOsFetcher = GitHubReleaseFetcher(owner = "eugeneware", repo = "ffmpeg-static", httpClient = httpClient)
+    private val ffmpegMacOsFetcher = GitHubReleaseFetcher(owner = "kdroidFilter", repo = "FFmpeg-Builds", httpClient = httpClient)
 
     private data class ProcessResult(val exitCode: Int, val stdout: List<String>, val stderr: String)
 

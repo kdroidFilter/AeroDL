@@ -128,7 +128,7 @@ object PlatformUtils {
                 else -> "win64-gpl.zip"
             }
             OperatingSystem.LINUX -> if (isArm64) "linuxarm64-gpl.tar.xz" else "linux64-gpl.tar.xz"
-            OperatingSystem.MACOS -> if (isArm64) "ffmpeg-darwin-arm64" else "ffmpeg-darwin-x64"
+            OperatingSystem.MACOS -> if (isArm64) "macosarm64-gpl.tar.xz" else "macos64-gpl.tar.xz"
             else -> null
         }
     }
@@ -147,7 +147,7 @@ object PlatformUtils {
         val targetFfprobe = File(binDir, if (getOperatingSystem() == OperatingSystem.WINDOWS) "ffprobe.exe" else "ffprobe")
 
         if (!forceDownload && targetFfmpeg.exists() && getFfmpegVersion(targetFfmpeg.absolutePath) != null) {
-            if (getOperatingSystem() == OperatingSystem.MACOS || targetFfprobe.exists()) {
+            if (targetFfprobe.exists()) {
                 return@withContext targetFfmpeg.absolutePath
             }
         }
@@ -155,41 +155,33 @@ object PlatformUtils {
         baseDir.mkdirs()
         binDir.mkdirs()
 
-        val os = getOperatingSystem()
-
         try {
             val release = ffmpegFetcher.getLatestRelease()
                 ?: error("Could not fetch FFmpeg release from GitHub")
 
-            val asset = if (os == OperatingSystem.MACOS) {
-                release.assets.find { it.name == assetPattern }
-            } else {
-                release.assets.find { it.name.endsWith(assetPattern) && !it.name.contains("shared") }
-            } ?: error("Asset matching pattern '$assetPattern' not found")
+            val asset = release.assets.find { it.name.endsWith(assetPattern) && !it.name.contains("shared") }
+                ?: error("Asset matching pattern '$assetPattern' not found")
 
             val url = asset.browser_download_url
             val archive = File(baseDir, asset.name)
 
             downloadFile(url, archive, onProgress)
 
-            if (os == OperatingSystem.MACOS) {
-                archive.copyTo(targetFfmpeg, overwrite = true)
-            } else {
-                if (archive.name.endsWith(".zip")) extractZip(archive, baseDir)
-                else if (archive.name.endsWith(".tar.xz")) extractTarXz(archive, baseDir)
-                else error("Unsupported FFmpeg archive: ${archive.name}")
+            // Extract archive
+            if (archive.name.endsWith(".zip")) extractZip(archive, baseDir)
+            else if (archive.name.endsWith(".tar.xz")) extractTarXz(archive, baseDir)
+            else error("Unsupported FFmpeg archive: ${archive.name}")
 
-                val foundFfmpeg = baseDir.walkTopDown()
-                    .firstOrNull { it.isFile && it.name.matches(Regex("^ffmpeg(\\.exe)?$")) && it.canRead() }
-                    ?: error("FFmpeg binary not found after extraction")
-                foundFfmpeg.copyTo(targetFfmpeg, overwrite = true)
+            val foundFfmpeg = baseDir.walkTopDown()
+                .firstOrNull { it.isFile && it.name.matches(Regex("^ffmpeg(\\.exe)?$")) && it.canRead() }
+                ?: error("FFmpeg binary not found after extraction")
+            foundFfmpeg.copyTo(targetFfmpeg, overwrite = true)
 
-                val foundFfprobe = baseDir.walkTopDown()
-                    .firstOrNull { it.isFile && it.name.matches(Regex("^ffprobe(\\.exe)?$")) && it.canRead() }
-                foundFfprobe?.copyTo(targetFfprobe, overwrite = true)
-            }
+            val foundFfprobe = baseDir.walkTopDown()
+                .firstOrNull { it.isFile && it.name.matches(Regex("^ffprobe(\\.exe)?$")) && it.canRead() }
+            foundFfprobe?.copyTo(targetFfprobe, overwrite = true)
 
-            if (os != OperatingSystem.WINDOWS) {
+            if (getOperatingSystem() != OperatingSystem.WINDOWS) {
                 makeExecutable(targetFfmpeg)
                 if (targetFfprobe.exists()) makeExecutable(targetFfprobe)
             }

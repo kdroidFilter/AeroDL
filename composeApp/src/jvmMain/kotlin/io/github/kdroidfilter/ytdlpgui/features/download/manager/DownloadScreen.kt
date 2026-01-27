@@ -45,6 +45,7 @@ import io.github.kdroidfilter.ytdlp.util.YouTubeThumbnailHelper
 import io.github.kdroidfilter.ytdlpgui.core.design.components.UpdateInfoBar
 import io.github.kdroidfilter.ytdlpgui.core.design.components.TerminalView
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
+import io.github.kdroidfilter.ytdlpgui.core.domain.manager.TaskType
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository.HistoryItem
 import dev.zacsweers.metrox.viewmodel.metroViewModel
 import io.github.kdroidfilter.ytdlpgui.core.design.components.UpdateInfoBar
@@ -266,23 +267,45 @@ private fun HistoryThumbnail(h: HistoryItem) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomStart) {
-            val thumbUrl = h.videoInfo?.let {
-                YouTubeThumbnailHelper.getThumbnailUrl(
-                    it.id,
-                    YouTubeThumbnailHelper.ThumbnailQuality.MEDIUM
+            // Check if this is a conversion (no videoInfo means it's a local file conversion)
+            val isConversion = h.videoInfo == null
+
+            if (isConversion) {
+                // Show generic icon for conversions
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(FluentTheme.colors.background.layer.default),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = if (h.isAudio) Icons.Regular.MusicNote1 else Icons.Regular.Video,
+                        contentDescription = stringResource(Res.string.task_type_conversion),
+                        modifier = Modifier.size(36.dp),
+                        tint = FluentTheme.colors.text.text.secondary
+                    )
+                }
+            } else {
+                // Show YouTube thumbnail for downloads
+                val thumbUrl = h.videoInfo?.let {
+                    YouTubeThumbnailHelper.getThumbnailUrl(
+                        it.id,
+                        YouTubeThumbnailHelper.ThumbnailQuality.MEDIUM
+                    )
+                }
+                AsyncImage(
+                    model = ImageRequest.Builder(coil3.PlatformContext.INSTANCE)
+                        .data(thumbUrl)
+                        // The row height is 72.dp and thumbnail column width is 88.dp
+                        // Provide a fixed request size to avoid decoding oversized bitmaps.
+                        .size(88, 72)
+                        .build(),
+                    contentDescription = stringResource(Res.string.thumbnail_content_desc),
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
                 )
             }
-            AsyncImage(
-                model = ImageRequest.Builder(coil3.PlatformContext.INSTANCE)
-                    .data(thumbUrl)
-                    // The row height is 72.dp and thumbnail column width is 88.dp
-                    // Provide a fixed request size to avoid decoding oversized bitmaps.
-                    .size(88, 72)
-                    .build(),
-                contentDescription = stringResource(Res.string.thumbnail_content_desc),
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
+
             val overlay = if (h.isSplit) "Split" else if (h.isAudio) "MP3" else h.presetHeight?.let { "${it}P" } ?: ""
             Text(
                 overlay,
@@ -328,22 +351,46 @@ private fun InProgressThumbnail(item: DownloadManager.DownloadItem) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomStart) {
-            val thumbUrl = item.videoInfo?.let {
-                YouTubeThumbnailHelper.getThumbnailUrl(
-                    it.id,
-                    YouTubeThumbnailHelper.ThumbnailQuality.MEDIUM
-                )
+            when (item.taskType) {
+                TaskType.DOWNLOAD -> {
+                    val thumbUrl = item.videoInfo?.let {
+                        YouTubeThumbnailHelper.getThumbnailUrl(
+                            it.id,
+                            YouTubeThumbnailHelper.ThumbnailQuality.MEDIUM
+                        )
+                    }
+                    AsyncImage(
+                        model = ImageRequest.Builder(coil3.PlatformContext.INSTANCE)
+                            .data(thumbUrl)
+                            .size(88, 72)
+                            .build(),
+                        contentDescription = stringResource(Res.string.thumbnail_content_desc),
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+                TaskType.CONVERSION -> {
+                    // Show video or audio icon based on output format
+                    val isAudioConversion = item.outputFormat?.uppercase() in listOf("MP3", "AAC", "FLAC", "WAV", "OGG", "M4A", "OPUS")
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(FluentTheme.colors.background.layer.default),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = if (isAudioConversion) Icons.Regular.MusicNote1 else Icons.Regular.Video,
+                            contentDescription = stringResource(Res.string.task_type_conversion),
+                            modifier = Modifier.size(36.dp),
+                            tint = FluentTheme.colors.text.text.secondary
+                        )
+                    }
+                }
             }
-            AsyncImage(
-                model = ImageRequest.Builder(coil3.PlatformContext.INSTANCE)
-                    .data(thumbUrl)
-                    .size(88, 72)
-                    .build(),
-                contentDescription = stringResource(Res.string.thumbnail_content_desc),
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-            val overlay = item.preset?.height?.let { "${it}P" } ?: "MP3"
+            val overlay = when (item.taskType) {
+                TaskType.DOWNLOAD -> item.preset?.height?.let { "${it}P" } ?: "MP3"
+                TaskType.CONVERSION -> item.outputFormat ?: "Convert"
+            }
             Text(
                 overlay,
                 textAlign = TextAlign.Center,
@@ -371,10 +418,16 @@ private fun InProgressRow(
         InProgressThumbnail(item)
         Spacer(Modifier.width(8.dp))
         Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.SpaceBetween) {
-            Text(item.videoInfo?.title ?: item.url, maxLines = 3, overflow = TextOverflow.Ellipsis)
+            Text(item.displayName, maxLines = 3, overflow = TextOverflow.Ellipsis)
             val statusText = when (item.status) {
                 DownloadManager.DownloadItem.Status.Pending -> stringResource(Res.string.status_pending)
-                DownloadManager.DownloadItem.Status.Running -> stringResource(Res.string.status_running)
+                DownloadManager.DownloadItem.Status.Running -> {
+                    if (item.taskType == TaskType.CONVERSION) {
+                        stringResource(Res.string.status_converting)
+                    } else {
+                        stringResource(Res.string.status_running)
+                    }
+                }
                 DownloadManager.DownloadItem.Status.Completed -> stringResource(Res.string.status_completed)
                 DownloadManager.DownloadItem.Status.Failed -> stringResource(Res.string.status_failed)
                 DownloadManager.DownloadItem.Status.Cancelled -> stringResource(Res.string.status_cancelled)

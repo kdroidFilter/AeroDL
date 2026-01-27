@@ -190,8 +190,7 @@ object PlatformUtils {
     /**
      * Select the appropriate FFmpeg asset pattern for the current system.
      * Returns a pattern to match against available assets in the GitHub release.
-     * macOS: exact names for eugeneware/ffmpeg-static repo.
-     * Windows/Linux: patterns for yt-dlp/FFmpeg-Builds repo (version-specific names).
+     * All platforms use kdroidFilter/FFmpeg-Builds repo with tar.xz/zip archives.
      */
     fun getFfmpegAssetPatternForSystem(): String? {
         val os = getOperatingSystem()
@@ -204,17 +203,16 @@ object PlatformUtils {
                 else -> "win64-gpl.zip"
             }
             OperatingSystem.LINUX -> if (isArm64) "linuxarm64-gpl.tar.xz" else "linux64-gpl.tar.xz"
-            OperatingSystem.MACOS -> if (isArm64) "ffmpeg-darwin-arm64" else "ffmpeg-darwin-x64"
+            OperatingSystem.MACOS -> if (isArm64) "macosarm64-gpl.tar.xz" else "macos64-gpl.tar.xz"
             else -> null
         }
     }
 
     /**
      * Download and install FFmpeg in the app cache, verifying it runs.
-     * On macOS the asset is a plain binary; on Windows/Linux, archives are extracted.
-     * Uses GitHubReleaseFetcher to get the direct download URL (same method as yt-dlp).
-     * For macOS, the fetcher should point to eugeneware/ffmpeg-static;
-     * for Windows/Linux, it should point to yt-dlp/FFmpeg-Builds.
+     * All platforms use archives (tar.xz or zip) that are extracted.
+     * Uses GitHubReleaseFetcher to get the direct download URL.
+     * For macOS: kdroidFilter/FFmpeg-Builds; for Windows/Linux: yt-dlp/FFmpeg-Builds.
      */
     suspend fun downloadAndInstallFfmpeg(
         assetPattern: String,
@@ -228,54 +226,40 @@ object PlatformUtils {
         val targetFfprobe = File(binDir, if (getOperatingSystem() == OperatingSystem.WINDOWS) "ffprobe.exe" else "ffprobe")
 
         if (!forceDownload && targetFfmpeg.exists() && ffmpegVersion(targetFfmpeg.absolutePath) != null) {
-            if (getOperatingSystem() == OperatingSystem.MACOS || targetFfprobe.exists()) {
-                // On macOS, eugeneware provides only ffmpeg; allow early return.
-                // On other OSes, early return only if ffprobe is also present.
+            if (targetFfprobe.exists()) {
                 return@withContext targetFfmpeg.absolutePath
             }
-            // Otherwise, continue to (re)install to retrieve ffprobe as well.
+            // Continue to (re)install to retrieve ffprobe as well.
         }
 
         baseDir.mkdirs(); binDir.mkdirs()
 
-        val os = getOperatingSystem()
-
         try {
-            // Use GitHubReleaseFetcher for all platforms (different repos per OS)
             val release = ffmpegFetcher.getLatestRelease() ?: error("Could not fetch FFmpeg release from GitHub")
 
-            // Find asset by pattern (for Windows/Linux with version-specific names) or exact match (for macOS)
-            val asset = if (os == OperatingSystem.MACOS) {
-                release.assets.find { it.name == assetPattern }
-            } else {
-                release.assets.find { it.name.endsWith(assetPattern) && !it.name.contains("shared") }
-            } ?: error("Asset matching pattern '$assetPattern' not found in FFmpeg release. Available assets: ${release.assets.map { it.name }}")
+            val asset = release.assets.find { it.name.endsWith(assetPattern) && !it.name.contains("shared") }
+                ?: error("Asset matching pattern '$assetPattern' not found in FFmpeg release. Available assets: ${release.assets.map { it.name }}")
 
             val url = asset.browser_download_url
             val archive = File(baseDir, asset.name)
 
             downloadFile(url, archive, onProgress)
 
-            if (os == OperatingSystem.MACOS) {
-                // macOS assets from eugeneware are plain ffmpeg binaries (no ffprobe in this repo)
-                archive.copyTo(targetFfmpeg, overwrite = true)
-            } else {
-                if (archive.name.endsWith(".zip")) NetAndArchive.extractZip(archive, baseDir)
-                else if (archive.name.endsWith(".tar.xz")) NetAndArchive.extractTarXzWithSystemTar(archive, baseDir)
-                else error("Unsupported FFmpeg archive: ${archive.name}")
+            // Extract archive
+            if (archive.name.endsWith(".zip")) NetAndArchive.extractZip(archive, baseDir)
+            else if (archive.name.endsWith(".tar.xz")) NetAndArchive.extractTarXzWithSystemTar(archive, baseDir)
+            else error("Unsupported FFmpeg archive: ${archive.name}")
 
-                // Locate ffmpeg and ffprobe within the extracted tree
-                val foundFfmpeg = baseDir.walkTopDown()
-                    .firstOrNull { it.isFile && it.name.matches(Regex("^ffmpeg(\\.exe)?$")) && it.canRead() }
-                    ?: error("FFmpeg binary not found after extraction")
-                foundFfmpeg.copyTo(targetFfmpeg, overwrite = true)
+            // Locate ffmpeg and ffprobe within the extracted tree
+            val foundFfmpeg = baseDir.walkTopDown()
+                .firstOrNull { it.isFile && it.name.matches(Regex("^ffmpeg(\\.exe)?$")) && it.canRead() }
+                ?: error("FFmpeg binary not found after extraction")
+            foundFfmpeg.copyTo(targetFfmpeg, overwrite = true)
 
-                val foundFfprobe = baseDir.walkTopDown()
-                    .firstOrNull { it.isFile && it.name.matches(Regex("^ffprobe(\\.exe)?$")) && it.canRead() }
-                // Some builds (should) include ffprobe; if found, install it alongside ffmpeg
-                if (foundFfprobe != null) {
-                    foundFfprobe.copyTo(targetFfprobe, overwrite = true)
-                }
+            val foundFfprobe = baseDir.walkTopDown()
+                .firstOrNull { it.isFile && it.name.matches(Regex("^ffprobe(\\.exe)?$")) && it.canRead() }
+            if (foundFfprobe != null) {
+                foundFfprobe.copyTo(targetFfprobe, overwrite = true)
             }
 
             if (getOperatingSystem() != OperatingSystem.WINDOWS) {
