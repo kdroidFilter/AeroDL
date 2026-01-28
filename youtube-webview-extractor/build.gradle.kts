@@ -21,7 +21,7 @@ kotlin {
 
         jvmMain.dependencies {
             // WebView - exposed via api so consumers can use WebViewNavigator
-            api("io.github.kdroidfilter:composewebview:1.0.0-alpha-10")
+            api(libs.composewebview)
 
             // Coroutines
             implementation(libs.kotlinx.coroutinesSwing)
