@@ -2,6 +2,7 @@
 
 package io.github.kdroidfilter.ytdlpgui.features.system.settings
 
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.kdroid.composetray.tray.api.TrayAppState
@@ -11,6 +12,7 @@ import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
 import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
 import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.databasesDir
 import io.github.vinceglb.filekit.dialogs.FileKitDialogSettings
 import io.github.vinceglb.filekit.dialogs.openDirectoryPicker
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,8 +22,15 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.File
+import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.binding
+import dev.zacsweers.metrox.viewmodel.ViewModelKey
+import io.github.kdroidfilter.ytdlpgui.di.AppScope
+import io.github.vinceglb.filekit.path
 
+@ContributesIntoMap(AppScope::class, binding = binding<ViewModel>())
+@ViewModelKey(SettingsViewModel::class)
 @Inject
 class SettingsViewModel(
     private val settingsRepository: SettingsRepository,
@@ -46,6 +55,7 @@ class SettingsViewModel(
     val notifyOnComplete: StateFlow<Boolean> = settingsRepository.notifyOnComplete
     val autoLaunchEnabled: StateFlow<Boolean> = settingsRepository.autoLaunchEnabled
     val concurrentFragments: StateFlow<Int> = settingsRepository.concurrentFragments
+    val proxy: StateFlow<String> = settingsRepository.proxy
 
     // Note: This ViewModel uses a combined state from multiple sources, so we override uiState
     override val uiState = combine(
@@ -60,6 +70,7 @@ class SettingsViewModel(
         autoLaunchEnabled,
         notifyOnComplete,
         concurrentFragments,
+        proxy,
     ) { values: Array<Any?> ->
         val loading = values[0] as Boolean
         val noCheck = values[1] as Boolean
@@ -72,6 +83,7 @@ class SettingsViewModel(
         val autoLaunch = values[8] as Boolean
         val notify = values[9] as Boolean
         val concurrent = values[10] as Int
+        val proxyUrl = values[11] as String
         SettingsState(
             isLoading = loading,
             noCheckCertificate = noCheck,
@@ -84,6 +96,7 @@ class SettingsViewModel(
             autoLaunchEnabled = autoLaunch,
             notifyOnComplete = notify,
             concurrentFragments = concurrent,
+            proxy = proxyUrl,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -133,6 +146,9 @@ class SettingsViewModel(
             is SettingsEvents.SetConcurrentFragments -> {
                 settingsRepository.setConcurrentFragments(event.count)
             }
+            is SettingsEvents.SetProxy -> {
+                settingsRepository.setProxy(event.proxyUrl)
+            }
             is SettingsEvents.PickDownloadDir -> {
                 viewModelScope.launch {
                     trayAppState.setDismissMode(TrayWindowDismissMode.MANUAL)
@@ -167,13 +183,16 @@ class SettingsViewModel(
     }
 
     private fun clearBinariesAndTemp() {
-        // Clear java temp directory
-        val tmpDir = System.getProperty("java.io.tmpdir")
+        // Clear only AeroDL's data directory (yt-dlp/FFmpeg binaries)
+        // Do NOT clear the shared java.io.tmpdir as it affects other applications
         try {
-            File(tmpDir).listFiles()?.forEach { file ->
-                try {
-                    if (file.isDirectory) file.deleteRecursively() else file.delete()
-                } catch (_: Exception) { /* ignore */ }
+            val dataDir = File(FileKit.databasesDir.path)
+            if (dataDir.exists()) {
+                dataDir.listFiles()?.forEach { file ->
+                    try {
+                        if (file.isDirectory) file.deleteRecursively() else file.delete()
+                    } catch (_: Exception) { /* ignore */ }
+                }
             }
         } catch (_: Exception) { /* ignore */ }
     }

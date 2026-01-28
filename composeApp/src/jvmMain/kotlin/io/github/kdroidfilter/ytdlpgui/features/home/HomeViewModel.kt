@@ -8,9 +8,16 @@ import java.awt.Toolkit.getDefaultToolkit
 import ytdlpgui.composeapp.generated.resources.*
 import java.awt.datatransfer.DataFlavor
 import java.net.URI
+import androidx.lifecycle.ViewModel
+import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.binding
+import dev.zacsweers.metrox.viewmodel.ViewModelKey
 import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
+import io.github.kdroidfilter.ytdlpgui.di.AppScope
 
+@ContributesIntoMap(AppScope::class, binding = binding<ViewModel>())
+@ViewModelKey(HomeViewModel::class)
 @Inject
 class HomeViewModel(
     private val settingsRepository: SettingsRepository

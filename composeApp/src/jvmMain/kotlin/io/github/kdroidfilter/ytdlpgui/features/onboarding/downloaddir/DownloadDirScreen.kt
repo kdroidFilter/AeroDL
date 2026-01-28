@@ -22,8 +22,9 @@ import io.github.composefluent.component.Button
 import io.github.composefluent.component.Icon
 import io.github.composefluent.component.Text
 import io.github.composefluent.icons.Icons
+import dev.zacsweers.metrox.viewmodel.metroViewModel
 import io.github.composefluent.icons.filled.FolderOpen
-import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
+import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import androidx.navigation.NavHostController
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.HeaderRow
@@ -45,8 +46,9 @@ import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 
 @Composable
 fun DownloadDirScreen(navController: NavHostController) {
-    val appGraph = LocalAppGraph.current
-    val viewModel = remember(appGraph) { appGraph.onboardingViewModel }
+    val viewModel: OnboardingViewModel = metroViewModel(
+        viewModelStoreOwner = LocalWindowViewModelStoreOwner.current
+    )
     val onboardingUiState by viewModel.uiState.collectAsState()
     val downloadDirPath by viewModel.downloadDirPath.collectAsState()
     val state = DownloadDirState(

@@ -6,6 +6,7 @@ import androidx.navigation.toRoute
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlp.model.SubtitleInfo
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
+import io.github.kdroidfilter.ytdlp.core.DownloadSection
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
@@ -19,12 +20,21 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import io.github.kdroidfilter.logging.errorln
 import io.github.kdroidfilter.logging.infoln
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
+import io.github.kdroidfilter.ytdlpgui.di.AppScope
 
-class SingleDownloadViewModel(
-    savedStateHandle: SavedStateHandle,
+class SingleDownloadViewModel @AssistedInject constructor(
+    @Assisted savedStateHandle: SavedStateHandle,
     private val ytDlpWrapper: YtDlpWrapper,
     private val downloadManager: DownloadManager,
 ) : MVIViewModel<SingleDownloadState, SingleDownloadEvents>(savedStateHandle) {
+
+    @AssistedFactory
+    interface Factory {
+        fun create(savedStateHandle: SavedStateHandle): SingleDownloadViewModel
+    }
 
 
     override fun initialState(): SingleDownloadState = SingleDownloadState.loadingState
@@ -63,6 +73,16 @@ class SingleDownloadViewModel(
     private val _removeSponsors = MutableStateFlow(false)
     val removeSponsors = _removeSponsors.asStateFlow()
 
+    // Trim/cut state flows
+    private val _trimStartMs = MutableStateFlow(0L)
+    val trimStartMs = _trimStartMs.asStateFlow()
+
+    private val _trimEndMs = MutableStateFlow(0L)
+    val trimEndMs = _trimEndMs.asStateFlow()
+
+    private val _totalDurationMs = MutableStateFlow(0L)
+    val totalDurationMs = _totalDurationMs.asStateFlow()
+
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage = _errorMessage.asStateFlow()
 
@@ -84,6 +104,9 @@ class SingleDownloadViewModel(
         hasSponsorSegments,
         removeSponsors,
         navigationState,
+        trimStartMs,
+        trimEndMs,
+        totalDurationMs,
     ) { values: Array<Any?> ->
         val loading = values[0] as Boolean
         val error = values[1] as String?
@@ -102,6 +125,9 @@ class SingleDownloadViewModel(
         val sponsorAvail = values[10] as Boolean
         val rmSponsor = values[11] as Boolean
         val navState = values[12] as SingleDownloadNavigationState
+        val trimStart = values[13] as Long
+        val trimEnd = values[14] as Long
+        val totalDuration = values[15] as Long
         SingleDownloadState(
             isLoading = loading,
             errorMessage = error,
@@ -116,6 +142,9 @@ class SingleDownloadViewModel(
             hasSponsorSegments = sponsorAvail,
             removeSponsors = rmSponsor,
             navigationState = navState,
+            trimStartMs = trimStart,
+            trimEndMs = trimEnd,
+            totalDurationMs = totalDuration,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -159,6 +188,15 @@ class SingleDownloadViewModel(
                     // Audio quality presets - all available
                     _availableAudioQualityPresets.value = YtDlpWrapper.AudioQualityPreset.entries
                     _selectedAudioQualityPreset.value = YtDlpWrapper.AudioQualityPreset.HIGH
+
+                    // Initialize trim state from video duration
+                    info.duration?.let { duration ->
+                        val durationMs = duration.toMillis()
+                        _totalDurationMs.value = durationMs
+                        _trimStartMs.value = 0L
+                        _trimEndMs.value = durationMs
+                        infoln { "[SingleDownloadViewModel] Trim initialized: 0 - ${durationMs}ms (${duration.seconds}s)" }
+                    }
 
                     _isLoading.value = false
                 }
@@ -211,9 +249,19 @@ class SingleDownloadViewModel(
                 infoln { "[SingleDownloadViewModel] Remove sponsors set to: ${event.enabled}" }
                 _removeSponsors.value = event.enabled
             }
+            is SingleDownloadEvents.SetTrimRange -> {
+                val totalMs = _totalDurationMs.value
+                val newStart = event.startMs.coerceIn(0L, totalMs)
+                val newEnd = event.endMs.coerceIn(newStart, totalMs)
+                _trimStartMs.value = newStart
+                _trimEndMs.value = newEnd
+                infoln { "[SingleDownloadViewModel] Trim range set: ${newStart}ms - ${newEnd}ms" }
+            }
             SingleDownloadEvents.StartDownload -> {
                 val preset = selectedPreset.value
                 val subtitles = selectedSubtitles.value
+                // Build download section if trimmed (trim is incompatible with split-chapters)
+                val downloadSection = buildDownloadSectionIfTrimmed()
                 if (_splitChapters.value) {
                     if (subtitles.isNotEmpty()) {
                         infoln { "[SingleDownloadViewModel] Starting split-chapters download with subtitles: ${subtitles.joinToString(",")}, preset: ${preset?.height}p" }
@@ -236,29 +284,32 @@ class SingleDownloadViewModel(
                     }
                 } else {
                     if (subtitles.isNotEmpty()) {
-                        infoln { "[SingleDownloadViewModel] Starting download with subtitles: ${subtitles.joinToString(",")}, preset: ${preset?.height}p" }
+                        infoln { "[SingleDownloadViewModel] Starting download with subtitles: ${subtitles.joinToString(",")}, preset: ${preset?.height}p, trimmed: ${downloadSection != null}" }
                         downloadManager.startWithSubtitles(
                             url = videoUrl,
                             videoInfo = videoInfo.value,
                             preset = preset,
                             languages = subtitles,
-                            sponsorBlock = _removeSponsors.value
+                            sponsorBlock = _removeSponsors.value,
+                            downloadSection = downloadSection
                         )
                     } else {
-                        infoln { "[SingleDownloadViewModel] Starting download without subtitles, preset: ${preset?.height}p" }
-                        downloadManager.start(videoUrl, videoInfo.value, preset, sponsorBlock = _removeSponsors.value)
+                        infoln { "[SingleDownloadViewModel] Starting download without subtitles, preset: ${preset?.height}p, trimmed: ${downloadSection != null}" }
+                        downloadManager.start(videoUrl, videoInfo.value, preset, sponsorBlock = _removeSponsors.value, downloadSection = downloadSection)
                     }
                 }
                 _navigationState.value = SingleDownloadNavigationState.NavigateToDownloader
             }
             SingleDownloadEvents.StartAudioDownload -> {
                 val audioQuality = selectedAudioQualityPreset.value
+                // Build download section if trimmed (trim is incompatible with split-chapters)
+                val downloadSection = buildDownloadSectionIfTrimmed()
                 if (_splitChapters.value) {
                     infoln { "[SingleDownloadViewModel] Starting audio split-chapters download with quality: ${audioQuality?.name}" }
                     downloadManager.startAudioSplitChapters(videoUrl, videoInfo.value, audioQuality, sponsorBlock = _removeSponsors.value)
                 } else {
-                    infoln { "[SingleDownloadViewModel] Starting audio download with quality: ${audioQuality?.name}" }
-                    downloadManager.startAudio(videoUrl, videoInfo.value, audioQuality, sponsorBlock = _removeSponsors.value)
+                    infoln { "[SingleDownloadViewModel] Starting audio download with quality: ${audioQuality?.name}, trimmed: ${downloadSection != null}" }
+                    downloadManager.startAudio(videoUrl, videoInfo.value, audioQuality, sponsorBlock = _removeSponsors.value, downloadSection = downloadSection)
                 }
                 _navigationState.value = SingleDownloadNavigationState.NavigateToDownloader
             }
@@ -312,5 +363,26 @@ class SingleDownloadViewModel(
                 _navigationState.value = SingleDownloadNavigationState.None
             }
         }
+    }
+
+    /**
+     * Creates a DownloadSection if the user has trimmed the video/audio.
+     * Returns null if no trimming was done (full duration selected).
+     */
+    private fun buildDownloadSectionIfTrimmed(): DownloadSection? {
+        val totalMs = _totalDurationMs.value
+        if (totalMs <= 0L) return null
+
+        val startMs = _trimStartMs.value
+        val endMs = _trimEndMs.value
+
+        // Check if trimmed (not full duration)
+        val isTrimmed = startMs > 0L || endMs < totalMs
+        if (!isTrimmed) return null
+
+        return DownloadSection(
+            startSeconds = startMs / 1000.0,
+            endSeconds = endMs / 1000.0
+        )
     }
 }

@@ -15,7 +15,17 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import java.io.File
+import java.util.Locale
+import androidx.lifecycle.ViewModel
+import dev.zacsweers.metro.ContributesIntoMap
+import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.binding
+import dev.zacsweers.metrox.viewmodel.ViewModelKey
+import io.github.kdroidfilter.ytdlpgui.di.AppScope
 
+@ContributesIntoMap(AppScope::class, binding = binding<ViewModel>())
+@ViewModelKey(DownloadViewModel::class)
+@Inject
 class DownloadViewModel(
     private val downloadManager: DownloadManager,
     private val historyRepository: DownloadHistoryRepository,
@@ -33,6 +43,10 @@ class DownloadViewModel(
 
     val items: StateFlow<List<DownloadManager.DownloadItem>> = downloadManager.items
     val history: StateFlow<List<DownloadHistoryRepository.HistoryItem>> = historyRepository.history
+
+    // Search query for history filtering
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery = _searchQuery.asStateFlow()
 
     // Availability of output directories by history id (derived from history)
     val directoryAvailability = history.map { list ->
@@ -56,6 +70,8 @@ class DownloadViewModel(
         val history: List<DownloadHistoryRepository.HistoryItem>,
         val dirAvail: Map<String, Boolean>,
         val errorItem: DownloadManager.DownloadItem?,
+        val hasAnyHistory: Boolean,
+        val searchQuery: String,
     )
 
     // Note: This ViewModel uses a combined state from multiple sources, so we override uiState
@@ -66,7 +82,24 @@ class DownloadViewModel(
         directoryAvailability,
         errorDialogItem,
     ) { loading, itemsList, historyList, dirAvail, errorItem ->
-        Base(loading, itemsList, historyList, dirAvail, errorItem)
+        Base(
+            loading = loading,
+            items = itemsList,
+            history = historyList,
+            dirAvail = dirAvail,
+            errorItem = errorItem,
+            hasAnyHistory = historyList.isNotEmpty(),
+            searchQuery = "",
+        )
+    }.combine(searchQuery) { base, query ->
+        val q = query.trim().lowercase(Locale.getDefault())
+        val filteredHistory = if (q.isEmpty()) base.history else base.history.filter { h ->
+            val title = h.videoInfo?.title?.lowercase(Locale.getDefault()) ?: ""
+            val url = h.url.lowercase(Locale.getDefault())
+            val path = h.outputPath?.lowercase(Locale.getDefault()) ?: ""
+            title.contains(q) || url.contains(q) || path.contains(q)
+        }
+        base.copy(history = filteredHistory, searchQuery = query)
     }.combine(initViewModel.uiState) { base, initState ->
         DownloadState(
             isLoading = base.loading,
@@ -74,6 +107,8 @@ class DownloadViewModel(
             history = base.history,
             directoryAvailability = base.dirAvail,
             errorDialogItem = base.errorItem,
+            searchQuery = base.searchQuery,
+            hasAnyHistory = base.hasAnyHistory,
             updateAvailable = initState.updateAvailable && !initState.updateDismissed && initState.latestVersion != null && initState.downloadUrl != null,
             updateVersion = initState.latestVersion,
             updateUrl = initState.downloadUrl,
@@ -116,6 +151,9 @@ class DownloadViewModel(
             }
             DownloadEvents.DismissUpdateInfoBar -> {
                 initViewModel.dismissUpdateInfo()
+            }
+            is DownloadEvents.UpdateSearchQuery -> {
+                _searchQuery.value = event.query
             }
         }
     }

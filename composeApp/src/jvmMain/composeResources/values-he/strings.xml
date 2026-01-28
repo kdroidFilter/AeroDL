@@ -2,7 +2,7 @@
 <resources>
     <!-- Navigation -->
     <string name="home">דף הבית</string>
-    <string name="download">הורדות</string>
+    <string name="tasks">משימות</string>
     <string name="about">אודות</string>
     <string name="settings">הגדרות</string>
 
@@ -95,6 +95,10 @@
     <string name="onboarding_finish_ready_title">קדימה!</string>
     <string name="onboarding_finish_ready_message">הכל מוכן. כעת תוכלו להתחיל להשתמש ב-AeroDL.</string>
     <string name="onboarding_finish_ready_button">התחל</string>
+    
+    <!-- סיום תהליך ההגדרה: טיפול בשגיאות -->
+    <string name="onboarding_finish_retry">נסה להוריד שוב</string>
+    <string name="onboarding_finish_error_hint">אפשר להמשיך; AeroDL תמשיך לנסות ברקע.</string>
     <string name="onboarding_gnome_focus_title">שיפור החוויה ב-GNOME</string>
     <string name="onboarding_gnome_focus_caption">GNOME חוסם מיקוד חלונות כברירת מחדל. אנו ממליצים להתקין את התוסף "Steal My Focus" לחוויה טובה יותר של אפליקציה במגש המערכת.</string>
     <string name="onboarding_gnome_focus_open_extension">פתח דף התוסף</string>
@@ -104,17 +108,21 @@
     <!-- מסך הורדות (היסטוריה ובתהליך) -->
     <string name="download_clear_history">נקה היסטוריה</string>
     <string name="tooltip_clear_history">נקה היסטוריה</string>
+    <string name="download_search_placeholder">חיפוש משימות</string>
     <string name="open_directory">פתח תיקייה</string>
     <string name="tooltip_open_directory">פתח תיקייה</string>
     <string name="delete_element">מחק פריט זה</string>
     <string name="tooltip_delete_element">מחק פריט זה</string>
-    <string name="no_downloads">אין הורדות</string>
+    <string name="no_downloads">אין משימות</string>
     <string name="cancel">בטל</string>
     <string name="status_pending">ממתין</string>
     <string name="status_running">פועל</string>
     <string name="status_completed">הושלם</string>
     <string name="status_failed">נכשל</string>
     <string name="status_cancelled">בוטל</string>
+    <string name="status_converting">ממיר</string>
+    <string name="task_type_download">הורדה</string>
+    <string name="task_type_conversion">המרה</string>
     <!-- הגדרות: הפעלה אוטומטית -->
     <string name="settings_auto_launch_title">הפעל בעת עליית המערכת</string>
     <string name="settings_auto_launch_caption">מומלץ אם אתם משתמשים הרבה ב-AeroDL: הוא יופעל יחד עם המערכת ולא תצטרכו לזכור לפתוח אותו. בשילוב עם ניטור לוח העריכה תוכלו להתחיל הורדות מיד כשאתם מעתיקים קישור.</string>
@@ -128,7 +136,7 @@
     <!-- Single download screen -->
     <string name="download_type_video">וידאו</string>
     <string name="download_type_audio">שמע</string>
-    <string name="single_formats">פורמטים</string>
+    <string name="single_formats">בחרו איכות:</string>
     <string name="single_subtitles">כתוביות</string>
     <string name="single_no_subtitle">ללא כתוביות</string>
     <string name="error_fetch_video_info">אירעה שגיאה בעת שליפת פרטי הווידאו: %1$s</string>
@@ -158,6 +166,11 @@
     <string name="settings_browser_chrome">Chrome</string>
     <string name="settings_browser_firefox">Firefox</string>
     <string name="settings_browser_safari">Safari</string>
+    <string name="settings_browser_edge">Edge</string>
+    <string name="settings_browser_brave">Brave</string>
+    <string name="settings_browser_opera">Opera</string>
+    <string name="settings_browser_vivaldi">Vivaldi</string>
+    <string name="settings_browser_chromium">Chromium</string>
     
     <string name="settings_include_preset_in_filename_title">כלול איכות בשם הקובץ</string>
     <string name="settings_include_preset_in_filename_caption">הוסף את האיכות הנבחרת (למשל 720p) לשם הקובץ המורד</string>
@@ -177,6 +190,10 @@
     <!-- התראת סיום הורדה -->
     <string name="download_completed_title">ההורדה הסתיימה</string>
     <string name="download_completed_message">%1$s הורד</string>
+
+    <!-- התראת סיום המרה -->
+    <string name="conversion_completed_title">ההמרה הסתיימה</string>
+    <string name="conversion_completed_message">%1$s הומר</string>
 
     <!-- התראות ניטור לוח העריכה -->
     <string name="clipboard_link_detected_title">זוהה קישור</string>
@@ -223,12 +240,38 @@
     <string name="settings_concurrent_fragments_title">חוטי הורדת פיצולים</string>
     <string name="settings_concurrent_fragments_caption">מפצל את הקובץ ומוריד כל חלק בו-זמנית, מאיץ מאוד את ההורדות. לא מומלץ: עלול להוביל לחסימת חשבון</string>
 
+    <!-- הגדרות: פרוקסי -->
+    <string name="settings_proxy_title">פרוקסי</string>
+    <string name="settings_proxy_caption">נתב הורדות דרך שרת פרוקסי. תומך ב-HTTP, HTTPS ו-SOCKS5.</string>
+    <string name="settings_proxy_placeholder">http://127.0.0.1:8080</string>
+    <string name="settings_proxy_not_set">לא הוגדר פרוקסי</string>
+
     <!-- מגש מערכת: הורדה פעילה -->
     <string name="tray_downloading_suffix"> - בהורדה…</string>
 
     <!-- מסך הורדה בודדת: טקסטים ידידותיים -->
     <string name="single_sponsorblock_caption">זיהינו קטעים ממומנים בסרטון הזה. הפעלת האפשרות תסיר אותם אוטומטית מההורדה – ברוב המקרים מדובר בפרסומות שאינן קשורות ישירות לתוכן המרכזי.</string>
-    <string name="single_split_chapters_caption">זיהינו שהסרטון מחולק לפרקים. הפעלת האפשרות תשמור קובץ נפרד לכל פרק – שימושי במיוחד בסטים או מיקסים ארוכים כדי לקבל קובץ אחד לכל שיר.</string>
+    <string name="single_split_chapters_caption">זיהינו שהסרטון מחולק לפרקים. הפעלת האפשרות תשמור קובץ נפרד לכל פרק – שימושי במיוחד במחרוזות או מיקסים ארוכים כדי לקבל קובץ אחד לכל שיר.</string>
 
+    <!-- מסך ממיר -->
+    <string name="converter">ממיר</string>
+    <string name="converter_title">המרת קבצי מדיה</string>
+    <string name="converter_subtitle">המר סרטונים ל-MP4 או חלץ אודיו ל-MP3</string>
+    <string name="converter_drop_zone">גרור קובץ לכאן</string>
+    <string name="converter_or">או</string>
+    <string name="converter_select_file">עיון</string>
+    <string name="converter_supported_formats">פורמטים נתמכים: MP4, MKV, AVI, MOV, WebM, MP3, WAV, FLAC…</string>
+    <string name="converter_analyzing">מנתח קובץ…</string>
+    <string name="converter_output_format">פורמט פלט</string>
+    <string name="converter_video">וידאו (MP4)</string>
+    <string name="converter_audio">שמע (MP3)</string>
+    <string name="converter_video_quality">איכות וידאו</string>
+    <string name="converter_audio_quality">איכות שמע</string>
+    <string name="converter_start">המר</string>
+    <string name="converter_converting">ממיר…</string>
+    <string name="converter_success">ההמרה הושלמה!</string>
+    <string name="converter_open_folder">פתח תיקייה</string>
+    <string name="converter_error">ההמרה נכשלה: %1$s</string>
+    <string name="converter_reset">המר קובץ אחר</string>
 
 </resources>

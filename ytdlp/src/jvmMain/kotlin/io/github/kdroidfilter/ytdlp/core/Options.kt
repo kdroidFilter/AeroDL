@@ -3,6 +3,34 @@ package io.github.kdroidfilter.ytdlp.core
 import java.time.Duration
 
 /**
+ * Defines a time range to download from a video.
+ * Uses yt-dlp's --download-sections format.
+ *
+ * @property startSeconds The start time in seconds
+ * @property endSeconds The end time in seconds
+ */
+data class DownloadSection(
+    val startSeconds: Double,
+    val endSeconds: Double
+) {
+    /**
+     * Formats the section for yt-dlp's --download-sections argument.
+     * Format: "*START-END" where times are in HH:MM:SS format.
+     */
+    fun toYtDlpFormat(): String {
+        return "*${formatTime(startSeconds)}-${formatTime(endSeconds)}"
+    }
+
+    private fun formatTime(seconds: Double): String {
+        val totalSec = seconds.toLong()
+        val h = totalSec / 3600
+        val m = (totalSec % 3600) / 60
+        val s = totalSec % 60
+        return if (h > 0) "%d:%02d:%02d".format(h, m, s) else "%d:%02d".format(m, s)
+    }
+}
+
+/**
  * Configuration for subtitle downloading
  */
 data class SubtitleOptions(
@@ -29,6 +57,9 @@ data class SubtitleOptions(
  * @property subtitles Subtitle download configuration. Null to skip subtitle downloading.
  * @property sponsorBlockRemove If true, removes SponsorBlock segments (default categories).
  * @property concurrentFragments Number of threads for downloading m3u8/mpd fragments in parallel (1-5). 1 = disabled.
+ * @property proxy Proxy URL to use for the download (e.g., "http://127.0.0.1:8080", "socks5://127.0.0.1:1080"). Null to disable.
+ * @property downloadSection Time range to download (trim/cut). Null to download the entire video.
+ * @property useHardwareAcceleration If true, uses hardware acceleration for re-encoding when available.
  */
 data class Options(
     val format: String? = null,
@@ -39,7 +70,10 @@ data class Options(
     val timeout: Duration? = Duration.ofMinutes(30),
     val targetContainer: String? = null,
     val allowRecode: Boolean = false,
-    val subtitles: SubtitleOptions? = null,  // NEW: Subtitle configuration
-    val sponsorBlockRemove: Boolean = false,  // NEW: SponsorBlock segment removal
-    val concurrentFragments: Int = 1  // NEW: Multi-threaded fragment downloads
+    val subtitles: SubtitleOptions? = null,
+    val sponsorBlockRemove: Boolean = false,
+    val concurrentFragments: Int = 1,
+    val proxy: String? = null,
+    val downloadSection: DownloadSection? = null,
+    val useHardwareAcceleration: Boolean = true
 )

@@ -10,6 +10,8 @@ sealed class SingleDownloadEvents {
     data object ClearSubtitles : SingleDownloadEvents()
     data class SetSplitChapters(val enabled: Boolean) : SingleDownloadEvents()
     data class SetRemoveSponsors(val enabled: Boolean) : SingleDownloadEvents()
+    /** Sets the trim range for the download (in milliseconds) */
+    data class SetTrimRange(val startMs: Long, val endMs: Long) : SingleDownloadEvents()
     data object StartDownload : SingleDownloadEvents()
     data object StartAudioDownload : SingleDownloadEvents()
     data object StartSplitChaptersDownload : SingleDownloadEvents()

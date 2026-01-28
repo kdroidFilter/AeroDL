@@ -90,10 +90,17 @@ class YtDlpWrapper {
      */
     var concurrentFragments: Int = 1
 
+    /**
+     * If set, adds '--proxy <url>' to yt-dlp commands.
+     * Supports HTTP, HTTPS, and SOCKS proxies. Example: "http://127.0.0.1:8080" or "socks5://127.0.0.1:1080".
+     * This can be overridden per call via Options.proxy.
+     */
+    var proxy: String? = null
+
     private val httpClient = KtorConfig.createHttpClient()
     private val ytdlpFetcher = GitHubReleaseFetcher(owner = "yt-dlp", repo = "yt-dlp", httpClient = httpClient)
     private val ffmpegFetcher = GitHubReleaseFetcher(owner = "yt-dlp", repo = "FFmpeg-Builds", httpClient = httpClient)
-    private val ffmpegMacOsFetcher = GitHubReleaseFetcher(owner = "eugeneware", repo = "ffmpeg-static", httpClient = httpClient)
+    private val ffmpegMacOsFetcher = GitHubReleaseFetcher(owner = "kdroidFilter", repo = "FFmpeg-Builds", httpClient = httpClient)
 
     private data class ProcessResult(val exitCode: Int, val stdout: List<String>, val stderr: String)
 
@@ -283,7 +290,8 @@ class YtDlpWrapper {
 
             val finalOptions = options.copy(
                 noCheckCertificate = if (options.noCheckCertificate) true else this@YtDlpWrapper.noCheckCertificate,
-                cookiesFromBrowser = options.cookiesFromBrowser ?: this@YtDlpWrapper.cookiesFromBrowser
+                cookiesFromBrowser = options.cookiesFromBrowser ?: this@YtDlpWrapper.cookiesFromBrowser,
+                proxy = options.proxy ?: this@YtDlpWrapper.proxy
             )
 
             options.subtitles?.let { subOpts ->
@@ -418,6 +426,7 @@ class YtDlpWrapper {
             addAll(listOf("-f", formatSelector, "-g", "--no-playlist", "--newline"))
             if (useNoCheckCert) add("--no-check-certificate")
             cookiesFromBrowser?.takeIf { it.isNotBlank() }?.let { addAll(listOf("--cookies-from-browser", it)) }
+            proxy?.takeIf { it.isNotBlank() }?.let { addAll(listOf("--proxy", it)) }
             add(url)
         }
 
@@ -722,6 +731,7 @@ class YtDlpWrapper {
     ): Handle {
         val useNoCheckCert = noCheckCertificate || this.noCheckCertificate
         val useCookies = this.cookiesFromBrowser
+        val useProxy = this.proxy
         val opts = Options(
             format = NetAndArchive.selectorDownloadExact(height, preferredExts),
             outputTemplate = outputTemplate,
@@ -729,7 +739,8 @@ class YtDlpWrapper {
             cookiesFromBrowser = useCookies,
             extraArgs = extraArgs,
             timeout = timeout,
-            subtitles = subtitles
+            subtitles = subtitles,
+            proxy = useProxy
         )
         return download(url, opts, onEvent)
     }
@@ -747,6 +758,7 @@ class YtDlpWrapper {
     ): Handle {
         val useNoCheckCert = noCheckCertificate || this.noCheckCertificate
         val useCookies = this.cookiesFromBrowser
+        val useProxy = this.proxy
         val opts = Options(
             format = NetAndArchive.selectorDownloadExactMp4(height),
             outputTemplate = outputTemplate,
@@ -758,7 +770,8 @@ class YtDlpWrapper {
             allowRecode = recodeIfNeeded,
             subtitles = subtitles,
             sponsorBlockRemove = this.sponsorBlockRemove,
-            concurrentFragments = this.concurrentFragments
+            concurrentFragments = this.concurrentFragments,
+            proxy = useProxy
         )
         return download(url, opts, onEvent)
     }
@@ -774,12 +787,14 @@ class YtDlpWrapper {
     ): Handle {
         val useNoCheckCert = noCheckCertificate || this.noCheckCertificate
         val useCookies = this.cookiesFromBrowser
+        val useProxy = this.proxy
         val options = Options(
             outputTemplate = outputTemplate,
             noCheckCertificate = useNoCheckCert,
             cookiesFromBrowser = useCookies,
             extraArgs = audioArgs + extraArgs,
-            timeout = timeout
+            timeout = timeout,
+            proxy = useProxy
         )
         return download(url, options, onEvent)
     }
@@ -831,6 +846,7 @@ class YtDlpWrapper {
             addAll(listOf("--socket-timeout", "5"))
             if (useNoCheckCert) add("--no-check-certificate")
             cookiesFromBrowser?.takeIf { it.isNotBlank() }?.let { addAll(listOf("--cookies-from-browser", it)) }
+            proxy?.takeIf { it.isNotBlank() }?.let { addAll(listOf("--proxy", it)) }
             addAll(extraArgs); add(url)
         }
 
@@ -906,6 +922,7 @@ class YtDlpWrapper {
     ): Handle {
         val useNoCheckCert = noCheckCertificate || this.noCheckCertificate
         val useCookies = this.cookiesFromBrowser
+        val useProxy = this.proxy
 
         val subtitleOptions = if (languages == null) {
             SubtitleOptions(
@@ -931,7 +948,8 @@ class YtDlpWrapper {
             cookiesFromBrowser = useCookies,
             subtitles = subtitleOptions,
             extraArgs = extraArgs,
-            outputTemplate = "%(title)s.%(ext)s"
+            outputTemplate = "%(title)s.%(ext)s",
+            proxy = useProxy
         )
 
         val originalDir = downloadDir

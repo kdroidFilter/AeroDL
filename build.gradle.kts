@@ -6,5 +6,5 @@ plugins {
     alias(libs.plugins.composeCompiler) apply false
     alias(libs.plugins.kotlinMultiplatform) apply false
     alias(libs.plugins.sqlDelight).apply(false)
-    alias(libs.plugins.hydraulicConveyor).apply(false)
+    alias(libs.plugins.caupain)
 }

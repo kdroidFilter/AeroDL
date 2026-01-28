@@ -74,5 +74,17 @@ sealed interface Destination {
         data class Bulk(val url: String) : Download
     }
 
+    // Converter screen for local file conversion
+    @Serializable
+    sealed interface Converter : Destination {
+        @Serializable
+        data object Graph : Converter
+
+        @Serializable
+        data object Input : Converter
+
+        @Serializable
+        data class Options(val filePath: String) : Converter
+    }
 
 }

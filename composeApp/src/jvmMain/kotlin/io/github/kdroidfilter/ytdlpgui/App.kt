@@ -41,6 +41,8 @@ import io.github.kdroidfilter.ytdlpgui.features.onboarding.finish.FinishScreen
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.gnomefocus.GnomeFocusScreen
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.nocheckcert.NoCheckCertScreen
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.welcome.WelcomeScreen
+import io.github.kdroidfilter.ytdlpgui.features.converter.ConverterInputScreen
+import io.github.kdroidfilter.ytdlpgui.features.converter.ConverterOptionsScreen
 import io.github.kdroidfilter.ytdlpgui.features.system.about.AboutScreen
 import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsScreen
 
@@ -77,6 +79,11 @@ fun App() {
                 it.hasRoute(Destination.Download.Single::class) ||
                 it.hasRoute(Destination.Download.Bulk::class)
     } == true
+    val isConverter = currentDestination?.hierarchy?.any {
+        it.hasRoute(Destination.Converter.Graph::class) ||
+                it.hasRoute(Destination.Converter.Input::class) ||
+                it.hasRoute(Destination.Converter.Options::class)
+    } == true
     val isInitScreen = currentDestination?.hasRoute(Destination.InitScreen::class) == true
 
     Column(
@@ -87,7 +94,7 @@ fun App() {
     ) {
 
         if (isMainNavigation) MainNavigationHeader(navController)
-        if (isSecondaryNavigation || isDownload) SecondaryNavigationHeader(navController)
+        if (isSecondaryNavigation || isDownload || isConverter) SecondaryNavigationHeader(navController)
 
         NavHost(
             navController = navController,
@@ -136,6 +143,11 @@ fun App() {
             navigation<Destination.Download.Graph>(startDestination = Destination.Download.Single("")) {
                 noAnimatedComposable<Destination.Download.Single> { backStackEntry -> SingleDownloadScreen(navController, backStackEntry) }
                 noAnimatedComposable<Destination.Download.Bulk> { BulkDownloadScreen() }
+            }
+
+            navigation<Destination.Converter.Graph>(startDestination = Destination.Converter.Input) {
+                noAnimatedComposable<Destination.Converter.Input> { ConverterInputScreen(navController) }
+                noAnimatedComposable<Destination.Converter.Options> { backStackEntry -> ConverterOptionsScreen(navController, backStackEntry) }
             }
         }
 

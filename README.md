@@ -1,41 +1,130 @@
-# 🚀 AeroDL: The Ultimate GUI for yt-dlp 🚀
+# 🚀 **AeroDL**
 
-**The most elegant and intuitive way to download videos.**
+### The Modern YTDLP GUI for Windows, macOS & Linux
 
-AeroDL is a modern and fluent graphical user interface for the powerful yt-dlp command-line tool. It is designed to be simple, user-friendly, and always available when you need it, without being intrusive.
+> **AeroDL** is a sleek, cross-platform YTDLP frontend built with **Compose Multiplatform**.
+> It combines the power of `yt-dlp` with a beautiful, native-feeling interface for fast and reliable video & audio downloads.
 
-![AeroDL Screenshot](/Art/SC01.png)
+---
 
-## ✨ Features
+## 🏠 **Home**
 
-*   🎨 **Modern and Fluent Interface:** AeroDL is built with the latest technologies to provide a beautiful and intuitive user experience. The interface is clean, simple, and easy to use.
-*   tray **Always Available:** AeroDL lives in your system tray, always ready to download videos without getting in your way. You can quickly access it with a single click.
-*   📋 **Simple Copy-Paste:** No need for browser extensions. Just copy a video URL to your clipboard, and AeroDL will automatically detect it and prepare the download. It's that simple!
-*   💪 **Powerful and Flexible:** Based on the powerful yt-dlp, AeroDL supports downloading from hundreds of websites. You can choose from various formats and qualities to get the perfect download.
-*   🖥️ **Cross-Platform:** AeroDL is available for Windows, macOS, and Linux. Use it on all your devices!
-*   🎞️ **Multiple Downloads:** Download multiple videos at once, or even a whole playlist (not yet available).
-*   字幕 **Subtitles:** Download subtitles for your videos in any language.
-*   ⚙️ **Advanced Options:** For advanced users, AeroDL provides access to many of yt-dlp's options to customize your downloads.
+AeroDL welcomes you with a clean and minimal home screen.
+Simply paste or detect a YouTube link — AeroDL automatically recognizes it and prepares everything for download.
 
-## 📦 Installation
+<p align="center"><img src="/art/home.png" alt="Home Screenshot"/></p>
 
-1.  Go to the [Releases](https://github.com/kdroidFilter/ytdlpgui/releases) page.
-2.  Download the latest version for your operating system.
-3.  Install the application.
+---
 
-## 🚀 How to use
+## 🔔 **Smart Link Detection**
 
-1.  Launch AeroDL. It will appear in your system tray.
-2.  Copy a video URL from your browser.
-3.  AeroDL will automatically detect the URL and show a notification.
-4.  Click on the notification to open the download screen.
-5.  Choose your preferred quality and options, and start the download.
-6.  Enjoy your video!
+Instant notifications appear when a supported link is detected — open it directly in AeroDL or ignore.
 
-## 🤝 Contributing
+<p align="center"><img src="/art/notification.png" alt="Notification Screenshot"/></p>
 
-Contributions are welcome! If you have any ideas, suggestions, or bug reports, please open an issue or submit a pull request.
+---
 
-## 📄 License
+## 🎬 **Video Info View**
 
-This project is licensed under the GPL-3.0 License - see the [LICENSE](LICENSE) file for details.
+Preview thumbnails, read descriptions, and choose between video or audio modes before confirming your download.
+
+<p align="center"><img src="/art/single-download.png" alt="Single Download Screenshot"/></p>
+
+---
+
+## 📥 **Download Manager**
+
+Track all your downloads in real time — progress bars, speeds, sizes, and completion notifications.
+
+<p align="center"><img src="art/download-manager.png" alt="Download Manager Screenshot"/></p>
+
+---
+
+## ⚙️ **Settings Panel**
+
+Easily customize AeroDL to your workflow:
+choose your browser cookies, naming presets, threads, parallel downloads, and thumbnail embedding.
+
+<p align="center"><img src="/art/settings.png" alt="Settings Screenshot"/></p>
+
+---
+
+## 🪄 **Key Features**
+
+* 🎯 **Smart link detection** — detects YouTube links from clipboard or browser.
+* 🎵 **Audio & Video modes** — download MP3s or full HD/4K videos with tags.
+* ⚙️ **Highly configurable** — presets, naming, threads, parallel jobs.
+* 🍪 **Browser cookies integration** — import from Firefox, Chrome, etc.
+* 🖥️ **Cross-platform** — works on **Windows**, **macOS**, and **Linux (KDE/GNOME)**.
+* 💡 **Modern interface** — animated transitions, fluent design, dark mode.
+* 🧩 **Powered by ComposeNativeTray** — lightweight native tray integration.
+
+---
+
+## 🧠 **How It Works**
+
+1. **Paste or detect a link** — AeroDL automatically catches YouTube URLs.
+2. **Fetch metadata** — title, duration, formats, and thumbnail.
+3. **Select quality & mode** — video or audio, preset or manual.
+4. **Download instantly** — see speed and progress in real time.
+5. **Enjoy** — open the downloaded file or folder directly from the tray.
+
+---
+
+## ⚙️ **Technical Stack**
+
+* **Kotlin Multiplatform (JVM)**
+* **JetBrains Compose Desktop**
+* **Yt-DLP** — backend engine
+* **FFmpeg** — conversion and tagging
+* **ComposeNativeTray** — native tray integration
+* **Ktor** — secure networking
+* **Fluent Material UI** — clean, responsive interface
+
+---
+
+## 🧩 **Platform Support**
+
+| Platform             | Status   | Notes                                      |
+| -------------------- | -------- | ------------------------------------------ |
+| 🪟 Windows 10+       | ✅ Stable | MSI installer via GitHub Releases          |
+| 🍎 macOS 13+         | ✅ Stable | PKG installer via GitHub Releases          |
+| 🐧 Linux (GNOME/KDE) | ✅ Stable | DEB package via GitHub Releases            |
+
+---
+
+## 📦 **Installation**
+
+Official distribution: GitHub Releases
+
+Get the latest version from the Releases page:
+- https://github.com/kdroidFilter/AeroDL/releases/latest
+
+* Windows → MSI installer
+* macOS → PKG installer
+* Linux → DEB package
+
+For testing or development:
+
+```bash
+git clone https://github.com/kdroidFilter/AeroDL
+cd AeroDL
+./gradlew run
+```
+
+---
+
+## ❤️ **Support & Feedback**
+
+AeroDL is open source and constantly evolving.
+If you like it:
+
+* ⭐ **Star** the project on [GitHub](https://github.com/kdroidFilter/AeroDL)
+* 🐛 **Report bugs or suggest features** via [Issues](https://github.com/kdroidFilter/AeroDL/issues)
+* 💬 **Share screenshots & feedback** to help improve it!
+
+---
+
+## 📄 **License**
+
+This project is licensed under the **GPL-3.0 License** — see the LICENSE file for details.

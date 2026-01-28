@@ -28,6 +28,7 @@ import coil3.request.ImageRequest
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.Button
+import io.github.composefluent.component.TextField
 import io.github.composefluent.component.Badge
 import io.github.composefluent.component.BadgeDefaults
 import io.github.composefluent.component.BadgeStatus
@@ -42,10 +43,13 @@ import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.*
 import io.github.kdroidfilter.ytdlp.util.YouTubeThumbnailHelper
 import io.github.kdroidfilter.ytdlpgui.core.design.components.UpdateInfoBar
+import io.github.kdroidfilter.ytdlpgui.core.design.components.TerminalView
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
+import io.github.kdroidfilter.ytdlpgui.core.domain.manager.TaskType
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository.HistoryItem
+import dev.zacsweers.metrox.viewmodel.metroViewModel
 import io.github.kdroidfilter.ytdlpgui.core.design.components.UpdateInfoBar
-import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
+import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import ytdlpgui.composeapp.generated.resources.*
@@ -57,8 +61,9 @@ import java.util.Locale
 
 @Composable
 fun DownloaderScreen() {
-    val appGraph = LocalAppGraph.current
-        val viewModel = remember(appGraph) { appGraph.downloadViewModel }
+    val viewModel: DownloadViewModel = metroViewModel(
+        viewModelStoreOwner = LocalWindowViewModelStoreOwner.current
+    )
     val state by viewModel.uiState.collectAsState()
     DownloadView(
         state = state,
@@ -66,7 +71,6 @@ fun DownloaderScreen() {
     )
 }
 
- 
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalFluentApi::class)
 @Composable
@@ -102,52 +106,71 @@ fun DownloadView(
                 modifier = Modifier.fillMaxSize()
             ) {
                 item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    if (state.history.isNotEmpty()) {
-                        TooltipBox(tooltip = {
-                            Text(stringResource(Res.string.tooltip_clear_history))
-                        }) {
-                            Button(
-                                onClick = { onEvent(DownloadEvents.ClearHistory) },
-                                modifier = Modifier.padding(bottom = 8.dp)
-                            ) {
-                                Text(
-                                    stringResource(Res.string.download_clear_history),
-                                    style = FluentTheme.typography.bodyStrong
-                                )
-                                Icon(Icons.Default.Delete, stringResource(Res.string.download_clear_history))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (state.hasAnyHistory) {
+                            TextField(
+                                value = state.searchQuery,
+                                onValueChange = { onEvent(DownloadEvents.UpdateSearchQuery(it)) },
+                                placeholder = {
+                                    Text(
+                                        stringResource(Res.string.download_search_placeholder),
+                                        maxLines = 1
+                                    )
+                                },
+                                singleLine = true,
+                                modifier = Modifier.weight(1f).padding(bottom = 8.dp),
+                                trailing = {
+                                    Icon(
+                                        imageVector = Icons.Regular.Search,
+                                        contentDescription = "Search"
+                                    )
+                                }
+                            )
+
+                            TooltipBox(tooltip = {
+                                Text(stringResource(Res.string.tooltip_clear_history))
+                            }) {
+                                Button(
+                                    onClick = { onEvent(DownloadEvents.ClearHistory) },
+                                    modifier = Modifier.padding(bottom = 8.dp)
+                                ) {
+                                    Text(
+                                        stringResource(Res.string.download_clear_history),
+                                        style = FluentTheme.typography.bodyStrong
+                                    )
+                                    Icon(Icons.Default.Delete, stringResource(Res.string.download_clear_history))
+                                }
                             }
                         }
                     }
+                    Spacer(Modifier.height(8.dp))
                 }
-                Spacer(Modifier.height(8.dp))
-            }
 
                 // Section: In-progress and failed downloads
-            val activeItems =
-                state.items.filter {
-                    it.status == DownloadManager.DownloadItem.Status.Running ||
-                            it.status == DownloadManager.DownloadItem.Status.Pending ||
-                            it.status == DownloadManager.DownloadItem.Status.Failed
-                }
+                val activeItems =
+                    state.items.filter {
+                        it.status == DownloadManager.DownloadItem.Status.Running ||
+                                it.status == DownloadManager.DownloadItem.Status.Pending ||
+                                it.status == DownloadManager.DownloadItem.Status.Failed
+                    }
 
-            items(items = activeItems, key = { it.id }) { item ->
-                InProgressRow(
-                    item = item,
-                    onCancel = { id -> onEvent(DownloadEvents.Cancel(id)) },
-                    onShowError = { id -> onEvent(DownloadEvents.ShowErrorDialog(id)) },
-                    onDismissFailed = { id -> onEvent(DownloadEvents.DismissFailed(id)) }
-                )
-                Divider(
-                    color = FluentTheme.colors.control.secondary,
-                    thickness = 1.dp,
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
-                )
-            }
+                items(items = activeItems, key = { it.id }) { item ->
+                    InProgressRow(
+                        item = item,
+                        onCancel = { id -> onEvent(DownloadEvents.Cancel(id)) },
+                        onShowError = { id -> onEvent(DownloadEvents.ShowErrorDialog(id)) },
+                        onDismissFailed = { id -> onEvent(DownloadEvents.DismissFailed(id)) }
+                    )
+                    Divider(
+                        color = FluentTheme.colors.control.secondary,
+                        thickness = 1.dp,
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+                    )
+                }
 
                 // Section: History
 
@@ -158,39 +181,42 @@ fun DownloadView(
                 }
 
                 items(items = state.history, key = { it.id }) { h ->
-                HistoryRow(h = h, actions = {
-                    val dirAvailable = state.directoryAvailability[h.id] == true
-                    if (dirAvailable) {
-                        TooltipBox(tooltip = { Text(stringResource(Res.string.tooltip_open_directory)) }) {
-                            Button(iconOnly = true, onClick = { onEvent(DownloadEvents.OpenDirectory(h.id)) }) {
-                                Icon(Icons.Default.Folder, stringResource(Res.string.open_directory))
+                    HistoryRow(h = h, actions = {
+                        val dirAvailable = state.directoryAvailability[h.id] == true
+                        if (dirAvailable) {
+                            TooltipBox(tooltip = { Text(stringResource(Res.string.tooltip_open_directory)) }) {
+                                Button(iconOnly = true, onClick = { onEvent(DownloadEvents.OpenDirectory(h.id)) }) {
+                                    Icon(Icons.Default.Folder, stringResource(Res.string.open_directory))
+                                }
+                            }
+                        } else {
+                            TooltipBox(tooltip = { Text(stringResource(Res.string.tooltip_directory_unavailable)) }) {
+                                // Disabled/placeholder action when directory no longer exists
+                                Button(
+                                    iconOnly = true,
+                                    disabled = true,
+                                    onClick = { /* no-op: directory unavailable */ }) {
+                                    Icon(
+                                        Icons.Default.FolderProhibited,
+                                        stringResource(Res.string.directory_unavailable),
+                                        tint = FluentTheme.colors.system.critical
+                                    )
+                                }
                             }
                         }
-                    } else {
-                        TooltipBox(tooltip = { Text(stringResource(Res.string.tooltip_directory_unavailable)) }) {
-                            // Disabled/placeholder action when directory no longer exists
-                            Button(iconOnly = true, disabled = true, onClick = { /* no-op: directory unavailable */ }) {
-                                Icon(
-                                    Icons.Default.FolderProhibited,
-                                    stringResource(Res.string.directory_unavailable),
-                                    tint = FluentTheme.colors.system.critical
-                                )
-                            }
-                        }
-                    }
 
-                    TooltipBox(tooltip = { Text(stringResource(Res.string.tooltip_delete_element)) }) {
-                        Button(iconOnly = true, onClick = { onEvent(DownloadEvents.DeleteHistory(h.id)) }) {
-                            Icon(Icons.Default.Delete, stringResource(Res.string.delete_element))
+                        TooltipBox(tooltip = { Text(stringResource(Res.string.tooltip_delete_element)) }) {
+                            Button(iconOnly = true, onClick = { onEvent(DownloadEvents.DeleteHistory(h.id)) }) {
+                                Icon(Icons.Default.Delete, stringResource(Res.string.delete_element))
+                            }
                         }
-                    }
-                })
-                Divider(
-                    color = FluentTheme.colors.control.secondary,
-                    thickness = 1.dp,
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
-                )
-            }
+                    })
+                    Divider(
+                        color = FluentTheme.colors.control.secondary,
+                        thickness = 1.dp,
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+                    )
+                }
             }
         }
 
@@ -221,87 +247,7 @@ private fun ErrorDialog(
     )
 }
 
-@OptIn(ExperimentalFluentApi::class)
-@Composable
-private fun TerminalView(text: String) {
-    @Suppress("DEPRECATION")
-    val clipboardManager = LocalClipboardManager.current
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = 150.dp, max = 300.dp)
-            .background(
-                Color(0xFF1E1E1E), // Dark terminal background
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
-            )
-            .border(
-                width = 1.dp,
-                color = Color(0xFF3E3E3E),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
-            )
-    ) {
-        Column(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            // Terminal header
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFF2D2D2D))
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    "Error Output",
-                    style = FluentTheme.typography.caption,
-                    color = Color(0xFFB0B0B0),
-                    fontSize = 11.sp
-                )
-
-                // Copy button
-                @OptIn(ExperimentalFoundationApi::class)
-                TooltipBox(tooltip = { Text(stringResource(Res.string.copy_error)) }) {
-                    SubtleButton(
-                        iconOnly = true,
-                        onClick = {
-                            clipboardManager.setText(buildAnnotatedString { append(text) })
-                        },
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.Copy,
-                            stringResource(Res.string.copy_error),
-                            tint = Color(0xFFB0B0B0),
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
-            }
-
-            // Terminal content
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-                    .padding(12.dp)
-            ) {
-                Text(
-                    text,
-                    style = FluentTheme.typography.caption.copy(
-                        fontFamily = FontFamily.Monospace,
-                        lineHeight = 18.sp
-                    ),
-                    color = Color(0xFFD4D4D4), // Terminal text color
-                    fontSize = 12.sp,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        }
-    }
-}
+// TerminalView moved to core.design.components.TerminalView for reuse
 
 @Composable
 private fun NoDownloads() {
@@ -321,24 +267,51 @@ private fun HistoryThumbnail(h: HistoryItem) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomStart) {
-            val thumbUrl = h.videoInfo?.let {
-                YouTubeThumbnailHelper.getThumbnailUrl(
-                    it.id,
-                    YouTubeThumbnailHelper.ThumbnailQuality.MEDIUM
+            // Check if this is a conversion (no videoInfo means it's a local file conversion)
+            val isConversion = h.videoInfo == null
+
+            if (isConversion) {
+                // Show generic icon for conversions
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(FluentTheme.colors.background.layer.default),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = if (h.isAudio) Icons.Regular.MusicNote1 else Icons.Regular.Video,
+                        contentDescription = stringResource(Res.string.task_type_conversion),
+                        modifier = Modifier.size(36.dp),
+                        tint = FluentTheme.colors.text.text.secondary
+                    )
+                }
+            } else {
+                // Show YouTube thumbnail for downloads
+                val thumbUrl = h.videoInfo?.let {
+                    YouTubeThumbnailHelper.getThumbnailUrl(
+                        it.id,
+                        YouTubeThumbnailHelper.ThumbnailQuality.MEDIUM
+                    )
+                }
+                AsyncImage(
+                    model = ImageRequest.Builder(coil3.PlatformContext.INSTANCE)
+                        .data(thumbUrl)
+                        // The row height is 72.dp and thumbnail column width is 88.dp
+                        // Provide a fixed request size to avoid decoding oversized bitmaps.
+                        .size(88, 72)
+                        .build(),
+                    contentDescription = stringResource(Res.string.thumbnail_content_desc),
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
                 )
             }
-            AsyncImage(
-                model = ImageRequest.Builder(coil3.PlatformContext.INSTANCE)
-                    .data(thumbUrl)
-                    // The row height is 72.dp and thumbnail column width is 88.dp
-                    // Provide a fixed request size to avoid decoding oversized bitmaps.
-                    .size(88, 72)
-                    .build(),
-                contentDescription = stringResource(Res.string.thumbnail_content_desc),
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-            val overlay = if (h.isSplit) "Split" else if (h.isAudio) "MP3" else h.presetHeight?.let { "${it}P" } ?: ""
+
+            val overlay = when {
+                h.isSplit -> "Split"
+                h.isAudio -> "MP3"
+                isConversion -> "MP4"
+                else -> h.presetHeight?.let { "${it}P" } ?: ""
+            }
             Text(
                 overlay,
                 textAlign = TextAlign.Center,
@@ -383,22 +356,46 @@ private fun InProgressThumbnail(item: DownloadManager.DownloadItem) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomStart) {
-            val thumbUrl = item.videoInfo?.let {
-                YouTubeThumbnailHelper.getThumbnailUrl(
-                    it.id,
-                    YouTubeThumbnailHelper.ThumbnailQuality.MEDIUM
-                )
+            when (item.taskType) {
+                TaskType.DOWNLOAD -> {
+                    val thumbUrl = item.videoInfo?.let {
+                        YouTubeThumbnailHelper.getThumbnailUrl(
+                            it.id,
+                            YouTubeThumbnailHelper.ThumbnailQuality.MEDIUM
+                        )
+                    }
+                    AsyncImage(
+                        model = ImageRequest.Builder(coil3.PlatformContext.INSTANCE)
+                            .data(thumbUrl)
+                            .size(88, 72)
+                            .build(),
+                        contentDescription = stringResource(Res.string.thumbnail_content_desc),
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+                TaskType.CONVERSION -> {
+                    // Show video or audio icon based on output format
+                    val isAudioConversion = item.outputFormat?.uppercase() in listOf("MP3", "AAC", "FLAC", "WAV", "OGG", "M4A", "OPUS")
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(FluentTheme.colors.background.layer.default),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = if (isAudioConversion) Icons.Regular.MusicNote1 else Icons.Regular.Video,
+                            contentDescription = stringResource(Res.string.task_type_conversion),
+                            modifier = Modifier.size(36.dp),
+                            tint = FluentTheme.colors.text.text.secondary
+                        )
+                    }
+                }
             }
-            AsyncImage(
-                model = ImageRequest.Builder(coil3.PlatformContext.INSTANCE)
-                    .data(thumbUrl)
-                    .size(88, 72)
-                    .build(),
-                contentDescription = stringResource(Res.string.thumbnail_content_desc),
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-            val overlay = item.preset?.height?.let { "${it}P" } ?: "MP3"
+            val overlay = when (item.taskType) {
+                TaskType.DOWNLOAD -> item.preset?.height?.let { "${it}P" } ?: "MP3"
+                TaskType.CONVERSION -> item.outputFormat ?: "Convert"
+            }
             Text(
                 overlay,
                 textAlign = TextAlign.Center,
@@ -426,10 +423,16 @@ private fun InProgressRow(
         InProgressThumbnail(item)
         Spacer(Modifier.width(8.dp))
         Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.SpaceBetween) {
-            Text(item.videoInfo?.title ?: item.url, maxLines = 3, overflow = TextOverflow.Ellipsis)
+            Text(item.displayName, maxLines = 3, overflow = TextOverflow.Ellipsis)
             val statusText = when (item.status) {
                 DownloadManager.DownloadItem.Status.Pending -> stringResource(Res.string.status_pending)
-                DownloadManager.DownloadItem.Status.Running -> stringResource(Res.string.status_running)
+                DownloadManager.DownloadItem.Status.Running -> {
+                    if (item.taskType == TaskType.CONVERSION) {
+                        stringResource(Res.string.status_converting)
+                    } else {
+                        stringResource(Res.string.status_running)
+                    }
+                }
                 DownloadManager.DownloadItem.Status.Completed -> stringResource(Res.string.status_completed)
                 DownloadManager.DownloadItem.Status.Failed -> stringResource(Res.string.status_failed)
                 DownloadManager.DownloadItem.Status.Cancelled -> stringResource(Res.string.status_cancelled)
@@ -517,7 +520,8 @@ private fun InProgressRow(
                         // Below the ring: stack percent and speed like history action buttons
                         Spacer(Modifier.height(4.dp))
                         Column(verticalArrangement = Arrangement.spacedBy(2.dp), horizontalAlignment = Alignment.End) {
-                            val speedLine = if (item.status == DownloadManager.DownloadItem.Status.Running) speedText else null
+                            val speedLine =
+                                if (item.status == DownloadManager.DownloadItem.Status.Running) speedText else null
                             Text(
                                 text = speedLine ?: " ",
                                 style = FluentTheme.typography.caption,

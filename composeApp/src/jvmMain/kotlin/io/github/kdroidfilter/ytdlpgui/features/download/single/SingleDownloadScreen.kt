@@ -57,13 +57,19 @@ import ytdlpgui.composeapp.generated.resources.*
 import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
 import io.github.kdroidfilter.ytdlpgui.core.design.components.EllipsizedTextWithTooltip
 import io.github.kdroidfilter.ytdlpgui.core.design.components.Switcher
+import io.github.kdroidfilter.ytdlpgui.core.design.components.TrimSlider
 import java.time.Duration
 import java.util.*
 
 @Composable
-fun SingleDownloadScreen(navController: androidx.navigation.NavHostController, backStackEntry: androidx.navigation.NavBackStackEntry) {
+fun SingleDownloadScreen(
+    navController: androidx.navigation.NavHostController,
+    backStackEntry: androidx.navigation.NavBackStackEntry
+) {
     val appGraph = LocalAppGraph.current
-    val viewModel = remember(backStackEntry) { appGraph.singleDownloadViewModel(backStackEntry.savedStateHandle) }
+    val viewModel = remember(backStackEntry) {
+        appGraph.singleDownloadViewModelFactory.create(backStackEntry.savedStateHandle)
+    }
     val state by viewModel.uiState.collectAsState()
 
     // Handle navigation to Downloader directly via NavController
@@ -73,6 +79,7 @@ fun SingleDownloadScreen(navController: androidx.navigation.NavHostController, b
                 navController.navigate(io.github.kdroidfilter.ytdlpgui.core.navigation.Destination.MainNavigation.Downloader)
                 viewModel.handleEvent(SingleDownloadEvents.OnNavigationConsumed)
             }
+
             SingleDownloadNavigationState.None -> {
                 // no-op
             }
@@ -110,12 +117,19 @@ fun SingleDownloadView(
         splitChapters = state.splitChapters,
         hasSponsorSegments = state.hasSponsorSegments,
         removeSponsors = state.removeSponsors,
+        // Trim state
+        trimStartMs = state.trimStartMs,
+        trimEndMs = state.trimEndMs,
+        totalDurationMs = state.totalDurationMs,
+        showTrimSlider = state.showTrimSlider,
+        isTrimmed = state.isTrimmed,
         onSelectPreset = { onEvent(SingleDownloadEvents.SelectPreset(it)) },
         onSelectAudioQualityPreset = { onEvent(SingleDownloadEvents.SelectAudioQualityPreset(it)) },
         onToggleSubtitle = { onEvent(SingleDownloadEvents.ToggleSubtitle(it)) },
         onClearSubtitles = { onEvent(SingleDownloadEvents.ClearSubtitles) },
         onSetSplitChapters = { onEvent(SingleDownloadEvents.SetSplitChapters(it)) },
         onSetRemoveSponsors = { onEvent(SingleDownloadEvents.SetRemoveSponsors(it)) },
+        onSetTrimRange = { start, end -> onEvent(SingleDownloadEvents.SetTrimRange(start, end)) },
         onStartDownload = { onEvent(SingleDownloadEvents.StartDownload) },
         onStartAudioDownload = { onEvent(SingleDownloadEvents.StartAudioDownload) }
     )
@@ -164,12 +178,19 @@ private fun SingleVideoDownloadView(
     splitChapters: Boolean,
     hasSponsorSegments: Boolean,
     removeSponsors: Boolean,
+    // Trim state
+    trimStartMs: Long,
+    trimEndMs: Long,
+    totalDurationMs: Long,
+    showTrimSlider: Boolean,
+    isTrimmed: Boolean,
     onSelectPreset: (YtDlpWrapper.Preset) -> Unit,
     onSelectAudioQualityPreset: (YtDlpWrapper.AudioQualityPreset) -> Unit,
     onToggleSubtitle: (String) -> Unit,
     onClearSubtitles: () -> Unit,
     onSetSplitChapters: (Boolean) -> Unit,
     onSetRemoveSponsors: (Boolean) -> Unit,
+    onSetTrimRange: (Long, Long) -> Unit,
     onStartDownload: () -> Unit,
     onStartAudioDownload: () -> Unit
 ) {
@@ -246,34 +267,38 @@ private fun SingleVideoDownloadView(
                         ) {
                             Text(text = stringResource(Res.string.single_subtitles))
 
-                                    MenuFlyoutContainer(
-                                        flyout = {
+                            MenuFlyoutContainer(
+                                flyout = {
                                     MenuFlyoutItem(
-                                            onClick = {
-                                                onClearSubtitles()
-                                                resetKey += 1
-                                                isFlyoutVisible = false
-                                            },
-                                            text = { Text(stringResource(Res.string.single_no_subtitle)) }
+                                        onClick = {
+                                            onClearSubtitles()
+                                            resetKey += 1
+                                            isFlyoutVisible = false
+                                        },
+                                        text = { Text(stringResource(Res.string.single_no_subtitle)) },
+                                        colors = ListItemDefaults.defaultListItemColors(),
                                         )
-                                        MenuFlyoutSeparator()
+                                    MenuFlyoutSeparator()
                                     val autoLabel = stringResource(Res.string.single_auto_generated)
                                     sortedLanguages.forEach { lang ->
-                                            val isSelected = selectedSubtitles.contains(lang)
-                                            val subtitleInfo = availableSubtitles[lang]
-                                            val displayName = languageCodeToDisplayName(lang)
-                                            val isAutoGenerated = subtitleInfo?.autoGenerated == true || subtitleInfo?.isAutomatic == true
-                                            val fullDisplayName = if (isAutoGenerated) "$displayName ($autoLabel)" else displayName
-                                            MenuFlyoutItem(
-                                                selected = isSelected,
-                                                onSelectedChanged = {
-                                                    onToggleSubtitle(lang)
-                                                },
+                                        val isSelected = selectedSubtitles.contains(lang)
+                                        val subtitleInfo = availableSubtitles[lang]
+                                        val displayName = languageCodeToDisplayName(lang)
+                                        val isAutoGenerated =
+                                            subtitleInfo?.autoGenerated == true || subtitleInfo?.isAutomatic == true
+                                        val fullDisplayName =
+                                            if (isAutoGenerated) "$displayName ($autoLabel)" else displayName
+                                        MenuFlyoutItem(
+                                            selected = isSelected,
+                                            onSelectedChanged = {
+                                                onToggleSubtitle(lang)
+                                            },
                                             selectionType = ListItemSelectionType.Check,
                                             colors = ListItemDefaults.defaultListItemColors(),
                                             text = { Text(fullDisplayName) }
                                         )
                                     }
+
                                 },
                                 content = {
                                     Button(
@@ -287,7 +312,8 @@ private fun SingleVideoDownloadView(
                                                     selectedSubtitles.joinToString(", ") { lang ->
                                                         val subtitleInfo = availableSubtitles[lang]
                                                         val displayName = languageCodeToDisplayName(lang)
-                                                        val isAutoGenerated = subtitleInfo?.autoGenerated == true || subtitleInfo?.isAutomatic == true
+                                                        val isAutoGenerated =
+                                                            subtitleInfo?.autoGenerated == true || subtitleInfo?.isAutomatic == true
                                                         if (isAutoGenerated) "$displayName ($autoLabel)" else displayName
                                                     }
                                             )
@@ -295,7 +321,7 @@ private fun SingleVideoDownloadView(
                                     )
                                 },
                                 adaptivePlacement = true,
-                                placement = FlyoutPlacement.Bottom
+                                placement = FlyoutPlacement.BottomAlignedEnd
                             )
                         }
                         Spacer(Modifier.height(16.dp))
@@ -350,6 +376,18 @@ private fun SingleVideoDownloadView(
                             }
                         )
                         Spacer(Modifier.height(8.dp))
+                    }
+
+                    // Trim slider (video mode, when not using split-chapters)
+                    if (showTrimSlider && !splitChapters) {
+                        TrimSlider(
+                            trimStartMs = trimStartMs,
+                            trimEndMs = trimEndMs,
+                            totalDurationMs = totalDurationMs,
+                            isTrimmed = isTrimmed,
+                            onTrimRangeChange = onSetTrimRange
+                        )
+                        Spacer(Modifier.height(16.dp))
                     }
                 }
 
@@ -426,6 +464,18 @@ private fun SingleVideoDownloadView(
                             }
                         )
                     }
+
+                    // Trim slider (audio mode, when not using split-chapters)
+                    if (showTrimSlider && !splitChapters) {
+                        Spacer(Modifier.height(16.dp))
+                        TrimSlider(
+                            trimStartMs = trimStartMs,
+                            trimEndMs = trimEndMs,
+                            totalDurationMs = totalDurationMs,
+                            isTrimmed = isTrimmed,
+                            onTrimRangeChange = onSetTrimRange
+                        )
+                    }
                 }
 
                 // Bouton de téléchargement centré
@@ -436,7 +486,7 @@ private fun SingleVideoDownloadView(
                 ) {
                     AccentButton(onClick = if (selectedFormatIndex == 0) onStartDownload else onStartAudioDownload) {
                         Icon(Icons.Default.ArrowDownload, null)
-                        Text(stringResource(Res.string.download))
+                        Text(stringResource(Res.string.download_button))
                     }
 
                     // Split-chapters now controlled by a checkbox above

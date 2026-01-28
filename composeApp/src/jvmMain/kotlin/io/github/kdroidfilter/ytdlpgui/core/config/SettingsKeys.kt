@@ -16,4 +16,5 @@ object SettingsKeys {
     const val NOTIFY_ON_DOWNLOAD_COMPLETE = "notify_on_download_complete"
     const val ONBOARDING_COMPLETED = "onboarding_completed"
     const val CONCURRENT_FRAGMENTS = "concurrent_fragments"
+    const val PROXY = "proxy"
 }

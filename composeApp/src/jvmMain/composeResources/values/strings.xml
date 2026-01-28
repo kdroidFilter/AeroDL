@@ -2,7 +2,7 @@
 <resources>
     <!-- Navigation -->
     <string name="home">Home</string>
-    <string name="download">Download</string>
+    <string name="tasks">Tasks</string>
     <string name="split_chapters">Split chapters</string>
     <string name="split_badge">Split</string>
     <string name="remove_sponsors">Remove sponsors (SponsorBlock)</string>
@@ -84,6 +84,11 @@
     <string name="settings_browser_chrome">Chrome</string>
     <string name="settings_browser_firefox">Firefox</string>
     <string name="settings_browser_safari">Safari</string>
+    <string name="settings_browser_edge">Edge</string>
+    <string name="settings_browser_brave">Brave</string>
+    <string name="settings_browser_opera">Opera</string>
+    <string name="settings_browser_vivaldi">Vivaldi</string>
+    <string name="settings_browser_chromium">Chromium</string>
     <string name="settings_include_preset_in_filename_title">Include preset in filename</string>
     <string name="settings_include_preset_in_filename_caption">Append the selected quality (e.g., 720p) to the downloaded file name</string>
     <string name="settings_parallel_downloads_title">Parallel downloads</string>
@@ -98,6 +103,12 @@
     <string name="settings_concurrent_fragments_title">Fragment download threads</string>
     <string name="settings_concurrent_fragments_caption">Splits the file and downloads each part simultaneously, greatly speeding up downloads. Not recommended: may result in account bans</string>
 
+    <!-- Settings: Proxy -->
+    <string name="settings_proxy_title">Proxy</string>
+    <string name="settings_proxy_caption">Route downloads through a proxy server. Supports HTTP, HTTPS, and SOCKS5 proxies.</string>
+    <string name="settings_proxy_placeholder">http://127.0.0.1:8080</string>
+    <string name="settings_proxy_not_set">No proxy configured</string>
+
     <!-- Settings: Download directory section -->
     <string name="settings_download_dir_title">Download directory</string>
     <string name="settings_download_dir_caption">Choose the folder where downloads will be saved by default.</string>
@@ -105,6 +116,7 @@
     <string name="settings_download_dir_pick_title">Select download folder</string>
     <string name="settings_select">Select…</string>
 
+    <string name="download_button">Download</string>
     <string name="download_audio">Download audio</string>
     <!-- Ces chaînes appartiennent à l'écran Download (Download screen) -->
     <string name="download_type_video">Video</string>
@@ -159,17 +171,21 @@
     <!-- Download screen (history and in-progress) -->
     <string name="download_clear_history">Clear history</string>
     <string name="tooltip_clear_history">Clear history</string>
+    <string name="download_search_placeholder">Search tasks</string>
     <string name="open_directory">Open directory</string>
     <string name="tooltip_open_directory">Open directory</string>
     <string name="delete_element">Delete this item</string>
     <string name="tooltip_delete_element">Delete this item</string>
-    <string name="no_downloads">No downloads</string>
+    <string name="no_downloads">No tasks</string>
     <string name="cancel">Cancel</string>
     <string name="status_pending">Pending</string>
     <string name="status_running">Running</string>
     <string name="status_completed">Completed</string>
     <string name="status_failed">Failed</string>
     <string name="status_cancelled">Cancelled</string>
+    <string name="status_converting">Converting</string>
+    <string name="task_type_download">Download</string>
+    <string name="task_type_conversion">Conversion</string>
     <!-- Settings: Auto-launch -->
     <string name="settings_auto_launch_title">Launch at startup</string>
     <string name="settings_auto_launch_caption">Recommended when you use AeroDL often: it launches with your system so you never have to think about starting it. Pair it with clipboard monitoring to begin downloads as soon as you copy a link.</string>
@@ -182,6 +198,10 @@
 
     <!-- App info -->
     <string name="app_version_label">App version: %1$s</string>
+
+    <!-- Onboarding finish: error handling -->
+    <string name="onboarding_finish_retry">Retry download</string>
+    <string name="onboarding_finish_error_hint">You can continue; AeroDL will keep trying in the background.</string>
     
     <!-- Settings: Notifications -->
     <string name="settings_notify_on_complete_title">Download completion notifications</string>
@@ -190,6 +210,10 @@
     <!-- Download completion notification -->
     <string name="download_completed_title">Download finished</string>
     <string name="download_completed_message">%1$s has been downloaded</string>
+
+    <!-- Conversion completion notification -->
+    <string name="conversion_completed_title">Conversion finished</string>
+    <string name="conversion_completed_message">%1$s has been converted</string>
 
     <!-- Directory unavailable notice -->
     <string name="directory_unavailable">Not available</string>
@@ -228,4 +252,27 @@
     <!-- Single download: friendly captions -->
     <string name="single_sponsorblock_caption">We detected sponsored segments in this video. Enable to automatically remove them from the download — often these are ads not directly related to the main content.</string>
     <string name="single_split_chapters_caption">We detected that this video is divided into chapters. Enable to save one file per chapter — especially useful for DJ sets or long mixes to get one file per track.</string>
+
+    <!-- Converter screen -->
+    <string name="converter">Converter</string>
+    <string name="converter_title">Convert your media files</string>
+    <string name="converter_subtitle">Convert videos to MP4 or extract audio to MP3</string>
+    <string name="converter_drop_zone">Drop a file here</string>
+    <string name="converter_or">or</string>
+    <string name="converter_select_file">Browse files</string>
+    <string name="converter_supported_formats">Supported: MP4, MKV, AVI, MOV, WebM, MP3, WAV, FLAC…</string>
+    <string name="converter_analyzing">Analyzing file…</string>
+    <string name="converter_output_format">Output format</string>
+    <string name="converter_video">Video (MP4)</string>
+    <string name="converter_audio">Audio (MP3)</string>
+    <string name="converter_video_quality">Video quality</string>
+    <string name="converter_audio_quality">Audio quality</string>
+    <string name="converter_start">Convert</string>
+    <string name="converter_converting">Converting…</string>
+    <string name="converter_success">Conversion complete!</string>
+    <string name="converter_open_folder">Open folder</string>
+    <string name="converter_error">Conversion failed: %1$s</string>
+    <string name="converter_reset">Convert another file</string>
+    <string name="converter_trim">Trim</string>
+    <string name="converter_trim_duration">Duration: %1$s</string>
 </resources>

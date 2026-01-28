@@ -1,25 +1,32 @@
 package io.github.kdroidfilter.ytdlpgui.features.init
 
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.ViewModel
+import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.binding
+import dev.zacsweers.metrox.viewmodel.ViewModelKey
 import io.github.kdroidfilter.network.KtorConfig
-import io.github.kdroidfilter.platformtools.OperatingSystem
 import io.github.kdroidfilter.platformtools.getAppVersion
-import io.github.kdroidfilter.platformtools.getOperatingSystem
 import io.github.kdroidfilter.platformtools.releasefetcher.github.GitHubReleaseFetcher
 import io.github.kdroidfilter.platformtools.releasefetcher.github.model.Asset
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
+import io.github.kdroidfilter.ffmpeg.FfmpegWrapper
 import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
 import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
+import io.github.kdroidfilter.ytdlpgui.di.AppScope
 import io.github.kevincianfarini.cardiologist.PulseBackpressureStrategy
 import io.github.kevincianfarini.cardiologist.fixedPeriodPulse
 import kotlinx.coroutines.launch
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
 
+@ContributesIntoMap(AppScope::class, binding = binding<ViewModel>())
+@ViewModelKey(InitViewModel::class)
 @Inject
 class InitViewModel(
     private val ytDlpWrapper: YtDlpWrapper,
+    private val ffmpegWrapper: FfmpegWrapper,
     private val settingsRepository: SettingsRepository,
     private val supportedSitesRepository: io.github.kdroidfilter.ytdlpgui.data.SupportedSitesRepository,
     private val downloadHistoryRepository: io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
@@ -104,19 +111,13 @@ class InitViewModel(
 
             // Compare versions
             if (isNewerVersion(currentVersion, latestVersion)) {
-                // Determine the appropriate download URL based on OS
-                val downloadUrl = getDownloadUrlForPlatform(latestRelease.assets)
-
-                // Only show update if there's an asset available for this platform
-                if (downloadUrl != null) {
-                    update {
-                        copy(
-                            updateAvailable = true,
-                            latestVersion = latestVersion,
-                            downloadUrl = downloadUrl,
-                            releaseBody = latestRelease.body
-                        )
-                    }
+                update {
+                    copy(
+                        updateAvailable = true,
+                        latestVersion = latestVersion,
+                        downloadUrl = getDownloadUrlForPlatform(latestRelease.assets),
+                        releaseBody = latestRelease.body
+                    )
                 }
             }
         }
@@ -142,20 +143,11 @@ class InitViewModel(
     }
 
     /**
-     * Get the appropriate download URL for the current platform
+     * Get the download URL - redirects to the website for all platforms
      */
-    private fun getDownloadUrlForPlatform(assets: List<Asset>): String? {
-        val os = getOperatingSystem()
-        val extension = when (os) {
-            OperatingSystem.WINDOWS -> ".msi"
-            OperatingSystem.MACOS -> ".pkg"
-            OperatingSystem.LINUX -> ".deb"
-            else -> null
-        }
-
-        return extension?.let { ext ->
-            assets.firstOrNull { it.name.endsWith(ext, ignoreCase = true) }?.browser_download_url
-        }
+    @Suppress("UNUSED_PARAMETER")
+    private fun getDownloadUrlForPlatform(assets: List<Asset>): String {
+        return "https://kdroidfilter.github.io/AeroDL/"
     }
 
     /**
@@ -256,6 +248,7 @@ class InitViewModel(
                         }
                     }
                     is YtDlpWrapper.InitEvent.Error -> {
+                        isInitializing = false
                         update {
                             copy(
                                 errorMessage = event.message,
@@ -270,6 +263,19 @@ class InitViewModel(
                         }
                     }
                     is YtDlpWrapper.InitEvent.Completed -> {
+                        isInitializing = false
+
+                        // Sync FFmpeg path from YtDlpWrapper to FfmpegWrapper
+                        ytDlpWrapper.ffmpegPath?.let { path ->
+                            ffmpegWrapper.ffmpegPath = path
+                            // Also sync ffprobe path (same directory)
+                            val ffprobeExe = if (path.endsWith(".exe")) "ffprobe.exe" else "ffprobe"
+                            val ffprobePath = java.io.File(path).parentFile?.let {
+                                java.io.File(it, ffprobeExe).absolutePath
+                            }
+                            ffprobePath?.let { ffmpegWrapper.ffprobePath = it }
+                        }
+
                         update {
                             copy(
                                 checkingYtDlp = false,
