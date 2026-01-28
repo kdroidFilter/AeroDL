@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.rememberScrollbarAdapter
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Divider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +22,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogState
+import androidx.compose.ui.window.DialogWindow
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import coil3.compose.AsyncImage
@@ -42,6 +47,7 @@ import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.*
 import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 
 @Composable
@@ -172,21 +178,20 @@ private fun PlaylistContent(
     state: BulkDownloadState,
     onEvent: (BulkDownloadEvents) -> Unit
 ) {
-    val listState = rememberLazyListState()
+    val videoListState = rememberLazyListState()
+    val optionsScrollState = rememberScrollState()
 
-    Row(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        // Header with stats and select all
+        PlaylistHeader(state, onEvent)
+        Spacer(Modifier.height(8.dp))
+
+        // Scrollable video list
+        Row(modifier = Modifier.weight(1f)) {
             LazyColumn(
-                state = listState,
-                modifier = Modifier.fillMaxSize()
+                state = videoListState,
+                modifier = Modifier.weight(1f).fillMaxHeight()
             ) {
-                // Header
-                item {
-                    PlaylistHeader(state, onEvent)
-                    Spacer(Modifier.height(8.dp))
-                }
-
-                // Video items (like DownloadScreen rows)
                 items(
                     items = state.videos,
                     key = { it.videoInfo.id }
@@ -201,105 +206,93 @@ private fun PlaylistContent(
                         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
                     )
                 }
-
-                // Download options (like SingleDownloadScreen)
-                item {
-                    Spacer(Modifier.height(8.dp))
-                    DownloadOptions(state, onEvent)
-                    Spacer(Modifier.height(16.dp))
-                }
-
-                // Download button
-                item {
-                    DownloadButton(state, onEvent)
-                    Spacer(Modifier.height(16.dp))
-                }
             }
+
+            VerticalScrollbar(
+                adapter = rememberScrollbarAdapter(videoListState),
+                modifier = Modifier.fillMaxHeight().padding(top = 2.dp, start = 8.dp)
+            )
         }
 
-        VerticalScrollbar(
-            adapter = rememberScrollbarAdapter(listState),
-            modifier = Modifier.fillMaxHeight().padding(top = 2.dp, start = 8.dp)
-        )
+        // Download options zone (fixed height, scrollable)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(150.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .verticalScroll(optionsScrollState)
+                    .padding(vertical = 8.dp)
+            ) {
+                DownloadOptions(state, onEvent)
+                Spacer(Modifier.height(16.dp))
+                DownloadButton(state, onEvent)
+                Spacer(Modifier.height(8.dp))
+            }
+
+            VerticalScrollbar(
+                adapter = rememberScrollbarAdapter(optionsScrollState),
+                modifier = Modifier.fillMaxHeight().padding(start = 8.dp)
+            )
+        }
     }
 }
 
-@OptIn(ExperimentalFluentApi::class, ExperimentalFoundationApi::class)
 @Composable
 private fun PlaylistHeader(
     state: BulkDownloadState,
     onEvent: (BulkDownloadEvents) -> Unit
 ) {
-    Column {
-        // Title
-        Text(
-            text = state.playlistInfo?.title ?: "Playlist",
-            fontSize = 22.sp,
-            fontWeight = FontWeight.SemiBold,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis
-        )
-
-        Spacer(Modifier.height(8.dp))
-
-        // Stats and actions
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(Res.string.bulk_videos_count, state.totalCount),
-                    style = FluentTheme.typography.caption
-                )
+            Text(
+                text = stringResource(Res.string.bulk_videos_count, state.totalCount),
+                style = FluentTheme.typography.caption
+            )
 
-                if (state.isCheckingAvailability) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        ProgressRing(modifier = Modifier.size(14.dp))
-                        Spacer(Modifier.width(4.dp))
-                        Text(
-                            text = "${state.checkedCount}/${state.totalCount}",
-                            style = FluentTheme.typography.caption
-                        )
-                    }
-                }
-
-                Text(
-                    text = stringResource(Res.string.bulk_selected_count, state.selectedCount),
-                    style = FluentTheme.typography.caption,
-                    color = FluentTheme.colors.fillAccent.default,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-
-            // Toggle select all / deselect all
-            val allSelected = state.allSelected
-            TooltipBox(
-                tooltip = {
+            if (state.isCheckingAvailability) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    ProgressRing(modifier = Modifier.size(14.dp))
+                    Spacer(Modifier.width(4.dp))
                     Text(
-                        if (allSelected) stringResource(Res.string.bulk_deselect_all)
-                        else stringResource(Res.string.bulk_select_all)
-                    )
-                }
-            ) {
-                SubtleButton(
-                    iconOnly = true,
-                    onClick = {
-                        if (allSelected) onEvent(BulkDownloadEvents.DeselectAll)
-                        else onEvent(BulkDownloadEvents.SelectAll)
-                    }
-                ) {
-                    Icon(
-                        if (allSelected) Icons.Regular.SelectAllOff else Icons.Regular.SelectAllOn,
-                        if (allSelected) stringResource(Res.string.bulk_deselect_all)
-                        else stringResource(Res.string.bulk_select_all)
+                        text = "${state.checkedCount}/${state.totalCount}",
+                        style = FluentTheme.typography.caption
                     )
                 }
             }
+
+            Text(
+                text = stringResource(Res.string.bulk_selected_count, state.selectedCount),
+                style = FluentTheme.typography.caption,
+                color = FluentTheme.colors.fillAccent.default,
+                fontWeight = FontWeight.Medium
+            )
+        }
+
+        // Toggle select all / deselect all
+        val allSelected = state.allSelected
+        SubtleButton(
+            iconOnly = true,
+            onClick = {
+                if (allSelected) onEvent(BulkDownloadEvents.DeselectAll)
+                else onEvent(BulkDownloadEvents.SelectAll)
+            }
+        ) {
+            Icon(
+                if (allSelected) Icons.Regular.SelectAllOff else Icons.Regular.SelectAllOn,
+                if (allSelected) stringResource(Res.string.bulk_deselect_all)
+                else stringResource(Res.string.bulk_select_all)
+            )
         }
     }
 }
@@ -893,10 +886,12 @@ private fun HiddenExtractionWebView(
         state = WindowState(
             width = 800.dp,
             height = 600.dp,
+            position = WindowPosition((-2000).dp, (-2000).dp)
         ),
         undecorated = true,
         alwaysOnTop = false,
-        resizable = false
+        resizable = false,
+
     ) {
         WebView(
             state = state,

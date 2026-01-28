@@ -23,8 +23,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.net.HttpURLConnection
-import java.net.URI
+import io.github.kdroidfilter.network.HttpsConnectionFactory
 import java.time.Duration
 
 class BulkDownloadViewModel @AssistedInject constructor(
@@ -310,14 +309,13 @@ class BulkDownloadViewModel @AssistedInject constructor(
                 val urlToCheck = videoInfo.url
                 if (urlToCheck.isBlank()) return@withContext false
 
-                val uri = URI(urlToCheck)
-                val url = uri.toURL()
-                val connection = url.openConnection() as HttpURLConnection
-                connection.requestMethod = "HEAD"
-                connection.connectTimeout = 5000
-                connection.readTimeout = 5000
-                connection.instanceFollowRedirects = true
-                connection.setRequestProperty("User-Agent", "Mozilla/5.0 (compatible; AeroDL)")
+                val connection = HttpsConnectionFactory.openConnection(urlToCheck) {
+                    requestMethod = "HEAD"
+                    connectTimeout = 5000
+                    readTimeout = 5000
+                    instanceFollowRedirects = true
+                    setRequestProperty("User-Agent", "Mozilla/5.0 (compatible; AeroDL)")
+                }
 
                 try {
                     connection.connect()
@@ -326,11 +324,11 @@ class BulkDownloadViewModel @AssistedInject constructor(
                     responseCode in 200..399
                 } catch (e: Exception) {
                     connection.disconnect()
-                    true
+                    false
                 }
             } catch (e: Exception) {
-                infoln { "[BulkDownloadViewModel] URL check failed for ${videoInfo.id}: ${e.message}, assuming available" }
-                true
+                infoln { "[BulkDownloadViewModel] URL check failed for ${videoInfo.id}: ${e.message}, assuming unavailable" }
+                false
             }
         }
     }
