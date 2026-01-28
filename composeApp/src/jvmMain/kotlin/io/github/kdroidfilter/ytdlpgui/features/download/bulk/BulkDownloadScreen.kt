@@ -590,7 +590,7 @@ private fun YouTubeLoginScreen(
     onBack: () -> Unit,
     onLoginSuccess: () -> Unit
 ) {
-    val state = rememberWebViewState("https://www.youtube.com")
+    val state = rememberWebViewState("https://www.youtube.com/account_advanced")
     val navigator = rememberWebViewNavigator()
 
     var isCheckingLogin by remember { mutableStateOf(false) }
@@ -621,13 +621,6 @@ private fun YouTubeLoginScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                SubtleButton(
-                    iconOnly = true,
-                    onClick = onBack
-                ) {
-                    Icon(Icons.Regular.ArrowLeft, stringResource(Res.string.bulk_login_back))
-                }
-
                 Icon(
                     imageVector = Icons.Regular.Person,
                     contentDescription = null,

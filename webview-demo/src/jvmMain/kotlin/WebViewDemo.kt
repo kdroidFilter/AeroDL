@@ -127,9 +127,15 @@ fun main() = application {
         title = "YouTube Link Scraper"
     ) {
         MaterialTheme {
-            YouTubeScraper()
+            WebViewDemo()
         }
     }
+}
+
+@Composable
+fun WebViewDemo(){
+    val webviewState = rememberWebViewState("https://www.youtube.com/@%D7%94%D7%A8%D7%9E%D7%91%D7%9D%D7%94%D7%99%D7%95%D7%9E%D7%99-%D7%935%D7%9B/videos")
+    WebView(webviewState, modifier = Modifier.fillMaxSize())
 }
 
 private val json = Json { ignoreUnknownKeys = true }

@@ -212,13 +212,9 @@ class BulkDownloadViewModel @AssistedInject constructor(
                 // User is logged in, start extraction
                 _fallbackState.value = FallbackState.Extracting(0)
             }
-            false -> {
-                // User needs to log in
+            else -> {
+                // User needs to log in (treat null/unknown as not logged in)
                 _fallbackState.value = FallbackState.LoginRequired
-            }
-            null -> {
-                // Unknown, try extraction anyway
-                _fallbackState.value = FallbackState.Extracting(0)
             }
         }
     }
