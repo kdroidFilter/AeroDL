@@ -176,6 +176,19 @@ private fun LoadingResourcesScreen(
             }
         }
 
+        // Show progress bars for Deno
+        if (initState?.checkingDeno == true || initState?.downloadingDeno == true) {
+            Text("Deno")
+            if (initState.downloadDenoProgress != null) {
+                ProgressBar(
+                    progress = initState.downloadDenoProgress.div(100f),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            } else {
+                ProgressBar(modifier = Modifier.fillMaxWidth())
+            }
+        }
+
         // Action when error occurs
         if (initState?.errorMessage != null) {
             Spacer(Modifier.height(8.dp))
