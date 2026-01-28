@@ -28,8 +28,10 @@
     <!-- Messages d'initialisation -->
     <string name="checking_ytdlp">Vérification des mises à jour de yt-dlp…</string>
     <string name="checking_ffmpeg">Vérification de l'installation de FFmpeg…</string>
+    <string name="checking_deno">Vérification de l'installation de Deno…</string>
     <string name="downloading_ytdlp">Téléchargement de yt-dlp…</string>
     <string name="downloading_ffmpeg">Téléchargement de FFmpeg…</string>
+    <string name="downloading_deno">Téléchargement de Deno…</string>
     <string name="updating_ytdlp">Mise à jour de yt-dlp…</string>
     <string name="updating_ffmpeg">Mise à jour de FFmpeg…</string>
     <string name="status_checking">Vérification…</string>
@@ -43,6 +45,7 @@
     <string name="dependency_info_title">Pendant que vous configurez les paramètres d'AeroDL, nous téléchargeons les dépendances nécessaires au bon fonctionnement de l'application.</string>
     <string name="dependency_ytdlp_tooltip">yt-dlp est l'outil principal qui télécharge les vidéos depuis les sites supportés. Il s'occupe de tout le travail difficile pour récupérer votre contenu.</string>
     <string name="dependency_ffmpeg_tooltip">FFmpeg est un framework multimédia utilisé pour convertir et traiter les fichiers audio/vidéo. Il garantit que vos téléchargements sont dans le format souhaité.</string>
+    <string name="dependency_deno_tooltip">Deno est un runtime JavaScript requis par yt-dlp pour l'extraction des vidéos YouTube. Il assure la compatibilité avec les derniers changements de YouTube.</string>
 
     <!-- Messages d'erreur -->
     <string name="error_occurred">Une erreur s'est produite</string>
@@ -58,6 +61,19 @@
     <string name="settings_screen_title">Écran Paramètres</string>
     <string name="bulk_download_support_notice">Le téléchargement de playlists et de chaînes YouTube n&#39;est pas encore pris en charge. Si vous aimez AeroDL, vous pouvez contribuer via Ko-fi.</string>
     <string name="support_on_kofi">Soutenir sur Ko-fi</string>
+
+    <!-- Bulk download: login fallback -->
+    <string name="bulk_login_required_title">Connexion YouTube requise</string>
+    <string name="bulk_login_required_desc">Veuillez vous connecter pour accéder à cette playlist</string>
+    <string name="bulk_login_check">Vérification…</string>
+    <string name="bulk_login_success">Connecté</string>
+    <string name="bulk_login_back">Retour</string>
+    <string name="bulk_login_continue">Continuer</string>
+    <string name="bulk_fallback_loading">Chargement via navigateur…</string>
+    <string name="bulk_fallback_scrolling">Défilement… %1$d vidéos chargées</string>
+    <string name="bulk_fallback_extracting">Extraction des vidéos…</string>
+    <string name="bulk_analyzing_videos">analyse de %1$d vidéos</string>
+
     <string name="about_credits_title">Crédits</string>
     <string name="credits_made_by">Réalisé par Elie Gambache</string>
     <string name="credits_thank_jetbrains">Un immense merci à JetBrains pour avoir conçu Kotlin et Compose Multiplatform : sans leur travail passionné, cette application n’aurait tout simplement pas vu le jour.</string>

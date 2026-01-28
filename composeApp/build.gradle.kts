@@ -111,6 +111,7 @@ kotlin {
             implementation(project(":ffmpeg"))
             implementation(project(":network"))
             implementation(project(":logging"))
+            implementation(project(":youtube-webview-extractor"))
 
             // SQLDelight driver
             implementation(libs.sqlDelight.driver.sqlite)

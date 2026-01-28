@@ -40,6 +40,7 @@ import io.github.kdroidfilter.ytdlpgui.core.design.components.ProgressBar
 import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.Res
+import ytdlpgui.composeapp.generated.resources.dependency_deno_tooltip
 import ytdlpgui.composeapp.generated.resources.dependency_ffmpeg_tooltip
 import ytdlpgui.composeapp.generated.resources.dependency_info_title
 import ytdlpgui.composeapp.generated.resources.dependency_ytdlp_tooltip
@@ -76,6 +77,14 @@ internal fun DependencyInfoBar(
             else -> stringResource(Res.string.status_pending)
         }
 
+        val denoStatus = when {
+            initState.checkingDeno -> stringResource(Res.string.status_checking)
+            initState.downloadingDeno -> stringResource(Res.string.status_downloading)
+            initState.errorMessage != null -> stringResource(Res.string.status_error, initState.errorMessage)
+            initState.initCompleted -> stringResource(Res.string.status_installed)
+            else -> stringResource(Res.string.status_pending)
+        }
+
         val ytDlpProgress = when {
             initState.downloadYtDlpProgress != null -> initState.downloadYtDlpProgress.div(100f)
             initState.initCompleted -> 1f
@@ -83,6 +92,12 @@ internal fun DependencyInfoBar(
         }
         val ffmpegProgress = when {
             initState.downloadFfmpegProgress != null -> initState.downloadFfmpegProgress.div(100f)
+            initState.initCompleted -> 1f
+            else -> null
+        }
+
+        val denoProgress = when {
+            initState.downloadDenoProgress != null -> initState.downloadDenoProgress.div(100f)
             initState.initCompleted -> 1f
             else -> null
         }
@@ -111,6 +126,12 @@ internal fun DependencyInfoBar(
                         label = "FFmpeg",
                         status = ffmpegStatus,
                         progress = ffmpegProgress
+                    )
+                    DependencyInfoRow(
+                        tooltipText = stringResource(Res.string.dependency_deno_tooltip),
+                        label = "Deno",
+                        status = denoStatus,
+                        progress = denoProgress
                     )
                 }
             },

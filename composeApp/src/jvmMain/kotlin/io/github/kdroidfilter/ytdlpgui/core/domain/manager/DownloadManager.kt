@@ -291,6 +291,8 @@ class DownloadManager(
         val outputFile = item.outputFile ?: return
         val options = conversionOptionsMap.remove(id) ?: return
 
+        // Mark as Running IMMEDIATELY so that runningCount() reflects this task
+        // before any async callbacks. This ensures maxParallel is respected.
         update(id) { it.copy(status = DownloadItem.Status.Running) }
 
         val conversionHandle = ffmpegWrapper.convert(
@@ -362,6 +364,10 @@ class DownloadManager(
     private fun launchDownload(id: String) {
         val item = _items.value.find { it.id == id } ?: return
         if (item.status != DownloadItem.Status.Pending) return
+
+        // Mark as Running IMMEDIATELY so that runningCount() reflects this task
+        // before any async callbacks. This ensures maxParallel is respected.
+        update(id) { it.copy(status = DownloadItem.Status.Running) }
 
         // Fallback trackers from logs (kept, but strengthened)
         var lastDestPath: String? = null

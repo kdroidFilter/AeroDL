@@ -188,6 +188,9 @@ class InitViewModel(
                                 checkingFFmpeg = false,
                                 downloadingFFmpeg = false,
                                 downloadFfmpegProgress = null,
+                                checkingDeno = false,
+                                downloadingDeno = false,
+                                downloadDenoProgress = null,
                                 updatingYtdlp = false,
                                 updatingFFmpeg = false,
                                 errorMessage = null,
@@ -247,6 +250,28 @@ class InitViewModel(
                             )
                         }
                     }
+                    YtDlpWrapper.InitEvent.EnsuringDeno -> {
+                        update {
+                            copy(
+                                checkingDeno = true,
+                                downloadingDeno = false,
+                                downloadDenoProgress = null,
+                                checkingFFmpeg = false,
+                                downloadingFFmpeg = false,
+                                errorMessage = null
+                            )
+                        }
+                    }
+                    is YtDlpWrapper.InitEvent.DenoProgress -> {
+                        update {
+                            copy(
+                                checkingDeno = false,
+                                downloadingDeno = true,
+                                downloadingFFmpeg = false,
+                                downloadDenoProgress = (event.percent ?: 0.0).toFloat()
+                            )
+                        }
+                    }
                     is YtDlpWrapper.InitEvent.Error -> {
                         isInitializing = false
                         update {
@@ -254,8 +279,10 @@ class InitViewModel(
                                 errorMessage = event.message,
                                 checkingYtDlp = false,
                                 checkingFFmpeg = false,
+                                checkingDeno = false,
                                 downloadingYtDlp = false,
                                 downloadingFFmpeg = false,
+                                downloadingDeno = false,
                                 updatingYtdlp = false,
                                 updatingFFmpeg = false,
                                 initCompleted = false
@@ -280,8 +307,10 @@ class InitViewModel(
                             copy(
                                 checkingYtDlp = false,
                                 checkingFFmpeg = false,
+                                checkingDeno = false,
                                 downloadingYtDlp = false,
                                 downloadingFFmpeg = false,
+                                downloadingDeno = false,
                                 updatingYtdlp = false,
                                 updatingFFmpeg = false,
                                 initCompleted = event.success
