@@ -337,26 +337,40 @@ object NetAndArchive {
 
     // --- Resolution Helpers ---
 
-    /** Exact progressive selector (single A+V URL only). Falls back to progressive at same height if ext differs. */
+    /** Universal fallback: best split A/V or best progressive if nothing else matches. */
+    private const val UNIVERSAL_FALLBACK = "bestvideo+bestaudio/best"
+
+    /** Exact progressive selector (single A+V URL only). Falls back to progressive at same height if ext differs,
+     *  then to best available format if exact height unavailable. */
     fun selectorProgressiveExact(height: Int, preferredExts: List<String> = listOf("mp4","webm")): String {
         val common = "best[height=$height][acodec!=none][vcodec!=none][protocol!=m3u8]"
         val biased = preferredExts.joinToString("/") { ext -> "$common[ext=$ext]" }
-        return "$biased/$common"
+        // Fallback chain: exact height with preferred ext -> exact height any ext -> best at or below height -> universal best
+        val heightFallback = "best[height<=$height][acodec!=none][vcodec!=none]"
+        return "$biased/$common/$heightFallback/$UNIVERSAL_FALLBACK"
     }
 
-    /** Download selector: prefers split A/V at exact height (yt-dlp will merge), falls back to progressive exact. */
+    /** Download selector: prefers split A/V at exact height (yt-dlp will merge), falls back to progressive exact,
+     *  then to best available format if exact height unavailable. */
     fun selectorDownloadExact(height: Int, preferredExts: List<String> = listOf("mp4","webm")): String {
         val split = "bestvideo[height=$height][vcodec!=none]+bestaudio/bestvideo[height=$height]+bestaudio"
+        // Fallback to best available at or below requested height
+        val splitFallback = "bestvideo[height<=$height]+bestaudio"
         val progressive = selectorProgressiveExact(height, preferredExts)
-        return "$split/$progressive"
+        return "$split/$splitFallback/$progressive"
     }
 
-    // Prefer MP4/M4A at exact height (falls back if not available)
+    /** Prefer MP4/M4A at exact height, falls back to any format at that height,
+     *  then to best available format if exact height unavailable. */
     fun selectorDownloadExactMp4(height: Int): String {
         val splitPreferMp4 = "bestvideo[height=$height][ext=mp4]+bestaudio[ext=m4a]/" +
                 "bestvideo[height=$height]+bestaudio"
+        // Fallback to best available at or below requested height
+        val splitFallback = "bestvideo[height<=$height][ext=mp4]+bestaudio[ext=m4a]/" +
+                "bestvideo[height<=$height]+bestaudio"
         val progressiveMp4 = "best[height=$height][ext=mp4][acodec!=none][vcodec!=none][protocol!=m3u8]/" +
                 "best[height=$height][acodec!=none][vcodec!=none][protocol!=m3u8]"
-        return "$splitPreferMp4/$progressiveMp4"
+        val progressiveFallback = "best[height<=$height][acodec!=none][vcodec!=none]"
+        return "$splitPreferMp4/$splitFallback/$progressiveMp4/$progressiveFallback/$UNIVERSAL_FALLBACK"
     }
 }
