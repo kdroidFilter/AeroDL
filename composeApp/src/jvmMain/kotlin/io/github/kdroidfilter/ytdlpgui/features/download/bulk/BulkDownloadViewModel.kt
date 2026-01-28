@@ -1,8 +1,13 @@
+@file:OptIn(ExperimentalTrayAppApi::class)
+
 package io.github.kdroidfilter.ytdlpgui.features.download.bulk
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
+import com.kdroid.composetray.tray.api.TrayAppState
+import com.kdroid.composetray.tray.api.TrayWindowDismissMode
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -30,6 +35,7 @@ class BulkDownloadViewModel @AssistedInject constructor(
     @Assisted savedStateHandle: SavedStateHandle,
     private val ytDlpWrapper: YtDlpWrapper,
     private val downloadManager: DownloadManager,
+    private val trayAppState: TrayAppState
 ) : MVIViewModel<BulkDownloadState, BulkDownloadEvents>(savedStateHandle) {
 
     @AssistedFactory
@@ -186,6 +192,9 @@ class BulkDownloadViewModel @AssistedInject constructor(
         _isLoading.value = false
         _fallbackState.value = FallbackState.CheckingLogin
 
+        // Set MANUAL dismiss mode to prevent app from closing when new window is created
+        trayAppState.setDismissMode(TrayWindowDismissMode.MANUAL)
+
         // Create extractor instance
         val extractor = YouTubeWebViewExtractor()
         _webViewExtractor.value = extractor
@@ -235,6 +244,9 @@ class BulkDownloadViewModel @AssistedInject constructor(
     fun onFallbackExtractionComplete(videos: List<YouTubeScrapedVideo>) {
         infoln { "[BulkDownloadViewModel] Fallback extraction complete: ${videos.size} videos" }
 
+        // Restore AUTO dismiss mode now that WebView window is no longer needed
+        trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
+
         // Convert YouTubeScrapedVideo to VideoInfo
         val videoInfoList = videos.map { scraped ->
             VideoInfo(
@@ -255,6 +267,7 @@ class BulkDownloadViewModel @AssistedInject constructor(
      */
     fun onFallbackExtractionError(message: String) {
         errorln { "[BulkDownloadViewModel] Fallback extraction error: $message" }
+        trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
         _fallbackState.value = FallbackState.Error(message)
         _errorMessage.value = message
     }
@@ -380,6 +393,7 @@ class BulkDownloadViewModel @AssistedInject constructor(
 
             BulkDownloadEvents.ScreenDisposed -> {
                 infoln { "[BulkDownloadViewModel] Screen disposed: clearing state" }
+                trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
                 _playlistInfo.value = null
                 _videos.value = emptyList()
                 _errorMessage.value = null
@@ -406,6 +420,7 @@ class BulkDownloadViewModel @AssistedInject constructor(
 
             BulkDownloadEvents.CancelFallback -> {
                 infoln { "[BulkDownloadViewModel] Fallback cancelled by user" }
+                trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
                 _fallbackState.value = FallbackState.None
                 _webViewExtractor.value?.reset()
                 _webViewExtractor.value = null
@@ -451,5 +466,10 @@ class BulkDownloadViewModel @AssistedInject constructor(
             _isStartingDownloads.value = false
             _navigationState.value = BulkDownloadNavigationState.NavigateToDownloader
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
     }
 }

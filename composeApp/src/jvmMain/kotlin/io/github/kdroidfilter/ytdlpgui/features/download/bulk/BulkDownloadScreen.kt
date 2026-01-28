@@ -421,7 +421,7 @@ private fun DownloadOptions(
 
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         // Format selector (like SingleDownloadScreen)
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -879,11 +879,11 @@ private fun HiddenExtractionWebView(
     }
 
     // Visible window for WebView (needed for proper rendering)
-    Window(
+    DialogWindow(
         onCloseRequest = { },
         visible = true,
         title = "WebView Extractor",
-        state = WindowState(
+        state = DialogState(
             width = 800.dp,
             height = 600.dp,
             position = WindowPosition((-2000).dp, (-2000).dp)
