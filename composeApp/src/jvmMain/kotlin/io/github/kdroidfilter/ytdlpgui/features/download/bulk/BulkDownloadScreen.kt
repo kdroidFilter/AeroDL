@@ -558,8 +558,8 @@ private fun FallbackContent(
             )
         }
         is FallbackState.CheckingLogin, is FallbackState.Extracting -> {
-            // Show simple loader
-            ExtractionProgress()
+            // Show loader with progress
+            ExtractionProgress(state.fallbackState)
 
             // Hidden WebView in separate invisible window
             HiddenExtractionWebView(
@@ -580,8 +580,22 @@ private fun FallbackContent(
 }
 
 @Composable
-private fun ExtractionProgress() {
-    Loader()
+private fun ExtractionProgress(fallbackState: FallbackState) {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            ProgressRing()
+            Spacer(Modifier.height(16.dp))
+            Text(stringResource(Res.string.loading))
+            if (fallbackState is FallbackState.Extracting && fallbackState.videoCount > 0) {
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = "(${stringResource(Res.string.bulk_analyzing_videos, fallbackState.videoCount)})",
+                    style = FluentTheme.typography.caption,
+                    color = FluentTheme.colors.text.text.secondary
+                )
+            }
+        }
+    }
 }
 
 @Composable

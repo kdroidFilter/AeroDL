@@ -87,6 +87,7 @@
     <string name="bulk_fallback_loading">Loading via browser…</string>
     <string name="bulk_fallback_scrolling">Scrolling… %1$d videos loaded</string>
     <string name="bulk_fallback_extracting">Extracting videos…</string>
+    <string name="bulk_analyzing_videos">analyzing %1$d videos</string>
 
     <string name="about_credits_title">Credits</string>
     <string name="credits_made_by">Crafted by Elie Gambache</string>

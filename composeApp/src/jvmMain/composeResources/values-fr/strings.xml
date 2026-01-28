@@ -72,6 +72,7 @@
     <string name="bulk_fallback_loading">Chargement via navigateur…</string>
     <string name="bulk_fallback_scrolling">Défilement… %1$d vidéos chargées</string>
     <string name="bulk_fallback_extracting">Extraction des vidéos…</string>
+    <string name="bulk_analyzing_videos">analyse de %1$d vidéos</string>
 
     <string name="about_credits_title">Crédits</string>
     <string name="credits_made_by">Réalisé par Elie Gambache</string>
