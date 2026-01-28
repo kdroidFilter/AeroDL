@@ -866,20 +866,23 @@ private fun HiddenExtractionWebView(
     }
 
     // Visible window for WebView (needed for proper rendering)
-    DialogWindow(
+   Window(
         onCloseRequest = { },
         visible = true,
         title = "WebView Extractor",
-        state = DialogState(
+        state = WindowState(
             width = 800.dp,
             height = 600.dp,
-            position = WindowPosition((-2000).dp, (-2000).dp)
-        ),
+            position = WindowPosition.Aligned(Alignment.Center)),
         undecorated = true,
         alwaysOnTop = false,
         resizable = false,
+        focusable = false,
 
     ) {
+       LaunchedEffect(Unit) {
+           window.opacity = 0f
+       }
         WebView(
             state = state,
             navigator = navigator,
