@@ -4,7 +4,7 @@ jvmToolchain = "25"
 
 # Kotlin & Compose
 kotlin = "2.3.0"
-composeMultiplatform = "1.10.0-rc02"
+composeMultiplatform = "1.10.0"
 composeHotReload = "1.0.0"
 
 # AndroidX
@@ -21,13 +21,13 @@ cardiologist = "0.8.0"
 
 # UI Libraries
 fluent = "v0.1.0"
-composemediaplayer = "0.8.6"
+composemediaplayer = "0.8.7"
 composenativetray = "1.0.4"
 
 # Network & Tools
 ktor = "3.4.0"
 platformtools = "0.7.4"
-metro = "0.9.3"
+metro = "0.10.2"
 jvmNativeTrustedRoots = "1.1.7"
 
 
