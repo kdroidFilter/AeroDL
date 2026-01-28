@@ -421,7 +421,7 @@ private fun DownloadOptions(
 
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         // Format selector (like SingleDownloadScreen)
-        Column {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -456,8 +456,6 @@ private fun DownloadOptions(
         // Quality selector (like SingleDownloadScreen)
         if (!state.isAudioMode && state.availablePresets.isNotEmpty()) {
             Text(text = stringResource(Res.string.single_formats))
-            Spacer(Modifier.height(8.dp))
-
             FlowRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
@@ -478,8 +476,6 @@ private fun DownloadOptions(
 
         if (state.isAudioMode && state.availableAudioQualityPresets.isNotEmpty()) {
             Text(text = stringResource(Res.string.single_audio_quality))
-            Spacer(Modifier.height(8.dp))
-
             FlowRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
@@ -562,8 +558,8 @@ private fun FallbackContent(
             )
         }
         is FallbackState.CheckingLogin, is FallbackState.Extracting -> {
-            // Show extraction progress
-            ExtractionProgress(state.fallbackState)
+            // Show simple loader
+            ExtractionProgress()
 
             // Hidden WebView in separate invisible window
             HiddenExtractionWebView(
@@ -584,24 +580,8 @@ private fun FallbackContent(
 }
 
 @Composable
-private fun ExtractionProgress(fallbackState: FallbackState) {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            ProgressRing()
-            Spacer(Modifier.height(16.dp))
-            when (fallbackState) {
-                is FallbackState.CheckingLogin -> {
-                    Text(stringResource(Res.string.bulk_login_check))
-                }
-                is FallbackState.Extracting -> {
-                    Text(stringResource(Res.string.bulk_fallback_scrolling, fallbackState.videoCount))
-                }
-                else -> {
-                    Text(stringResource(Res.string.bulk_fallback_loading))
-                }
-            }
-        }
-    }
+private fun ExtractionProgress() {
+    Loader()
 }
 
 @Composable
