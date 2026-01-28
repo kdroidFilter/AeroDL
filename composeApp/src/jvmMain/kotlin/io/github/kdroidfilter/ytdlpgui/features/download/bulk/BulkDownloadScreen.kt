@@ -715,27 +715,6 @@ private val extractPlaylistLinksJs = """
     })();
 """.trimIndent()
 
-private val extractChannelLinksJs = """
-    (function() {
-        var items = [...document.querySelectorAll('ytd-rich-item-renderer')].map(renderer => {
-            var titleEl = renderer.querySelector('a#video-title-link');
-            if (!titleEl) return null;
-            var url = new URL(titleEl.href);
-            var videoId = url.searchParams.get('v');
-            if (!videoId) return null;
-            var durationEl = renderer.querySelector('span#text.ytd-thumbnail-overlay-time-status-renderer');
-            var duration = durationEl ? durationEl.textContent.trim() : null;
-            return {
-                url: 'https://www.youtube.com/watch?v=' + videoId,
-                title: titleEl.textContent.trim(),
-                duration: duration,
-                thumbnail: 'https://i.ytimg.com/vi/' + videoId + '/mqdefault.jpg'
-            };
-        }).filter(item => item !== null);
-        return JSON.stringify(items);
-    })();
-""".trimIndent()
-
 private val scrollAndCountJs = """
     (function() {
         window.scrollTo(0, document.documentElement.scrollHeight);
@@ -754,13 +733,16 @@ private fun HiddenExtractionWebView(
     onExtractionComplete: () -> Unit,
     onExtractionError: (String) -> Unit
 ) {
-    val normalizedUrl = remember(url) { extractor.normalizeUrl(url) }
-    infoln { "[HiddenExtractionWebView] Normalized URL: $normalizedUrl" }
+    val isChannelUrl = remember(url) { extractor.isChannelUrl(url) }
+    val initialUrl = remember(url) { extractor.normalizeUrl(url) }
+    infoln { "[HiddenExtractionWebView] Initial URL: $initialUrl, isChannel: $isChannelUrl" }
 
-    val state = rememberWebViewState(normalizedUrl)
+    val state = rememberWebViewState(initialUrl)
     val navigator = rememberWebViewNavigator()
 
     var loginChecked by remember { mutableStateOf(false) }
+    var channelConverted by remember { mutableStateOf(false) }
+    var playlistUrl by remember { mutableStateOf<String?>(null) }
     var isScrolling by remember { mutableStateOf(false) }
     var lastVideoCount by remember { mutableStateOf(0) }
     var noChangeCount by remember { mutableStateOf(0) }
@@ -783,18 +765,39 @@ private fun HiddenExtractionWebView(
         }
     }
 
-    // Start scrolling when in Extracting state and page is loaded
-    LaunchedEffect(fallbackState, state.isLoading) {
+    // Convert channel to playlist when in Extracting state
+    LaunchedEffect(fallbackState, state.isLoading, channelConverted) {
+        if (fallbackState is FallbackState.Extracting && !state.isLoading && isChannelUrl && !channelConverted) {
+            infoln { "[HiddenExtractionWebView] Channel detected, extracting channel ID..." }
+            delay(1000) // Wait for page to fully load
+
+            extractor.extractChannelId(navigator) { channelId ->
+                if (channelId != null) {
+                    val uploadsPlaylistUrl = extractor.channelIdToUploadsPlaylistUrl(channelId)
+                    infoln { "[HiddenExtractionWebView] Converted to playlist URL: $uploadsPlaylistUrl" }
+                    playlistUrl = uploadsPlaylistUrl
+                    channelConverted = true
+                    navigator.loadUrl(uploadsPlaylistUrl)
+                } else {
+                    infoln { "[HiddenExtractionWebView] Failed to extract channel ID" }
+                    onExtractionError("Failed to extract channel ID")
+                }
+            }
+        }
+    }
+
+    // Start scrolling when in Extracting state and on playlist page
+    LaunchedEffect(fallbackState, state.isLoading, channelConverted) {
         if (fallbackState is FallbackState.Extracting && !state.isLoading && !isScrolling) {
             val currentUrl = state.lastLoadedUrl ?: return@LaunchedEffect
-            val isValidUrl = currentUrl.contains("/playlist") ||
-                    currentUrl.contains("/videos") ||
-                    currentUrl.contains("/@") ||
-                    currentUrl.contains("/channel")
 
-            if (isValidUrl) {
+            // For channels, wait until we've navigated to the playlist
+            if (isChannelUrl && !channelConverted) return@LaunchedEffect
+
+            // Only start scrolling on playlist pages
+            if (currentUrl.contains("/playlist")) {
                 delay(1500) // Wait for content to load
-                infoln { "[HiddenExtractionWebView] Starting auto-scroll..." }
+                infoln { "[HiddenExtractionWebView] Starting auto-scroll on playlist..." }
                 isScrolling = true
                 lastVideoCount = 0
                 noChangeCount = 0
@@ -802,12 +805,9 @@ private fun HiddenExtractionWebView(
         }
     }
 
-    // Auto-scroll loop (same pattern as webview-demo)
+    // Auto-scroll loop
     LaunchedEffect(isScrolling) {
         if (isScrolling) {
-            val currentUrl = state.lastLoadedUrl ?: return@LaunchedEffect
-            val extractJs = if (currentUrl.contains("/playlist")) extractPlaylistLinksJs else extractChannelLinksJs
-
             while (isScrolling) {
                 navigator.evaluateJavaScript(scrollAndCountJs) { result ->
                     val count = result?.removeSurrounding("\"")?.toIntOrNull() ?: 0
@@ -826,7 +826,7 @@ private fun HiddenExtractionWebView(
                         infoln { "[HiddenExtractionWebView] Extracting $count videos..." }
                         isScrolling = false
 
-                        navigator.evaluateJavaScript(extractJs) { extractResult ->
+                        navigator.evaluateJavaScript(extractPlaylistLinksJs) { extractResult ->
                             if (extractResult == null) {
                                 onExtractionError("Null result from extraction")
                                 return@evaluateJavaScript

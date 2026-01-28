@@ -116,6 +116,38 @@ class YouTubeWebViewExtractor {
     """.trimIndent()
 
     /**
+     * JavaScript to extract channel ID from the page.
+     * Looks for the channel ID in various places in the YouTube page.
+     */
+    private val extractChannelIdJs = """
+        (function() {
+            // Try to get from canonical URL
+            var canonical = document.querySelector('link[rel="canonical"]');
+            if (canonical) {
+                var href = canonical.getAttribute('href');
+                var match = href.match(/\/channel\/(UC[a-zA-Z0-9_-]+)/);
+                if (match) return match[1];
+            }
+            // Try to get from meta tag
+            var meta = document.querySelector('meta[itemprop="channelId"]');
+            if (meta) return meta.getAttribute('content');
+            // Try to get from ytInitialData
+            if (typeof ytInitialData !== 'undefined' && ytInitialData.metadata) {
+                var channelId = ytInitialData.metadata.channelMetadataRenderer?.externalId;
+                if (channelId) return channelId;
+            }
+            // Try from page source
+            var scripts = document.querySelectorAll('script');
+            for (var script of scripts) {
+                var text = script.textContent;
+                var match = text.match(/"channelId":"(UC[a-zA-Z0-9_-]+)"/);
+                if (match) return match[1];
+            }
+            return null;
+        })();
+    """.trimIndent()
+
+    /**
      * Checks the Google login status via the WebView.
      */
     fun checkLoginStatus(navigator: WebViewNavigator, onResult: (Boolean?) -> Unit) {
@@ -216,14 +248,56 @@ class YouTubeWebViewExtractor {
     }
 
     /**
-     * Normalizes a YouTube URL (adds /videos for channels if needed).
+     * Normalizes a YouTube URL.
+     * For playlists, returns as-is.
+     * For channels, returns the channel URL (will be converted to playlist later).
      */
     fun normalizeUrl(url: String): String {
+        // If it's already a playlist, return as-is
+        if (url.contains("/playlist")) return url
+
+        // For channels, just return the base channel URL (we'll extract ID and convert to playlist)
         return when {
-            url.contains("/@") && !url.contains("/videos") -> url.trimEnd('/') + "/videos"
-            url.contains("/channel/") && !url.contains("/videos") -> url.trimEnd('/') + "/videos"
+            url.contains("/@") -> url.substringBefore("/videos").substringBefore("/streams").substringBefore("/shorts")
+            url.contains("/channel/") -> url.substringBefore("/videos").substringBefore("/streams").substringBefore("/shorts")
             else -> url
         }
+    }
+
+    /**
+     * Checks if the URL is a channel URL (not a playlist).
+     */
+    fun isChannelUrl(url: String): Boolean {
+        return !url.contains("/playlist") && (url.contains("/@") || url.contains("/channel/"))
+    }
+
+    /**
+     * Checks if the URL is a playlist URL.
+     */
+    fun isPlaylistUrl(url: String): Boolean {
+        return url.contains("/playlist")
+    }
+
+    /**
+     * Extracts the channel ID from the current page via JavaScript.
+     */
+    fun extractChannelId(navigator: WebViewNavigator, onResult: (String?) -> Unit) {
+        navigator.evaluateJavaScript(extractChannelIdJs) { result ->
+            val channelId = result?.removeSurrounding("\"")?.trim()?.takeIf {
+                it != "null" && it.startsWith("UC")
+            }
+            infoln { "[YouTubeWebViewExtractor] Extracted channel ID: $channelId" }
+            onResult(channelId)
+        }
+    }
+
+    /**
+     * Converts a channel ID (UC...) to the uploads playlist URL (UU...).
+     */
+    fun channelIdToUploadsPlaylistUrl(channelId: String): String {
+        // Replace 'UC' prefix with 'UU' to get the uploads playlist ID
+        val playlistId = "UU" + channelId.removePrefix("UC")
+        return "https://www.youtube.com/playlist?list=$playlistId"
     }
 
     /**
