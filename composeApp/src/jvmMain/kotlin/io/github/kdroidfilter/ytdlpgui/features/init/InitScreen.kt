@@ -38,6 +38,8 @@ import ytdlpgui.composeapp.generated.resources.error_occurred
  
 import ytdlpgui.composeapp.generated.resources.updating_ffmpeg
 import ytdlpgui.composeapp.generated.resources.updating_ytdlp
+import ytdlpgui.composeapp.generated.resources.checking_deno
+import ytdlpgui.composeapp.generated.resources.downloading_deno
 
 @Composable
 fun InitScreen(navController: NavHostController) {
@@ -90,7 +92,8 @@ fun InitView(
         if (state.errorMessage == null) {
             // Show progress ring when any operation is in progress
             val isInProgress = state.checkingYtDlp || state.downloadingYtDlp || state.updatingYtdlp ||
-                    state.checkingFFmpeg || state.downloadingFFmpeg || state.updatingFFmpeg
+                    state.checkingFFmpeg || state.downloadingFFmpeg || state.updatingFFmpeg ||
+                    state.checkingDeno || state.downloadingDeno
 
             if (isInProgress) {
                 ProgressRing(modifier = Modifier.size(48.dp))
@@ -110,6 +113,12 @@ fun InitView(
                 Text(text = stringResource(Res.string.downloading_ffmpeg) + " ${progress.toInt()}%")
             }
             if (state.updatingFFmpeg) Text(text = stringResource(Res.string.updating_ffmpeg))
+
+            if (state.checkingDeno) Text(text = stringResource(Res.string.checking_deno))
+            if (state.downloadingDeno) {
+                val progress = (state.downloadDenoProgress ?: 0f)
+                Text(text = stringResource(Res.string.downloading_deno) + " ${progress.toInt()}%")
+            }
         } else {
             Row {
                 Text(text = stringResource(Res.string.error_occurred))

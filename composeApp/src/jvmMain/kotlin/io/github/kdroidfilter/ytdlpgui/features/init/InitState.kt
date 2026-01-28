@@ -11,12 +11,16 @@ sealed class InitNavigationState {
 data class InitState(
     val checkingYtDlp: Boolean = false,
     val checkingFFmpeg: Boolean = false,
+    val checkingDeno: Boolean = false,
 
     val downloadingYtDlp: Boolean = false,
     val downloadYtDlpProgress: Float? = null,
 
     val downloadingFFmpeg: Boolean = false,
     val downloadFfmpegProgress: Float? = null,
+
+    val downloadingDeno: Boolean = false,
+    val downloadDenoProgress: Float? = null,
 
     val errorMessage: String? = null,
 
@@ -59,6 +63,15 @@ data class InitState(
 
         val updatingFFmpegState = InitState(
             updatingFFmpeg = true
+        )
+
+        val checkingDenoState = InitState(
+            checkingDeno = true
+        )
+
+        val downloadingDenoState = InitState(
+            downloadingDeno = true,
+            downloadDenoProgress = 55.0f
         )
 
         val errorState = InitState(

@@ -57,6 +57,7 @@ class YtDlpWrapper {
         }
 
     var ffmpegPath: String? = null
+    var denoPath: String? = null
     var downloadDir: File? = File(System.getProperty("user.home"), "Downloads/yt-dlp")
 
     /**
@@ -101,6 +102,7 @@ class YtDlpWrapper {
     private val ytdlpFetcher = GitHubReleaseFetcher(owner = "yt-dlp", repo = "yt-dlp", httpClient = httpClient)
     private val ffmpegFetcher = GitHubReleaseFetcher(owner = "yt-dlp", repo = "FFmpeg-Builds", httpClient = httpClient)
     private val ffmpegMacOsFetcher = GitHubReleaseFetcher(owner = "kdroidFilter", repo = "FFmpeg-Builds", httpClient = httpClient)
+    private val denoFetcher = GitHubReleaseFetcher(owner = "denoland", repo = "deno", httpClient = httpClient)
 
     private data class ProcessResult(val exitCode: Int, val stdout: List<String>, val stderr: String)
 
@@ -110,8 +112,10 @@ class YtDlpWrapper {
         data object DownloadingYtDlp : InitEvent
         data object UpdatingYtDlp : InitEvent
         data object EnsuringFfmpeg : InitEvent
+        data object EnsuringDeno : InitEvent
         data class YtDlpProgress(val bytesRead: Long, val totalBytes: Long?, val percent: Double?) : InitEvent
         data class FfmpegProgress(val bytesRead: Long, val totalBytes: Long?, val percent: Double?) : InitEvent
+        data class DenoProgress(val bytesRead: Long, val totalBytes: Long?, val percent: Double?) : InitEvent
         data class Completed(val success: Boolean) : InitEvent
         data class Error(val message: String, val cause: Throwable? = null) : InitEvent
     }
@@ -139,6 +143,9 @@ class YtDlpWrapper {
 
             onEvent(InitEvent.EnsuringFfmpeg)
             ensureFfmpegAvailable(false) { r, t -> onEvent(InitEvent.FfmpegProgress(r, t, pct(r, t))) }
+
+            onEvent(InitEvent.EnsuringDeno)
+            ensureDenoAvailable(false) { r, t -> onEvent(InitEvent.DenoProgress(r, t, pct(r, t))) }
 
             val success = isAvailable()
             onEvent(InitEvent.Completed(success))
@@ -257,6 +264,32 @@ class YtDlpWrapper {
         return false
     }
 
+    // --- Deno (JavaScript runtime for YouTube) ---
+
+    fun getDefaultDenoPath(): String = PlatformUtils.getDefaultDenoPath()
+
+    suspend fun denoVersion(): String? {
+        val path = denoPath ?: return null
+        return PlatformUtils.denoVersion(path)
+    }
+
+    suspend fun ensureDenoAvailable(
+        forceDownload: Boolean = false,
+        onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null
+    ): Boolean {
+        denoPath?.let {
+            if (PlatformUtils.denoVersion(it) != null && !forceDownload) return true
+        }
+        PlatformUtils.findDenoInSystemPath()?.let {
+            denoPath = it
+            return true
+        }
+        val assetName = PlatformUtils.getDenoAssetNameForSystem() ?: return false
+        val result = PlatformUtils.downloadAndInstallDeno(assetName, forceDownload, denoFetcher, onProgress)
+        if (result != null) denoPath = result
+        return result != null
+    }
+
     // --- Network Pre-check ---
 
     fun checkNetwork(
@@ -298,7 +331,7 @@ class YtDlpWrapper {
                 infoln { "[YtDlpWrapper] Subtitle options provided: languages=${subOpts.languages}, embed=${subOpts.embedSubtitles}, writeAuto=${subOpts.writeAutoSubtitles}" }
             }
 
-            val cmd = NetAndArchive.buildCommand(ytDlpPath, ffmpegPath, url, finalOptions, downloadDir)
+            val cmd = NetAndArchive.buildCommand(ytDlpPath, ffmpegPath, denoPath, url, finalOptions, downloadDir)
             infoln { "[YtDlpWrapper] Built command with ${cmd.size} arguments" }
             debugln { "[YtDlpWrapper] Full command: ${cmd.joinToString(" ")}" }
 

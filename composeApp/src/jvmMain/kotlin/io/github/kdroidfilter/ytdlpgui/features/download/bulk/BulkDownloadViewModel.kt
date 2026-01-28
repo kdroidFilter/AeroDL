@@ -3,13 +3,19 @@ package io.github.kdroidfilter.ytdlpgui.features.download.bulk
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import dev.zacsweers.metro.Assisted
+import dev.zacsweers.metro.AssistedFactory
+import dev.zacsweers.metro.AssistedInject
+import io.github.kdroidfilter.logging.errorln
+import io.github.kdroidfilter.logging.infoln
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlp.model.PlaylistInfo
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
-import kotlinx.coroutines.CoroutineScope
+import io.github.kdroidfilter.youtubewebviewextractor.YouTubeScrapedVideo
+import io.github.kdroidfilter.youtubewebviewextractor.YouTubeWebViewExtractor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -17,13 +23,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import io.github.kdroidfilter.logging.errorln
-import io.github.kdroidfilter.logging.infoln
-import dev.zacsweers.metro.Assisted
-import dev.zacsweers.metro.AssistedFactory
-import dev.zacsweers.metro.AssistedInject
 import java.net.HttpURLConnection
 import java.net.URI
+import java.time.Duration
 
 class BulkDownloadViewModel @AssistedInject constructor(
     @Assisted savedStateHandle: SavedStateHandle,
@@ -53,6 +55,8 @@ class BulkDownloadViewModel @AssistedInject constructor(
     private val _checkedCount = MutableStateFlow(0)
     private val _navigationState = MutableStateFlow<BulkDownloadNavigationState>(BulkDownloadNavigationState.None)
     private val _isStartingDownloads = MutableStateFlow(false)
+    private val _fallbackState = MutableStateFlow<FallbackState>(FallbackState.None)
+    private val _webViewExtractor = MutableStateFlow<YouTubeWebViewExtractor?>(null)
 
     override val uiState = combine(
         _isLoading,
@@ -68,6 +72,8 @@ class BulkDownloadViewModel @AssistedInject constructor(
         _checkedCount,
         _navigationState,
         _isStartingDownloads,
+        _fallbackState,
+        _webViewExtractor,
     ) { values: Array<Any?> ->
         val loading = values[0] as Boolean
         val error = values[1] as String?
@@ -85,6 +91,8 @@ class BulkDownloadViewModel @AssistedInject constructor(
         val checked = values[10] as Int
         val navState = values[11] as BulkDownloadNavigationState
         val startingDownloads = values[12] as Boolean
+        val fallback = values[13] as FallbackState
+        val extractor = values[14] as YouTubeWebViewExtractor?
 
         BulkDownloadState(
             isLoading = loading,
@@ -100,6 +108,8 @@ class BulkDownloadViewModel @AssistedInject constructor(
             checkedCount = checked,
             navigationState = navState,
             isStartingDownloads = startingDownloads,
+            fallbackState = fallback,
+            webViewExtractor = extractor,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -112,13 +122,12 @@ class BulkDownloadViewModel @AssistedInject constructor(
     }
 
     private fun loadPlaylist() {
-        val scope = CoroutineScope(Dispatchers.IO)
-        scope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             infoln { "[BulkDownloadViewModel] Loading playlist info for $playlistUrl" }
             _isLoading.value = true
             _errorMessage.value = null
+            _fallbackState.value = FallbackState.None
 
-            // Use getVideoInfoList which properly handles both flat playlist formats
             ytDlpWrapper.getVideoInfoList(
                 url = playlistUrl,
                 extractFlat = true,
@@ -127,66 +136,160 @@ class BulkDownloadViewModel @AssistedInject constructor(
                 .onSuccess { videoList ->
                     infoln { "[BulkDownloadViewModel] Got video list successfully" }
                     infoln { "[BulkDownloadViewModel] Entries: ${videoList.size}" }
-
-                    // Create a PlaylistInfo from the video list
-                    val playlistInfo = PlaylistInfo(
-                        id = null,
-                        title = "Playlist",
-                        entries = videoList,
-                        entryCount = videoList.size
-                    )
-                    _playlistInfo.value = playlistInfo
-
-                    // Convert entries to BulkVideoItems (all selected by default, checking state)
-                    val items = videoList.map { videoInfo ->
-                        BulkVideoItem(
-                            videoInfo = videoInfo,
-                            isSelected = true,
-                            isAvailable = true, // Will be verified
-                            isChecking = true
-                        )
-                    }
-                    _videos.value = items
-
-                    // Set default presets
-                    _availablePresets.value = YtDlpWrapper.Preset.entries
-                        .filter { it.height in listOf(360, 480, 720, 1080, 1440, 2160) }
-                        .sortedBy { it.height }
-                    _selectedPreset.value = YtDlpWrapper.Preset.P720
-
-                    _availableAudioQualityPresets.value = YtDlpWrapper.AudioQualityPreset.entries
-                    _selectedAudioQualityPreset.value = YtDlpWrapper.AudioQualityPreset.HIGH
-
-                    _isLoading.value = false
-
-                    // Start availability check
-                    checkVideosAvailability(videoList)
+                    handleVideoListSuccess(videoList)
                 }
                 .onFailure { e ->
                     val detail = e.localizedMessage ?: e.message ?: e.toString()
                     errorln { "[BulkDownloadViewModel] Error getting video list: $detail" }
-                    _errorMessage.value = detail
-                    _isLoading.value = false
+                    // Trigger fallback instead of showing error
+                    startFallback()
                 }
         }
     }
 
+    private fun handleVideoListSuccess(videoList: List<VideoInfo>) {
+        val playlistInfo = PlaylistInfo(
+            id = null,
+            title = "Playlist",
+            entries = videoList,
+            entryCount = videoList.size
+        )
+        _playlistInfo.value = playlistInfo
+
+        val items = videoList.map { videoInfo ->
+            BulkVideoItem(
+                videoInfo = videoInfo,
+                isSelected = true,
+                isAvailable = true,
+                isChecking = true
+            )
+        }
+        _videos.value = items
+
+        setupPresets()
+        _isLoading.value = false
+
+        checkVideosAvailability(videoList)
+    }
+
+    private fun setupPresets() {
+        _availablePresets.value = YtDlpWrapper.Preset.entries
+            .filter { it.height in listOf(360, 480, 720, 1080, 1440, 2160) }
+            .sortedBy { it.height }
+        _selectedPreset.value = YtDlpWrapper.Preset.P720
+
+        _availableAudioQualityPresets.value = YtDlpWrapper.AudioQualityPreset.entries
+        _selectedAudioQualityPreset.value = YtDlpWrapper.AudioQualityPreset.HIGH
+    }
+
+    private fun startFallback() {
+        infoln { "[BulkDownloadViewModel] Starting WebView fallback extraction" }
+        _isLoading.value = false
+        _fallbackState.value = FallbackState.CheckingLogin
+
+        // Create extractor instance
+        val extractor = YouTubeWebViewExtractor()
+        _webViewExtractor.value = extractor
+    }
+
+    /**
+     * Called by the UI when the WebView has checked login status.
+     * If logged in, extraction will start automatically.
+     * If not logged in, LoginRequired state is set.
+     */
+    fun onLoginStatusChecked(isLoggedIn: Boolean?) {
+        infoln { "[BulkDownloadViewModel] Login status checked: $isLoggedIn" }
+        when (isLoggedIn) {
+            true -> {
+                // User is logged in, start extraction
+                _fallbackState.value = FallbackState.Extracting(0)
+            }
+            false -> {
+                // User needs to log in
+                _fallbackState.value = FallbackState.LoginRequired
+            }
+            null -> {
+                // Unknown, try extraction anyway
+                _fallbackState.value = FallbackState.Extracting(0)
+            }
+        }
+    }
+
+    /**
+     * Called by the UI when user has logged in via the WebView.
+     */
+    fun onUserLoggedIn() {
+        infoln { "[BulkDownloadViewModel] User logged in, starting extraction" }
+        _fallbackState.value = FallbackState.Extracting(0)
+    }
+
+    /**
+     * Called by the UI to update extraction progress.
+     */
+    fun onExtractionProgress(videoCount: Int) {
+        _fallbackState.value = FallbackState.Extracting(videoCount)
+    }
+
+    /**
+     * Called by the UI when fallback extraction is complete.
+     */
+    fun onFallbackExtractionComplete(videos: List<YouTubeScrapedVideo>) {
+        infoln { "[BulkDownloadViewModel] Fallback extraction complete: ${videos.size} videos" }
+
+        // Convert YouTubeScrapedVideo to VideoInfo
+        val videoInfoList = videos.map { scraped ->
+            VideoInfo(
+                id = scraped.videoId ?: scraped.url.hashCode().toString(),
+                title = scraped.title,
+                url = scraped.url,
+                thumbnail = scraped.thumbnail,
+                duration = scraped.duration?.let { parseDuration(it) }
+            )
+        }
+
+        handleVideoListSuccess(videoInfoList)
+        _fallbackState.value = FallbackState.Completed
+    }
+
+    /**
+     * Called by the UI when fallback extraction fails.
+     */
+    fun onFallbackExtractionError(message: String) {
+        errorln { "[BulkDownloadViewModel] Fallback extraction error: $message" }
+        _fallbackState.value = FallbackState.Error(message)
+        _errorMessage.value = message
+    }
+
+    /**
+     * Parse duration string (e.g., "1:23:45" or "12:34") to Duration.
+     */
+    private fun parseDuration(durationStr: String): Duration {
+        val parts = durationStr.trim().split(":").mapNotNull { it.toIntOrNull() }
+        return when (parts.size) {
+            3 -> Duration.ofHours(parts[0].toLong())
+                .plusMinutes(parts[1].toLong())
+                .plusSeconds(parts[2].toLong())
+            2 -> Duration.ofMinutes(parts[0].toLong())
+                .plusSeconds(parts[1].toLong())
+            1 -> Duration.ofSeconds(parts[0].toLong())
+            else -> Duration.ZERO
+        }
+    }
+
     private fun checkVideosAvailability(entries: List<VideoInfo>) {
-        val scope = CoroutineScope(Dispatchers.IO)
-        scope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             _isCheckingAvailability.value = true
             _checkedCount.value = 0
 
             entries.forEachIndexed { index, videoInfo ->
                 val isAvailable = checkVideoAvailability(videoInfo)
 
-                // Update the specific video item
                 _videos.value = _videos.value.map { item ->
                     if (item.videoInfo.id == videoInfo.id) {
                         item.copy(
                             isAvailable = isAvailable,
                             isChecking = false,
-                            isSelected = isAvailable, // Deselect if not available
+                            isSelected = isAvailable,
                             errorMessage = if (!isAvailable) "Video unavailable" else null
                         )
                     } else {
@@ -204,7 +307,6 @@ class BulkDownloadViewModel @AssistedInject constructor(
     private suspend fun checkVideoAvailability(videoInfo: VideoInfo): Boolean {
         return withContext(Dispatchers.IO) {
             try {
-                // Try to check if the video URL is accessible
                 val urlToCheck = videoInfo.url
                 if (urlToCheck.isBlank()) return@withContext false
 
@@ -221,18 +323,12 @@ class BulkDownloadViewModel @AssistedInject constructor(
                     connection.connect()
                     val responseCode = connection.responseCode
                     connection.disconnect()
-
-                    // Consider 2xx and 3xx as available
                     responseCode in 200..399
                 } catch (e: Exception) {
                     connection.disconnect()
-                    // If HEAD fails, the video might still be available via yt-dlp
-                    // Let's be optimistic and mark it as available
                     true
                 }
             } catch (e: Exception) {
-                // If we can't even parse the URL, assume it's available
-                // yt-dlp will handle the actual availability check
                 infoln { "[BulkDownloadViewModel] URL check failed for ${videoInfo.id}: ${e.message}, assuming available" }
                 true
             }
@@ -290,10 +386,32 @@ class BulkDownloadViewModel @AssistedInject constructor(
                 _videos.value = emptyList()
                 _errorMessage.value = null
                 _isLoading.value = false
+                _fallbackState.value = FallbackState.None
+                _webViewExtractor.value?.reset()
+                _webViewExtractor.value = null
             }
 
             BulkDownloadEvents.OnNavigationConsumed -> {
                 _navigationState.value = BulkDownloadNavigationState.None
+            }
+
+            BulkDownloadEvents.OnUserLoggedIn -> {
+                onUserLoggedIn()
+            }
+
+            BulkDownloadEvents.OnFallbackExtractionComplete -> {
+                val extractor = _webViewExtractor.value
+                if (extractor != null) {
+                    onFallbackExtractionComplete(extractor.extractedVideos)
+                }
+            }
+
+            BulkDownloadEvents.CancelFallback -> {
+                infoln { "[BulkDownloadViewModel] Fallback cancelled by user" }
+                _fallbackState.value = FallbackState.None
+                _webViewExtractor.value?.reset()
+                _webViewExtractor.value = null
+                _errorMessage.value = "Failed to load playlist"
             }
         }
     }
@@ -308,8 +426,7 @@ class BulkDownloadViewModel @AssistedInject constructor(
         _isStartingDownloads.value = true
         infoln { "[BulkDownloadViewModel] Starting downloads for ${selectedVideos.size} videos" }
 
-        val scope = CoroutineScope(Dispatchers.IO)
-        scope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val isAudio = _isAudioMode.value
             val preset = _selectedPreset.value
             val audioPreset = _selectedAudioQualityPreset.value

@@ -43,6 +43,9 @@ fun main() = runBlocking {
                 System.err.println("❌ Error during initialization: ${ev.message}")
                 ev.cause?.printStackTrace()
             }
+
+            is InitEvent.DenoProgress -> TODO()
+            InitEvent.EnsuringDeno -> TODO()
         }
     }
 

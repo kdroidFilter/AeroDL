@@ -82,6 +82,7 @@ object NetAndArchive {
     fun buildCommand(
         ytDlpPath: String,
         ffmpegPath: String?,
+        denoPath: String?,
         url: String,
         options: Options,
         downloadDir: File?
@@ -93,6 +94,11 @@ object NetAndArchive {
         ffmpegPath?.takeIf { it.isNotBlank() }?.let {
             val location = File(it).parentFile?.absolutePath ?: it
             cmd.addAll(listOf("--ffmpeg-location", location))
+        }
+
+        // Specify Deno as the JavaScript runtime for YouTube extraction
+        denoPath?.takeIf { it.isNotBlank() }?.let {
+            cmd.addAll(listOf("--js-runtimes", "deno:$it"))
         }
         if (options.noCheckCertificate) cmd.add("--no-check-certificate")
         options.cookiesFromBrowser?.takeIf { it.isNotBlank() }?.let { cmd.addAll(listOf("--cookies-from-browser", it)) }

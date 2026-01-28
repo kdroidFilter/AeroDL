@@ -23,6 +23,7 @@ class NetAndArchiveBuildCommandTest {
         val cmd = NetAndArchive.buildCommand(
             ytDlpPath = "/usr/bin/yt-dlp",
             ffmpegPath = null,
+            denoPath = null,
             url = "https://example.com/video",
             options = opts,
             downloadDir = null
@@ -49,6 +50,7 @@ class NetAndArchiveBuildCommandTest {
         val cmd = NetAndArchive.buildCommand(
             ytDlpPath = "/usr/bin/yt-dlp",
             ffmpegPath = null,
+            denoPath = null,
             url = "https://example.com/video",
             options = opts,
             downloadDir = null
@@ -62,8 +64,8 @@ class NetAndArchiveBuildCommandTest {
         val remux = Options(outputTemplate = "%(title)s.%(ext)s", targetContainer = "mp4", allowRecode = false)
         val recode = Options(outputTemplate = "%(title)s.%(ext)s", targetContainer = "mp4", allowRecode = true)
 
-        val cmdRemux = NetAndArchive.buildCommand("/usr/bin/yt-dlp", null, "https://example.com/video", remux, null)
-        val cmdRecode = NetAndArchive.buildCommand("/usr/bin/yt-dlp", null, "https://example.com/video", recode, null)
+        val cmdRemux = NetAndArchive.buildCommand("/usr/bin/yt-dlp", null, null, "https://example.com/video", remux, null)
+        val cmdRecode = NetAndArchive.buildCommand("/usr/bin/yt-dlp", null, null, "https://example.com/video", recode, null)
 
         assertTrue(cmdRemux.contains("--remux-video"))
         assertTrue(cmdRecode.contains("--recode-video"))
@@ -78,6 +80,7 @@ class NetAndArchiveBuildCommandTest {
         val cmd = NetAndArchive.buildCommand(
             ytDlpPath = "/usr/bin/yt-dlp",
             ffmpegPath = null,
+            denoPath = null,
             url = "https://example.com/video",
             options = opts,
             downloadDir = null
@@ -95,6 +98,7 @@ class NetAndArchiveBuildCommandTest {
         val cmd = NetAndArchive.buildCommand(
             ytDlpPath = "/usr/bin/yt-dlp",
             ffmpegPath = null,
+            denoPath = null,
             url = "https://example.com/video",
             options = opts,
             downloadDir = null
