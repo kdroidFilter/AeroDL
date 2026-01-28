@@ -249,10 +249,19 @@ class YouTubeWebViewExtractor {
 
     /**
      * Normalizes a YouTube URL.
-     * For playlists, returns as-is.
-     * For channels, returns the channel URL (will be converted to playlist later).
+     * - Converts watch URLs with list param to playlist URLs
+     * - For playlists, returns as-is.
+     * - For channels, returns the channel URL (will be converted to playlist later).
      */
     fun normalizeUrl(url: String): String {
+        // If it's a watch URL with a playlist ID, convert to playlist URL
+        if (url.contains("/watch") && url.contains("list=")) {
+            val listId = extractPlaylistIdFromUrl(url)
+            if (listId != null) {
+                return "https://www.youtube.com/playlist?list=$listId"
+            }
+        }
+
         // If it's already a playlist, return as-is
         if (url.contains("/playlist")) return url
 
@@ -262,6 +271,14 @@ class YouTubeWebViewExtractor {
             url.contains("/channel/") -> url.substringBefore("/videos").substringBefore("/streams").substringBefore("/shorts")
             else -> url
         }
+    }
+
+    /**
+     * Extracts playlist ID from a URL containing list= parameter.
+     */
+    private fun extractPlaylistIdFromUrl(url: String): String? {
+        val regex = Regex("[?&]list=([a-zA-Z0-9_-]+)")
+        return regex.find(url)?.groupValues?.get(1)
     }
 
     /**

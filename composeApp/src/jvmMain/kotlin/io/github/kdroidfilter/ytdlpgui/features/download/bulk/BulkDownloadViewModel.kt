@@ -45,7 +45,23 @@ class BulkDownloadViewModel @AssistedInject constructor(
 
     override fun initialState(): BulkDownloadState = BulkDownloadState.loadingState
 
-    val playlistUrl = savedStateHandle.toRoute<Destination.Download.Bulk>().url
+    val playlistUrl = normalizePlaylistUrl(savedStateHandle.toRoute<Destination.Download.Bulk>().url)
+
+    /**
+     * Normalizes YouTube URLs:
+     * - Converts watch URLs with list param to playlist URLs
+     */
+    private fun normalizePlaylistUrl(url: String): String {
+        // If it's a watch URL with a playlist ID, convert to playlist URL
+        if (url.contains("/watch") && url.contains("list=")) {
+            val regex = Regex("[?&]list=([a-zA-Z0-9_-]+)")
+            val listId = regex.find(url)?.groupValues?.get(1)
+            if (listId != null) {
+                return "https://www.youtube.com/playlist?list=$listId"
+            }
+        }
+        return url
+    }
 
     private val _isLoading = MutableStateFlow(true)
     private val _errorMessage = MutableStateFlow<String?>(null)
