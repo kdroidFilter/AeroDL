@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,6 +43,7 @@ import io.github.kdroidfilter.youtubewebviewextractor.YouTubeScrapedVideo
 import io.github.kdroidfilter.youtubewebviewextractor.YouTubeWebViewExtractor
 import kotlinx.serialization.json.Json
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
+import io.github.kdroidfilter.ytdlpgui.core.platform.browser.openUrlInBrowser
 import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
@@ -364,7 +366,9 @@ private fun VideoRow(
                     Text(
                         text = stringResource(Res.string.bulk_video_unavailable),
                         style = FluentTheme.typography.caption,
-                        color = FluentTheme.colors.system.critical
+                        color = FluentTheme.colors.system.critical,
+                        textDecoration = TextDecoration.Underline,
+                        modifier = Modifier.clickable { openUrlInBrowser(item.videoInfo.url) }
                     )
                 }
             }
