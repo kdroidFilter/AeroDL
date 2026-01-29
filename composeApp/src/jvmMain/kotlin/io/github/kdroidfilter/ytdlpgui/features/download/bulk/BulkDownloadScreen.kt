@@ -1,6 +1,5 @@
 package io.github.kdroidfilter.ytdlpgui.features.download.bulk
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,15 +21,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogState
-import androidx.compose.ui.window.DialogWindow
+import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.WindowPosition
+import androidx.compose.ui.window.WindowState
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
+import coil3.ImageLoader
 import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
-import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.*
 import io.github.composefluent.icons.Icons
@@ -41,16 +38,13 @@ import io.github.kdroidfilter.webview.web.rememberWebViewNavigator
 import io.github.kdroidfilter.webview.web.rememberWebViewState
 import io.github.kdroidfilter.youtubewebviewextractor.YouTubeScrapedVideo
 import io.github.kdroidfilter.youtubewebviewextractor.YouTubeWebViewExtractor
-import kotlinx.serialization.json.Json
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.platform.browser.openUrlInBrowser
 import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
 import kotlinx.coroutines.delay
+import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.*
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.WindowPosition
-import androidx.compose.ui.window.WindowState
 
 @Composable
 fun BulkDownloadScreen(
@@ -180,6 +174,8 @@ private fun PlaylistContent(
     state: BulkDownloadState,
     onEvent: (BulkDownloadEvents) -> Unit
 ) {
+    val appGraph = LocalAppGraph.current
+    val imageLoader = appGraph.imageLoader
     val videoListState = rememberLazyListState()
     val optionsScrollState = rememberScrollState()
 
@@ -200,6 +196,7 @@ private fun PlaylistContent(
                 ) { videoItem ->
                     VideoRow(
                         item = videoItem,
+                        imageLoader = imageLoader,
                         onToggle = { onEvent(BulkDownloadEvents.ToggleVideoSelection(videoItem.videoInfo.id)) }
                     )
                     Divider(
@@ -302,6 +299,7 @@ private fun PlaylistHeader(
 @Composable
 private fun VideoRow(
     item: BulkVideoItem,
+    imageLoader: ImageLoader,
     onToggle: () -> Unit
 ) {
     val isEnabled = item.isAvailable && !item.isChecking
@@ -330,7 +328,7 @@ private fun VideoRow(
         }
 
         // Thumbnail (like DownloadScreen)
-        VideoThumbnail(item)
+        VideoThumbnail(item, imageLoader)
 
         Spacer(Modifier.width(8.dp))
 
@@ -377,7 +375,7 @@ private fun VideoRow(
 }
 
 @Composable
-private fun VideoThumbnail(item: BulkVideoItem) {
+private fun VideoThumbnail(item: BulkVideoItem, imageLoader: ImageLoader) {
     Column(
         modifier = Modifier.width(88.dp).fillMaxHeight(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -386,14 +384,12 @@ private fun VideoThumbnail(item: BulkVideoItem) {
             val alpha = if (item.isAvailable) 1f else 0.5f
 
             AsyncImage(
-                model = ImageRequest.Builder(coil3.PlatformContext.INSTANCE)
-                    .data(item.videoInfo.thumbnail)
-                    .size(88, 72)
-                    .build(),
+                model = item.videoInfo.thumbnail,
                 contentDescription = stringResource(Res.string.thumbnail_content_desc),
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
-                alpha = alpha
+                alpha = alpha,
+                imageLoader = imageLoader
             )
 
             if (!item.isAvailable) {
