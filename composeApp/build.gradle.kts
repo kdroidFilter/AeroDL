@@ -168,7 +168,7 @@ compose.desktop {
             targetFormats(TargetFormat.Pkg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm, TargetFormat.Dmg)
             packageName = "AeroDl"
             packageVersion = version
-            description = "An awesome GUI for yt-dlp!"
+            description = "AeroDl"
 
             // JVM args for performance optimization
             jvmArgs += listOf(
