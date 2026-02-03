@@ -51,6 +51,7 @@
 
     <!-- Error messages -->
     <string name="error_occurred">An error occurred</string>
+    <string name="init_retry">Retry</string>
 
     <!-- Update notification -->
     <string name="update_available">New version available: %1$s</string>

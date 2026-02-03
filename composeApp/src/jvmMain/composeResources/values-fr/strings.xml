@@ -49,6 +49,7 @@
 
     <!-- Messages d'erreur -->
     <string name="error_occurred">Une erreur s'est produite</string>
+    <string name="init_retry">Réessayer</string>
 
     <!-- Notification de mise à jour -->
     <string name="update_available">Nouvelle version disponible : %1$s</string>
