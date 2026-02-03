@@ -878,6 +878,7 @@ class YtDlpWrapper {
             // Aggressively cap network timeouts for faster failures (does not affect cache semantics)
             addAll(listOf("--socket-timeout", "5"))
             if (useNoCheckCert) add("--no-check-certificate")
+            denoPath?.takeIf { it.isNotBlank() }?.let { addAll(listOf("--js-runtimes", "deno:$it")) }
             cookiesFromBrowser?.takeIf { it.isNotBlank() }?.let { addAll(listOf("--cookies-from-browser", it)) }
             proxy?.takeIf { it.isNotBlank() }?.let { addAll(listOf("--proxy", it)) }
             addAll(extraArgs); add(url)
