@@ -28,7 +28,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import io.github.kdroidfilter.network.HttpsConnectionFactory
 import java.time.Duration
 
 class BulkDownloadViewModel @AssistedInject constructor(
@@ -334,33 +333,14 @@ class BulkDownloadViewModel @AssistedInject constructor(
     }
 
     private suspend fun checkVideoAvailability(videoInfo: VideoInfo): Boolean {
-        return withContext(Dispatchers.IO) {
-            try {
-                val urlToCheck = videoInfo.url
-                if (urlToCheck.isBlank()) return@withContext false
+        val urlToCheck = videoInfo.url
+        if (urlToCheck.isBlank()) return false
 
-                val connection = HttpsConnectionFactory.openConnection(urlToCheck) {
-                    requestMethod = "HEAD"
-                    connectTimeout = 5000
-                    readTimeout = 5000
-                    instanceFollowRedirects = true
-                    setRequestProperty("User-Agent", "Mozilla/5.0 (compatible; AeroDL)")
-                }
-
-                try {
-                    connection.connect()
-                    val responseCode = connection.responseCode
-                    connection.disconnect()
-                    responseCode in 200..399
-                } catch (e: Exception) {
-                    connection.disconnect()
-                    false
-                }
-            } catch (e: Exception) {
-                infoln { "[BulkDownloadViewModel] URL check failed for ${videoInfo.id}: ${e.message}, assuming unavailable" }
-                false
-            }
-        }
+        return ytDlpWrapper.getVideoInfo(
+            url = urlToCheck,
+            extractFlat = true,
+            timeoutSec = 10
+        ).isSuccess
     }
 
     override fun handleEvent(event: BulkDownloadEvents) {
