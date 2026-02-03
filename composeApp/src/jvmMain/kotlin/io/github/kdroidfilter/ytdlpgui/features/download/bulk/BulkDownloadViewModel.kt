@@ -27,7 +27,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.time.Duration
 
 class BulkDownloadViewModel @AssistedInject constructor(
@@ -309,38 +308,28 @@ class BulkDownloadViewModel @AssistedInject constructor(
             _isCheckingAvailability.value = true
             _checkedCount.value = 0
 
-            entries.forEachIndexed { index, videoInfo ->
-                val isAvailable = checkVideoAvailability(videoInfo)
-
-                _videos.value = _videos.value.map { item ->
-                    if (item.videoInfo.id == videoInfo.id) {
-                        item.copy(
-                            isAvailable = isAvailable,
-                            isChecking = false,
-                            isSelected = isAvailable,
-                            errorMessage = if (!isAvailable) "Video unavailable" else null
-                        )
-                    } else {
-                        item
-                    }
-                }
-                _checkedCount.value = index + 1
+            val urls = entries.map { it.url }.filter { it.isNotBlank() }
+            val resolvedIds = ytDlpWrapper.checkBatchAvailability(
+                urls = urls,
+                timeoutSec = 120
+            ) { checked, _ ->
+                _checkedCount.value = checked
             }
 
+            _videos.value = _videos.value.map { item ->
+                val isAvailable = item.videoInfo.id in resolvedIds
+                item.copy(
+                    isAvailable = isAvailable,
+                    isChecking = false,
+                    isSelected = isAvailable,
+                    errorMessage = if (!isAvailable) "Video unavailable" else null
+                )
+            }
+            _checkedCount.value = entries.size
+
             _isCheckingAvailability.value = false
-            infoln { "[BulkDownloadViewModel] Availability check completed. Available: ${_videos.value.count { it.isAvailable }}/${entries.size}" }
+            infoln { "[BulkDownloadViewModel] Availability check completed. Available: ${resolvedIds.size}/${entries.size}" }
         }
-    }
-
-    private suspend fun checkVideoAvailability(videoInfo: VideoInfo): Boolean {
-        val urlToCheck = videoInfo.url
-        if (urlToCheck.isBlank()) return false
-
-        return ytDlpWrapper.getVideoInfo(
-            url = urlToCheck,
-            extractFlat = true,
-            timeoutSec = 10
-        ).isSuccess
     }
 
     override fun handleEvent(event: BulkDownloadEvents) {
