@@ -22,7 +22,7 @@ cardiologist = "0.8.0"
 # UI Libraries
 fluent = "v0.1.0"
 composemediaplayer = "0.8.7"
-composenativetray = "1.0.7"
+composenativetray = "1.0.9"
 composewebview = "1.0.0-alpha-10"
 
 # Network & Tools
