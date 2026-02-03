@@ -308,6 +308,77 @@ class YtDlpWrapper {
         return result != null
     }
 
+    // --- Batch Availability Check ---
+
+    /**
+     * Check availability of multiple URLs in a single yt-dlp invocation using --batch-file.
+     * Returns the set of video IDs that yt-dlp could successfully resolve.
+     * URLs that are unavailable or produce errors are silently skipped (--ignore-errors).
+     *
+     * @param urls The list of URLs to check.
+     * @param timeoutSec Maximum time for the entire batch check.
+     * @param onIdResolved Called each time a video ID is successfully resolved.
+     * @return Set of resolved video IDs.
+     */
+    suspend fun checkBatchAvailability(
+        urls: List<String>,
+        timeoutSec: Long = 120,
+        onIdResolved: ((id: String) -> Unit)? = null
+    ): Set<String> = withContext(Dispatchers.IO) {
+        if (urls.isEmpty()) return@withContext emptySet()
+        if (!isAvailable()) return@withContext emptySet()
+
+        val batchFile = File.createTempFile("ytdlp-batch-", ".txt")
+        try {
+            batchFile.writeText(urls.joinToString("\n"))
+
+            val cmd = buildList {
+                add(ytDlpPath)
+                add("--batch-file"); add(batchFile.absolutePath)
+                add("--flat-playlist")
+                add("--simulate")
+                add("--ignore-errors")
+                add("--no-warnings")
+                add("--print"); add("id")
+                addAll(listOf("--socket-timeout", "10"))
+                if (noCheckCertificate) add("--no-check-certificate")
+                denoPath?.takeIf { it.isNotBlank() }?.let { addAll(listOf("--js-runtimes", "deno:$it")) }
+                cookiesFromBrowser?.takeIf { it.isNotBlank() }?.let { addAll(listOf("--cookies-from-browser", it)) }
+                proxy?.takeIf { it.isNotBlank() }?.let { addAll(listOf("--proxy", it)) }
+            }
+
+            val process = ProcessBuilder(cmd).redirectErrorStream(false).start()
+            val resolvedIds = mutableSetOf<String>()
+
+            val readerJob = async {
+                process.inputStream.bufferedReader(StandardCharsets.UTF_8).useLines { lines ->
+                    lines.forEach { line ->
+                        val id = line.trim()
+                        if (id.isNotBlank()) {
+                            resolvedIds.add(id)
+                            onIdResolved?.invoke(id)
+                        }
+                    }
+                }
+            }
+
+            // Drain stderr to prevent blocking
+            val stderrJob = async { process.errorStream.bufferedReader().readText() }
+
+            val exited = withTimeoutOrNull(timeoutSec * 1000) { process.waitFor() }
+            if (exited == null) {
+                process.destroyForcibly()
+            }
+
+            runCatching { readerJob.await() }
+            runCatching { stderrJob.await() }
+
+            resolvedIds
+        } finally {
+            batchFile.delete()
+        }
+    }
+
     // --- Network Pre-check ---
 
     fun checkNetwork(

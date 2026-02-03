@@ -17,6 +17,7 @@ data class SettingsState(
     val notifyOnComplete: Boolean = true,
     val concurrentFragments: Int = 1,
     val proxy: String = "",
+    val validateBulkUrls: Boolean = false,
 ) {
     companion object {
         val defaultState = SettingsState()

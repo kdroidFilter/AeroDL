@@ -209,6 +209,9 @@
     <string name="settings_parallel_downloads_title">הורדות מקבילות</string>
     <string name="settings_parallel_downloads_caption">הגבל כמה הורדות יכולות לרוץ בו-זמנית</string>
     
+    <string name="settings_validate_bulk_urls_title">אמת כתובות URL בהורדה מרובה</string>
+    <string name="settings_validate_bulk_urls_caption">בדוק את הזמינות של כל סרטון לפני הורדה במצב מרובה. השבתת אפשרות זו מאיצה את טעינת רשימות ההשמעה.</string>
+
     <string name="settings_embed_thumbnail_mp3_title">הטמע תמונה ממוזערת ב‑MP3</string>
     <string name="settings_embed_thumbnail_mp3_caption">כאשר מופעל, הטמע את תמונת הווידאו כעטיפת MP3</string>
     

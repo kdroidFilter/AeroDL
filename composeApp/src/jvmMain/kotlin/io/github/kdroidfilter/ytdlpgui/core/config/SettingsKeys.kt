@@ -17,4 +17,5 @@ object SettingsKeys {
     const val ONBOARDING_COMPLETED = "onboarding_completed"
     const val CONCURRENT_FRAGMENTS = "concurrent_fragments"
     const val PROXY = "proxy"
+    const val VALIDATE_BULK_URLS = "validate_bulk_urls"
 }

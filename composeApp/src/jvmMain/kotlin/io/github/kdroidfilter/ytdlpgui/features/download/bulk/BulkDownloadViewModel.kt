@@ -27,15 +27,14 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import io.github.kdroidfilter.network.HttpsConnectionFactory
 import java.time.Duration
 
 class BulkDownloadViewModel @AssistedInject constructor(
     @Assisted savedStateHandle: SavedStateHandle,
     private val ytDlpWrapper: YtDlpWrapper,
     private val downloadManager: DownloadManager,
-    private val trayAppState: TrayAppState
+    private val trayAppState: TrayAppState,
+    private val settingsRepository: io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
 ) : MVIViewModel<BulkDownloadState, BulkDownloadEvents>(savedStateHandle) {
 
     @AssistedFactory
@@ -177,12 +176,14 @@ class BulkDownloadViewModel @AssistedInject constructor(
         )
         _playlistInfo.value = playlistInfo
 
+        val shouldValidate = settingsRepository.validateBulkUrls.value
+
         val items = videoList.map { videoInfo ->
             BulkVideoItem(
                 videoInfo = videoInfo,
                 isSelected = true,
                 isAvailable = true,
-                isChecking = true
+                isChecking = shouldValidate
             )
         }
         _videos.value = items
@@ -190,7 +191,9 @@ class BulkDownloadViewModel @AssistedInject constructor(
         setupPresets()
         _isLoading.value = false
 
-        checkVideosAvailability(videoList)
+        if (shouldValidate) {
+            checkVideosAvailability(videoList)
+        }
     }
 
     private fun setupPresets() {
@@ -305,56 +308,39 @@ class BulkDownloadViewModel @AssistedInject constructor(
             _isCheckingAvailability.value = true
             _checkedCount.value = 0
 
-            entries.forEachIndexed { index, videoInfo ->
-                val isAvailable = checkVideoAvailability(videoInfo)
-
+            val urls = entries.map { it.url }.filter { it.isNotBlank() }
+            val resolvedIds = ytDlpWrapper.checkBatchAvailability(
+                urls = urls,
+                timeoutSec = 120
+            ) { resolvedId ->
+                // Mark this video as available + done checking immediately
                 _videos.value = _videos.value.map { item ->
-                    if (item.videoInfo.id == videoInfo.id) {
-                        item.copy(
-                            isAvailable = isAvailable,
-                            isChecking = false,
-                            isSelected = isAvailable,
-                            errorMessage = if (!isAvailable) "Video unavailable" else null
-                        )
+                    if (item.videoInfo.id == resolvedId) {
+                        item.copy(isAvailable = true, isChecking = false)
                     } else {
                         item
                     }
                 }
-                _checkedCount.value = index + 1
+                _checkedCount.value = _checkedCount.value + 1
             }
+
+            // Mark all remaining unchecked videos as unavailable
+            _videos.value = _videos.value.map { item ->
+                if (item.isChecking) {
+                    item.copy(
+                        isAvailable = false,
+                        isChecking = false,
+                        isSelected = false,
+                        errorMessage = "Video unavailable"
+                    )
+                } else {
+                    item
+                }
+            }
+            _checkedCount.value = entries.size
 
             _isCheckingAvailability.value = false
-            infoln { "[BulkDownloadViewModel] Availability check completed. Available: ${_videos.value.count { it.isAvailable }}/${entries.size}" }
-        }
-    }
-
-    private suspend fun checkVideoAvailability(videoInfo: VideoInfo): Boolean {
-        return withContext(Dispatchers.IO) {
-            try {
-                val urlToCheck = videoInfo.url
-                if (urlToCheck.isBlank()) return@withContext false
-
-                val connection = HttpsConnectionFactory.openConnection(urlToCheck) {
-                    requestMethod = "HEAD"
-                    connectTimeout = 5000
-                    readTimeout = 5000
-                    instanceFollowRedirects = true
-                    setRequestProperty("User-Agent", "Mozilla/5.0 (compatible; AeroDL)")
-                }
-
-                try {
-                    connection.connect()
-                    val responseCode = connection.responseCode
-                    connection.disconnect()
-                    responseCode in 200..399
-                } catch (e: Exception) {
-                    connection.disconnect()
-                    false
-                }
-            } catch (e: Exception) {
-                infoln { "[BulkDownloadViewModel] URL check failed for ${videoInfo.id}: ${e.message}, assuming unavailable" }
-                false
-            }
+            infoln { "[BulkDownloadViewModel] Availability check completed. Available: ${resolvedIds.size}/${entries.size}" }
         }
     }
 

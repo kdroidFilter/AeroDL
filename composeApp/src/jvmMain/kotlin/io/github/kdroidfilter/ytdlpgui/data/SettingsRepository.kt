@@ -54,6 +54,9 @@ class SettingsRepository(
     private val _proxy = MutableStateFlow(settings.getString(SettingsKeys.PROXY, ""))
     val proxy: StateFlow<String> = _proxy.asStateFlow()
 
+    private val _validateBulkUrls = MutableStateFlow(settings.getBoolean(SettingsKeys.VALIDATE_BULK_URLS, false))
+    val validateBulkUrls: StateFlow<Boolean> = _validateBulkUrls.asStateFlow()
+
     init {
         // Apply initial settings to dependencies
         applyToYtDlpWrapper()
@@ -122,6 +125,11 @@ class SettingsRepository(
         ytDlpWrapper.proxy = value.ifBlank { null }
     }
 
+    fun setValidateBulkUrls(enabled: Boolean) {
+        _validateBulkUrls.value = enabled
+        settings.putBoolean(SettingsKeys.VALIDATE_BULK_URLS, enabled)
+    }
+
     fun setOnboardingCompleted(completed: Boolean) {
         settings.putBoolean(SettingsKeys.ONBOARDING_COMPLETED, completed)
     }
@@ -146,6 +154,7 @@ class SettingsRepository(
         _autoLaunchEnabled.value = settings.getBoolean(SettingsKeys.AUTO_LAUNCH_ENABLED, false)
         _concurrentFragments.value = settings.getInt(SettingsKeys.CONCURRENT_FRAGMENTS, 1).coerceIn(1, 5)
         _proxy.value = settings.getString(SettingsKeys.PROXY, "")
+        _validateBulkUrls.value = settings.getBoolean(SettingsKeys.VALIDATE_BULK_URLS, false)
 
         applyToYtDlpWrapper()
         clipboardMonitorManager?.let { applyToClipboardMonitor(it) }
@@ -222,6 +231,7 @@ class SettingsRepository(
         _autoLaunchEnabled.value = false
         _concurrentFragments.value = 1
         _proxy.value = ""
+        _validateBulkUrls.value = false
 
         // Apply defaults to dependencies
         applyToYtDlpWrapper()
