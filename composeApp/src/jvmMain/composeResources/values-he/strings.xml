@@ -51,6 +51,7 @@
 
     <!-- הודעות שגיאה -->
     <string name="error_occurred">אירעה שגיאה</string>
+    <string name="init_retry">נסה שוב</string>
 
     <!-- הודעת עדכון -->
     <string name="update_available">גרסה חדשה זמינה: %1$s</string>

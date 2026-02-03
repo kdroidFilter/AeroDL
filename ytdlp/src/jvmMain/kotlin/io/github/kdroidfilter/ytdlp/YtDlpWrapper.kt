@@ -133,7 +133,7 @@ class YtDlpWrapper {
             if (!isAvailable()) {
                 onEvent(InitEvent.DownloadingYtDlp)
                 if (!downloadOrUpdate { r, t -> onEvent(InitEvent.YtDlpProgress(r, t, pct(r, t))) }) {
-                    onEvent(InitEvent.Error("Could not download yt-dlp", null))
+                    onEvent(InitEvent.Error("Could not download yt-dlp. Check your internet connection and try again.", null))
                     onEvent(InitEvent.Completed(false)); return false
                 }
             } else if (hasUpdate()) {
@@ -142,16 +142,34 @@ class YtDlpWrapper {
             }
 
             onEvent(InitEvent.EnsuringFfmpeg)
-            ensureFfmpegAvailable(false) { r, t -> onEvent(InitEvent.FfmpegProgress(r, t, pct(r, t))) }
+            if (!ensureFfmpegAvailable(false) { r, t -> onEvent(InitEvent.FfmpegProgress(r, t, pct(r, t))) }) {
+                onEvent(InitEvent.Error("Could not install FFmpeg. Check your internet connection and try again.", null))
+                onEvent(InitEvent.Completed(false)); return false
+            }
 
             onEvent(InitEvent.EnsuringDeno)
-            ensureDenoAvailable(false) { r, t -> onEvent(InitEvent.DenoProgress(r, t, pct(r, t))) }
+            if (!ensureDenoAvailable(false) { r, t -> onEvent(InitEvent.DenoProgress(r, t, pct(r, t))) }) {
+                onEvent(InitEvent.Error("Could not install Deno. Check your internet connection and try again.", null))
+                onEvent(InitEvent.Completed(false)); return false
+            }
 
             val success = isAvailable()
             onEvent(InitEvent.Completed(success))
             return success
         } catch (t: Throwable) {
-            onEvent(InitEvent.Error(t.message ?: "Initialization error", t))
+            val message = when {
+                t.message?.contains("timeout", ignoreCase = true) == true ||
+                t.message?.contains("timed out", ignoreCase = true) == true ->
+                    "Network timeout. Check your internet connection and try again."
+                t.message?.contains("unknown host", ignoreCase = true) == true ||
+                t.message?.contains("name resolution", ignoreCase = true) == true ->
+                    "DNS resolution failed. Check your internet connection and try again."
+                t.message?.contains("403", ignoreCase = true) == true ||
+                t.message?.contains("rate limit", ignoreCase = true) == true ->
+                    "GitHub API rate limit reached. Please wait a few minutes and try again."
+                else -> t.message ?: "Initialization error"
+            }
+            onEvent(InitEvent.Error(message, t))
             onEvent(InitEvent.Completed(false))
             return false
         }

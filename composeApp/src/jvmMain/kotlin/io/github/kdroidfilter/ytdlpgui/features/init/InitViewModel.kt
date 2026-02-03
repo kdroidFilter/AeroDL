@@ -39,7 +39,7 @@ class InitViewModel(
         when (event) {
             InitEvent.IgnoreUpdate -> ignoreUpdate()
             InitEvent.DismissUpdateInfo -> dismissUpdateInfo()
-            InitEvent.StartInitialization -> startInitialization(navigateToHomeWhenDone = false)
+            InitEvent.StartInitialization -> startInitialization(navigateToHomeWhenDone = true)
             InitEvent.NavigationConsumed -> {
                 update { copy(navigationState = InitNavigationState.None) }
             }

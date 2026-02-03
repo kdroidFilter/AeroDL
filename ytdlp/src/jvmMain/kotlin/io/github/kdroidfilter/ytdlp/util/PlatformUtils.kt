@@ -68,7 +68,7 @@ object PlatformUtils {
 
     private suspend fun isMusl(): Boolean = withContext(Dispatchers.IO) {
         try {
-            val p = Runtime.getRuntime().exec(arrayOf("ldd", "--version"))
+            val p = ProcessBuilder("ldd", "--version").redirectErrorStream(true).start()
             val exited = withContext(Dispatchers.IO) { kotlinx.coroutines.withTimeoutOrNull(1500) { p.waitFor() } }
             if (exited == null) {
                 p.destroyForcibly()
@@ -95,8 +95,8 @@ object PlatformUtils {
 
         val uri = java.net.URI.create(url)
         val conn = HttpsConnectionFactory.openConnection(uri.toURL()) {
-            connectTimeout = 12_000
-            readTimeout = 24_000
+            connectTimeout = 15_000
+            readTimeout = 120_000
             instanceFollowRedirects = true
             setRequestProperty("User-Agent", "kdroidFilter-ytdlp/1.0")
         }
