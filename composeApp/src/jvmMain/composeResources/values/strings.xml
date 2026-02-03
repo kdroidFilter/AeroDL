@@ -124,6 +124,9 @@
     <string name="settings_parallel_downloads_title">Parallel downloads</string>
     <string name="settings_parallel_downloads_caption">Limit how many downloads can run simultaneously</string>
 
+    <string name="settings_validate_bulk_urls_title">Validate URLs in bulk download</string>
+    <string name="settings_validate_bulk_urls_caption">Check the availability of each video before downloading in bulk mode. Disabling this speeds up playlist loading.</string>
+
     <!-- Settings: Audio thumbnail embedding -->
     <string name="settings_embed_thumbnail_mp3_title">Embed thumbnail in MP3</string>
     <string name="settings_embed_thumbnail_mp3_caption">When enabled, embed the video thumbnail as MP3 cover art</string>

@@ -79,6 +79,12 @@ fun SettingsView(
                 )
             }
             item {
+                ValidateBulkUrlsSetting(
+                    validateBulkUrls = state.validateBulkUrls,
+                    onValidateBulkUrlsChange = { onEvent(SettingsEvents.SetValidateBulkUrls(it)) },
+                )
+            }
+            item {
                 DownloadDirectorySetting(
                     downloadDirPath = state.downloadDirPath,
                     onPickDownloadDir = { title -> onEvent(SettingsEvents.PickDownloadDir(title)) },
@@ -319,6 +325,40 @@ private fun ParallelDownloadsSetting(
 @Composable
 fun ParallelDownloadsSettingPreview() {
     ParallelDownloadsSetting(parallelDownloads = 3, onParallelDownloadsSelected = {})
+}
+
+@Composable
+private fun ValidateBulkUrlsSetting(
+    validateBulkUrls: Boolean,
+    onValidateBulkUrlsChange: (Boolean) -> Unit,
+) {
+    CardExpanderItem(
+        heading = {
+            Text(
+                stringResource(Res.string.settings_validate_bulk_urls_title),
+                modifier = Modifier.fillMaxWidth(0.8f)
+            )
+        },
+        caption = {
+            EllipsizedTextWithTooltip(
+                text = stringResource(Res.string.settings_validate_bulk_urls_caption),
+                modifier = Modifier.fillMaxWidth(0.8f)
+            )
+        },
+        icon = { Icon(Icons.Regular.CheckboxChecked, null) },
+        trailing = {
+            Switcher(
+                checked = validateBulkUrls,
+                onCheckStateChange = onValidateBulkUrlsChange,
+            )
+        }
+    )
+}
+
+@Preview
+@Composable
+fun ValidateBulkUrlsSettingPreview() {
+    ValidateBulkUrlsSetting(validateBulkUrls = false, onValidateBulkUrlsChange = {})
 }
 
 @Composable

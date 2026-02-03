@@ -35,7 +35,8 @@ class BulkDownloadViewModel @AssistedInject constructor(
     @Assisted savedStateHandle: SavedStateHandle,
     private val ytDlpWrapper: YtDlpWrapper,
     private val downloadManager: DownloadManager,
-    private val trayAppState: TrayAppState
+    private val trayAppState: TrayAppState,
+    private val settingsRepository: io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
 ) : MVIViewModel<BulkDownloadState, BulkDownloadEvents>(savedStateHandle) {
 
     @AssistedFactory
@@ -177,12 +178,14 @@ class BulkDownloadViewModel @AssistedInject constructor(
         )
         _playlistInfo.value = playlistInfo
 
+        val shouldValidate = settingsRepository.validateBulkUrls.value
+
         val items = videoList.map { videoInfo ->
             BulkVideoItem(
                 videoInfo = videoInfo,
                 isSelected = true,
                 isAvailable = true,
-                isChecking = true
+                isChecking = shouldValidate
             )
         }
         _videos.value = items
@@ -190,7 +193,9 @@ class BulkDownloadViewModel @AssistedInject constructor(
         setupPresets()
         _isLoading.value = false
 
-        checkVideosAvailability(videoList)
+        if (shouldValidate) {
+            checkVideosAvailability(videoList)
+        }
     }
 
     private fun setupPresets() {

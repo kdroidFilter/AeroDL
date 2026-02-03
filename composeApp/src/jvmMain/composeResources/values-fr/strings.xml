@@ -110,6 +110,9 @@
     <string name="settings_parallel_downloads_caption">Limiter le nombre de téléchargements simultanés</string>
 
     <!-- Paramètres : Intégration de la miniature dans le MP3 -->
+    <string name="settings_validate_bulk_urls_title">Valider les URLs en téléchargement groupé</string>
+    <string name="settings_validate_bulk_urls_caption">Vérifier la disponibilité de chaque vidéo avant le téléchargement en mode groupé. Désactiver cette option accélère le chargement des playlists.</string>
+
     <string name="settings_embed_thumbnail_mp3_title">Intégrer la miniature dans le MP3</string>
     <string name="settings_embed_thumbnail_mp3_caption">Si activé, intégrer la miniature de la vidéo comme pochette du MP3</string>
 
