@@ -317,13 +317,13 @@ class YtDlpWrapper {
      *
      * @param urls The list of URLs to check.
      * @param timeoutSec Maximum time for the entire batch check.
-     * @param onProgress Called with (checkedCount, totalCount) as results arrive.
+     * @param onIdResolved Called each time a video ID is successfully resolved.
      * @return Set of resolved video IDs.
      */
     suspend fun checkBatchAvailability(
         urls: List<String>,
         timeoutSec: Long = 120,
-        onProgress: ((checked: Int, total: Int) -> Unit)? = null
+        onIdResolved: ((id: String) -> Unit)? = null
     ): Set<String> = withContext(Dispatchers.IO) {
         if (urls.isEmpty()) return@withContext emptySet()
         if (!isAvailable()) return@withContext emptySet()
@@ -356,7 +356,7 @@ class YtDlpWrapper {
                         val id = line.trim()
                         if (id.isNotBlank()) {
                             resolvedIds.add(id)
-                            onProgress?.invoke(resolvedIds.size, urls.size)
+                            onIdResolved?.invoke(id)
                         }
                     }
                 }

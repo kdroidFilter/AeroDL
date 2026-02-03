@@ -312,18 +312,30 @@ class BulkDownloadViewModel @AssistedInject constructor(
             val resolvedIds = ytDlpWrapper.checkBatchAvailability(
                 urls = urls,
                 timeoutSec = 120
-            ) { checked, _ ->
-                _checkedCount.value = checked
+            ) { resolvedId ->
+                // Mark this video as available + done checking immediately
+                _videos.value = _videos.value.map { item ->
+                    if (item.videoInfo.id == resolvedId) {
+                        item.copy(isAvailable = true, isChecking = false)
+                    } else {
+                        item
+                    }
+                }
+                _checkedCount.value = _checkedCount.value + 1
             }
 
+            // Mark all remaining unchecked videos as unavailable
             _videos.value = _videos.value.map { item ->
-                val isAvailable = item.videoInfo.id in resolvedIds
-                item.copy(
-                    isAvailable = isAvailable,
-                    isChecking = false,
-                    isSelected = isAvailable,
-                    errorMessage = if (!isAvailable) "Video unavailable" else null
-                )
+                if (item.isChecking) {
+                    item.copy(
+                        isAvailable = false,
+                        isChecking = false,
+                        isSelected = false,
+                        errorMessage = "Video unavailable"
+                    )
+                } else {
+                    item
+                }
             }
             _checkedCount.value = entries.size
 
