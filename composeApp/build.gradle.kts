@@ -63,6 +63,7 @@ kotlin {
             // UI libraries
             implementation(libs.compose.fluent)
             implementation(libs.compose.fluent.icons.extended)
+            implementation(libs.compose.darwinui)
             implementation(libs.composemediaplayer)
 
             // Coil

@@ -5,7 +5,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -14,13 +13,17 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.*
-import io.github.composefluent.icons.Icons
-import io.github.composefluent.icons.filled.ClipboardPaste
-import io.github.composefluent.icons.regular.ArrowLeft
-import io.github.composefluent.icons.regular.ArrowRight
 import dev.zacsweers.metrox.viewmodel.metroViewModel
+import io.github.kdroidfilter.ytdlpgui.core.config.AppTheme
+import io.github.kdroidfilter.ytdlpgui.core.config.LocalAppTheme
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnly
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppAccentButton
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppButton
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppColors
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcon
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcons
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppText
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppTextField
 import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -32,7 +35,7 @@ fun HomeScreen(navController: NavHostController) {
         viewModelStoreOwner = LocalWindowViewModelStoreOwner.current
     )
     val state by viewModel.uiState.collectAsState()
-    
+
     // Handle navigation
     LaunchedEffect(state.navigationState) {
         when (val navigationState = state.navigationState) {
@@ -45,7 +48,7 @@ fun HomeScreen(navController: NavHostController) {
             }
         }
     }
-    
+
     HomeView(
         state = state,
         onEvent = viewModel::handleEvent,
@@ -69,11 +72,11 @@ fun HomeView(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Icon(
+            AppIcon(
                 imageVector = AeroDlLogoOnly,
                 contentDescription = stringResource(Res.string.logo_content_desc),
                 modifier = Modifier.height(150.dp),
-                tint = FluentTheme.colors.system.neutral
+                tint = AppColors.neutral
             )
         }
         Row(
@@ -81,52 +84,84 @@ fun HomeView(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.Bottom
         ) {
-            TextField(
-                value = state.link,
-                enabled = !state.isLoading,
-                onValueChange = { onEvent(HomeEvents.OnLinkChanged(it)) },
-                placeholder = { Text(stringResource(Res.string.placeholder_link_example), maxLines = 1) },
-                singleLine = true,
-                header = {
-                    val (headerText, headerColor) = when {
-                        state.isLoading -> stringResource(Res.string.loading) to FluentTheme.colors.text.text.tertiary
-                        state.errorMessage != null -> {
-                            val msg = when (state.errorMessage) {
+            when (LocalAppTheme.current) {
+                AppTheme.FLUENT -> {
+                    io.github.composefluent.component.TextField(
+                        value = state.link,
+                        enabled = !state.isLoading,
+                        onValueChange = { onEvent(HomeEvents.OnLinkChanged(it)) },
+                        placeholder = { io.github.composefluent.component.Text(stringResource(Res.string.placeholder_link_example), maxLines = 1) },
+                        singleLine = true,
+                        header = {
+                            val (headerText, headerColor) = when {
+                                state.isLoading -> stringResource(Res.string.loading) to FluentTheme.colors.text.text.tertiary
+                                state.errorMessage != null -> {
+                                    val msg = when (state.errorMessage) {
+                                        HomeError.SingleValidUrl -> stringResource(Res.string.error_single_valid_url)
+                                        HomeError.InvalidUrlFormat -> stringResource(Res.string.error_invalid_url_format)
+                                        HomeError.UrlRequired -> stringResource(Res.string.error_url_required)
+                                    }
+                                    msg to FluentTheme.colors.system.critical
+                                }
+                                else -> stringResource(Res.string.paste_video_link_header) to FluentTheme.colors.text.text.disabled
+                            }
+                            io.github.composefluent.component.Text(
+                                text = headerText,
+                                style = FluentTheme.typography.caption,
+                                textAlign = TextAlign.Center,
+                                color = headerColor,
+                                modifier = Modifier.fillMaxWidth(0.85f)
+                            )
+                        }
+                    )
+                    io.github.composefluent.component.Button(
+                        modifier = Modifier.size(33.dp),
+                        onClick = { onEvent(HomeEvents.OnClipBoardClicked) },
+                        iconOnly = true,
+                        disabled = state.isLoading,
+                    ) {
+                        AppIcon(
+                            AppIcons.ClipboardPaste,
+                            contentDescription = stringResource(Res.string.paste_link_content_desc)
+                        )
+                    }
+                }
+                AppTheme.DARWIN -> {
+                    AppTextField(
+                        value = state.link,
+                        enabled = !state.isLoading,
+                        onValueChange = { onEvent(HomeEvents.OnLinkChanged(it)) },
+                        placeholder = stringResource(Res.string.placeholder_link_example),
+                        singleLine = true,
+                        label = when {
+                            state.isLoading -> stringResource(Res.string.loading)
+                            state.errorMessage != null -> when (state.errorMessage) {
                                 HomeError.SingleValidUrl -> stringResource(Res.string.error_single_valid_url)
                                 HomeError.InvalidUrlFormat -> stringResource(Res.string.error_invalid_url_format)
                                 HomeError.UrlRequired -> stringResource(Res.string.error_url_required)
                             }
-                            msg to FluentTheme.colors.system.critical
+                            else -> stringResource(Res.string.paste_video_link_header)
                         }
-                        else -> stringResource(Res.string.paste_video_link_header) to FluentTheme.colors.text.text.disabled
-                    }
-                    Text(
-                        text = headerText,
-                        style = FluentTheme.typography.caption,
-                        textAlign = TextAlign.Center,
-                        color = headerColor,
-                        modifier = Modifier.fillMaxWidth(0.85f)
                     )
+                    AppButton(
+                        modifier = Modifier.size(33.dp),
+                        onClick = { onEvent(HomeEvents.OnClipBoardClicked) },
+                        enabled = !state.isLoading,
+                    ) {
+                        AppIcon(
+                            AppIcons.ClipboardPaste,
+                            contentDescription = stringResource(Res.string.paste_link_content_desc)
+                        )
+                    }
                 }
-            )
-            Button(
-                modifier = Modifier.size(33.dp),
-                onClick = { onEvent(HomeEvents.OnClipBoardClicked) },
-                iconOnly = true,
-                disabled = state.isLoading,
-            ) {
-                Icon(
-                    Icons.Filled.ClipboardPaste,
-                    contentDescription = stringResource(Res.string.paste_link_content_desc)
-                )
             }
         }
-        AccentButton(
+        AppAccentButton(
             onClick = { onEvent(HomeEvents.OnNextClicked) },
-            disabled = state.isLoading
+            enabled = !state.isLoading
         ) {
-            Text(stringResource(Res.string.next))
-            Icon(if (isRtl) Icons.Default.ArrowLeft else Icons.Default.ArrowRight, contentDescription = null)
+            AppText(stringResource(Res.string.next))
+            AppIcon(if (isRtl) AppIcons.ArrowLeft else AppIcons.ArrowRight, contentDescription = null)
         }
     }
 

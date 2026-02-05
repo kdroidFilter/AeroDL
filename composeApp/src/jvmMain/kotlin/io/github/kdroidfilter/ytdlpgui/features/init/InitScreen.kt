@@ -19,13 +19,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.AccentButton
-import io.github.composefluent.component.Icon
-import io.github.composefluent.component.ProgressRing
-import io.github.composefluent.component.Text
 import dev.zacsweers.metrox.viewmodel.metroViewModel
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnly
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppAccentButton
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppColors
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcon
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppProgressRing
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppText
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import org.jetbrains.compose.resources.stringResource
@@ -36,7 +36,6 @@ import ytdlpgui.composeapp.generated.resources.checking_ytdlp
 import ytdlpgui.composeapp.generated.resources.downloading_ffmpeg
 import ytdlpgui.composeapp.generated.resources.downloading_ytdlp
 import ytdlpgui.composeapp.generated.resources.error_occurred
- 
 import ytdlpgui.composeapp.generated.resources.updating_ffmpeg
 import ytdlpgui.composeapp.generated.resources.updating_ytdlp
 import ytdlpgui.composeapp.generated.resources.checking_deno
@@ -49,7 +48,7 @@ fun InitScreen(navController: NavHostController) {
         viewModelStoreOwner = LocalWindowViewModelStoreOwner.current
     )
     val state by viewModel.uiState.collectAsState()
-    
+
     // Handle navigation based on state
     LaunchedEffect(state.navigationState) {
         when (val navigationState = state.navigationState) {
@@ -72,7 +71,7 @@ fun InitScreen(navController: NavHostController) {
             }
         }
     }
-    
+
     InitView(
         state = state,
         onRetry = { viewModel.handleEvent(InitEvent.StartInitialization) },
@@ -90,7 +89,7 @@ fun InitView(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(AeroDlLogoOnly, null, modifier = Modifier.height(100.dp))
+        AppIcon(AeroDlLogoOnly, null, modifier = Modifier.height(100.dp))
         Spacer(Modifier.size(32.dp))
 
         if (state.errorMessage == null) {
@@ -100,40 +99,40 @@ fun InitView(
                     state.checkingDeno || state.downloadingDeno
 
             if (isInProgress) {
-                ProgressRing(modifier = Modifier.size(48.dp))
+                AppProgressRing(modifier = Modifier.size(48.dp))
                 Spacer(Modifier.height(16.dp))
             }
 
-            if (state.checkingYtDlp) Text(text = stringResource(Res.string.checking_ytdlp))
+            if (state.checkingYtDlp) AppText(text = stringResource(Res.string.checking_ytdlp))
             if (state.downloadingYtDlp) {
                 val progress = (state.downloadYtDlpProgress ?: 0f)
-                Text(text = stringResource(Res.string.downloading_ytdlp) + " ${progress.toInt()}%")
+                AppText(text = stringResource(Res.string.downloading_ytdlp) + " ${progress.toInt()}%")
             }
-            if (state.updatingYtdlp) Text(text = stringResource(Res.string.updating_ytdlp))
+            if (state.updatingYtdlp) AppText(text = stringResource(Res.string.updating_ytdlp))
 
-            if (state.checkingFFmpeg) Text(text = stringResource(Res.string.checking_ffmpeg))
+            if (state.checkingFFmpeg) AppText(text = stringResource(Res.string.checking_ffmpeg))
             if (state.downloadingFFmpeg) {
                 val progress = (state.downloadFfmpegProgress ?: 0f)
-                Text(text = stringResource(Res.string.downloading_ffmpeg) + " ${progress.toInt()}%")
+                AppText(text = stringResource(Res.string.downloading_ffmpeg) + " ${progress.toInt()}%")
             }
-            if (state.updatingFFmpeg) Text(text = stringResource(Res.string.updating_ffmpeg))
+            if (state.updatingFFmpeg) AppText(text = stringResource(Res.string.updating_ffmpeg))
 
-            if (state.checkingDeno) Text(text = stringResource(Res.string.checking_deno))
+            if (state.checkingDeno) AppText(text = stringResource(Res.string.checking_deno))
             if (state.downloadingDeno) {
                 val progress = (state.downloadDenoProgress ?: 0f)
-                Text(text = stringResource(Res.string.downloading_deno) + " ${progress.toInt()}%")
+                AppText(text = stringResource(Res.string.downloading_deno) + " ${progress.toInt()}%")
             }
         } else {
             Row {
-                Text(text = stringResource(Res.string.error_occurred))
+                AppText(text = stringResource(Res.string.error_occurred))
                 Spacer(Modifier.width(8.dp))
-                Text(
-                    text = state.errorMessage, color = FluentTheme.colors.system.critical
+                AppText(
+                    text = state.errorMessage, color = AppColors.critical
                 )
             }
             Spacer(Modifier.height(16.dp))
-            AccentButton(onClick = onRetry) {
-                Text(stringResource(Res.string.init_retry))
+            AppAccentButton(onClick = onRetry) {
+                AppText(stringResource(Res.string.init_retry))
             }
         }
     }

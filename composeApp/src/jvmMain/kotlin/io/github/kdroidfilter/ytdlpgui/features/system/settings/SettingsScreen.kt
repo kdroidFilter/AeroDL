@@ -9,14 +9,20 @@ import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.github.composefluent.component.*
-import io.github.composefluent.icons.Icons
-import io.github.composefluent.icons.filled.*
-import io.github.composefluent.icons.regular.*
 import dev.zacsweers.metrox.viewmodel.metroViewModel
+import io.github.kdroidfilter.ytdlpgui.core.config.AppTheme
 import io.github.kdroidfilter.ytdlpgui.core.design.components.BrowserSelector
 import io.github.kdroidfilter.ytdlpgui.core.design.components.EllipsizedTextWithTooltip
 import io.github.kdroidfilter.ytdlpgui.core.design.components.Switcher
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppButton
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppCardExpanderItem
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppComboBox
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppContentDialog
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppDialogButton
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcon
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcons
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppText
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppTextField
 import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.*
@@ -46,6 +52,12 @@ fun SettingsView(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.weight(1f).fillMaxHeight()
         ) {
+            item {
+                ThemeSetting(
+                    appTheme = state.appTheme,
+                    onThemeChange = { onEvent(SettingsEvents.SetAppTheme(it)) },
+                )
+            }
             item {
                 CookiesFromBrowserSetting(
                     currentBrowser = state.cookiesFromBrowser,
@@ -134,13 +146,59 @@ fun SettingsView(
 }
 
 @Composable
+private fun ThemeSetting(
+    appTheme: AppTheme,
+    onThemeChange: (AppTheme) -> Unit,
+) {
+    val themes = AppTheme.entries
+    val items = themes.map { theme ->
+        when (theme) {
+            AppTheme.FLUENT -> stringResource(Res.string.settings_theme_fluent)
+            AppTheme.DARWIN -> stringResource(Res.string.settings_theme_darwin)
+        }
+    }
+    var selected by remember(appTheme) {
+        mutableStateOf(themes.indexOf(appTheme))
+    }
+
+    AppCardExpanderItem(
+        heading = {
+            AppText(
+                stringResource(Res.string.settings_theme_title),
+                modifier = Modifier.fillMaxWidth(0.50f)
+            )
+        },
+        caption = {
+            EllipsizedTextWithTooltip(
+                text = stringResource(Res.string.settings_theme_caption),
+                modifier = Modifier.fillMaxWidth(0.50f)
+            )
+        },
+        icon = { AppIcon(AppIcons.Settings, null) },
+        trailing = {
+            AppComboBox(
+                modifier = Modifier.width(120.dp),
+                header = null,
+                placeholder = "",
+                selectedIndex = selected,
+                items = items,
+                onSelectionChange = { index, _ ->
+                    selected = index
+                    onThemeChange(themes[index])
+                }
+            )
+        }
+    )
+}
+
+@Composable
 private fun CookiesFromBrowserSetting(
     currentBrowser: String,
     onBrowserSelected: (String) -> Unit,
 ) {
-    CardExpanderItem(
+    AppCardExpanderItem(
         heading = {
-            Text(
+            AppText(
                 stringResource(Res.string.settings_cookies_from_browser_title),
                 modifier = Modifier.fillMaxWidth(0.50f)
             )
@@ -152,8 +210,8 @@ private fun CookiesFromBrowserSetting(
             )
         },
         icon = {
-            Icon(
-                imageVector = Icons.Regular.Cookies,
+            AppIcon(
+                imageVector = AppIcons.Cookies,
                 contentDescription = stringResource(Res.string.settings_cookies_from_browser_title)
             )
         },
@@ -179,9 +237,9 @@ private fun IncludePresetInFilenameSetting(
     includePreset: Boolean,
     onIncludePresetChange: (Boolean) -> Unit,
 ) {
-    CardExpanderItem(
+    AppCardExpanderItem(
         heading = {
-            Text(
+            AppText(
                 stringResource(Res.string.settings_include_preset_in_filename_title),
                 modifier = Modifier.fillMaxWidth(0.8f)
             )
@@ -192,7 +250,7 @@ private fun IncludePresetInFilenameSetting(
                 modifier = Modifier.fillMaxWidth(0.8f)
             )
         },
-        icon = { Icon(Icons.Filled.DocumentEdit, null) },
+        icon = { AppIcon(AppIcons.DocumentEdit, null) },
         trailing = {
             Switcher(
                 checked = includePreset,
@@ -213,9 +271,9 @@ private fun EmbedThumbnailInMp3Setting(
     embedThumbnailInMp3: Boolean,
     onEmbedThumbnailChange: (Boolean) -> Unit,
 ) {
-    CardExpanderItem(
+    AppCardExpanderItem(
         heading = {
-            Text(
+            AppText(
                 stringResource(Res.string.settings_embed_thumbnail_mp3_title),
                 modifier = Modifier.fillMaxWidth(0.8f)
             )
@@ -226,7 +284,7 @@ private fun EmbedThumbnailInMp3Setting(
                 modifier = Modifier.fillMaxWidth(0.8f)
             )
         },
-            icon = { Icon(Icons.Filled.MusicNote1, null) },
+            icon = { AppIcon(AppIcons.MusicNote, null) },
         trailing = {
             Switcher(
                 checked = embedThumbnailInMp3,
@@ -254,21 +312,21 @@ private fun ConcurrentFragmentsSetting(
         mutableStateOf(options.indexOf(concurrentFragments))
     }
 
-    CardExpanderItem(
-        heading = { Text(stringResource(Res.string.settings_concurrent_fragments_title), modifier = Modifier.fillMaxWidth(0.75f)) },
+    AppCardExpanderItem(
+        heading = { AppText(stringResource(Res.string.settings_concurrent_fragments_title), modifier = Modifier.fillMaxWidth(0.75f)) },
         caption = {
             EllipsizedTextWithTooltip(
                 text = stringResource(Res.string.settings_concurrent_fragments_caption),
                 modifier = Modifier.fillMaxWidth(0.75f)
             )
         },
-        icon = { Icon(Icons.Filled.Flash, null) },
+        icon = { AppIcon(AppIcons.Flash, null) },
         trailing = {
-            ComboBox(
+            AppComboBox(
                 modifier = Modifier.width(80.dp),
                 header = null,
                 placeholder = "",
-                selected = selected,
+                selectedIndex = selected,
                 items = items,
                 onSelectionChange = { index, _ ->
                     selected = index
@@ -296,21 +354,21 @@ private fun ParallelDownloadsSetting(
         mutableStateOf(options.indexOf(parallelDownloads))
     }
 
-    CardExpanderItem(
-        heading = { Text(stringResource(Res.string.settings_parallel_downloads_title)) },
+    AppCardExpanderItem(
+        heading = { AppText(stringResource(Res.string.settings_parallel_downloads_title)) },
         caption = {
             EllipsizedTextWithTooltip(
                 text = stringResource(Res.string.settings_parallel_downloads_caption),
                 modifier = Modifier.fillMaxWidth(0.8f)
             )
         },
-        icon = { Icon(Icons.Filled.TopSpeed, null) },
+        icon = { AppIcon(AppIcons.TopSpeed, null) },
         trailing = {
-            ComboBox(
+            AppComboBox(
                 modifier = Modifier.width(80.dp),
                 header = null,
                 placeholder = "",
-                selected = selected,
+                selectedIndex = selected,
                 items = items,
                 onSelectionChange = { index, _ ->
                     selected = index
@@ -332,9 +390,9 @@ private fun ValidateBulkUrlsSetting(
     validateBulkUrls: Boolean,
     onValidateBulkUrlsChange: (Boolean) -> Unit,
 ) {
-    CardExpanderItem(
+    AppCardExpanderItem(
         heading = {
-            Text(
+            AppText(
                 stringResource(Res.string.settings_validate_bulk_urls_title),
                 modifier = Modifier.fillMaxWidth(0.8f)
             )
@@ -345,7 +403,7 @@ private fun ValidateBulkUrlsSetting(
                 modifier = Modifier.fillMaxWidth(0.8f)
             )
         },
-        icon = { Icon(Icons.Regular.CheckboxChecked, null) },
+        icon = { AppIcon(AppIcons.CheckboxChecked, null) },
         trailing = {
             Switcher(
                 checked = validateBulkUrls,
@@ -368,26 +426,24 @@ private fun DownloadDirectorySetting(
 ) {
     val pickTitle = stringResource(Res.string.settings_download_dir_pick_title)
 
-    CardExpanderItem(
-        heading = { Text(stringResource(Res.string.settings_download_dir_title)) },
+    AppCardExpanderItem(
+        heading = { AppText(stringResource(Res.string.settings_download_dir_title)) },
         caption = {
             Column(Modifier.fillMaxWidth(0.6f)) {
-                Text(stringResource(Res.string.settings_download_dir_caption))
+                AppText(stringResource(Res.string.settings_download_dir_caption))
                 Spacer(Modifier.height(8.dp))
-                Text(
+                AppText(
                     downloadDirPath.ifBlank { stringResource(Res.string.settings_download_dir_not_set) },
                 )
             }
         },
-        icon = { Icon(Icons.Regular.Power, null) },
+        icon = { AppIcon(AppIcons.Power, null) },
         trailing = {
-            Button(
-                iconOnly = true,
+            AppButton(
                 onClick = { onPickDownloadDir(pickTitle) },
-                content = {
-                    Icon(Icons.Filled.OpenFolder, stringResource(Res.string.open_directory))
-                },
-            )
+            ) {
+                AppIcon(AppIcons.Folder, stringResource(Res.string.open_directory))
+            }
         }
     )
 }
@@ -405,9 +461,9 @@ private fun ProxySetting(
 ) {
     var currentValue by remember(proxy) { mutableStateOf(proxy) }
 
-    CardExpanderItem(
+    AppCardExpanderItem(
         heading = {
-            Text(
+            AppText(
                 stringResource(Res.string.settings_proxy_title),
                 modifier = Modifier.fillMaxWidth(0.50f)
             )
@@ -418,21 +474,21 @@ private fun ProxySetting(
                     text = stringResource(Res.string.settings_proxy_caption),
                 )
                 Spacer(Modifier.height(8.dp))
-                Text(
+                AppText(
                     proxy.ifBlank { stringResource(Res.string.settings_proxy_not_set) },
                 )
             }
         },
-        icon = { Icon(Icons.Regular.Globe, null) },
+        icon = { AppIcon(AppIcons.Globe, null) },
         trailing = {
-            TextField(
+            AppTextField(
                 value = currentValue,
                 onValueChange = {
                     currentValue = it
                     onProxyChange(it)
                 },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text(stringResource(Res.string.settings_proxy_placeholder), maxLines = 1) },
+                placeholder = stringResource(Res.string.settings_proxy_placeholder),
                 singleLine = true,
             )
         }
@@ -450,9 +506,9 @@ private fun NoCheckCertificateSetting(
     noCheckCertificate: Boolean,
     onNoCheckCertificateChange: (Boolean) -> Unit,
 ) {
-    CardExpanderItem(
+    AppCardExpanderItem(
         heading = {
-            Text(
+            AppText(
                 stringResource(Res.string.settings_no_check_certificate_title),
                 modifier = Modifier.fillMaxWidth(0.75f)
             )
@@ -463,7 +519,7 @@ private fun NoCheckCertificateSetting(
                 modifier = Modifier.fillMaxWidth(0.75f)
             )
         },
-        icon = { Icon(Icons.Default.LockShield, null) },
+        icon = { AppIcon(AppIcons.LockShield, null) },
         trailing = {
             Switcher(
                 checked = noCheckCertificate,
@@ -484,9 +540,9 @@ private fun ClipboardMonitoringSetting(
     clipboardMonitoringEnabled: Boolean,
     onClipboardMonitoringChange: (Boolean) -> Unit,
 ) {
-    CardExpanderItem(
+    AppCardExpanderItem(
         heading = {
-            Text(
+            AppText(
                 stringResource(Res.string.settings_clipboard_monitoring_title),
                 modifier = Modifier.fillMaxWidth(0.75f)
             )
@@ -497,7 +553,7 @@ private fun ClipboardMonitoringSetting(
                 modifier = Modifier.fillMaxWidth(0.75f)
             )
         },
-        icon = { Icon(Icons.Regular.Clipboard, null) },
+        icon = { AppIcon(AppIcons.Clipboard, null) },
         trailing = {
             Switcher(
                 checked = clipboardMonitoringEnabled,
@@ -518,9 +574,9 @@ private fun NotifyOnCompleteSetting(
     notifyOnComplete: Boolean,
     onNotifyOnCompleteChange: (Boolean) -> Unit,
 ) {
-    CardExpanderItem(
+    AppCardExpanderItem(
         heading = {
-            Text(
+            AppText(
                 stringResource(Res.string.settings_notify_on_complete_title),
                 modifier = Modifier.fillMaxWidth(0.75f)
             )
@@ -531,7 +587,7 @@ private fun NotifyOnCompleteSetting(
                 modifier = Modifier.fillMaxWidth(0.75f)
             )
         },
-        icon = { Icon(Icons.Filled.TopSpeed, null) },
+        icon = { AppIcon(AppIcons.TopSpeed, null) },
         trailing = {
             Switcher(
                 checked = notifyOnComplete,
@@ -552,9 +608,9 @@ private fun AutoLaunchSetting(
     autoLaunchEnabled: Boolean,
     onAutoLaunchChange: (Boolean) -> Unit,
 ) {
-    CardExpanderItem(
+    AppCardExpanderItem(
         heading = {
-            Text(
+            AppText(
                 stringResource(Res.string.settings_auto_launch_title),
                 modifier = Modifier.fillMaxWidth(0.75f)
             )
@@ -565,7 +621,7 @@ private fun AutoLaunchSetting(
                 modifier = Modifier.fillMaxWidth(0.75f)
             )
         },
-        icon = { Icon(Icons.Regular.Power, null) },
+        icon = { AppIcon(AppIcons.Power, null) },
         trailing = {
             Switcher(
                 checked = autoLaunchEnabled,
@@ -587,9 +643,9 @@ private fun ResetToDefaultsSetting(
 ) {
     var showDialog by remember { mutableStateOf(false) }
 
-    CardExpanderItem(
+    AppCardExpanderItem(
         heading = {
-            Text(
+            AppText(
                 stringResource(Res.string.settings_reset_title),
                 modifier = Modifier.fillMaxWidth(0.50f)
             )
@@ -600,28 +656,29 @@ private fun ResetToDefaultsSetting(
                 modifier = Modifier.fillMaxWidth(0.50f)
             )
         },
-        icon = { Icon(Icons.Regular.Warning, null) },
+        icon = { AppIcon(AppIcons.Warning, null) },
         trailing = {
-            Button(
+            AppButton(
                 onClick = { showDialog = true },
-                content = {
-                    Text(stringResource(Res.string.settings_reset_button))
-                },
-            )
+            ) {
+                AppText(stringResource(Res.string.settings_reset_button))
+            }
         }
     )
 
-    ContentDialog(
+    AppContentDialog(
         title = stringResource(Res.string.settings_reset_dialog_title),
         visible = showDialog,
         primaryButtonText = stringResource(Res.string.settings_reset_dialog_confirm),
         closeButtonText = stringResource(Res.string.settings_reset_dialog_cancel),
-        onButtonClick = {
+        onButtonClick = { button ->
             showDialog = false
-            onResetClick()
+            if (button == AppDialogButton.Primary) {
+                onResetClick()
+            }
         },
         content = {
-            Text(stringResource(Res.string.settings_reset_dialog_message))
+            AppText(stringResource(Res.string.settings_reset_dialog_message))
         }
     )
 }

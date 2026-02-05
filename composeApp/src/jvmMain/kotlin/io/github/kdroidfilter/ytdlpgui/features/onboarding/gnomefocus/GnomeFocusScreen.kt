@@ -14,10 +14,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
-import io.github.composefluent.component.AccentButton
-import io.github.composefluent.component.HyperlinkButton
 import dev.zacsweers.metrox.viewmodel.metroViewModel
-import io.github.composefluent.component.Text
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppHyperlinkButton
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppText
 import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import androidx.navigation.NavHostController
 import io.github.kdroidfilter.ytdlpgui.features.init.InitState
@@ -45,7 +44,7 @@ fun GnomeFocusScreen(navController: NavHostController) {
     val currentStep by viewModel.currentStep.collectAsState()
     val initState by viewModel.initState.collectAsState()
     val dependencyInfoBarDismissed by viewModel.dependencyInfoBarDismissed.collectAsState()
-    
+
     // Navigation driven by ViewModel state
     LaunchedEffect(onboardingUiState.navigationState) {
         when (val navState = onboardingUiState.navigationState) {
@@ -60,7 +59,7 @@ fun GnomeFocusScreen(navController: NavHostController) {
             io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingNavigationState.None -> Unit
         }
     }
-    
+
     GnomeFocusView(
         onEvent = viewModel::handleEvent,
         currentStep = currentStep,
@@ -95,13 +94,13 @@ fun GnomeFocusView(
                 subtitle = stringResource(Res.string.onboarding_gnome_focus_caption)
             )
             Spacer(Modifier.height(16.dp))
-            HyperlinkButton(
+            AppHyperlinkButton(
                 onClick = {
                     uriHandler.openUri("https://extensions.gnome.org/extension/6385/steal-my-focus-window/")
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(stringResource(Res.string.onboarding_gnome_focus_open_extension))
+                AppText(stringResource(Res.string.onboarding_gnome_focus_open_extension))
             }
         }
         if (initState != null) {

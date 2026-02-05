@@ -17,12 +17,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.github.composefluent.component.Icon
-import io.github.composefluent.component.Text
-import io.github.composefluent.icons.Icons
-import io.github.composefluent.icons.regular.Power
 import dev.zacsweers.metrox.viewmodel.metroViewModel
 import io.github.kdroidfilter.ytdlpgui.core.design.components.Switcher
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcon
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcons
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppText
 import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import androidx.navigation.NavHostController
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingEvents
@@ -54,7 +53,7 @@ fun AutostartScreen(navController: NavHostController) {
     val currentStep by viewModel.currentStep.collectAsState()
     val initState by viewModel.initState.collectAsState()
     val dependencyInfoBarDismissed by viewModel.dependencyInfoBarDismissed.collectAsState()
-    
+
     // Navigation driven by ViewModel state
     LaunchedEffect(onboardingUiState.navigationState) {
         when (val navState = onboardingUiState.navigationState) {
@@ -104,7 +103,7 @@ fun AutostartView(
                 subtitle = stringResource(Res.string.settings_auto_launch_caption)
             )
             Spacer(Modifier.height(12.dp))
-            Icon(Icons.Regular.Power, null, modifier = Modifier.size(48.dp))
+            AppIcon(AppIcons.Power, null, modifier = Modifier.size(48.dp))
             Spacer(Modifier.height(12.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Switcher(
@@ -117,7 +116,7 @@ fun AutostartView(
                 } else {
                     stringResource(Res.string.common_disabled)
                 }
-                Text(statusLabel)
+                AppText(statusLabel)
             }
         }
         if (initState != null) {

@@ -27,37 +27,33 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.AccentButton
-import io.github.composefluent.component.Button
-import io.github.composefluent.component.CardExpanderItem
-import io.github.composefluent.component.FlyoutPlacement
-import io.github.composefluent.component.Icon
-import io.github.composefluent.component.ListItemDefaults
-import io.github.composefluent.component.ListItemSelectionType
-import io.github.composefluent.component.MenuFlyoutContainer
-import io.github.composefluent.component.MenuFlyoutItem
-import io.github.composefluent.component.MenuFlyoutSeparator
-import io.github.composefluent.component.ProgressRing
-import io.github.composefluent.component.SegmentedButton
-import io.github.composefluent.component.SegmentedControl
-import io.github.composefluent.component.SegmentedItemPosition
-import io.github.composefluent.component.Text
-import io.github.composefluent.icons.Icons
-import io.github.composefluent.icons.regular.*
 import io.github.kdroidfilter.composemediaplayer.VideoPlayerState
 import io.github.kdroidfilter.composemediaplayer.VideoPlayerSurface
 import io.github.kdroidfilter.composemediaplayer.rememberVideoPlayerState
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
+import io.github.kdroidfilter.ytdlpgui.core.design.components.EllipsizedTextWithTooltip
+import io.github.kdroidfilter.ytdlpgui.core.design.components.Switcher
+import io.github.kdroidfilter.ytdlpgui.core.design.components.TrimSlider
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppAccentButton
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppButton
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppCardExpanderItem
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppColors
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcon
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcons
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppMenuContainer
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppMenuItem
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppMenuSeparator
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppProgressRing
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppSegmentedButton
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppSegmentedControl
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppText
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppTypography
+import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import androidx.compose.runtime.collectAsState
 import ytdlpgui.composeapp.generated.resources.*
-import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
-import io.github.kdroidfilter.ytdlpgui.core.design.components.EllipsizedTextWithTooltip
-import io.github.kdroidfilter.ytdlpgui.core.design.components.Switcher
-import io.github.kdroidfilter.ytdlpgui.core.design.components.TrimSlider
 import java.time.Duration
 import java.util.*
 
@@ -139,7 +135,7 @@ fun SingleDownloadView(
 @Composable
 private fun Loader() {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        ProgressRing()
+        AppProgressRing()
     }
 }
 
@@ -150,16 +146,16 @@ private fun ErrorBox(message: String) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Icon(
-            imageVector = Icons.Regular.ErrorCircle,
+        AppIcon(
+            imageVector = AppIcons.ErrorCircle,
             contentDescription = stringResource(Res.string.cd_error_icon),
             modifier = Modifier.size(144.dp),
-            tint = FluentTheme.colors.system.critical
+            tint = AppColors.critical
         )
         Spacer(Modifier.size(16.dp))
-        Text(
+        AppText(
             text = stringResource(Res.string.error_fetch_video_info, message),
-            color = FluentTheme.colors.system.critical,
+            color = AppColors.critical,
             textAlign = TextAlign.Center
         )
     }
@@ -230,7 +226,7 @@ private fun SingleVideoDownloadView(
                 // Afficher les options vidéo seulement si "Vidéo" est sélectionné
                 if (selectedFormatIndex == 0 && availablePresets.isNotEmpty()) {
                     // Sélecteur de résolution avec SegmentedControl
-                    Text(text = stringResource(Res.string.single_formats))
+                    AppText(text = stringResource(Res.string.single_formats))
                     Spacer(Modifier.height(8.dp))
 
                     FlowRow(
@@ -238,14 +234,15 @@ private fun SingleVideoDownloadView(
                         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        availablePresets.forEach { preset ->
-                            SegmentedControl {
-                                SegmentedButton(
-                                    checked = preset == selectedPreset,
-                                    onCheckedChanged = { onSelectPreset(preset) },
-                                    position = SegmentedItemPosition.Center,
-                                    text = { Text("${preset.height}p") }
-                                )
+                        availablePresets.forEachIndexed { index, preset ->
+                            AppSegmentedControl(selectedIndex = if (preset == selectedPreset) 0 else -1) {
+                                AppSegmentedButton(
+                                    index = 0,
+                                    selected = preset == selectedPreset,
+                                    onClick = { onSelectPreset(preset) },
+                                ) {
+                                    AppText("${preset.height}p")
+                                }
                             }
                         }
                     }
@@ -265,21 +262,42 @@ private fun SingleVideoDownloadView(
                             horizontalArrangement = Arrangement.SpaceEvenly,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = stringResource(Res.string.single_subtitles))
+                            AppText(text = stringResource(Res.string.single_subtitles))
 
-                            MenuFlyoutContainer(
-                                flyout = {
-                                    MenuFlyoutItem(
+                            var menuExpanded by remember { mutableStateOf(false) }
+                            val autoLabel = stringResource(Res.string.single_auto_generated)
+
+                            AppMenuContainer(
+                                expanded = menuExpanded,
+                                onDismissRequest = { menuExpanded = false },
+                                trigger = {
+                                    AppButton(
+                                        onClick = { menuExpanded = !menuExpanded },
+                                    ) {
+                                        AppText(
+                                            if (selectedSubtitles.isEmpty())
+                                                stringResource(Res.string.single_no_subtitle)
+                                            else
+                                                selectedSubtitles.joinToString(", ") { lang ->
+                                                    val subtitleInfo = availableSubtitles[lang]
+                                                    val displayName = languageCodeToDisplayName(lang)
+                                                    val isAutoGenerated =
+                                                        subtitleInfo?.autoGenerated == true || subtitleInfo?.isAutomatic == true
+                                                    if (isAutoGenerated) "$displayName ($autoLabel)" else displayName
+                                                }
+                                        )
+                                    }
+                                },
+                                content = {
+                                    AppMenuItem(
                                         onClick = {
                                             onClearSubtitles()
                                             resetKey += 1
-                                            isFlyoutVisible = false
+                                            menuExpanded = false
                                         },
-                                        text = { Text(stringResource(Res.string.single_no_subtitle)) },
-                                        colors = ListItemDefaults.defaultListItemColors(),
-                                        )
-                                    MenuFlyoutSeparator()
-                                    val autoLabel = stringResource(Res.string.single_auto_generated)
+                                        text = stringResource(Res.string.single_no_subtitle),
+                                    )
+                                    AppMenuSeparator()
                                     sortedLanguages.forEach { lang ->
                                         val isSelected = selectedSubtitles.contains(lang)
                                         val subtitleInfo = availableSubtitles[lang]
@@ -288,49 +306,24 @@ private fun SingleVideoDownloadView(
                                             subtitleInfo?.autoGenerated == true || subtitleInfo?.isAutomatic == true
                                         val fullDisplayName =
                                             if (isAutoGenerated) "$displayName ($autoLabel)" else displayName
-                                        MenuFlyoutItem(
-                                            selected = isSelected,
-                                            onSelectedChanged = {
+                                        val displayText = if (isSelected) "\u2713 $fullDisplayName" else "    $fullDisplayName"
+                                        AppMenuItem(
+                                            onClick = {
                                                 onToggleSubtitle(lang)
                                             },
-                                            selectionType = ListItemSelectionType.Check,
-                                            colors = ListItemDefaults.defaultListItemColors(),
-                                            text = { Text(fullDisplayName) }
+                                            text = displayText,
                                         )
                                     }
-
                                 },
-                                content = {
-                                    Button(
-                                        onClick = { isFlyoutVisible = !isFlyoutVisible },
-                                        content = {
-                                            val autoLabel = stringResource(Res.string.single_auto_generated)
-                                            Text(
-                                                if (selectedSubtitles.isEmpty())
-                                                    stringResource(Res.string.single_no_subtitle)
-                                                else
-                                                    selectedSubtitles.joinToString(", ") { lang ->
-                                                        val subtitleInfo = availableSubtitles[lang]
-                                                        val displayName = languageCodeToDisplayName(lang)
-                                                        val isAutoGenerated =
-                                                            subtitleInfo?.autoGenerated == true || subtitleInfo?.isAutomatic == true
-                                                        if (isAutoGenerated) "$displayName ($autoLabel)" else displayName
-                                                    }
-                                            )
-                                        }
-                                    )
-                                },
-                                adaptivePlacement = true,
-                                placement = FlyoutPlacement.BottomAlignedEnd
                             )
                         }
                         Spacer(Modifier.height(16.dp))
                     }
                     // Option: Split chapters (video) — friendlier CardExpander with caption
                     if (videoInfo?.hasChapters == true) {
-                        CardExpanderItem(
+                        AppCardExpanderItem(
                             heading = {
-                                Text(
+                                AppText(
                                     stringResource(Res.string.split_chapters),
                                     modifier = Modifier.fillMaxWidth(0.75f)
                                 )
@@ -341,7 +334,7 @@ private fun SingleVideoDownloadView(
                                     modifier = Modifier.fillMaxWidth(0.75f)
                                 )
                             },
-                            icon = { Icon(Icons.Regular.FilmstripPlay, null) },
+                            icon = { AppIcon(AppIcons.FilmstripPlay, null) },
                             trailing = {
                                 Switcher(
                                     checked = splitChapters,
@@ -354,9 +347,9 @@ private fun SingleVideoDownloadView(
 
                     // Option: SponsorBlock (video) — friendlier CardExpander with caption
                     if (hasSponsorSegments) {
-                        CardExpanderItem(
+                        AppCardExpanderItem(
                             heading = {
-                                Text(
+                                AppText(
                                     stringResource(Res.string.remove_sponsors),
                                     modifier = Modifier.fillMaxWidth(0.75f)
                                 )
@@ -367,7 +360,7 @@ private fun SingleVideoDownloadView(
                                     modifier = Modifier.fillMaxWidth(0.75f)
                                 )
                             },
-                            icon = { Icon(Icons.Regular.Info, null) },
+                            icon = { AppIcon(AppIcons.Info, null) },
                             trailing = {
                                 Switcher(
                                     checked = removeSponsors,
@@ -394,7 +387,7 @@ private fun SingleVideoDownloadView(
                 // Afficher le sélecteur de qualité audio si "Audio" est sélectionné
                 if (selectedFormatIndex == 1 && availableAudioQualityPresets.isNotEmpty()) {
                     // Sélecteur de qualité audio
-                    Text(text = stringResource(Res.string.single_audio_quality))
+                    AppText(text = stringResource(Res.string.single_audio_quality))
                     Spacer(Modifier.height(8.dp))
 
                     FlowRow(
@@ -402,23 +395,24 @@ private fun SingleVideoDownloadView(
                         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        availableAudioQualityPresets.forEach { audioPreset ->
-                            SegmentedControl {
-                                SegmentedButton(
-                                    checked = audioPreset == selectedAudioQualityPreset,
-                                    onCheckedChanged = { onSelectAudioQualityPreset(audioPreset) },
-                                    position = SegmentedItemPosition.Center,
-                                    text = { Text(audioPreset.bitrate) }
-                                )
+                        availableAudioQualityPresets.forEachIndexed { index, audioPreset ->
+                            AppSegmentedControl(selectedIndex = if (audioPreset == selectedAudioQualityPreset) 0 else -1) {
+                                AppSegmentedButton(
+                                    index = 0,
+                                    selected = audioPreset == selectedAudioQualityPreset,
+                                    onClick = { onSelectAudioQualityPreset(audioPreset) },
+                                ) {
+                                    AppText(audioPreset.bitrate)
+                                }
                             }
                         }
                     }
                     Spacer(Modifier.height(16.dp))
                     // Option: Split chapters (audio) — friendlier CardExpander with caption
                     if (videoInfo?.hasChapters == true) {
-                        CardExpanderItem(
+                        AppCardExpanderItem(
                             heading = {
-                                Text(
+                                AppText(
                                     stringResource(Res.string.split_chapters),
                                     modifier = Modifier.fillMaxWidth(0.75f)
                                 )
@@ -429,7 +423,7 @@ private fun SingleVideoDownloadView(
                                     modifier = Modifier.fillMaxWidth(0.75f)
                                 )
                             },
-                            icon = { Icon(Icons.Regular.FilmstripPlay, null) },
+                            icon = { AppIcon(AppIcons.FilmstripPlay, null) },
                             trailing = {
                                 Switcher(
                                     checked = splitChapters,
@@ -442,9 +436,9 @@ private fun SingleVideoDownloadView(
                     // Option: SponsorBlock (audio) — friendlier CardExpander with caption
                     if (hasSponsorSegments) {
                         Spacer(Modifier.height(8.dp))
-                        CardExpanderItem(
+                        AppCardExpanderItem(
                             heading = {
-                                Text(
+                                AppText(
                                     stringResource(Res.string.remove_sponsors),
                                     modifier = Modifier.fillMaxWidth(0.75f)
                                 )
@@ -455,7 +449,7 @@ private fun SingleVideoDownloadView(
                                     modifier = Modifier.fillMaxWidth(0.75f)
                                 )
                             },
-                            icon = { Icon(Icons.Regular.Info, null) },
+                            icon = { AppIcon(AppIcons.Info, null) },
                             trailing = {
                                 Switcher(
                                     checked = removeSponsors,
@@ -484,9 +478,9 @@ private fun SingleVideoDownloadView(
                     horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    AccentButton(onClick = if (selectedFormatIndex == 0) onStartDownload else onStartAudioDownload) {
-                        Icon(Icons.Default.ArrowDownload, null)
-                        Text(stringResource(Res.string.download_button))
+                    AppAccentButton(onClick = if (selectedFormatIndex == 0) onStartDownload else onStartAudioDownload) {
+                        AppIcon(AppIcons.Download, null)
+                        AppText(stringResource(Res.string.download_button))
                     }
 
                     // Split-chapters now controlled by a checkbox above
@@ -510,8 +504,8 @@ private fun FormatSelector(
     val videoLabel = stringResource(Res.string.download_type_video)
     val audioLabel = stringResource(Res.string.download_type_audio)
     val options = listOf(
-        videoLabel to Icons.Regular.Video,
-        audioLabel to Icons.Regular.MusicNote2
+        videoLabel to AppIcons.Video,
+        audioLabel to AppIcons.MusicNote
     )
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -520,30 +514,28 @@ private fun FormatSelector(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.Regular.FilmstripPlay,
+            AppIcon(
+                imageVector = AppIcons.FilmstripPlay,
                 contentDescription = stringResource(Res.string.cd_filmstrip_play)
             )
-            Text(stringResource(Res.string.single_choose_format))
+            AppText(stringResource(Res.string.single_choose_format))
         }
 
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            SegmentedControl {
+            AppSegmentedControl(selectedIndex = selectedFormatIndex) {
                 options.forEachIndexed { index, (label, icon) ->
-                    SegmentedButton(
-                        checked = index == selectedFormatIndex,
-                        onCheckedChanged = { onFormatSelected(index) },
-                        position = when (index) {
-                            0 -> SegmentedItemPosition.Start
-                            options.lastIndex -> SegmentedItemPosition.End
-                            else -> SegmentedItemPosition.Center
-                        },
-                        text = { Text(label) },
-                        icon = { Icon(icon, contentDescription = label) }
-                    )
+                    AppSegmentedButton(
+                        index = index,
+                        selected = index == selectedFormatIndex,
+                        onClick = { onFormatSelected(index) },
+                    ) {
+                        AppIcon(icon, contentDescription = label)
+                        Spacer(Modifier.width(4.dp))
+                        AppText(label)
+                    }
                 }
             }
         }
@@ -552,7 +544,7 @@ private fun FormatSelector(
 
 @Composable
 private fun VideoTitle(videoInfo: VideoInfo?) {
-    Text(
+    AppText(
         text = videoInfo?.title.orEmpty(),
         fontSize = 22.sp,
         fontWeight = FontWeight.SemiBold,
@@ -571,7 +563,7 @@ private fun VideoDescription(videoInfo: VideoInfo?) {
         Column {
             Row(
                 modifier = Modifier
-                    .clip(FluentTheme.shapes.control)
+                    .clip(RoundedCornerShape(4.dp))
                     .clickable(
                         enabled = hasOverflow,
                         indication = null,
@@ -584,15 +576,15 @@ private fun VideoDescription(videoInfo: VideoInfo?) {
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.Regular.Textbox,
+                    AppIcon(
+                        imageVector = AppIcons.Textbox,
                         contentDescription = stringResource(Res.string.cd_textbox)
                     )
-                    Text(stringResource(Res.string.single_description), style = FluentTheme.typography.body)
+                    AppText(stringResource(Res.string.single_description), style = AppTypography.body)
                 }
                 if (hasOverflow) {
-                    Icon(
-                        Icons.Default.ChevronRight,
+                    AppIcon(
+                        AppIcons.ChevronRight,
                         contentDescription = null,
                         modifier = Modifier.rotate(degrees),
                     )
@@ -600,9 +592,10 @@ private fun VideoDescription(videoInfo: VideoInfo?) {
             }
 
             Box(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-                Text(
+                // Using Material Text here because AppText does not support onTextLayout
+                androidx.compose.material.Text(
                     text = videoInfo.description.orEmpty(),
-                    style = FluentTheme.typography.body,
+                    style = AppTypography.body,
                     maxLines = if (expanded) Int.MAX_VALUE else 3,
                     overflow = TextOverflow.Ellipsis,
                     onTextLayout = { textLayoutResult ->
@@ -627,7 +620,7 @@ private fun DurationChip(text: String, modifier: Modifier = Modifier) {
             .background(Color(0xCC000000))
             .padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
-        Text(text = text, fontSize = 12.sp, color = Color.White)
+        AppText(text = text, fontSize = 12.sp, color = Color.White)
     }
 }
 
@@ -685,8 +678,8 @@ private fun VideoPlayer(
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
-                Icon(
-                    imageVector = Icons.Default.Play,
+                AppIcon(
+                    imageVector = AppIcons.Play,
                     contentDescription = null,
                     modifier = Modifier.size(48.dp).clickable(
                         onClick = {
@@ -718,13 +711,13 @@ private fun VideoPlayer(
                 VideoPlayerSurface(videoPlayerState, modifier = Modifier.fillMaxSize()) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         if (videoPlayerState.isLoading) {
-                            ProgressRing(modifier = Modifier.size(48.dp))
+                            AppProgressRing(modifier = Modifier.size(48.dp))
                         }
                         if (isHovered) {
                             if (!videoPlayerState.isPlaying) {
                                 IconButton({ videoPlayerState.play() }) {
-                                    Icon(
-                                        imageVector = Icons.Default.Play,
+                                    AppIcon(
+                                        imageVector = AppIcons.Play,
                                         contentDescription = null,
                                         modifier = Modifier.size(48.dp),
                                         tint = Color.White
@@ -732,8 +725,8 @@ private fun VideoPlayer(
                                 }
                             } else {
                                 IconButton({ videoPlayerState.pause() }) {
-                                    Icon(
-                                        imageVector = Icons.Default.Pause,
+                                    AppIcon(
+                                        imageVector = AppIcons.Pause,
                                         contentDescription = null,
                                         modifier = Modifier.size(48.dp),
                                         tint = Color.White

@@ -10,10 +10,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.github.composefluent.FluentTheme
-
-import io.github.composefluent.component.Text
 import io.github.kdroidfilter.ytdlpgui.core.design.components.ProgressBar
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppText
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppTypography
 import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingStep
 import org.jetbrains.compose.resources.stringResource
@@ -38,9 +37,9 @@ internal fun OnboardingProgress(
             .fillMaxWidth()
             .padding(bottom = 12.dp)
     ) {
-        Text(
+        AppText(
             text = stringResource(Res.string.onboarding_progress_label, actualCurrentIndex + 1, actualTotalSteps),
-            style = FluentTheme.typography.caption
+            style = AppTypography.caption
         )
         Spacer(Modifier.height(6.dp))
         ProgressBar(
@@ -53,62 +52,54 @@ internal fun OnboardingProgress(
 @Preview
 @Composable
 private fun OnboardingProgressFirstStepPreview() {
-    FluentTheme {
-        Column(Modifier.padding(16.dp)) {
-            OnboardingProgress(
-                step = OnboardingStep.Welcome,
-                currentStepIndex = 0,
-                totalSteps = 8
-            )
-        }
+    Column(Modifier.padding(16.dp)) {
+        OnboardingProgress(
+            step = OnboardingStep.Welcome,
+            currentStepIndex = 0,
+            totalSteps = 8
+        )
     }
 }
 
 @Preview
 @Composable
 private fun OnboardingProgressMiddleStepPreview() {
-    FluentTheme {
-        Column(Modifier.padding(16.dp)) {
-            OnboardingProgress(
-                step = OnboardingStep.Cookies,
-                currentStepIndex = 3,
-                totalSteps = 8
-            )
-        }
+    Column(Modifier.padding(16.dp)) {
+        OnboardingProgress(
+            step = OnboardingStep.Cookies,
+            currentStepIndex = 3,
+            totalSteps = 8
+        )
     }
 }
 
 @Preview
 @Composable
 private fun OnboardingProgressWithInitStateDownloadingPreview() {
-    FluentTheme {
-        Column(Modifier.padding(16.dp)) {
-            OnboardingProgress(
-                step = OnboardingStep.Welcome,
-                initState = InitState(
-                    downloadingYtDlp = true,
-                    downloadYtDlpProgress = 45.0F,
-                    checkingFFmpeg = true,
-                    initCompleted = false
-                ),
-                currentStepIndex = 0,
-                totalSteps = 8
-            )
-        }
+    Column(Modifier.padding(16.dp)) {
+        OnboardingProgress(
+            step = OnboardingStep.Welcome,
+            initState = InitState(
+                downloadingYtDlp = true,
+                downloadYtDlpProgress = 45.0F,
+                checkingFFmpeg = true,
+                initCompleted = false
+            ),
+            currentStepIndex = 0,
+            totalSteps = 8
+        )
     }
 }
 
 @Preview
 @Composable
 private fun OnboardingProgressWithInitStateCompletedPreview() {
-    FluentTheme {
-        Column(Modifier.padding(16.dp)) {
-            OnboardingProgress(
-                step = OnboardingStep.Welcome,
-                initState = InitState(initCompleted = true),
-                currentStepIndex = 0,
-                totalSteps = 8
-            )
-        }
+    Column(Modifier.padding(16.dp)) {
+        OnboardingProgress(
+            step = OnboardingStep.Welcome,
+            initState = InitState(initCompleted = true),
+            currentStepIndex = 0,
+            totalSteps = 8
+        )
     }
 }

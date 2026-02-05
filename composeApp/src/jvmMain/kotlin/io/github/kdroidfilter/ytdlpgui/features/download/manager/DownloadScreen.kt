@@ -16,39 +16,30 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
-import io.github.composefluent.ExperimentalFluentApi
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.Button
-import io.github.composefluent.component.TextField
-import io.github.composefluent.component.Badge
-import io.github.composefluent.component.BadgeDefaults
-import io.github.composefluent.component.BadgeStatus
-import io.github.composefluent.component.ContentDialog
-import io.github.composefluent.component.DialogSize
-import io.github.composefluent.component.Icon
-import io.github.composefluent.component.ProgressRing
-import io.github.composefluent.component.SubtleButton
-import io.github.composefluent.component.Text
-import io.github.composefluent.component.TooltipBox
-import io.github.composefluent.icons.Icons
-import io.github.composefluent.icons.regular.*
 import io.github.kdroidfilter.ytdlp.util.YouTubeThumbnailHelper
 import io.github.kdroidfilter.ytdlpgui.core.design.components.UpdateInfoBar
 import io.github.kdroidfilter.ytdlpgui.core.design.components.TerminalView
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppButton
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppColors
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppContentDialog
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcon
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcons
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppProgressRing
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppSubtleButton
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppText
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppTextField
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppTooltip
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppTypography
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.TaskType
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository.HistoryItem
 import dev.zacsweers.metrox.viewmodel.metroViewModel
-import io.github.kdroidfilter.ytdlpgui.core.design.components.UpdateInfoBar
 import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -72,7 +63,7 @@ fun DownloaderScreen() {
 }
 
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalFluentApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DownloadView(
     state: DownloadState,
@@ -112,37 +103,30 @@ fun DownloadView(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         if (state.hasAnyHistory) {
-                            TextField(
+                            AppTextField(
                                 value = state.searchQuery,
                                 onValueChange = { onEvent(DownloadEvents.UpdateSearchQuery(it)) },
-                                placeholder = {
-                                    Text(
-                                        stringResource(Res.string.download_search_placeholder),
-                                        maxLines = 1
-                                    )
-                                },
+                                placeholder = stringResource(Res.string.download_search_placeholder),
                                 singleLine = true,
                                 modifier = Modifier.weight(1f).padding(bottom = 8.dp),
-                                trailing = {
-                                    Icon(
-                                        imageVector = Icons.Regular.Search,
+                                trailingIcon = {
+                                    AppIcon(
+                                        imageVector = AppIcons.Search,
                                         contentDescription = "Search"
                                     )
                                 }
                             )
 
-                            TooltipBox(tooltip = {
-                                Text(stringResource(Res.string.tooltip_clear_history))
-                            }) {
-                                Button(
+                            AppTooltip(tooltip = stringResource(Res.string.tooltip_clear_history)) {
+                                AppButton(
                                     onClick = { onEvent(DownloadEvents.ClearHistory) },
                                     modifier = Modifier.padding(bottom = 8.dp)
                                 ) {
-                                    Text(
+                                    AppText(
                                         stringResource(Res.string.download_clear_history),
-                                        style = FluentTheme.typography.bodyStrong
+                                        style = AppTypography.bodyStrong
                                     )
-                                    Icon(Icons.Default.Delete, stringResource(Res.string.download_clear_history))
+                                    AppIcon(AppIcons.Delete, stringResource(Res.string.download_clear_history))
                                 }
                             }
                         }
@@ -166,7 +150,7 @@ fun DownloadView(
                         onDismissFailed = { id -> onEvent(DownloadEvents.DismissFailed(id)) }
                     )
                     Divider(
-                        color = FluentTheme.colors.control.secondary,
+                        color = AppColors.controlSecondary,
                         thickness = 1.dp,
                         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
                     )
@@ -184,35 +168,34 @@ fun DownloadView(
                     HistoryRow(h = h, actions = {
                         val dirAvailable = state.directoryAvailability[h.id] == true
                         if (dirAvailable) {
-                            TooltipBox(tooltip = { Text(stringResource(Res.string.tooltip_open_directory)) }) {
-                                Button(iconOnly = true, onClick = { onEvent(DownloadEvents.OpenDirectory(h.id)) }) {
-                                    Icon(Icons.Default.Folder, stringResource(Res.string.open_directory))
+                            AppTooltip(tooltip = stringResource(Res.string.tooltip_open_directory)) {
+                                AppButton(onClick = { onEvent(DownloadEvents.OpenDirectory(h.id)) }) {
+                                    AppIcon(AppIcons.Folder, stringResource(Res.string.open_directory))
                                 }
                             }
                         } else {
-                            TooltipBox(tooltip = { Text(stringResource(Res.string.tooltip_directory_unavailable)) }) {
+                            AppTooltip(tooltip = stringResource(Res.string.tooltip_directory_unavailable)) {
                                 // Disabled/placeholder action when directory no longer exists
-                                Button(
-                                    iconOnly = true,
-                                    disabled = true,
+                                AppButton(
+                                    enabled = false,
                                     onClick = { /* no-op: directory unavailable */ }) {
-                                    Icon(
-                                        Icons.Default.FolderProhibited,
+                                    AppIcon(
+                                        AppIcons.FolderProhibited,
                                         stringResource(Res.string.directory_unavailable),
-                                        tint = FluentTheme.colors.system.critical
+                                        tint = AppColors.critical
                                     )
                                 }
                             }
                         }
 
-                        TooltipBox(tooltip = { Text(stringResource(Res.string.tooltip_delete_element)) }) {
-                            Button(iconOnly = true, onClick = { onEvent(DownloadEvents.DeleteHistory(h.id)) }) {
-                                Icon(Icons.Default.Delete, stringResource(Res.string.delete_element))
+                        AppTooltip(tooltip = stringResource(Res.string.tooltip_delete_element)) {
+                            AppButton(onClick = { onEvent(DownloadEvents.DeleteHistory(h.id)) }) {
+                                AppIcon(AppIcons.Delete, stringResource(Res.string.delete_element))
                             }
                         }
                     })
                     Divider(
-                        color = FluentTheme.colors.control.secondary,
+                        color = AppColors.controlSecondary,
                         thickness = 1.dp,
                         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
                     )
@@ -227,16 +210,14 @@ fun DownloadView(
     }
 }
 
-@OptIn(ExperimentalFluentApi::class)
 @Composable
 private fun ErrorDialog(
     errorItem: DownloadManager.DownloadItem,
     onDismiss: () -> Unit
 ) {
-    ContentDialog(
+    AppContentDialog(
         title = stringResource(Res.string.download_error_title),
         visible = true,
-        size = DialogSize.Min,
         primaryButtonText = stringResource(Res.string.ok),
         onButtonClick = { onDismiss() },
         content = {
@@ -256,7 +237,7 @@ private fun NoDownloads() {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(stringResource(Res.string.no_downloads))
+        AppText(stringResource(Res.string.no_downloads))
     }
 }
 
@@ -275,14 +256,14 @@ private fun HistoryThumbnail(h: HistoryItem) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(FluentTheme.colors.background.layer.default),
+                        .background(AppColors.backgroundDefault),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = if (h.isAudio) Icons.Regular.MusicNote1 else Icons.Regular.Video,
+                    AppIcon(
+                        imageVector = if (h.isAudio) AppIcons.MusicNote else AppIcons.Video,
                         contentDescription = stringResource(Res.string.task_type_conversion),
                         modifier = Modifier.size(36.dp),
-                        tint = FluentTheme.colors.text.text.secondary
+                        tint = AppColors.textSecondary
                     )
                 }
             } else {
@@ -312,11 +293,11 @@ private fun HistoryThumbnail(h: HistoryItem) {
                 isConversion -> "MP4"
                 else -> h.presetHeight?.let { "${it}P" } ?: ""
             }
-            Text(
+            AppText(
                 overlay,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.background(Color.Black).padding(horizontal = 4.dp, vertical = 2.dp),
-                style = FluentTheme.typography.caption,
+                style = AppTypography.caption,
                 color = Color.White,
             )
         }
@@ -339,8 +320,8 @@ private fun HistoryRow(
 
         Spacer(Modifier.width(8.dp))
         Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.SpaceBetween) {
-            Text(h.videoInfo?.title ?: h.url, maxLines = 3, overflow = TextOverflow.Ellipsis)
-            Text(whenStr, style = FluentTheme.typography.caption)
+            AppText(h.videoInfo?.title ?: h.url, maxLines = 3, overflow = TextOverflow.Ellipsis)
+            AppText(whenStr, style = AppTypography.caption)
         }
         Spacer(Modifier.width(8.dp))
         Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.End) {
@@ -380,14 +361,14 @@ private fun InProgressThumbnail(item: DownloadManager.DownloadItem) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(FluentTheme.colors.background.layer.default),
+                            .background(AppColors.backgroundDefault),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = if (isAudioConversion) Icons.Regular.MusicNote1 else Icons.Regular.Video,
+                        AppIcon(
+                            imageVector = if (isAudioConversion) AppIcons.MusicNote else AppIcons.Video,
                             contentDescription = stringResource(Res.string.task_type_conversion),
                             modifier = Modifier.size(36.dp),
-                            tint = FluentTheme.colors.text.text.secondary
+                            tint = AppColors.textSecondary
                         )
                     }
                 }
@@ -396,18 +377,18 @@ private fun InProgressThumbnail(item: DownloadManager.DownloadItem) {
                 TaskType.DOWNLOAD -> item.preset?.height?.let { "${it}P" } ?: "MP3"
                 TaskType.CONVERSION -> item.outputFormat ?: "Convert"
             }
-            Text(
+            AppText(
                 overlay,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.background(Color.Black).padding(horizontal = 4.dp, vertical = 2.dp),
-                style = FluentTheme.typography.caption,
+                style = AppTypography.caption,
                 color = Color.White,
             )
         }
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalFluentApi::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
 private fun InProgressRow(
     item: DownloadManager.DownloadItem,
@@ -423,7 +404,7 @@ private fun InProgressRow(
         InProgressThumbnail(item)
         Spacer(Modifier.width(8.dp))
         Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.SpaceBetween) {
-            Text(item.displayName, maxLines = 3, overflow = TextOverflow.Ellipsis)
+            AppText(item.displayName, maxLines = 3, overflow = TextOverflow.Ellipsis)
             val statusText = when (item.status) {
                 DownloadManager.DownloadItem.Status.Pending -> stringResource(Res.string.status_pending)
                 DownloadManager.DownloadItem.Status.Running -> {
@@ -437,35 +418,33 @@ private fun InProgressRow(
                 DownloadManager.DownloadItem.Status.Failed -> stringResource(Res.string.status_failed)
                 DownloadManager.DownloadItem.Status.Cancelled -> stringResource(Res.string.status_cancelled)
             }
-            Text(statusText, style = FluentTheme.typography.caption)
+            AppText(statusText, style = AppTypography.caption)
         }
         Spacer(Modifier.width(8.dp))
         Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             when (item.status) {
                 DownloadManager.DownloadItem.Status.Failed -> {
                     // Error details button
-                    TooltipBox(tooltip = { Text(stringResource(Res.string.view_error_details)) }) {
-                        SubtleButton(
-                            iconOnly = true,
+                    AppTooltip(tooltip = stringResource(Res.string.view_error_details)) {
+                        AppSubtleButton(
                             onClick = { onShowError(item.id) },
                             modifier = Modifier.size(27.dp)
                         ) {
-                            Icon(
-                                Icons.Default.ErrorCircle,
+                            AppIcon(
+                                AppIcons.ErrorCircle,
                                 stringResource(Res.string.view_error_details),
-                                tint = FluentTheme.colors.system.critical
+                                tint = AppColors.critical
                             )
                         }
                     }
                     // Dismiss/remove from list button
-                    TooltipBox(tooltip = { Text(stringResource(Res.string.tooltip_remove_from_list)) }) {
-                        SubtleButton(
-                            iconOnly = true,
+                    AppTooltip(tooltip = stringResource(Res.string.tooltip_remove_from_list)) {
+                        AppSubtleButton(
                             onClick = { onDismissFailed(item.id) },
                             modifier = Modifier.size(27.dp)
                         ) {
-                            Icon(
-                                Icons.Default.Dismiss,
+                            AppIcon(
+                                AppIcons.Close,
                                 stringResource(Res.string.remove_from_list)
                             )
                         }
@@ -487,13 +466,13 @@ private fun InProgressRow(
                             contentAlignment = Alignment.Center
                         ) {
                             // Always show the progress ring
-                            ProgressRing(progress = progressFraction, modifier = Modifier.fillMaxSize())
+                            AppProgressRing(progress = progressFraction, modifier = Modifier.fillMaxSize())
 
                             if (!hovered) {
                                 // Show percentage text centered in the ring
-                                Text(
+                                AppText(
                                     "${percent}%",
-                                    style = FluentTheme.typography.caption,
+                                    style = AppTypography.caption,
                                     fontSize = 11.sp,
                                     textAlign = TextAlign.Center,
                                     maxLines = 1,
@@ -501,14 +480,13 @@ private fun InProgressRow(
                                 )
                             } else {
                                 // On hover, show dismiss icon overlaid on the ring
-                                TooltipBox(tooltip = { Text(stringResource(Res.string.cancel)) }) {
-                                    SubtleButton(
-                                        iconOnly = true,
+                                AppTooltip(tooltip = stringResource(Res.string.cancel)) {
+                                    AppSubtleButton(
                                         onClick = { onCancel(item.id) },
                                         modifier = Modifier.size(18.dp)
                                     ) {
-                                        Icon(
-                                            Icons.Default.Dismiss,
+                                        AppIcon(
+                                            AppIcons.Close,
                                             stringResource(Res.string.cancel),
                                             modifier = Modifier.size(16.dp)
                                         )
@@ -522,9 +500,9 @@ private fun InProgressRow(
                         Column(verticalArrangement = Arrangement.spacedBy(2.dp), horizontalAlignment = Alignment.End) {
                             val speedLine =
                                 if (item.status == DownloadManager.DownloadItem.Status.Running) speedText else null
-                            Text(
+                            AppText(
                                 text = speedLine ?: " ",
-                                style = FluentTheme.typography.caption,
+                                style = AppTypography.caption,
                                 fontSize = 11.sp,
                                 maxLines = 1,
                                 overflow = TextOverflow.Clip,

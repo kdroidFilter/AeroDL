@@ -6,12 +6,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.AccentButton
-import io.github.composefluent.component.Icon
-import io.github.composefluent.component.Text
 import dev.zacsweers.metrox.viewmodel.metroViewModel
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnly
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppAccentButton
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppColors
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcon
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppText
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppTypography
 import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingViewModel
@@ -81,17 +82,17 @@ fun WelcomeView(
             verticalArrangement = Arrangement.SpaceEvenly,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(
+            AppText(
                 text = stringResource(Res.string.onboarding_welcome_title),
-                style = FluentTheme.typography.subtitle
+                style = AppTypography.subtitle
             )
-            Icon(AeroDlLogoOnly, null, modifier = Modifier.height(96.dp), tint = FluentTheme.colors.system.neutral)
+            AppIcon(AeroDlLogoOnly, null, modifier = Modifier.height(96.dp), tint = AppColors.neutral)
             io.github.kdroidfilter.ytdlpgui.features.onboarding.components.ExpandableDescription(
                 description = stringResource(Res.string.onboarding_welcome_subtitle),
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
-            AccentButton(onClick = { onEvent(OnboardingEvents.OnStart) }) {
-                Text(stringResource(Res.string.onboarding_start))
+            AppAccentButton(onClick = { onEvent(OnboardingEvents.OnStart) }) {
+                AppText(stringResource(Res.string.onboarding_start))
             }
         }
         if (initState != null) {

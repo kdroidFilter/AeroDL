@@ -17,13 +17,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.github.composefluent.component.AccentButton
-import io.github.composefluent.component.Button
-import io.github.composefluent.component.Icon
-import io.github.composefluent.component.Text
-import io.github.composefluent.icons.Icons
 import dev.zacsweers.metrox.viewmodel.metroViewModel
-import io.github.composefluent.icons.filled.FolderOpen
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppAccentButton
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcon
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcons
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppText
 import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import androidx.navigation.NavHostController
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
@@ -72,7 +70,7 @@ fun DownloadDirScreen(navController: NavHostController) {
             io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingNavigationState.None -> Unit
         }
     }
-    
+
     DownloadDirView(
         state = state,
         onEvent = viewModel::handleEvent,
@@ -106,18 +104,18 @@ fun DownloadDirView(
                 title = stringResource(Res.string.settings_download_dir_title),
                 subtitle = stringResource(Res.string.settings_download_dir_caption)
             )
-            Icon(Icons.Filled.FolderOpen, null, modifier = Modifier.size(48.dp))
+            AppIcon(AppIcons.FolderOpen, null, modifier = Modifier.size(48.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Spacer(Modifier.width(8.dp))
                 val directoryLabel = state.downloadDirPath.ifBlank {
                     stringResource(Res.string.settings_download_dir_not_set)
                 }
-                Text(directoryLabel)
+                AppText(directoryLabel)
             }
             Spacer(Modifier.height(12.dp))
             val pickFolderTitle = stringResource(Res.string.settings_download_dir_pick_title)
-            AccentButton(onClick = { onEvent(OnboardingEvents.OnPickDownloadDir(pickFolderTitle)) }) {
-                Text(stringResource(Res.string.settings_select))
+            AppAccentButton(onClick = { onEvent(OnboardingEvents.OnPickDownloadDir(pickFolderTitle)) }) {
+                AppText(stringResource(Res.string.settings_select))
             }
 
         }

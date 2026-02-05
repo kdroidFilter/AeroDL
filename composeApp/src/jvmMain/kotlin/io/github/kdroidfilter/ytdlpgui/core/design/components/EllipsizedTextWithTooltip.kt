@@ -1,16 +1,11 @@
 package io.github.kdroidfilter.ytdlpgui.core.design.components
 
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import io.github.composefluent.ExperimentalFluentApi
-import io.github.composefluent.component.Text
-import io.github.composefluent.component.TooltipBox
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppText
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppTooltip
 
 /**
  * Composant qui affiche un texte avec ellipsis après 2 lignes
@@ -20,7 +15,6 @@ import io.github.composefluent.component.TooltipBox
  * @param modifier Modifier à appliquer au composant
  * @param maxLines Nombre maximum de lignes avant ellipsis (défaut: 2)
  */
-@OptIn(ExperimentalFoundationApi::class, ExperimentalFluentApi::class)
 @Composable
 fun EllipsizedTextWithTooltip(
     text: String,
@@ -30,7 +24,7 @@ fun EllipsizedTextWithTooltip(
     var isTextTruncated by remember { mutableStateOf(false) }
 
     val content = @Composable {
-        Text(
+        AppText(
             text = text,
             modifier = modifier,
             maxLines = maxLines,
@@ -42,14 +36,8 @@ fun EllipsizedTextWithTooltip(
     }
 
     if (isTextTruncated) {
-        TooltipBox(
-            tooltip = {
-                    Text(
-                        text = text,
-                        modifier = Modifier.padding(8.dp),
-                    )
-
-            },
+        AppTooltip(
+            tooltip = text,
             content = { content() }
         )
     } else {

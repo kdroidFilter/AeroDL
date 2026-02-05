@@ -295,4 +295,10 @@
     <string name="converter_reset">Convertir un autre fichier</string>
     <string name="converter_trim">Découper</string>
     <string name="converter_trim_duration">Durée : %1$s</string>
+
+    <!-- Paramètres : Thème -->
+    <string name="settings_theme_title">Thème</string>
+    <string name="settings_theme_caption">Choisissez l\'apparence de l\'application</string>
+    <string name="settings_theme_fluent">Fluent</string>
+    <string name="settings_theme_darwin">Darwin</string>
 </resources>

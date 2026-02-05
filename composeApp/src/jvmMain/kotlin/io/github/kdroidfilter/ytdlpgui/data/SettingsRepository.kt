@@ -2,6 +2,7 @@ package io.github.kdroidfilter.ytdlpgui.data
 
 import com.russhwolf.settings.Settings
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
+import io.github.kdroidfilter.ytdlpgui.core.config.AppTheme
 import io.github.kdroidfilter.ytdlpgui.core.config.SettingsKeys
 import io.github.vinceglb.autolaunch.AutoLaunch
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -56,6 +57,11 @@ class SettingsRepository(
 
     private val _validateBulkUrls = MutableStateFlow(settings.getBoolean(SettingsKeys.VALIDATE_BULK_URLS, false))
     val validateBulkUrls: StateFlow<Boolean> = _validateBulkUrls.asStateFlow()
+
+    private val _appTheme = MutableStateFlow(
+        AppTheme.entries.firstOrNull { it.name == settings.getString(SettingsKeys.APP_THEME, AppTheme.FLUENT.name) } ?: AppTheme.FLUENT
+    )
+    val appTheme: StateFlow<AppTheme> = _appTheme.asStateFlow()
 
     init {
         // Apply initial settings to dependencies
@@ -130,6 +136,11 @@ class SettingsRepository(
         settings.putBoolean(SettingsKeys.VALIDATE_BULK_URLS, enabled)
     }
 
+    fun setAppTheme(theme: AppTheme) {
+        _appTheme.value = theme
+        settings.putString(SettingsKeys.APP_THEME, theme.name)
+    }
+
     fun setOnboardingCompleted(completed: Boolean) {
         settings.putBoolean(SettingsKeys.ONBOARDING_COMPLETED, completed)
     }
@@ -155,6 +166,7 @@ class SettingsRepository(
         _concurrentFragments.value = settings.getInt(SettingsKeys.CONCURRENT_FRAGMENTS, 1).coerceIn(1, 5)
         _proxy.value = settings.getString(SettingsKeys.PROXY, "")
         _validateBulkUrls.value = settings.getBoolean(SettingsKeys.VALIDATE_BULK_URLS, false)
+        _appTheme.value = AppTheme.entries.firstOrNull { it.name == settings.getString(SettingsKeys.APP_THEME, AppTheme.FLUENT.name) } ?: AppTheme.FLUENT
 
         applyToYtDlpWrapper()
         clipboardMonitorManager?.let { applyToClipboardMonitor(it) }
@@ -232,6 +244,7 @@ class SettingsRepository(
         _concurrentFragments.value = 1
         _proxy.value = ""
         _validateBulkUrls.value = false
+        _appTheme.value = AppTheme.FLUENT
 
         // Apply defaults to dependencies
         applyToYtDlpWrapper()

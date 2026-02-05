@@ -18,7 +18,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
@@ -28,16 +27,23 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import coil3.ImageLoader
 import coil3.compose.AsyncImage
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.*
-import io.github.composefluent.icons.Icons
-import io.github.composefluent.icons.regular.*
 import io.github.kdroidfilter.logging.infoln
 import io.github.kdroidfilter.webview.web.WebView
 import io.github.kdroidfilter.webview.web.rememberWebViewNavigator
 import io.github.kdroidfilter.webview.web.rememberWebViewState
 import io.github.kdroidfilter.youtubewebviewextractor.YouTubeScrapedVideo
 import io.github.kdroidfilter.youtubewebviewextractor.YouTubeWebViewExtractor
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppAccentButton
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppCheckBox
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppColors
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcon
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcons
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppProgressRing
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppSegmentedButton
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppSegmentedControl
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppSubtleButton
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppText
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppTypography
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.platform.browser.openUrlInBrowser
 import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
@@ -117,9 +123,9 @@ fun BulkDownloadView(
 private fun Loader() {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            ProgressRing()
+            AppProgressRing()
             Spacer(Modifier.height(16.dp))
-            Text(stringResource(Res.string.loading))
+            AppText(stringResource(Res.string.loading))
         }
     }
 }
@@ -131,16 +137,16 @@ private fun ErrorBox(message: String) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Icon(
-            imageVector = Icons.Regular.ErrorCircle,
+        AppIcon(
+            imageVector = AppIcons.ErrorCircle,
             contentDescription = stringResource(Res.string.cd_error_icon),
             modifier = Modifier.size(144.dp),
-            tint = FluentTheme.colors.system.critical
+            tint = AppColors.critical
         )
         Spacer(Modifier.size(16.dp))
-        Text(
+        AppText(
             text = stringResource(Res.string.error_fetch_video_info, message),
-            color = FluentTheme.colors.system.critical,
+            color = AppColors.critical,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 24.dp)
         )
@@ -154,16 +160,16 @@ private fun EmptyPlaylist() {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Icon(
-            imageVector = Icons.Regular.VideoClipMultiple,
+        AppIcon(
+            imageVector = AppIcons.VideoClipMultiple,
             contentDescription = null,
             modifier = Modifier.size(96.dp),
-            tint = FluentTheme.colors.text.text.secondary
+            tint = AppColors.textSecondary
         )
         Spacer(Modifier.height(16.dp))
-        Text(
+        AppText(
             text = stringResource(Res.string.bulk_no_videos),
-            color = FluentTheme.colors.text.text.secondary,
+            color = AppColors.textSecondary,
             textAlign = TextAlign.Center
         )
     }
@@ -200,7 +206,7 @@ private fun PlaylistContent(
                         onToggle = { onEvent(BulkDownloadEvents.ToggleVideoSelection(videoItem.videoInfo.id)) }
                     )
                     Divider(
-                        color = FluentTheme.colors.control.secondary,
+                        color = AppColors.controlSecondary,
                         thickness = 1.dp,
                         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
                     )
@@ -254,41 +260,40 @@ private fun PlaylistHeader(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
+            AppText(
                 text = stringResource(Res.string.bulk_videos_count, state.totalCount),
-                style = FluentTheme.typography.caption
+                style = AppTypography.caption
             )
 
             if (state.isCheckingAvailability) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    ProgressRing(modifier = Modifier.size(14.dp))
+                    AppProgressRing(modifier = Modifier.size(14.dp))
                     Spacer(Modifier.width(4.dp))
-                    Text(
+                    AppText(
                         text = "${state.checkedCount}/${state.totalCount}",
-                        style = FluentTheme.typography.caption
+                        style = AppTypography.caption
                     )
                 }
             }
 
-            Text(
+            AppText(
                 text = stringResource(Res.string.bulk_selected_count, state.selectedCount),
-                style = FluentTheme.typography.caption,
-                color = FluentTheme.colors.fillAccent.default,
+                style = AppTypography.caption,
+                color = AppColors.fillAccentDefault,
                 fontWeight = FontWeight.Medium
             )
         }
 
         // Toggle select all / deselect all
         val allSelected = state.allSelected
-        SubtleButton(
-            iconOnly = true,
+        AppSubtleButton(
             onClick = {
                 if (allSelected) onEvent(BulkDownloadEvents.DeselectAll)
                 else onEvent(BulkDownloadEvents.SelectAll)
             }
         ) {
-            Icon(
-                if (allSelected) Icons.Regular.SelectAllOff else Icons.Regular.SelectAllOn,
+            AppIcon(
+                if (allSelected) AppIcons.SelectAllOff else AppIcons.SelectAllOn,
                 if (allSelected) stringResource(Res.string.bulk_deselect_all)
                 else stringResource(Res.string.bulk_select_all)
             )
@@ -318,11 +323,11 @@ private fun VideoRow(
             contentAlignment = Alignment.Center
         ) {
             if (item.isChecking) {
-                ProgressRing(modifier = Modifier.size(20.dp))
+                AppProgressRing(modifier = Modifier.size(20.dp))
             } else {
-                CheckBox(
-                    item.isSelected,
-                    onCheckStateChange = { if (isEnabled) onToggle() }
+                AppCheckBox(
+                    checked = item.isSelected,
+                    onCheckedChange = { if (isEnabled) onToggle() }
                 )
             }
         }
@@ -337,7 +342,7 @@ private fun VideoRow(
             modifier = Modifier.weight(1f).fillMaxHeight(),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
+            AppText(
                 text = item.videoInfo.title,
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis
@@ -347,25 +352,24 @@ private fun VideoRow(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 item.videoInfo.uploader?.let { uploader ->
-                    Text(
+                    AppText(
                         text = uploader,
-                        style = FluentTheme.typography.caption,
+                        style = AppTypography.caption,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                 }
                 item.videoInfo.duration?.let { duration ->
-                    Text(
+                    AppText(
                         text = formatDuration(duration),
-                        style = FluentTheme.typography.caption
+                        style = AppTypography.caption
                     )
                 }
                 if (!item.isAvailable) {
-                    Text(
+                    AppText(
                         text = stringResource(Res.string.bulk_video_unavailable),
-                        style = FluentTheme.typography.caption,
-                        color = FluentTheme.colors.system.critical,
-                        textDecoration = TextDecoration.Underline,
+                        style = AppTypography.caption,
+                        color = AppColors.critical,
                         modifier = Modifier.clickable { openUrlInBrowser(item.videoInfo.url) }
                     )
                 }
@@ -399,8 +403,8 @@ private fun VideoThumbnail(item: BulkVideoItem, imageLoader: ImageLoader) {
                         .background(Color.Black.copy(alpha = 0.5f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Regular.ErrorCircle,
+                    AppIcon(
+                        imageVector = AppIcons.ErrorCircle,
                         contentDescription = null,
                         tint = Color.White,
                         modifier = Modifier.size(24.dp)
@@ -426,69 +430,75 @@ private fun DownloadOptions(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(Icons.Regular.FilmstripPlay, contentDescription = null)
-                Text(stringResource(Res.string.single_choose_format))
+                AppIcon(AppIcons.FilmstripPlay, contentDescription = null)
+                AppText(stringResource(Res.string.single_choose_format))
             }
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                SegmentedControl {
-                    SegmentedButton(
-                        checked = !state.isAudioMode,
-                        onCheckedChanged = { onEvent(BulkDownloadEvents.SetAudioMode(false)) },
-                        position = SegmentedItemPosition.Start,
-                        text = { Text(videoLabel) },
-                        icon = { Icon(Icons.Regular.Video, contentDescription = videoLabel) }
-                    )
-                    SegmentedButton(
-                        checked = state.isAudioMode,
-                        onCheckedChanged = { onEvent(BulkDownloadEvents.SetAudioMode(true)) },
-                        position = SegmentedItemPosition.End,
-                        text = { Text(audioLabel) },
-                        icon = { Icon(Icons.Regular.MusicNote2, contentDescription = audioLabel) }
-                    )
+                AppSegmentedControl(selectedIndex = if (state.isAudioMode) 1 else 0) {
+                    AppSegmentedButton(
+                        index = 0,
+                        selected = !state.isAudioMode,
+                        onClick = { onEvent(BulkDownloadEvents.SetAudioMode(false)) },
+                    ) {
+                        AppIcon(AppIcons.Video, contentDescription = videoLabel)
+                        Spacer(Modifier.width(4.dp))
+                        AppText(videoLabel)
+                    }
+                    AppSegmentedButton(
+                        index = 1,
+                        selected = state.isAudioMode,
+                        onClick = { onEvent(BulkDownloadEvents.SetAudioMode(true)) },
+                    ) {
+                        AppIcon(AppIcons.MusicNote, contentDescription = audioLabel)
+                        Spacer(Modifier.width(4.dp))
+                        AppText(audioLabel)
+                    }
                 }
             }
         }
 
         // Quality selector (like SingleDownloadScreen)
         if (!state.isAudioMode && state.availablePresets.isNotEmpty()) {
-            Text(text = stringResource(Res.string.single_formats))
+            AppText(text = stringResource(Res.string.single_formats))
             FlowRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 state.availablePresets.forEach { preset ->
-                    SegmentedControl {
-                        SegmentedButton(
-                            checked = preset == state.selectedPreset,
-                            onCheckedChanged = { onEvent(BulkDownloadEvents.SelectPreset(preset)) },
-                            position = SegmentedItemPosition.Center,
-                            text = { Text("${preset.height}p") }
-                        )
+                    AppSegmentedControl(selectedIndex = if (preset == state.selectedPreset) 0 else -1) {
+                        AppSegmentedButton(
+                            index = 0,
+                            selected = preset == state.selectedPreset,
+                            onClick = { onEvent(BulkDownloadEvents.SelectPreset(preset)) },
+                        ) {
+                            AppText("${preset.height}p")
+                        }
                     }
                 }
             }
         }
 
         if (state.isAudioMode && state.availableAudioQualityPresets.isNotEmpty()) {
-            Text(text = stringResource(Res.string.single_audio_quality))
+            AppText(text = stringResource(Res.string.single_audio_quality))
             FlowRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 state.availableAudioQualityPresets.forEach { preset ->
-                    SegmentedControl {
-                        SegmentedButton(
-                            checked = preset == state.selectedAudioQualityPreset,
-                            onCheckedChanged = { onEvent(BulkDownloadEvents.SelectAudioQualityPreset(preset)) },
-                            position = SegmentedItemPosition.Center,
-                            text = { Text(preset.bitrate) }
-                        )
+                    AppSegmentedControl(selectedIndex = if (preset == state.selectedAudioQualityPreset) 0 else -1) {
+                        AppSegmentedButton(
+                            index = 0,
+                            selected = preset == state.selectedAudioQualityPreset,
+                            onClick = { onEvent(BulkDownloadEvents.SelectAudioQualityPreset(preset)) },
+                        ) {
+                            AppText(preset.bitrate)
+                        }
                     }
                 }
             }
@@ -507,17 +517,17 @@ private fun DownloadButton(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center
     ) {
-        AccentButton(
+        AppAccentButton(
             onClick = { if (canStart) onEvent(BulkDownloadEvents.StartDownloads) }
         ) {
             if (state.isStartingDownloads) {
-                ProgressRing(modifier = Modifier.size(16.dp))
+                AppProgressRing(modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(8.dp))
-                Text(stringResource(Res.string.bulk_starting_downloads))
+                AppText(stringResource(Res.string.bulk_starting_downloads))
             } else {
-                Icon(Icons.Default.ArrowDownload, null)
+                AppIcon(AppIcons.Download, null)
                 Spacer(Modifier.width(8.dp))
-                Text(stringResource(Res.string.bulk_download_selected) + " (${state.selectedCount})")
+                AppText(stringResource(Res.string.bulk_download_selected) + " (${state.selectedCount})")
             }
         }
     }
@@ -583,15 +593,15 @@ private fun FallbackContent(
 private fun ExtractionProgress(fallbackState: FallbackState) {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            ProgressRing()
+            AppProgressRing()
             Spacer(Modifier.height(16.dp))
-            Text(stringResource(Res.string.loading))
+            AppText(stringResource(Res.string.loading))
             if (fallbackState is FallbackState.Extracting && fallbackState.videoCount > 0) {
                 Spacer(Modifier.height(8.dp))
-                Text(
+                AppText(
                     text = "(${stringResource(Res.string.bulk_analyzing_videos, fallbackState.videoCount)})",
-                    style = FluentTheme.typography.caption,
-                    color = FluentTheme.colors.text.text.secondary
+                    style = AppTypography.caption,
+                    color = AppColors.textSecondary
                 )
             }
         }
@@ -635,21 +645,21 @@ private fun YouTubeLoginScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Regular.Person,
+                AppIcon(
+                    imageVector = AppIcons.Person,
                     contentDescription = null,
                     modifier = Modifier.size(24.dp)
                 )
 
                 Column {
-                    Text(
+                    AppText(
                         text = stringResource(Res.string.bulk_login_required_title),
-                        style = FluentTheme.typography.bodyStrong
+                        style = AppTypography.bodyStrong
                     )
-                    Text(
+                    AppText(
                         text = stringResource(Res.string.bulk_login_required_desc),
-                        style = FluentTheme.typography.caption,
-                        color = FluentTheme.colors.text.text.secondary
+                        style = AppTypography.caption,
+                        color = AppColors.textSecondary
                     )
                 }
             }
@@ -661,26 +671,26 @@ private fun YouTubeLoginScreen(
             ) {
                 when {
                     isCheckingLogin -> {
-                        ProgressRing(modifier = Modifier.size(16.dp))
-                        Text(
+                        AppProgressRing(modifier = Modifier.size(16.dp))
+                        AppText(
                             text = stringResource(Res.string.bulk_login_check),
-                            style = FluentTheme.typography.caption
+                            style = AppTypography.caption
                         )
                     }
                     extractor.isLoggedIn == true -> {
-                        Icon(
-                            imageVector = Icons.Regular.Checkmark,
+                        AppIcon(
+                            imageVector = AppIcons.Check,
                             contentDescription = null,
-                            tint = FluentTheme.colors.system.success,
+                            tint = AppColors.success,
                             modifier = Modifier.size(16.dp)
                         )
-                        Text(
+                        AppText(
                             text = stringResource(Res.string.bulk_login_success),
-                            style = FluentTheme.typography.caption,
-                            color = FluentTheme.colors.system.success
+                            style = AppTypography.caption,
+                            color = AppColors.success
                         )
-                        AccentButton(onClick = onLoginSuccess) {
-                            Text(stringResource(Res.string.bulk_login_continue))
+                        AppAccentButton(onClick = onLoginSuccess) {
+                            AppText(stringResource(Res.string.bulk_login_continue))
                         }
                     }
                 }

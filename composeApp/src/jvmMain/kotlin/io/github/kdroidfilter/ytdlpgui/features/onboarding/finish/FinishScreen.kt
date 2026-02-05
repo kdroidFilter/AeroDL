@@ -10,11 +10,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.AccentButton
-import io.github.composefluent.component.Text
 import dev.zacsweers.metrox.viewmodel.metroViewModel
 import io.github.kdroidfilter.ytdlpgui.core.design.components.ProgressBar
+import io.github.kdroidfilter.ytdlpgui.core.design.components.TerminalView
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppAccentButton
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppColors
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppContentDialog
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppDialogButton
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppSubtleButton
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppText
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppTypography
 import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import androidx.navigation.NavHostController
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
@@ -24,10 +29,6 @@ import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingStep
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingViewModel
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.OnboardingProgress
-import io.github.composefluent.component.ContentDialog
-import io.github.composefluent.component.DialogSize
-import io.github.composefluent.component.SubtleButton
-import io.github.kdroidfilter.ytdlpgui.core.design.components.TerminalView
 import io.github.vinceglb.confettikit.compose.ConfettiKit
 import io.github.vinceglb.confettikit.core.Party
 import io.github.vinceglb.confettikit.core.emitter.Emitter
@@ -121,30 +122,30 @@ private fun LoadingResourcesScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         if (initState?.errorMessage != null) {
-            Text(
+            AppText(
                 text = stringResource(Res.string.error_occurred),
-                style = FluentTheme.typography.subtitle,
-                color = FluentTheme.colors.system.critical,
+                style = AppTypography.subtitle,
+                color = AppColors.critical,
             )
-            Text(
+            AppText(
                 text = initState.errorMessage,
-                style = FluentTheme.typography.bodyStrong,
+                style = AppTypography.bodyStrong,
                 textAlign = TextAlign.Center,
             )
-            Text(
+            AppText(
                 text = stringResource(Res.string.onboarding_finish_error_hint),
-                style = FluentTheme.typography.body,
+                style = AppTypography.body,
                 textAlign = TextAlign.Center,
             )
         } else {
-            Text(
+            AppText(
                 text = stringResource(Res.string.onboarding_finish_loading_title),
-                style = FluentTheme.typography.subtitle
+                style = AppTypography.subtitle
             )
 
-            Text(
+            AppText(
                 text = stringResource(Res.string.onboarding_finish_loading_message),
-                style = FluentTheme.typography.bodyStrong
+                style = AppTypography.bodyStrong
             )
         }
 
@@ -152,7 +153,7 @@ private fun LoadingResourcesScreen(
 
         // Show progress bars for yt-dlp
         if (initState?.checkingYtDlp == true || initState?.downloadingYtDlp == true || initState?.updatingYtdlp == true) {
-            Text("yt-dlp")
+            AppText("yt-dlp")
             if (initState.downloadYtDlpProgress != null) {
                 ProgressBar(
                     progress = initState.downloadYtDlpProgress.div(100f),
@@ -165,7 +166,7 @@ private fun LoadingResourcesScreen(
 
         // Show progress bars for FFmpeg
         if (initState?.checkingFFmpeg == true || initState?.downloadingFFmpeg == true || initState?.updatingFFmpeg == true) {
-            Text("FFmpeg")
+            AppText("FFmpeg")
             if (initState.downloadFfmpegProgress != null) {
                 ProgressBar(
                     progress = initState.downloadFfmpegProgress.div(100f),
@@ -178,7 +179,7 @@ private fun LoadingResourcesScreen(
 
         // Show progress bars for Deno
         if (initState?.checkingDeno == true || initState?.downloadingDeno == true) {
-            Text("Deno")
+            AppText("Deno")
             if (initState.downloadDenoProgress != null) {
                 ProgressBar(
                     progress = initState.downloadDenoProgress.div(100f),
@@ -193,19 +194,18 @@ private fun LoadingResourcesScreen(
         if (initState?.errorMessage != null) {
             Spacer(Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                AccentButton(onClick = onRetryInit) { Text(stringResource(Res.string.onboarding_finish_retry)) }
-                SubtleButton(onClick = { showErrorDetails = true }) {
-                    Text(stringResource(Res.string.view_error_details))
+                AppAccentButton(onClick = onRetryInit) { AppText(stringResource(Res.string.onboarding_finish_retry)) }
+                AppSubtleButton(onClick = { showErrorDetails = true }) {
+                    AppText(stringResource(Res.string.view_error_details))
                 }
             }
         }
     }
 
     if (showErrorDetails && (initState?.errorMessage != null)) {
-        ContentDialog(
+        AppContentDialog(
             title = stringResource(Res.string.download_error_title),
             visible = true,
-            size = DialogSize.Min,
             primaryButtonText = stringResource(Res.string.ok),
             onButtonClick = { showErrorDetails = false },
             content = {
@@ -232,21 +232,21 @@ private fun ReadyToGoScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-            Text(
+            AppText(
                 text = stringResource(Res.string.onboarding_finish_ready_title),
-                style = FluentTheme.typography.subtitle
+                style = AppTypography.subtitle
             )
 
-            Text(
+            AppText(
                 text = stringResource(Res.string.onboarding_finish_ready_message),
-                style = FluentTheme.typography.bodyStrong,
+                style = AppTypography.bodyStrong,
                 textAlign = TextAlign.Center
             )
 
             Image(painterResource(Res.drawable.Rocket), null, Modifier.size(148.dp).padding(vertical = 16.dp))
 
-            AccentButton(onClick = onComplete) {
-                Text(stringResource(Res.string.onboarding_finish_ready_button))
+            AppAccentButton(onClick = onComplete) {
+                AppText(stringResource(Res.string.onboarding_finish_ready_button))
             }
         }
     }

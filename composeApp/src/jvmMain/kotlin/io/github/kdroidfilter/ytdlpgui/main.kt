@@ -34,6 +34,10 @@ import io.github.composefluent.FluentTheme
 import io.github.composefluent.background.Mica
 import io.github.composefluent.darkColors
 import io.github.composefluent.lightColors
+import io.github.kdroidfilter.darwinui.theme.DarwinTheme
+import io.github.kdroidfilter.ytdlpgui.core.config.AppTheme
+import io.github.kdroidfilter.ytdlpgui.core.config.LocalAppTheme
+import androidx.compose.foundation.background
 import io.github.kdroidfilter.knotify.builder.AppConfig
 import io.github.kdroidfilter.knotify.builder.NotificationInitializer
 import io.github.kdroidfilter.logging.LoggerConfig
@@ -150,6 +154,7 @@ fun main() {
                 )
                 val autoStartEnabled by settingsVm.autoLaunchEnabled.collectAsState()
                 val clipboardEnabled by settingsVm.clipboardMonitoring.collectAsState()
+                val appTheme by settingsVm.appTheme.collectAsState()
 
                 val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
 
@@ -163,7 +168,7 @@ fun main() {
                             modifier = Modifier
                                 .padding(if (getOperatingSystem() != OperatingSystem.WINDOWS) 12.dp else 2.dp)
                                 .fillMaxSize(),
-                            tint = if (isDownloading) FluentTheme.colors.system.success else {
+                            tint = if (isDownloading) Color(0xFF0F7B0F) else {
                                 if (isMenuBarInDarkMode()) Color.White else Color.Black
                             }
                         )
@@ -207,19 +212,44 @@ fun main() {
                 ) {
 
                    println(this.window.renderApi)
-                    FluentTheme(colors = if (isSystemInDarkMode()) darkColors() else lightColors()) {
-                        Mica(
-                            Modifier
-                                .fillMaxSize()
-                                .clip(RoundedCornerShape(12.dp))
-                                .border(
-                                    1.dp,
-                                    if (isSystemInDarkMode()) Color.DarkGray else Color.LightGray,
-                                    RoundedCornerShape(12.dp)
-                                )
-                        ) {
-                            CompositionLocalProvider(LocalAppGraph provides appGraph) {
-                                App()
+                    CompositionLocalProvider(LocalAppTheme provides appTheme) {
+                        when (appTheme) {
+                            AppTheme.FLUENT -> {
+                                FluentTheme(colors = if (isSystemInDarkMode()) darkColors() else lightColors()) {
+                                    Mica(
+                                        Modifier
+                                            .fillMaxSize()
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .border(
+                                                1.dp,
+                                                if (isSystemInDarkMode()) Color.DarkGray else Color.LightGray,
+                                                RoundedCornerShape(12.dp)
+                                            )
+                                    ) {
+                                        CompositionLocalProvider(LocalAppGraph provides appGraph) {
+                                            App()
+                                        }
+                                    }
+                                }
+                            }
+                            AppTheme.DARWIN -> {
+                                DarwinTheme(darkTheme = isSystemInDarkMode()) {
+                                    androidx.compose.foundation.layout.Box(
+                                        Modifier
+                                            .fillMaxSize()
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(DarwinTheme.colors.background)
+                                            .border(
+                                                1.dp,
+                                                DarwinTheme.colors.border,
+                                                RoundedCornerShape(12.dp)
+                                            )
+                                    ) {
+                                        CompositionLocalProvider(LocalAppGraph provides appGraph) {
+                                            App()
+                                        }
+                                    }
+                                }
                             }
                         }
                     }

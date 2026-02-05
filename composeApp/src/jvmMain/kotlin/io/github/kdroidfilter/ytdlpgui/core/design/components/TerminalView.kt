@@ -1,8 +1,5 @@
-@file:OptIn(ExperimentalFluentApi::class)
-
 package io.github.kdroidfilter.ytdlpgui.core.design.components
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -17,13 +14,12 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.composefluent.ExperimentalFluentApi
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.SubtleButton
-import io.github.composefluent.component.Text
-import io.github.composefluent.component.TooltipBox
-import io.github.composefluent.icons.Icons
-import io.github.composefluent.icons.regular.Copy
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcon
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcons
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppSubtleButton
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppText
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppTooltip
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppTypography
 import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.copy_error
@@ -63,23 +59,21 @@ fun TerminalView(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
+                AppText(
                     headerText,
-                    style = FluentTheme.typography.caption,
+                    style = AppTypography.caption,
                     color = Color(0xFFB0B0B0),
                     fontSize = 11.sp
                 )
 
                 // Copy button
-                @OptIn(ExperimentalFoundationApi::class)
-                TooltipBox(tooltip = { Text(stringResource(Res.string.copy_error)) }) {
-                    SubtleButton(
-                        iconOnly = true,
+                AppTooltip(tooltip = stringResource(Res.string.copy_error)) {
+                    AppSubtleButton(
                         onClick = { clipboardManager.setText(buildAnnotatedString { append(text) }) },
                         modifier = Modifier.size(24.dp)
                     ) {
-                        io.github.composefluent.component.Icon(
-                            Icons.Default.Copy,
+                        AppIcon(
+                            AppIcons.Copy,
                             stringResource(Res.string.copy_error),
                             tint = Color(0xFFB0B0B0),
                             modifier = Modifier.size(16.dp)
@@ -96,9 +90,9 @@ fun TerminalView(
                     .verticalScroll(rememberScrollState())
                     .padding(12.dp)
             ) {
-                Text(
+                AppText(
                     text,
-                    style = FluentTheme.typography.caption.copy(
+                    style = AppTypography.caption.copy(
                         fontFamily = FontFamily.Monospace,
                         lineHeight = 18.sp
                     ),
@@ -110,4 +104,3 @@ fun TerminalView(
         }
     }
 }
-

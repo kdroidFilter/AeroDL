@@ -21,6 +21,7 @@ cardiologist = "0.8.0"
 
 # UI Libraries
 fluent = "v0.1.0"
+darwinui = "1.0.0-alpha-02"
 composemediaplayer = "0.8.7"
 composenativetray = "1.1.0"
 composewebview = "1.0.0-alpha-10"
@@ -66,6 +67,7 @@ kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-s
 # UI Libraries
 compose-fluent = { module = "io.github.compose-fluent:fluent", version.ref = "fluent" }
 compose-fluent-icons-extended = { module = "io.github.compose-fluent:fluent-icons-extended", version.ref = "fluent" }
+compose-darwinui = { module = "io.github.kdroidfilter:compose-darwin-ui", version.ref = "darwinui" }
 composemediaplayer = { module = "io.github.kdroidfilter:composemediaplayer", version.ref = "composemediaplayer" }
 composenativetray = { module = "io.github.kdroidfilter:composenativetray", version.ref = "composenativetray" }
 composewebview = { module = "io.github.kdroidfilter:composewebview", version.ref = "composewebview" }

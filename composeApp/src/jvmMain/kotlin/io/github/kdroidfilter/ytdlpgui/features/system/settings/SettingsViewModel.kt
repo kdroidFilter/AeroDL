@@ -8,6 +8,7 @@ import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.kdroid.composetray.tray.api.TrayAppState
 import com.kdroid.composetray.tray.api.TrayWindowDismissMode
 import io.github.kdroidfilter.platformtools.appmanager.restartApplication
+import io.github.kdroidfilter.ytdlpgui.core.config.AppTheme
 import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
 import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
@@ -56,6 +57,7 @@ class SettingsViewModel(
     val concurrentFragments: StateFlow<Int> = settingsRepository.concurrentFragments
     val proxy: StateFlow<String> = settingsRepository.proxy
     val validateBulkUrls: StateFlow<Boolean> = settingsRepository.validateBulkUrls
+    val appTheme: StateFlow<AppTheme> = settingsRepository.appTheme
 
     // Note: This ViewModel uses a combined state from multiple sources, so we override uiState
     override val uiState = combine(
@@ -72,6 +74,7 @@ class SettingsViewModel(
         concurrentFragments,
         proxy,
         validateBulkUrls,
+        appTheme,
     ) { values: Array<Any?> ->
         val loading = values[0] as Boolean
         val noCheck = values[1] as Boolean
@@ -86,6 +89,7 @@ class SettingsViewModel(
         val concurrent = values[10] as Int
         val proxyUrl = values[11] as String
         val validateBulk = values[12] as Boolean
+        val theme = values[13] as AppTheme
         SettingsState(
             isLoading = loading,
             noCheckCertificate = noCheck,
@@ -100,6 +104,7 @@ class SettingsViewModel(
             concurrentFragments = concurrent,
             proxy = proxyUrl,
             validateBulkUrls = validateBulk,
+            appTheme = theme,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -154,6 +159,9 @@ class SettingsViewModel(
             }
             is SettingsEvents.SetValidateBulkUrls -> {
                 settingsRepository.setValidateBulkUrls(event.enabled)
+            }
+            is SettingsEvents.SetAppTheme -> {
+                settingsRepository.setAppTheme(event.theme)
             }
             is SettingsEvents.PickDownloadDir -> {
                 viewModelScope.launch {

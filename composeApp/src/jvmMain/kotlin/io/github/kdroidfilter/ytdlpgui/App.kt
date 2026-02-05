@@ -21,7 +21,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
-import io.github.composefluent.ExperimentalFluentApi
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.navigation.noAnimatedComposable
 import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
@@ -46,7 +45,6 @@ import io.github.kdroidfilter.ytdlpgui.features.converter.ConverterOptionsScreen
 import io.github.kdroidfilter.ytdlpgui.features.system.about.AboutScreen
 import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsScreen
 
-@OptIn(ExperimentalFluentApi::class)
 @Composable
 fun App() {
     val navController = rememberNavController()

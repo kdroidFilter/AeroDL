@@ -18,12 +18,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import dev.zacsweers.metrox.viewmodel.metroViewModel
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.Icon
-import io.github.composefluent.component.ProgressRing
-import io.github.composefluent.component.Text
-import io.github.composefluent.icons.Icons
-import io.github.composefluent.icons.regular.DocumentAdd
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppColors
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcon
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcons
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppProgressRing
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppText
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppTypography
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import org.jetbrains.compose.resources.stringResource
@@ -72,15 +72,15 @@ private fun ConverterInputView(
     onEvent: (ConverterInputEvents) -> Unit
 ) {
     val borderColor = if (state.isDragging) {
-        FluentTheme.colors.fillAccent.default
+        AppColors.fillAccentDefault
     } else {
-        FluentTheme.colors.stroke.control.default
+        AppColors.strokeControlDefault
     }
 
     val backgroundColor = if (state.isDragging) {
-        FluentTheme.colors.fillAccent.default.copy(alpha = 0.1f)
+        AppColors.fillAccentDefault.copy(alpha = 0.1f)
     } else {
-        FluentTheme.colors.background.layer.default
+        AppColors.backgroundDefault
     }
 
     // Create drag and drop target
@@ -123,10 +123,10 @@ private fun ConverterInputView(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Header section
-        Text(
+        AppText(
             text = stringResource(Res.string.converter_subtitle),
-            style = FluentTheme.typography.body,
-            color = FluentTheme.colors.text.text.secondary,
+            style = AppTypography.body,
+            color = AppColors.textSecondary,
             textAlign = TextAlign.Center
         )
         Spacer(Modifier.height(24.dp))
@@ -161,23 +161,23 @@ private fun ConverterInputView(
                 modifier = Modifier.padding(24.dp)
             ) {
                 if (state.isAnalyzing) {
-                    ProgressRing()
+                    AppProgressRing()
                     Spacer(Modifier.height(16.dp))
-                    Text(
+                    AppText(
                         text = stringResource(Res.string.converter_analyzing),
-                        style = FluentTheme.typography.body
+                        style = AppTypography.body
                     )
                 } else {
-                    Icon(
-                        imageVector = Icons.Regular.DocumentAdd,
+                    AppIcon(
+                        imageVector = AppIcons.DocumentAdd,
                         contentDescription = null,
                         modifier = Modifier.size(48.dp),
-                        tint = if (state.isDragging) FluentTheme.colors.fillAccent.default else FluentTheme.colors.text.text.secondary
+                        tint = if (state.isDragging) AppColors.fillAccentDefault else AppColors.textSecondary
                     )
                     Spacer(Modifier.height(16.dp))
-                    Text(
+                    AppText(
                         text = stringResource(Res.string.converter_drop_zone),
-                        style = FluentTheme.typography.bodyStrong,
+                        style = AppTypography.bodyStrong,
                         textAlign = TextAlign.Center
                     )
                     Spacer(Modifier.height(8.dp))
@@ -185,16 +185,16 @@ private fun ConverterInputView(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        Text(
+                        AppText(
                             text = stringResource(Res.string.converter_or),
-                            style = FluentTheme.typography.body,
-                            color = FluentTheme.colors.text.text.secondary
+                            style = AppTypography.body,
+                            color = AppColors.textSecondary
                         )
                         Spacer(Modifier.width(8.dp))
-                        Text(
+                        AppText(
                             text = stringResource(Res.string.converter_select_file),
-                            style = FluentTheme.typography.body,
-                            color = FluentTheme.colors.fillAccent.default
+                            style = AppTypography.body,
+                            color = AppColors.fillAccentDefault
                         )
                     }
                 }
@@ -203,19 +203,19 @@ private fun ConverterInputView(
 
         // Supported formats
         Spacer(Modifier.height(16.dp))
-        Text(
+        AppText(
             text = stringResource(Res.string.converter_supported_formats),
-            style = FluentTheme.typography.caption,
-            color = FluentTheme.colors.text.text.tertiary,
+            style = AppTypography.caption,
+            color = AppColors.textTertiary,
             textAlign = TextAlign.Center
         )
 
         // Error message
         if (state.errorMessage != null) {
             Spacer(Modifier.height(16.dp))
-            Text(
+            AppText(
                 text = state.errorMessage,
-                color = FluentTheme.colors.system.critical,
+                color = AppColors.critical,
                 textAlign = TextAlign.Center
             )
         }

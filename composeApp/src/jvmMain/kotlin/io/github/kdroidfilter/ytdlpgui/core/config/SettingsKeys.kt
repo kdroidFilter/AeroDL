@@ -18,4 +18,5 @@ object SettingsKeys {
     const val CONCURRENT_FRAGMENTS = "concurrent_fragments"
     const val PROXY = "proxy"
     const val VALIDATE_BULK_URLS = "validate_bulk_urls"
+    const val APP_THEME = "app_theme"
 }

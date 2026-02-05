@@ -15,11 +15,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.github.composefluent.component.Icon
-import io.github.composefluent.icons.Icons
-import io.github.composefluent.icons.filled.Cookies
 import dev.zacsweers.metrox.viewmodel.metroViewModel
 import io.github.kdroidfilter.ytdlpgui.core.design.components.BrowserSelector
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcon
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcons
 import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import androidx.navigation.NavHostController
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
@@ -65,7 +64,7 @@ fun CookiesScreen(navController: NavHostController) {
             io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingNavigationState.None -> Unit
         }
     }
-    
+
     CookiesView(
         state = state,
         onEvent = viewModel::handleEvent,
@@ -101,7 +100,7 @@ fun CookiesView(
                 title = stringResource(Res.string.settings_cookies_from_browser_title),
                 subtitle = stringResource(Res.string.settings_cookies_from_browser_label)
             )
-            Icon(Icons.Filled.Cookies, null, modifier = Modifier.size(48.dp))
+            AppIcon(AppIcons.Cookies, null, modifier = Modifier.size(48.dp))
             Spacer(Modifier.height(8.dp))
             BrowserSelector(
                 currentBrowser = state.cookiesFromBrowser,

@@ -3,6 +3,7 @@ package io.github.kdroidfilter.ytdlpgui.features.onboarding.components
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -12,12 +13,10 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.Icon
-import io.github.composefluent.component.Text
-import io.github.composefluent.icons.Icons
-import io.github.composefluent.icons.regular.ChevronLeft
-import io.github.composefluent.icons.regular.ChevronRight
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcon
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcons
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppText
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppTypography
 
 @Composable
 fun ExpandableDescription(
@@ -33,7 +32,7 @@ fun ExpandableDescription(
     Column(modifier = modifier) {
         Row(
             modifier = Modifier
-                .clip(FluentTheme.shapes.control)
+                .clip(RoundedCornerShape(4.dp))
                 .clickable(
                     enabled = hasOverflow,
                     indication = null,
@@ -43,22 +42,17 @@ fun ExpandableDescription(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
+            AppText(
                 text = description,
-                style = FluentTheme.typography.body,
+                style = AppTypography.body,
                 maxLines = if (expanded) Int.MAX_VALUE else maxLinesCollapsed,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
-                onTextLayout = { textLayoutResult ->
-                    if (!expanded && textLayoutResult.hasVisualOverflow) {
-                        hasOverflow = true
-                    }
-                }
             )
             if (hasOverflow) {
                 Spacer(Modifier.width(8.dp))
-                Icon(
-                    Icons.Regular.ChevronRight,
+                AppIcon(
+                    AppIcons.ChevronRight,
                     contentDescription = null,
                     modifier = Modifier.rotate(degrees)
                 )

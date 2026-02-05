@@ -312,4 +312,10 @@
     <string name="converter_trim">חיתוך</string>
     <string name="converter_trim_duration">משך: %1$s</string>
 
+    <!-- הגדרות: ערכת נושא -->
+    <string name="settings_theme_title">ערכת נושא</string>
+    <string name="settings_theme_caption">בחרו את המראה של האפליקציה</string>
+    <string name="settings_theme_fluent">Fluent</string>
+    <string name="settings_theme_darwin">Darwin</string>
+
 </resources>

@@ -17,15 +17,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.Icon
-import io.github.composefluent.component.Text
-import io.github.composefluent.icons.Icons
-import io.github.composefluent.component.CheckBox
-
-import io.github.composefluent.icons.regular.LockShield
 import dev.zacsweers.metrox.viewmodel.metroViewModel
-import io.github.composefluent.icons.regular.Warning
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppCheckBox
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcon
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcons
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppText
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppTypography
 import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import androidx.navigation.NavHostController
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.NavigationRow
@@ -55,7 +52,7 @@ fun NoCheckCertScreen(navController: NavHostController) {
     )
     val currentStep by viewModel.currentStep.collectAsState()
     val initState by viewModel.initState.collectAsState()
-    
+
     val dependencyInfoBarDismissed by viewModel.dependencyInfoBarDismissed.collectAsState()
 
     // Navigation driven by ViewModel state
@@ -103,11 +100,11 @@ fun NoCheckCertView(
         Column(Modifier.weight(1f).fillMaxWidth()) {
             // Warning icon and title
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 12.dp)) {
-                Icon(Icons.Regular.Warning, null, modifier = Modifier.size(24.dp))
+                AppIcon(AppIcons.Warning, null, modifier = Modifier.size(24.dp))
                 Spacer(Modifier.width(12.dp))
-                Text(
+                AppText(
                     text = stringResource(Res.string.onboarding_filtered_network_detected_title),
-                    style = FluentTheme.typography.subtitle
+                    style = AppTypography.subtitle
                 )
             }
 
@@ -120,18 +117,12 @@ fun NoCheckCertView(
             Spacer(Modifier.height(8.dp))
 
             // Checkbox to accept
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
+            AppCheckBox(
+                checked = state.noCheckCertificate,
+                onCheckedChange = { onEvent(OnSetNoCheckCertificate(it)) },
+                label = stringResource(Res.string.onboarding_filtered_network_accept),
                 modifier = Modifier.padding(vertical = 8.dp)
-            ) {
-                CheckBox(
-                    state.noCheckCertificate,
-                    onCheckStateChange = { onEvent(OnSetNoCheckCertificate(it)) }
-                )
-
-                Spacer(Modifier.width(8.dp))
-                Text(stringResource(Res.string.onboarding_filtered_network_accept))
-            }
+            )
         }
         if (initState != null) {
             DependencyInfoBar(

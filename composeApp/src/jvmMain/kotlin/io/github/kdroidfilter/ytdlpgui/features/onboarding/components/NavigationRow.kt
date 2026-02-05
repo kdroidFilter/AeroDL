@@ -9,10 +9,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.AccentButton
-import io.github.composefluent.component.Button
-import io.github.composefluent.component.Text
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppAccentButton
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppButton
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppText
 import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.next
@@ -35,17 +34,17 @@ internal fun NavigationRow(
     ) {
         Row {
             if (onPrevious != null) {
-                Button(
+                AppButton(
                     onClick = onPrevious,
-                    content = { Text(resolvedPrevious) }
+                    content = { AppText(resolvedPrevious) }
                 )
             }
         }
         Row {
-            AccentButton(
+            AppAccentButton(
                 onClick = onNext,
-                disabled = !nextEnabled,
-                content = { Text(resolvedNext) }
+                enabled = nextEnabled,
+                content = { AppText(resolvedNext) }
             )
         }
     }
@@ -54,40 +53,34 @@ internal fun NavigationRow(
 @Preview
 @Composable
 private fun NavigationRowFullPreview() {
-    FluentTheme {
-        Column(Modifier.padding(16.dp)) {
-            NavigationRow(
-                onNext = {},
-                onPrevious = {},
-                nextEnabled = true
-            )
-        }
+    Column(Modifier.padding(16.dp)) {
+        NavigationRow(
+            onNext = {},
+            onPrevious = {},
+            nextEnabled = true
+        )
     }
 }
 
 @Preview
 @Composable
 private fun NavigationRowOnlyNextPreview() {
-    FluentTheme {
-        Column(Modifier.padding(16.dp)) {
-            NavigationRow(
-                onNext = {},
-                nextEnabled = true
-            )
-        }
+    Column(Modifier.padding(16.dp)) {
+        NavigationRow(
+            onNext = {},
+            nextEnabled = true
+        )
     }
 }
 
 @Preview
 @Composable
 private fun NavigationRowNextDisabledPreview() {
-    FluentTheme {
-        Column(Modifier.padding(16.dp)) {
-            NavigationRow(
-                onNext = {},
-                onPrevious = {},
-                nextEnabled = false
-            )
-        }
+    Column(Modifier.padding(16.dp)) {
+        NavigationRow(
+            onNext = {},
+            onPrevious = {},
+            nextEnabled = false
+        )
     }
 }

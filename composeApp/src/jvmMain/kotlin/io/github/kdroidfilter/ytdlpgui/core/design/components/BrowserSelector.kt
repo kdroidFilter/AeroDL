@@ -5,7 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import io.github.composefluent.component.ComboBox
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppComboBox
 import io.github.kdroidfilter.ytdlpgui.core.platform.browser.BrowserDetector
 import io.github.kdroidfilter.ytdlpgui.core.platform.browser.SupportedBrowser
 import org.jetbrains.compose.resources.StringResource
@@ -57,10 +57,10 @@ fun BrowserSelector(
         else -> stringResource(Res.string.settings_browser_disable)
     }
 
-    ComboBox(
+    AppComboBox(
         header = header,
         placeholder = actualPlaceholder,
-        selected = selected,
+        selectedIndex = selected,
         items = browserLabels,
         onSelectionChange = { index, _ ->
             selected = index

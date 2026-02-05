@@ -17,13 +17,17 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.*
-import io.github.composefluent.icons.Icons
-import io.github.composefluent.icons.regular.MusicNote1
-import io.github.composefluent.icons.regular.Video
 import io.github.kdroidfilter.ytdlpgui.core.design.components.TrimSlider
 import io.github.kdroidfilter.ytdlpgui.core.design.components.formatDuration
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppAccentButton
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppColors
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcon
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcons
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppProgressRing
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppSegmentedButton
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppSegmentedControl
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppText
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppTypography
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
 import org.jetbrains.compose.resources.stringResource
@@ -96,11 +100,11 @@ private fun LoadingView() {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            ProgressRing()
+            AppProgressRing()
             Spacer(Modifier.height(16.dp))
-            Text(
+            AppText(
                 text = stringResource(Res.string.converter_analyzing),
-                style = FluentTheme.typography.body
+                style = AppTypography.body
             )
         }
     }
@@ -112,9 +116,9 @@ private fun ErrorView(errorMessage: String) {
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        Text(
+        AppText(
             text = errorMessage,
-            color = FluentTheme.colors.system.critical,
+            color = AppColors.critical,
             textAlign = TextAlign.Center
         )
     }
@@ -186,9 +190,9 @@ private fun ConversionOptionsContent(
                 // Error message
                 if (state.errorMessage != null) {
                     item {
-                        Text(
+                        AppText(
                             text = state.errorMessage,
-                            color = FluentTheme.colors.system.critical,
+                            color = AppColors.critical,
                             textAlign = TextAlign.Center,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -205,11 +209,11 @@ private fun ConversionOptionsContent(
         Spacer(Modifier.height(16.dp))
 
         // Convert button
-        AccentButton(
+        AppAccentButton(
             onClick = { onEvent(ConverterOptionsEvents.StartConversion) },
-            disabled = !state.canConvert
+            enabled = state.canConvert
         ) {
-            Text(stringResource(Res.string.converter_start))
+            AppText(stringResource(Res.string.converter_start))
         }
     }
 }
@@ -223,23 +227,23 @@ private fun FileInfoCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
-            .background(FluentTheme.colors.background.layer.default)
-            .border(1.dp, FluentTheme.colors.stroke.control.default, RoundedCornerShape(8.dp))
+            .background(AppColors.backgroundDefault)
+            .border(1.dp, AppColors.strokeControlDefault, RoundedCornerShape(8.dp))
             .padding(16.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = if (state.mediaType == MediaType.VIDEO) Icons.Regular.Video else Icons.Regular.MusicNote1,
+            AppIcon(
+                imageVector = if (state.mediaType == MediaType.VIDEO) AppIcons.Video else AppIcons.MusicNote,
                 contentDescription = null,
                 modifier = Modifier.size(32.dp)
             )
             Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(
+                AppText(
                     text = state.selectedFile?.name ?: "",
-                    style = FluentTheme.typography.bodyStrong,
+                    style = AppTypography.bodyStrong,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -247,21 +251,21 @@ private fun FileInfoCard(
                     mediaInfo.duration?.let { append(formatDuration(it.toMillis())) }
                     if (state.mediaType == MediaType.VIDEO) {
                         mediaInfo.videoStreams.firstOrNull()?.let { video ->
-                            if (isNotEmpty()) append(" • ")
+                            if (isNotEmpty()) append(" \u2022 ")
                             append("${video.width}x${video.height}")
                         }
                     }
                     mediaInfo.audioStreams.firstOrNull()?.let { audio ->
                         audio.sampleRate?.let {
-                            if (isNotEmpty()) append(" • ")
+                            if (isNotEmpty()) append(" \u2022 ")
                             append("${it / 1000} kHz")
                         }
                     }
                 }
-                Text(
+                AppText(
                     text = infoText,
-                    style = FluentTheme.typography.caption,
-                    color = FluentTheme.colors.text.text.secondary
+                    style = AppTypography.caption,
+                    color = AppColors.textSecondary
                 )
             }
         }
@@ -274,9 +278,9 @@ private fun FormatSelector(
     onEvent: (ConverterOptionsEvents) -> Unit
 ) {
     Column {
-        Text(
+        AppText(
             text = stringResource(Res.string.converter_output_format),
-            style = FluentTheme.typography.bodyStrong,
+            style = AppTypography.bodyStrong,
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.height(8.dp))
@@ -285,19 +289,22 @@ private fun FormatSelector(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
         ) {
-            SegmentedControl {
-                SegmentedButton(
-                    checked = state.outputFormat == OutputFormat.VIDEO_MP4,
-                    onCheckedChanged = { onEvent(ConverterOptionsEvents.SetOutputFormat(OutputFormat.VIDEO_MP4)) },
-                    position = SegmentedItemPosition.Start,
-                    text = { Text(stringResource(Res.string.converter_video)) }
-                )
-                SegmentedButton(
-                    checked = state.outputFormat == OutputFormat.AUDIO_MP3,
-                    onCheckedChanged = { onEvent(ConverterOptionsEvents.SetOutputFormat(OutputFormat.AUDIO_MP3)) },
-                    position = SegmentedItemPosition.End,
-                    text = { Text(stringResource(Res.string.converter_audio)) }
-                )
+            val selectedIndex = if (state.outputFormat == OutputFormat.VIDEO_MP4) 0 else 1
+            AppSegmentedControl(selectedIndex = selectedIndex) {
+                AppSegmentedButton(
+                    index = 0,
+                    selected = state.outputFormat == OutputFormat.VIDEO_MP4,
+                    onClick = { onEvent(ConverterOptionsEvents.SetOutputFormat(OutputFormat.VIDEO_MP4)) },
+                ) {
+                    AppText(stringResource(Res.string.converter_video))
+                }
+                AppSegmentedButton(
+                    index = 1,
+                    selected = state.outputFormat == OutputFormat.AUDIO_MP3,
+                    onClick = { onEvent(ConverterOptionsEvents.SetOutputFormat(OutputFormat.AUDIO_MP3)) },
+                ) {
+                    AppText(stringResource(Res.string.converter_audio))
+                }
             }
         }
     }
@@ -309,9 +316,9 @@ private fun VideoQualitySelector(
     onEvent: (ConverterOptionsEvents) -> Unit
 ) {
     Column {
-        Text(
+        AppText(
             text = stringResource(Res.string.converter_video_quality),
-            style = FluentTheme.typography.bodyStrong,
+            style = AppTypography.bodyStrong,
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.height(8.dp))
@@ -322,13 +329,15 @@ private fun VideoQualitySelector(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             VideoQuality.entries.forEach { quality ->
-                SegmentedControl {
-                    SegmentedButton(
-                        checked = state.selectedVideoQuality == quality,
-                        onCheckedChanged = { onEvent(ConverterOptionsEvents.SetVideoQuality(quality)) },
-                        position = SegmentedItemPosition.Center,
-                        text = { Text(quality.displayName) }
-                    )
+                val isSelected = state.selectedVideoQuality == quality
+                AppSegmentedControl(selectedIndex = if (isSelected) 0 else -1) {
+                    AppSegmentedButton(
+                        index = 0,
+                        selected = isSelected,
+                        onClick = { onEvent(ConverterOptionsEvents.SetVideoQuality(quality)) },
+                    ) {
+                        AppText(quality.displayName)
+                    }
                 }
             }
         }
@@ -341,9 +350,9 @@ private fun AudioQualitySelector(
     onEvent: (ConverterOptionsEvents) -> Unit
 ) {
     Column {
-        Text(
+        AppText(
             text = stringResource(Res.string.converter_audio_quality),
-            style = FluentTheme.typography.bodyStrong,
+            style = AppTypography.bodyStrong,
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.height(8.dp))
@@ -354,13 +363,15 @@ private fun AudioQualitySelector(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             AudioQuality.entries.forEach { quality ->
-                SegmentedControl {
-                    SegmentedButton(
-                        checked = state.selectedAudioQuality == quality,
-                        onCheckedChanged = { onEvent(ConverterOptionsEvents.SetAudioQuality(quality)) },
-                        position = SegmentedItemPosition.Center,
-                        text = { Text(quality.displayName) }
-                    )
+                val isSelected = state.selectedAudioQuality == quality
+                AppSegmentedControl(selectedIndex = if (isSelected) 0 else -1) {
+                    AppSegmentedButton(
+                        index = 0,
+                        selected = isSelected,
+                        onClick = { onEvent(ConverterOptionsEvents.SetAudioQuality(quality)) },
+                    ) {
+                        AppText(quality.displayName)
+                    }
                 }
             }
         }

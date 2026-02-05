@@ -10,8 +10,8 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import io.github.composefluent.component.Icon
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.SettingsGear
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcon
 import kotlin.math.max
 import kotlin.math.min
 
@@ -42,7 +42,7 @@ fun AnimatedGears(
         label = "large_gear_rotation"
     )
 
-    // Angular speed ratio: ω ∝ 1/r → small rotates faster by (large / small)
+    // Angular speed ratio: w ~ 1/r -> small rotates faster by (large / small)
     val speedRatio = (largeSize / smallSize).coerceAtLeast(0.01f)
     val smallDurationMs = max(200, (largeDurationMs / speedRatio).toInt())
 
@@ -83,7 +83,7 @@ fun AnimatedGears(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(gapScaled, Alignment.CenterHorizontally)
             ) {
-                Icon(
+                AppIcon(
                     imageVector = SettingsGear,
                     contentDescription = "Large gear",
                     modifier = Modifier
@@ -91,7 +91,7 @@ fun AnimatedGears(
                         .rotate(largeRotation),
                     tint = largeColor
                 )
-                Icon(
+                AppIcon(
                     imageVector = SettingsGear,
                     contentDescription = "Small gear",
                     modifier = Modifier

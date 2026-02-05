@@ -16,6 +16,7 @@ sealed class SettingsEvents {
     data class SetConcurrentFragments(val count: Int) : SettingsEvents()
     data class SetProxy(val proxyUrl: String) : SettingsEvents()
     data class SetValidateBulkUrls(val enabled: Boolean) : SettingsEvents()
+    data class SetAppTheme(val theme: io.github.kdroidfilter.ytdlpgui.core.config.AppTheme) : SettingsEvents()
     data class PickDownloadDir(val title: String) : SettingsEvents()
     data object ResetToDefaults : SettingsEvents()
 }

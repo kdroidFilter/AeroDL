@@ -7,8 +7,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.Text
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppColors
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppText
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppTypography
 import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.converter_trim
@@ -28,9 +29,9 @@ fun TrimSlider(
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
-        Text(
+        AppText(
             text = stringResource(Res.string.converter_trim),
-            style = FluentTheme.typography.bodyStrong,
+            style = AppTypography.bodyStrong,
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.height(8.dp))
@@ -40,15 +41,15 @@ fun TrimSlider(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
+            AppText(
                 text = formatDuration(trimStartMs),
-                style = FluentTheme.typography.caption,
-                color = FluentTheme.colors.text.text.secondary
+                style = AppTypography.caption,
+                color = AppColors.textSecondary
             )
-            Text(
+            AppText(
                 text = formatDuration(trimEndMs),
-                style = FluentTheme.typography.caption,
-                color = FluentTheme.colors.text.text.secondary
+                style = AppTypography.caption,
+                color = AppColors.textSecondary
             )
         }
 
@@ -61,21 +62,21 @@ fun TrimSlider(
             valueRange = 0f..totalDurationMs.toFloat(),
             modifier = Modifier.fillMaxWidth(),
             colors = SliderDefaults.colors(
-                thumbColor = FluentTheme.colors.fillAccent.default,
-                activeTrackColor = FluentTheme.colors.fillAccent.default,
-                inactiveTrackColor = FluentTheme.colors.stroke.control.default
+                thumbColor = AppColors.fillAccentDefault,
+                activeTrackColor = AppColors.fillAccentDefault,
+                inactiveTrackColor = AppColors.strokeControlDefault
             )
         )
 
         // Duration info
         if (isTrimmed) {
-            Text(
+            AppText(
                 text = stringResource(
                     Res.string.converter_trim_duration,
                     formatDuration(trimEndMs - trimStartMs)
                 ),
-                style = FluentTheme.typography.caption,
-                color = FluentTheme.colors.text.text.secondary,
+                style = AppTypography.caption,
+                color = AppColors.textSecondary,
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
             )

@@ -23,10 +23,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.HyperlinkButton
-import io.github.composefluent.component.Text
 import dev.zacsweers.metrox.viewmodel.metroViewModel
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppHyperlinkButton
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppText
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppTypography
 import io.github.kdroidfilter.ytdlpgui.core.platform.browser.openUrlInBrowser
 import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import org.jetbrains.compose.resources.stringResource
@@ -51,7 +51,7 @@ fun AboutView(
 ) {
     val appVersion = state.appVersion.takeIf { it.isNotBlank() }
         ?.let { stringResource(Res.string.app_version_label, it) }
-        ?: stringResource(Res.string.app_version_label, "—")
+        ?: stringResource(Res.string.app_version_label, "\u2014")
 
     val ytdlpVersion = state.ytdlpVersion?.takeIf { it.isNotBlank() }
         ?.let { stringResource(Res.string.ytdlp_version_label, it) }
@@ -84,31 +84,31 @@ fun AboutView(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text(
+                AppText(
                     text = stringResource(Res.string.about_credits_title),
-                    style = FluentTheme.typography.subtitle,
+                    style = AppTypography.subtitle,
                     textAlign = TextAlign.Center
                 )
-                Text(
+                AppText(
                     text = stringResource(Res.string.credits_made_by),
-                    style = FluentTheme.typography.body,
+                    style = AppTypography.body,
                     textAlign = TextAlign.Center
                 )
-                Text(
+                AppText(
                     text = stringResource(Res.string.credits_thank_jetbrains),
-                    style = FluentTheme.typography.body,
+                    style = AppTypography.body,
                     textAlign = TextAlign.Center
                 )
-                Text(
+                AppText(
                     text = stringResource(Res.string.credits_thank_oss),
-                    style = FluentTheme.typography.body,
+                    style = AppTypography.body,
                     textAlign = TextAlign.Center
                 )
-                HyperlinkButton(
+                AppHyperlinkButton(
                     onClick = { openUrlInBrowser("https://github.com/kdroidFilter") },
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 ) {
-                    Text(stringResource(Res.string.credits_github_prompt))
+                    AppText(stringResource(Res.string.credits_github_prompt))
                 }
             }
 
@@ -120,15 +120,15 @@ fun AboutView(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Divider()
-                Text(
+                AppText(
                     text = stringResource(Res.string.about_versions_title),
-                    style = FluentTheme.typography.bodyStrong,
+                    style = AppTypography.bodyStrong,
                     textAlign = TextAlign.Center
                 )
-                Text(text = appVersion, style = FluentTheme.typography.body, textAlign = TextAlign.Center)
-                Text(text = ytdlpVersion, style = FluentTheme.typography.body, textAlign = TextAlign.Center)
-                Text(text = ffmpegVersion, style = FluentTheme.typography.body, textAlign = TextAlign.Center)
-                Text(text = denoVersion, style = FluentTheme.typography.body, textAlign = TextAlign.Center)
+                AppText(text = appVersion, style = AppTypography.body, textAlign = TextAlign.Center)
+                AppText(text = ytdlpVersion, style = AppTypography.body, textAlign = TextAlign.Center)
+                AppText(text = ffmpegVersion, style = AppTypography.body, textAlign = TextAlign.Center)
+                AppText(text = denoVersion, style = AppTypography.body, textAlign = TextAlign.Center)
                 Spacer(Modifier.height(8.dp))
             }
         }

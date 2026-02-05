@@ -1,5 +1,7 @@
 package io.github.kdroidfilter.ytdlpgui.features.system.settings
 
+import io.github.kdroidfilter.ytdlpgui.core.config.AppTheme
+
 // UI state for the Settings screen
 // - noCheckCertificate: when true, yt-dlp will be called with --no-check-certificates
 // - cookiesFromBrowser: the browser name to use for --cookies-from-browser (e.g., "firefox", "chrome"), empty to disable
@@ -18,6 +20,7 @@ data class SettingsState(
     val concurrentFragments: Int = 1,
     val proxy: String = "",
     val validateBulkUrls: Boolean = false,
+    val appTheme: AppTheme = AppTheme.FLUENT,
 ) {
     companion object {
         val defaultState = SettingsState()
