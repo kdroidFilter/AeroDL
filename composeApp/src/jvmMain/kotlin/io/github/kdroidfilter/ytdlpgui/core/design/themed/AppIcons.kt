@@ -1,7 +1,10 @@
+@file:Suppress("EXTENSION_SHADOWED_BY_MEMBER")
+
 package io.github.kdroidfilter.ytdlpgui.core.design.themed
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.composables.icons.lucide.*
 import io.github.composefluent.icons.filled.ClipboardPaste
 import io.github.composefluent.icons.filled.DocumentEdit
 import io.github.composefluent.icons.filled.Flash
@@ -56,255 +59,252 @@ object AppIcons {
     val Home: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Default.Home
-            AppTheme.DARWIN -> io.github.kdroidfilter.darwinui.icons.LucideHome
+            AppTheme.DARWIN -> Lucide.House
         }
 
     val Settings: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Default.Settings
-            AppTheme.DARWIN -> io.github.kdroidfilter.darwinui.icons.LucideSettings
+            AppTheme.DARWIN -> Lucide.Settings
         }
 
     val Info: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Default.Info
-            AppTheme.DARWIN -> io.github.kdroidfilter.darwinui.icons.LucideInfo
+            AppTheme.DARWIN -> Lucide.Info
         }
 
     val ArrowLeft: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Default.ArrowLeft
-            AppTheme.DARWIN -> io.github.kdroidfilter.darwinui.icons.LucideChevronLeft
+            AppTheme.DARWIN -> Lucide.ChevronLeft
         }
 
     val ArrowRight: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Default.ArrowRight
-            AppTheme.DARWIN -> io.github.kdroidfilter.darwinui.icons.LucideChevronRight
+            AppTheme.DARWIN -> Lucide.ChevronRight
         }
 
     val ConvertRange: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Default.ConvertRange
-            AppTheme.DARWIN -> io.github.kdroidfilter.darwinui.icons.LucideArrowLeftRight
+            AppTheme.DARWIN -> Lucide.ArrowLeftRight
         }
 
     val Heart: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Filled.Heart
-            AppTheme.DARWIN -> io.github.kdroidfilter.darwinui.icons.LucideHeart
+            AppTheme.DARWIN -> Lucide.Heart
         }
 
     val Download: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Default.ArrowDownload
-            AppTheme.DARWIN -> io.github.kdroidfilter.darwinui.icons.LucideDownload
+            AppTheme.DARWIN -> Lucide.Download
         }
 
     val Copy: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Default.Copy
-            AppTheme.DARWIN -> io.github.kdroidfilter.darwinui.icons.LucideCopy
+            AppTheme.DARWIN -> Lucide.Copy
         }
 
     val Folder: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Filled.OpenFolder
-            AppTheme.DARWIN -> io.github.kdroidfilter.darwinui.icons.LucideFolder
+            AppTheme.DARWIN -> Lucide.Folder
         }
 
     val Warning: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Regular.Warning
-            AppTheme.DARWIN -> io.github.kdroidfilter.darwinui.icons.LucideTriangleAlert
+            AppTheme.DARWIN -> Lucide.TriangleAlert
         }
 
     val Search: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Default.Search
-            AppTheme.DARWIN -> io.github.kdroidfilter.darwinui.icons.LucideSearch
+            AppTheme.DARWIN -> Lucide.Search
         }
 
     val Close: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Default.Dismiss
-            AppTheme.DARWIN -> io.github.kdroidfilter.darwinui.icons.LucideX
+            AppTheme.DARWIN -> Lucide.X
         }
 
     val Check: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Default.Checkmark
-            AppTheme.DARWIN -> io.github.kdroidfilter.darwinui.icons.LucideCheck
+            AppTheme.DARWIN -> Lucide.Check
         }
 
     val Delete: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Default.Delete
-            AppTheme.DARWIN -> io.github.kdroidfilter.darwinui.icons.LucideTrash2
+            AppTheme.DARWIN -> Lucide.Trash2
         }
 
     val History: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Default.History
-            AppTheme.DARWIN -> io.github.kdroidfilter.ytdlpgui.core.design.icons.LucideClock
+            AppTheme.DARWIN -> Lucide.Clock
         }
 
     val MoreVertical: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Filled.MoreVertical
-            AppTheme.DARWIN -> io.github.kdroidfilter.ytdlpgui.core.design.icons.LucideMoreVertical
+            AppTheme.DARWIN -> Lucide.EllipsisVertical
         }
 
     val Cookies: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Regular.Cookies
-            AppTheme.DARWIN -> io.github.kdroidfilter.ytdlpgui.core.design.icons.LucideCookie
+            AppTheme.DARWIN -> Lucide.Cookie
         }
 
     val DocumentEdit: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Filled.DocumentEdit
-            AppTheme.DARWIN -> io.github.kdroidfilter.ytdlpgui.core.design.icons.LucidePencil
+            AppTheme.DARWIN -> Lucide.Pencil
         }
 
     val MusicNote: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Filled.MusicNote1
-            AppTheme.DARWIN -> io.github.kdroidfilter.ytdlpgui.core.design.icons.LucideMusic
+            AppTheme.DARWIN -> Lucide.Music
         }
 
     val Flash: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Filled.Flash
-            AppTheme.DARWIN -> io.github.kdroidfilter.ytdlpgui.core.design.icons.LucideZap
+            AppTheme.DARWIN -> Lucide.Zap
         }
 
     val TopSpeed: ImageVector
-        @Composable get() {
-            val vector = when (LocalAppTheme.current) {
-                AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Filled.TopSpeed
-                AppTheme.DARWIN -> io.github.kdroidfilter.ytdlpgui.core.design.icons.LucideGauge
-            }
-            return vector
+        @Composable get() = when (LocalAppTheme.current) {
+            AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Filled.TopSpeed
+            AppTheme.DARWIN -> Lucide.Gauge
         }
 
     val Power: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Regular.Power
-            AppTheme.DARWIN -> io.github.kdroidfilter.ytdlpgui.core.design.icons.LucidePower
+            AppTheme.DARWIN -> Lucide.Power
         }
 
     val Globe: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Regular.Globe
-            AppTheme.DARWIN -> io.github.kdroidfilter.ytdlpgui.core.design.icons.LucideGlobe
+            AppTheme.DARWIN -> Lucide.Globe
         }
 
     val LockShield: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Default.LockShield
-            AppTheme.DARWIN -> io.github.kdroidfilter.ytdlpgui.core.design.icons.LucideShield
+            AppTheme.DARWIN -> Lucide.Shield
         }
 
     val Clipboard: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Regular.Clipboard
-            AppTheme.DARWIN -> io.github.kdroidfilter.ytdlpgui.core.design.icons.LucideClipboard
+            AppTheme.DARWIN -> Lucide.Clipboard
         }
 
     val ClipboardPaste: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Filled.ClipboardPaste
-            AppTheme.DARWIN -> io.github.kdroidfilter.ytdlpgui.core.design.icons.LucideClipboardPaste
+            AppTheme.DARWIN -> Lucide.ClipboardPaste
         }
 
     val CheckboxChecked: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Regular.CheckboxChecked
-            AppTheme.DARWIN -> io.github.kdroidfilter.ytdlpgui.core.design.icons.LucideSquareCheck
+            AppTheme.DARWIN -> Lucide.SquareCheck
         }
 
     val Play: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Default.Play
-            AppTheme.DARWIN -> io.github.kdroidfilter.ytdlpgui.core.design.icons.LucidePlay
+            AppTheme.DARWIN -> Lucide.Play
         }
 
     val Pause: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Default.Pause
-            AppTheme.DARWIN -> io.github.kdroidfilter.ytdlpgui.core.design.icons.LucidePause
+            AppTheme.DARWIN -> Lucide.Pause
         }
 
     val ChevronRight: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Default.ChevronRight
-            AppTheme.DARWIN -> io.github.kdroidfilter.darwinui.icons.LucideChevronRight
+            AppTheme.DARWIN -> Lucide.ChevronRight
         }
 
     val FolderOpen: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Filled.FolderOpen
-            AppTheme.DARWIN -> io.github.kdroidfilter.ytdlpgui.core.design.icons.LucideFolderOpen
+            AppTheme.DARWIN -> Lucide.FolderOpen
         }
 
     val FolderProhibited: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Default.FolderProhibited
-            AppTheme.DARWIN -> io.github.kdroidfilter.ytdlpgui.core.design.icons.LucideFolderX
+            AppTheme.DARWIN -> Lucide.FolderX
         }
 
     val ErrorCircle: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Default.ErrorCircle
-            AppTheme.DARWIN -> io.github.kdroidfilter.darwinui.icons.LucideCircleX
+            AppTheme.DARWIN -> Lucide.CircleX
         }
 
     val Video: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Regular.Video
-            AppTheme.DARWIN -> io.github.kdroidfilter.ytdlpgui.core.design.icons.LucideVideo
+            AppTheme.DARWIN -> Lucide.Video
         }
 
     val VideoClipMultiple: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Regular.VideoClipMultiple
-            AppTheme.DARWIN -> io.github.kdroidfilter.ytdlpgui.core.design.icons.LucideListVideo
+            AppTheme.DARWIN -> Lucide.ListVideo
         }
 
     val SelectAllOn: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Regular.SelectAllOn
-            AppTheme.DARWIN -> io.github.kdroidfilter.ytdlpgui.core.design.icons.LucideListChecks
+            AppTheme.DARWIN -> Lucide.ListChecks
         }
 
     val SelectAllOff: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Regular.SelectAllOff
-            AppTheme.DARWIN -> io.github.kdroidfilter.ytdlpgui.core.design.icons.LucideList
+            AppTheme.DARWIN -> Lucide.List
         }
 
     val Person: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Regular.Person
-            AppTheme.DARWIN -> io.github.kdroidfilter.ytdlpgui.core.design.icons.LucideUser
+            AppTheme.DARWIN -> Lucide.User
         }
 
     val DocumentAdd: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Regular.DocumentAdd
-            AppTheme.DARWIN -> io.github.kdroidfilter.ytdlpgui.core.design.icons.LucideFilePlus
+            AppTheme.DARWIN -> Lucide.FilePlus
         }
 
     val Textbox: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Regular.Textbox
-            AppTheme.DARWIN -> io.github.kdroidfilter.ytdlpgui.core.design.icons.LucideType
+            AppTheme.DARWIN -> Lucide.Type
         }
 
     val FilmstripPlay: ImageVector
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> io.github.composefluent.icons.Icons.Regular.FilmstripPlay
-            AppTheme.DARWIN -> io.github.kdroidfilter.ytdlpgui.core.design.icons.LucideListVideo
+            AppTheme.DARWIN -> Lucide.ListVideo
         }
 }

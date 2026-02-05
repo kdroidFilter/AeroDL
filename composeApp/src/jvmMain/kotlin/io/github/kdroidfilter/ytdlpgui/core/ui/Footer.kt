@@ -32,7 +32,7 @@ fun Footer(
                 onClick = { openUrlInBrowser("https://github.com/kdroidFilter/ytdlpgui") },
                 modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
             ) {
-                AppIcon(Github, contentDescription = null)
+                AppIcon(Github, contentDescription = null, modifier = Modifier.size(16.dp))
             }
         }
         Spacer(Modifier.width(8.dp))
@@ -41,7 +41,7 @@ fun Footer(
                 onClick = { openUrlInBrowser("https://ko-fi.com/lomityaesh") },
                 modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
             ) {
-                AppIcon(AppIcons.Heart, contentDescription = null)
+                AppIcon(AppIcons.Heart, contentDescription = null, modifier = Modifier.size(16.dp))
             }
         }
     }

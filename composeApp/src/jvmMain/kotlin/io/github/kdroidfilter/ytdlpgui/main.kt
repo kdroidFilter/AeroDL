@@ -1,12 +1,14 @@
 package io.github.kdroidfilter.ytdlpgui
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -38,6 +40,10 @@ import io.github.kdroidfilter.darwinui.theme.DarwinTheme
 import io.github.kdroidfilter.ytdlpgui.core.config.AppTheme
 import io.github.kdroidfilter.ytdlpgui.core.config.LocalAppTheme
 import androidx.compose.foundation.background
+import io.github.fletchmckee.liquid.liquefiable
+import io.github.fletchmckee.liquid.liquid
+import io.github.fletchmckee.liquid.rememberLiquidState
+import androidx.compose.ui.graphics.Brush
 import io.github.kdroidfilter.knotify.builder.AppConfig
 import io.github.kdroidfilter.knotify.builder.NotificationInitializer
 import io.github.kdroidfilter.logging.LoggerConfig
@@ -233,20 +239,24 @@ fun main() {
                                 }
                             }
                             AppTheme.DARWIN -> {
-                                DarwinTheme(darkTheme = isSystemInDarkMode()) {
-                                    androidx.compose.foundation.layout.Box(
+                                val isDark = isSystemInDarkMode()
+                                DarwinTheme(darkTheme = isDark) {
+                                    Box(
                                         Modifier
                                             .fillMaxSize()
-                                            .clip(RoundedCornerShape(12.dp))
+                                            .clip(RoundedCornerShape(18.dp))
                                             .background(DarwinTheme.colors.background)
                                             .border(
-                                                1.dp,
-                                                DarwinTheme.colors.border,
-                                                RoundedCornerShape(12.dp)
+                                                0.5.dp,
+                                                if (isDark) Color.White.copy(alpha = 0.15f)
+                                                else Color.Black.copy(alpha = 0.08f),
+                                                RoundedCornerShape(18.dp)
                                             )
                                     ) {
                                         CompositionLocalProvider(LocalAppGraph provides appGraph) {
-                                            App()
+                                            App(
+                                                modifier = Modifier
+                                            )
                                         }
                                     }
                                 }

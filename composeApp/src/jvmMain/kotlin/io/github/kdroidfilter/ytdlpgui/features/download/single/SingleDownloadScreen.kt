@@ -33,7 +33,7 @@ import io.github.kdroidfilter.composemediaplayer.rememberVideoPlayerState
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
 import io.github.kdroidfilter.ytdlpgui.core.design.components.EllipsizedTextWithTooltip
-import io.github.kdroidfilter.ytdlpgui.core.design.components.Switcher
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppSwitcher
 import io.github.kdroidfilter.ytdlpgui.core.design.components.TrimSlider
 import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppAccentButton
 import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppButton
@@ -336,9 +336,9 @@ private fun SingleVideoDownloadView(
                             },
                             icon = { AppIcon(AppIcons.FilmstripPlay, null) },
                             trailing = {
-                                Switcher(
+                                AppSwitcher(
                                     checked = splitChapters,
-                                    onCheckStateChange = onSetSplitChapters,
+                                    onCheckedChange = onSetSplitChapters,
                                 )
                             }
                         )
@@ -362,9 +362,9 @@ private fun SingleVideoDownloadView(
                             },
                             icon = { AppIcon(AppIcons.Info, null) },
                             trailing = {
-                                Switcher(
+                                AppSwitcher(
                                     checked = removeSponsors,
-                                    onCheckStateChange = onSetRemoveSponsors,
+                                    onCheckedChange = onSetRemoveSponsors,
                                 )
                             }
                         )
@@ -425,9 +425,9 @@ private fun SingleVideoDownloadView(
                             },
                             icon = { AppIcon(AppIcons.FilmstripPlay, null) },
                             trailing = {
-                                Switcher(
+                                AppSwitcher(
                                     checked = splitChapters,
-                                    onCheckStateChange = onSetSplitChapters,
+                                    onCheckedChange = onSetSplitChapters,
                                 )
                             }
                         )
@@ -451,9 +451,9 @@ private fun SingleVideoDownloadView(
                             },
                             icon = { AppIcon(AppIcons.Info, null) },
                             trailing = {
-                                Switcher(
+                                AppSwitcher(
                                     checked = removeSponsors,
-                                    onCheckStateChange = onSetRemoveSponsors,
+                                    onCheckedChange = onSetRemoveSponsors,
                                 )
                             }
                         )

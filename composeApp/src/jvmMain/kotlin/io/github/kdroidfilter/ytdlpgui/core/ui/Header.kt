@@ -228,8 +228,9 @@ private fun DarwinMainNav(
     var menuExpanded by remember { mutableStateOf(false) }
 
     Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically
+        modifier = modifier.padding(top = 8.dp, end = 8.dp).height(40.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         // Logo
         Row(
@@ -239,7 +240,7 @@ private fun DarwinMainNav(
             AppIcon(
                 AeroDlLogoOnly,
                 "",
-                modifier = Modifier.fillMaxHeight(0.6f),
+                modifier = Modifier.fillMaxHeight(0.8f),
                 tint = AppColors.neutral
             )
             Spacer(Modifier.width(4.dp))
@@ -323,10 +324,11 @@ private fun DarwinMainNav(
             expanded = menuExpanded,
             onDismissRequest = { menuExpanded = false },
             trigger = {
-                AppSubtleButton(
+                io.github.kdroidfilter.darwinui.components.SubtleButton(
                     onClick = { menuExpanded = !menuExpanded },
+                    size = io.github.kdroidfilter.darwinui.components.ButtonSize.Icon,
                 ) {
-                    AppIcon(AppIcons.MoreVertical, contentDescription = null)
+                    AppIcon(AppIcons.MoreVertical, contentDescription = null, modifier = Modifier.size(16.dp))
                 }
             },
             content = {

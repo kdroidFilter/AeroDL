@@ -10,7 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.zacsweers.metrox.viewmodel.metroViewModel
-import io.github.kdroidfilter.ytdlpgui.core.design.components.Switcher
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppSwitcher
 import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcon
 import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcons
 import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppText
@@ -94,9 +94,9 @@ fun ClipboardView(
             AppIcon(AppIcons.Clipboard, null, modifier = Modifier.size(48.dp))
             Spacer(Modifier.height(12.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Switcher(
+                AppSwitcher(
                     checked = state.clipboardMonitoringEnabled,
-                    onCheckStateChange = { onEvent(OnboardingEvents.OnSetClipboardMonitoring(it)) }
+                    onCheckedChange = { onEvent(OnboardingEvents.OnSetClipboardMonitoring(it)) }
                 )
                 Spacer(Modifier.width(8.dp))
                 val statusLabel = if (state.clipboardMonitoringEnabled) {

@@ -23,7 +23,7 @@ fun AppIcon(
             modifier = modifier,
             tint = if (tint == Color.Unspecified) io.github.composefluent.FluentTheme.colors.text.text.primary else tint,
         )
-        AppTheme.DARWIN -> io.github.kdroidfilter.darwinui.icons.Icon(
+        AppTheme.DARWIN -> androidx.compose.material.Icon(
             imageVector = imageVector,
             contentDescription = contentDescription,
             modifier = modifier,

@@ -46,7 +46,9 @@ import io.github.kdroidfilter.ytdlpgui.features.system.about.AboutScreen
 import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsScreen
 
 @Composable
-fun App() {
+fun App(
+    modifier: Modifier = Modifier,
+) {
     val navController = rememberNavController()
 
     // Bridge: observe DI-backed navigation events and apply to NavController
@@ -85,7 +87,7 @@ fun App() {
     val isInitScreen = currentDestination?.hasRoute(Destination.InitScreen::class) == true
 
     Column(
-        Modifier
+        modifier
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center

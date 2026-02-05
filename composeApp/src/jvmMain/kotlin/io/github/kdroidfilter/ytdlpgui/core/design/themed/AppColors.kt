@@ -78,7 +78,7 @@ object AppColors {
     val backgroundDefault: Color
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> FluentTheme.colors.background.layer.default
-            AppTheme.DARWIN -> DarwinTheme.colors.background
+            AppTheme.DARWIN -> Color.Transparent
         }
 
     val strokeControlDefault: Color
@@ -114,6 +114,6 @@ object AppColors {
     val card: Color
         @Composable get() = when (LocalAppTheme.current) {
             AppTheme.FLUENT -> FluentTheme.colors.background.card.default
-            AppTheme.DARWIN -> DarwinTheme.colors.card
+            AppTheme.DARWIN -> DarwinTheme.colors.card.copy(alpha = 0.5f)
         }
 }

@@ -64,7 +64,9 @@ kotlin {
             implementation(libs.compose.fluent)
             implementation(libs.compose.fluent.icons.extended)
             implementation(libs.compose.darwinui)
+            implementation("com.composables:icons-lucide-cmp:2.2.1")
             implementation(libs.composemediaplayer)
+            implementation("io.github.fletchmckee.liquid:liquid:1.1.1")
 
             // Coil
             implementation(libs.coil)

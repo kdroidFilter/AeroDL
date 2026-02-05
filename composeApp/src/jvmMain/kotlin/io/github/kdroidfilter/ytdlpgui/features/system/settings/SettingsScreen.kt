@@ -13,7 +13,7 @@ import dev.zacsweers.metrox.viewmodel.metroViewModel
 import io.github.kdroidfilter.ytdlpgui.core.config.AppTheme
 import io.github.kdroidfilter.ytdlpgui.core.design.components.BrowserSelector
 import io.github.kdroidfilter.ytdlpgui.core.design.components.EllipsizedTextWithTooltip
-import io.github.kdroidfilter.ytdlpgui.core.design.components.Switcher
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppSwitcher
 import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppButton
 import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppCardExpanderItem
 import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppComboBox
@@ -252,9 +252,9 @@ private fun IncludePresetInFilenameSetting(
         },
         icon = { AppIcon(AppIcons.DocumentEdit, null) },
         trailing = {
-            Switcher(
+            AppSwitcher(
                 checked = includePreset,
-                onCheckStateChange = onIncludePresetChange,
+                onCheckedChange = onIncludePresetChange,
             )
         }
     )
@@ -286,9 +286,9 @@ private fun EmbedThumbnailInMp3Setting(
         },
             icon = { AppIcon(AppIcons.MusicNote, null) },
         trailing = {
-            Switcher(
+            AppSwitcher(
                 checked = embedThumbnailInMp3,
-                onCheckStateChange = onEmbedThumbnailChange,
+                onCheckedChange = onEmbedThumbnailChange,
             )
         }
     )
@@ -405,9 +405,9 @@ private fun ValidateBulkUrlsSetting(
         },
         icon = { AppIcon(AppIcons.CheckboxChecked, null) },
         trailing = {
-            Switcher(
+            AppSwitcher(
                 checked = validateBulkUrls,
-                onCheckStateChange = onValidateBulkUrlsChange,
+                onCheckedChange = onValidateBulkUrlsChange,
             )
         }
     )
@@ -521,9 +521,9 @@ private fun NoCheckCertificateSetting(
         },
         icon = { AppIcon(AppIcons.LockShield, null) },
         trailing = {
-            Switcher(
+            AppSwitcher(
                 checked = noCheckCertificate,
-                onCheckStateChange = onNoCheckCertificateChange,
+                onCheckedChange = onNoCheckCertificateChange,
             )
         }
     )
@@ -555,9 +555,9 @@ private fun ClipboardMonitoringSetting(
         },
         icon = { AppIcon(AppIcons.Clipboard, null) },
         trailing = {
-            Switcher(
+            AppSwitcher(
                 checked = clipboardMonitoringEnabled,
-                onCheckStateChange = onClipboardMonitoringChange,
+                onCheckedChange = onClipboardMonitoringChange,
             )
         }
     )
@@ -589,9 +589,9 @@ private fun NotifyOnCompleteSetting(
         },
         icon = { AppIcon(AppIcons.TopSpeed, null) },
         trailing = {
-            Switcher(
+            AppSwitcher(
                 checked = notifyOnComplete,
-                onCheckStateChange = onNotifyOnCompleteChange,
+                onCheckedChange = onNotifyOnCompleteChange,
             )
         }
     )
@@ -623,9 +623,9 @@ private fun AutoLaunchSetting(
         },
         icon = { AppIcon(AppIcons.Power, null) },
         trailing = {
-            Switcher(
+            AppSwitcher(
                 checked = autoLaunchEnabled,
-                onCheckStateChange = onAutoLaunchChange,
+                onCheckedChange = onAutoLaunchChange,
             )
         }
     )

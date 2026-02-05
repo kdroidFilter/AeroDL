@@ -143,10 +143,11 @@ fun HomeView(
                             else -> stringResource(Res.string.paste_video_link_header)
                         }
                     )
-                    AppButton(
+                    io.github.kdroidfilter.darwinui.components.Button(
                         modifier = Modifier.size(33.dp),
                         onClick = { onEvent(HomeEvents.OnClipBoardClicked) },
                         enabled = !state.isLoading,
+                        size = io.github.kdroidfilter.darwinui.components.ButtonSize.Icon,
                     ) {
                         AppIcon(
                             AppIcons.ClipboardPaste,

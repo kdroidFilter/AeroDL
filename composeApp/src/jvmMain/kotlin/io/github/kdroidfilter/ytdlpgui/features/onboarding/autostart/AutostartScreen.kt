@@ -18,7 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.zacsweers.metrox.viewmodel.metroViewModel
-import io.github.kdroidfilter.ytdlpgui.core.design.components.Switcher
+import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppSwitcher
 import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcon
 import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppIcons
 import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppText
@@ -106,9 +106,9 @@ fun AutostartView(
             AppIcon(AppIcons.Power, null, modifier = Modifier.size(48.dp))
             Spacer(Modifier.height(12.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Switcher(
+                AppSwitcher(
                     checked = state.autoLaunchEnabled,
-                    onCheckStateChange = { onEvent(OnboardingEvents.OnSetAutoLaunchEnabled(it)) }
+                    onCheckedChange = { onEvent(OnboardingEvents.OnSetAutoLaunchEnabled(it)) }
                 )
                 Spacer(Modifier.width(8.dp))
                 val statusLabel = if (state.autoLaunchEnabled) {

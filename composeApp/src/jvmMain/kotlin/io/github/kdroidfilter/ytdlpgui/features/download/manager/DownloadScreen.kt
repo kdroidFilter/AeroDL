@@ -25,6 +25,8 @@ import coil3.request.ImageRequest
 import io.github.kdroidfilter.ytdlp.util.YouTubeThumbnailHelper
 import io.github.kdroidfilter.ytdlpgui.core.design.components.UpdateInfoBar
 import io.github.kdroidfilter.ytdlpgui.core.design.components.TerminalView
+import io.github.kdroidfilter.ytdlpgui.core.config.AppTheme
+import io.github.kdroidfilter.ytdlpgui.core.config.LocalAppTheme
 import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppButton
 import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppColors
 import io.github.kdroidfilter.ytdlpgui.core.design.themed.AppContentDialog
@@ -112,7 +114,8 @@ fun DownloadView(
                                 trailingIcon = {
                                     AppIcon(
                                         imageVector = AppIcons.Search,
-                                        contentDescription = "Search"
+                                        contentDescription = "Search",
+                                        modifier = Modifier.size(16.dp)
                                     )
                                 }
                             )
@@ -120,13 +123,13 @@ fun DownloadView(
                             AppTooltip(tooltip = stringResource(Res.string.tooltip_clear_history)) {
                                 AppButton(
                                     onClick = { onEvent(DownloadEvents.ClearHistory) },
-                                    modifier = Modifier.padding(bottom = 8.dp)
+                                    modifier = Modifier.padding(bottom = 8.dp).height(32.dp)
                                 ) {
                                     AppText(
                                         stringResource(Res.string.download_clear_history),
                                         style = AppTypography.bodyStrong
                                     )
-                                    AppIcon(AppIcons.Delete, stringResource(Res.string.download_clear_history))
+                                    AppIcon(AppIcons.Delete, stringResource(Res.string.download_clear_history), modifier = Modifier.size(16.dp))
                                 }
                             }
                         }
@@ -169,28 +172,29 @@ fun DownloadView(
                         val dirAvailable = state.directoryAvailability[h.id] == true
                         if (dirAvailable) {
                             AppTooltip(tooltip = stringResource(Res.string.tooltip_open_directory)) {
-                                AppButton(onClick = { onEvent(DownloadEvents.OpenDirectory(h.id)) }) {
-                                    AppIcon(AppIcons.Folder, stringResource(Res.string.open_directory))
+                                IconActionButton(onClick = { onEvent(DownloadEvents.OpenDirectory(h.id)) }) {
+                                    AppIcon(AppIcons.Folder, stringResource(Res.string.open_directory), modifier = Modifier.size(16.dp))
                                 }
                             }
                         } else {
                             AppTooltip(tooltip = stringResource(Res.string.tooltip_directory_unavailable)) {
                                 // Disabled/placeholder action when directory no longer exists
-                                AppButton(
+                                IconActionButton(
                                     enabled = false,
                                     onClick = { /* no-op: directory unavailable */ }) {
                                     AppIcon(
                                         AppIcons.FolderProhibited,
                                         stringResource(Res.string.directory_unavailable),
-                                        tint = AppColors.critical
+                                        tint = AppColors.critical,
+                                        modifier = Modifier.size(16.dp)
                                     )
                                 }
                             }
                         }
 
                         AppTooltip(tooltip = stringResource(Res.string.tooltip_delete_element)) {
-                            AppButton(onClick = { onEvent(DownloadEvents.DeleteHistory(h.id)) }) {
-                                AppIcon(AppIcons.Delete, stringResource(Res.string.delete_element))
+                            IconActionButton(onClick = { onEvent(DownloadEvents.DeleteHistory(h.id)) }) {
+                                AppIcon(AppIcons.Delete, stringResource(Res.string.delete_element), modifier = Modifier.size(16.dp))
                             }
                         }
                     })
@@ -324,7 +328,11 @@ private fun HistoryRow(
             AppText(whenStr, style = AppTypography.caption)
         }
         Spacer(Modifier.width(8.dp))
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.End) {
+        Column(
+            modifier = Modifier.width(IntrinsicSize.Max),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalAlignment = Alignment.End
+        ) {
             actions()
         }
     }
@@ -514,6 +522,23 @@ private fun InProgressRow(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun IconActionButton(
+    onClick: () -> Unit,
+    enabled: Boolean = true,
+    content: @Composable () -> Unit,
+) {
+    when (LocalAppTheme.current) {
+        AppTheme.FLUENT -> AppButton(onClick = onClick, enabled = enabled, content = content)
+        AppTheme.DARWIN -> io.github.kdroidfilter.darwinui.components.Button(
+            onClick = onClick,
+            enabled = enabled,
+            size = io.github.kdroidfilter.darwinui.components.ButtonSize.Icon,
+            content = content,
+        )
     }
 }
 
