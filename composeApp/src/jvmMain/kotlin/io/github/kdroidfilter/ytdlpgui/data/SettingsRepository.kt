@@ -1,6 +1,8 @@
 package io.github.kdroidfilter.ytdlpgui.data
 
 import com.russhwolf.settings.Settings
+import io.github.kdroidfilter.platformtools.OperatingSystem
+import io.github.kdroidfilter.platformtools.getOperatingSystem
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlpgui.core.config.AppTheme
 import io.github.kdroidfilter.ytdlpgui.core.config.SettingsKeys
@@ -19,7 +21,9 @@ class SettingsRepository(
     private val ytDlpWrapper: YtDlpWrapper,
     private val autoLaunch: AutoLaunch,
 ) {
-    private var clipboardMonitorManager: io.github.kdroidfilter.ytdlpgui.core.domain.manager.ClipboardMonitorManager? = null
+    private var clipboardMonitorManager: io.github.kdroidfilter.ytdlpgui.core.domain.manager.ClipboardMonitorManager? =
+        null
+
     // StateFlows for reactive UI
     private val _noCheckCertificate = MutableStateFlow(settings.getBoolean(SettingsKeys.NO_CHECK_CERTIFICATE, false))
     val noCheckCertificate: StateFlow<Boolean> = _noCheckCertificate.asStateFlow()
@@ -27,29 +31,34 @@ class SettingsRepository(
     private val _cookiesFromBrowser = MutableStateFlow(settings.getString(SettingsKeys.COOKIES_FROM_BROWSER, ""))
     val cookiesFromBrowser: StateFlow<String> = _cookiesFromBrowser.asStateFlow()
 
-    private val _includePresetInFilename = MutableStateFlow(settings.getBoolean(SettingsKeys.INCLUDE_PRESET_IN_FILENAME, true))
+    private val _includePresetInFilename =
+        MutableStateFlow(settings.getBoolean(SettingsKeys.INCLUDE_PRESET_IN_FILENAME, true))
     val includePresetInFilename: StateFlow<Boolean> = _includePresetInFilename.asStateFlow()
 
     private val _embedThumbnailInMp3 = MutableStateFlow(settings.getBoolean(SettingsKeys.EMBED_THUMBNAIL_IN_MP3, true))
     val embedThumbnailInMp3: StateFlow<Boolean> = _embedThumbnailInMp3.asStateFlow()
 
-    private val _parallelDownloads = MutableStateFlow(settings.getInt(SettingsKeys.PARALLEL_DOWNLOADS, 2).coerceIn(1, 10))
+    private val _parallelDownloads =
+        MutableStateFlow(settings.getInt(SettingsKeys.PARALLEL_DOWNLOADS, 2).coerceIn(1, 10))
     val parallelDownloads: StateFlow<Int> = _parallelDownloads.asStateFlow()
 
     private val _downloadDirPath = MutableStateFlow(settings.getString(SettingsKeys.DOWNLOAD_DIR, ""))
     val downloadDirPath: StateFlow<String> = _downloadDirPath.asStateFlow()
 
-    private val _clipboardMonitoringEnabled = MutableStateFlow(settings.getBoolean(SettingsKeys.CLIPBOARD_MONITORING_ENABLED, true))
+    private val _clipboardMonitoringEnabled =
+        MutableStateFlow(settings.getBoolean(SettingsKeys.CLIPBOARD_MONITORING_ENABLED, true))
     val clipboardMonitoringEnabled: StateFlow<Boolean> = _clipboardMonitoringEnabled.asStateFlow()
 
-    private val _notifyOnComplete = MutableStateFlow(settings.getBoolean(SettingsKeys.NOTIFY_ON_DOWNLOAD_COMPLETE, true))
+    private val _notifyOnComplete =
+        MutableStateFlow(settings.getBoolean(SettingsKeys.NOTIFY_ON_DOWNLOAD_COMPLETE, true))
     val notifyOnComplete: StateFlow<Boolean> = _notifyOnComplete.asStateFlow()
 
     private val _autoLaunchEnabled = MutableStateFlow(settings.getBoolean(SettingsKeys.AUTO_LAUNCH_ENABLED, false))
     val autoLaunchEnabled: StateFlow<Boolean> = _autoLaunchEnabled.asStateFlow()
 
 
-    private val _concurrentFragments = MutableStateFlow(settings.getInt(SettingsKeys.CONCURRENT_FRAGMENTS, 1).coerceIn(1, 5))
+    private val _concurrentFragments =
+        MutableStateFlow(settings.getInt(SettingsKeys.CONCURRENT_FRAGMENTS, 1).coerceIn(1, 5))
     val concurrentFragments: StateFlow<Int> = _concurrentFragments.asStateFlow()
 
     private val _proxy = MutableStateFlow(settings.getString(SettingsKeys.PROXY, ""))
@@ -59,7 +68,13 @@ class SettingsRepository(
     val validateBulkUrls: StateFlow<Boolean> = _validateBulkUrls.asStateFlow()
 
     private val _appTheme = MutableStateFlow(
-        AppTheme.entries.firstOrNull { it.name == settings.getString(SettingsKeys.APP_THEME, AppTheme.FLUENT.name) } ?: AppTheme.FLUENT
+        AppTheme.entries.firstOrNull {
+            it.name == settings.getString(
+                SettingsKeys.APP_THEME,
+                if (getOperatingSystem() == OperatingSystem.WINDOWS) AppTheme.FLUENT.name else AppTheme.DARWIN.name
+            )
+        }
+            ?: AppTheme.FLUENT
     )
     val appTheme: StateFlow<AppTheme> = _appTheme.asStateFlow()
 
@@ -166,7 +181,9 @@ class SettingsRepository(
         _concurrentFragments.value = settings.getInt(SettingsKeys.CONCURRENT_FRAGMENTS, 1).coerceIn(1, 5)
         _proxy.value = settings.getString(SettingsKeys.PROXY, "")
         _validateBulkUrls.value = settings.getBoolean(SettingsKeys.VALIDATE_BULK_URLS, false)
-        _appTheme.value = AppTheme.entries.firstOrNull { it.name == settings.getString(SettingsKeys.APP_THEME, AppTheme.FLUENT.name) } ?: AppTheme.FLUENT
+        _appTheme.value =
+            AppTheme.entries.firstOrNull { it.name == settings.getString(SettingsKeys.APP_THEME, AppTheme.FLUENT.name) }
+                ?: AppTheme.FLUENT
 
         applyToYtDlpWrapper()
         clipboardMonitorManager?.let { applyToClipboardMonitor(it) }
@@ -188,11 +205,11 @@ class SettingsRepository(
         _autoLaunchEnabled.value = enabled
         settings.putBoolean(SettingsKeys.AUTO_LAUNCH_ENABLED, enabled)
 
-            if (enabled) {
-                autoLaunch.enable()
-            } else {
-                autoLaunch.disable()
-            }
+        if (enabled) {
+            autoLaunch.enable()
+        } else {
+            autoLaunch.disable()
+        }
 
         val confirmed = try {
             autoLaunch.isEnabled()
