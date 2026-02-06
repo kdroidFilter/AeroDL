@@ -176,14 +176,12 @@ compose.desktop {
             // Note: -XX:AOTCache=$APPDIR/aerodl.aot is injected by generateDistributableAotCache
             // into the .cfg file (not here, because nativeDistributions.jvmArgs leak into the run task)
             jvmArgs += listOf(
-                "--enable-native-access=ALL-UNNAMED",
-                "--add-modules=jdk.incubator.vector",
                 "-XX:+UseCompactObjectHeaders",
                 "-XX:+UseStringDeduplication",
                 "-XX:MaxGCPauseMillis=50"
             )
 
-            modules("jdk.accessibility", "java.sql", "jdk.security.auth", "jdk.unsupported", "jdk.incubator.vector")
+            modules("jdk.accessibility", "java.sql", "jdk.security.auth", "jdk.unsupported")
 
             windows {
                 dirChooser = true
