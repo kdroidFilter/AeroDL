@@ -104,6 +104,30 @@
                 }
             ]
         },
+        "yt-dlp-script": {
+            "tag_name": "2026.02.04",
+            "body": "Pure Python script version of yt-dlp (no PyInstaller bundle)",
+            "assets": [
+                {
+                    "name": "yt-dlp",
+                    "browser_download_url": "https://github.com/yt-dlp/yt-dlp/releases/download/2026.02.04/yt-dlp"
+                }
+            ]
+        },
+        "python": {
+            "tag_name": "20241016",
+            "body": "Python 3.12.7 standalone builds for macOS from python-build-standalone",
+            "assets": [
+                {
+                    "name": "cpython-aarch64-apple-darwin-install_only.tar.gz",
+                    "browser_download_url": "https://github.com/indygreg/python-build-standalone/releases/download/20241016/cpython-3.12.7+20241016-aarch64-apple-darwin-install_only.tar.gz"
+                },
+                {
+                    "name": "cpython-x86_64-apple-darwin-install_only.tar.gz",
+                    "browser_download_url": "https://github.com/indygreg/python-build-standalone/releases/download/20241016/cpython-3.12.7+20241016-x86_64-apple-darwin-install_only.tar.gz"
+                }
+            ]
+        },
         "ffmpeg": {
             "tag_name": "latest",
             "body": null,

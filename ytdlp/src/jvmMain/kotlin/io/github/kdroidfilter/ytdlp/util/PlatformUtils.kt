@@ -142,6 +142,10 @@ object PlatformUtils {
                 } catch (e: Exception) {
                     debugln { "Could not remove quarantine attribute from ${file.name}: ${e.message}" }
                 }
+                // Note: We don't codesign yt-dlp because it's a PyInstaller bundle with embedded
+                // Python.framework, and codesigning with --options runtime breaks the embedded components.
+                // Quarantine removal above is sufficient for allowing execution.
+                debugln { "✅ Made ${file.name} executable and removed quarantine" }
             }
 
         } catch (_: UnsupportedOperationException) {

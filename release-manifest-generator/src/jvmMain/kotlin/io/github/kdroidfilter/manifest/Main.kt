@@ -23,7 +23,7 @@ fun main() = runBlocking {
 
     val httpClient = KtorConfig.createHttpClient()
 
-    // Fetch all 5 releases via GitHubReleaseFetcher
+    // Fetch all releases via GitHubReleaseFetcher
     val ytdlp = GitHubReleaseFetcher("yt-dlp", "yt-dlp", httpClient).getLatestRelease()
         ?: error("Failed to fetch yt-dlp release")
     println("  yt-dlp: ${ytdlp.tag_name}")
@@ -44,12 +44,18 @@ fun main() = runBlocking {
         ?: error("Failed to fetch AeroDL release")
     println("  aerodl: ${aerodl.tag_name}")
 
+    val python = GitHubReleaseFetcher("indygreg", "python-build-standalone", httpClient).getLatestRelease()
+        ?: error("Failed to fetch Python standalone release")
+    println("  python: ${python.tag_name}")
+
     // Build the manifest
     val manifest = ReleaseManifest(
         generatedAt = Instant.now().toString(),
         schemaVersion = 1,
         releases = ReleaseEntries(
             ytDlp = ytdlp.toReleaseInfo(),
+            ytDlpScript = ytdlp.toReleaseInfo(), // Same release, but used for pure Python script
+            python = python.toReleaseInfo(),
             ffmpeg = ffmpeg.toReleaseInfo(),
             ffmpegMacos = ffmpegMacos.toReleaseInfo(),
             deno = deno.toReleaseInfo(),

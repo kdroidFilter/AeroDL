@@ -158,7 +158,8 @@ class SingleDownloadViewModel @AssistedInject constructor(
             infoln { "Getting video info for $videoUrl" }
             ytDlpWrapper.getVideoInfoWithAllSubtitles(
                 url = videoUrl,
-                includeAutoSubtitles = true
+                includeAutoSubtitles = true,
+                detectSponsorSegments = true
             )
                 .onSuccess { info ->
                     infoln { "[SingleDownloadViewModel] Got video info successfully" }
@@ -198,6 +199,9 @@ class SingleDownloadViewModel @AssistedInject constructor(
                         infoln { "[SingleDownloadViewModel] Trim initialized: 0 - ${durationMs}ms (${duration.seconds}s)" }
                     }
 
+                    // SponsorBlock detection from the same metadata call
+                    _hasSponsorSegments.value = info.hasSponsorSegments()
+
                     _isLoading.value = false
                 }
                 .onFailure {
@@ -206,12 +210,6 @@ class SingleDownloadViewModel @AssistedInject constructor(
                     _errorMessage.value = detail
                     _isLoading.value = false
                 }
-        }
-        // Fire-and-forget sponsor detection (does not block UI)
-        scope.launch {
-            ytDlpWrapper.detectSponsorSegments(videoUrl)
-                .onSuccess { has -> _hasSponsorSegments.value = has }
-                .onFailure { _hasSponsorSegments.value = false }
         }
     }
 

@@ -53,6 +53,10 @@ class InitViewModel(
 
     init {
         viewModelScope.launch {
+            // Fetch the manifest FIRST, regardless of onboarding status
+            // This is needed for downloading yt-dlp/ffmpeg during onboarding
+            manifest = releaseManifestRepository.getManifest()
+
             // Check if onboarding is completed
             val onboardingCompleted = settingsRepository.isOnboardingCompleted()
 
@@ -61,9 +65,6 @@ class InitViewModel(
                 update { copy(navigationState = InitNavigationState.NavigateToOnboarding) }
                 return@launch
             }
-
-            // Fetch the manifest once for the session
-            manifest = releaseManifestRepository.getManifest()
 
             // Check for app updates using the manifest
             manifest?.let { checkForUpdates(it) }

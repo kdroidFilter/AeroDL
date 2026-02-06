@@ -1,7 +1,12 @@
 package io.github.kdroidfilter.ytdlpgui.data
 
-import io.github.kdroidfilter.network.HttpsConnectionFactory
+import io.github.kdroidfilter.logging.LoggerConfig
+import io.github.kdroidfilter.network.KtorConfig
 import io.github.kdroidfilter.ytdlp.model.ReleaseManifest
+import io.ktor.client.call.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
 import kotlinx.serialization.json.Json
 
 /**
@@ -11,22 +16,26 @@ import kotlinx.serialization.json.Json
 class ReleaseManifestRepository {
 
     private val json = Json { ignoreUnknownKeys = true }
+    private val httpClient by lazy { KtorConfig.createHttpClient(json = json) }
 
     @Volatile
     private var cached: ReleaseManifest? = null
 
     suspend fun getManifest(): ReleaseManifest? {
         cached?.let { return it }
+
         return runCatching {
-            val conn = HttpsConnectionFactory.openConnection(MANIFEST_URL) {
-                requestMethod = "GET"
-                connectTimeout = 15_000
-                readTimeout = 30_000
-                setRequestProperty("User-Agent", "AeroDl/1.0")
-                setRequestProperty("Accept", "application/json")
+            val response: HttpResponse = httpClient.get(MANIFEST_URL) {
+                header(HttpHeaders.UserAgent, "AeroDl/1.0")
+                header(HttpHeaders.Accept, "application/json")
             }
-            val body = conn.inputStream.use { it.bufferedReader().readText() }
+            val body = response.bodyAsText()
             json.decodeFromString<ReleaseManifest>(body)
+        }.onFailure { error ->
+            if (LoggerConfig.enabled) {
+                System.err.println("[ReleaseManifestRepository] Failed to fetch manifest: ${error.message}")
+                error.printStackTrace()
+            }
         }.getOrNull()?.also { cached = it }
     }
 
