@@ -3,6 +3,8 @@ name: Update releases manifest
 on:
   schedule:
     - cron: '0 */6 * * *'
+  release:
+    types: [published]
   workflow_dispatch:
 
 permissions:
