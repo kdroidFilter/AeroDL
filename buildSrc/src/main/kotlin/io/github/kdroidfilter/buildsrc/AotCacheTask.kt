@@ -38,7 +38,7 @@ abstract class AotCacheTask : DefaultTask() {
     init {
         group = "compose desktop"
         aotCacheFileName.convention("aerodl.aot")
-        trainDurationSeconds.convention(20L)
+        trainDurationSeconds.convention(60L)
     }
 
     @TaskAction
@@ -291,6 +291,7 @@ abstract class AotCacheTask : DefaultTask() {
             "-XX:AOTMode=create",
             "-XX:AOTConfiguration=${aotConfigFile.absolutePath}",
             "-XX:AOTCache=${aotCacheFile.absolutePath}",
+            "-XX:+AOTClassLinking",  // Enable full AOT linking for faster startup
             "-cp", classpath
         )
         args += javaOptions

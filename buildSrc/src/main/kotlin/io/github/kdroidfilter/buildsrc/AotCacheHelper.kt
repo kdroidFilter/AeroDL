@@ -10,7 +10,7 @@ import org.gradle.jvm.toolchain.JavaToolchainService
  */
 data class AotCacheConfig(
     val aotCacheFileName: String = "aerodl.aot",
-    val trainDurationSeconds: Long = 20L
+    val trainDurationSeconds: Long = 60L
 )
 
 /**
