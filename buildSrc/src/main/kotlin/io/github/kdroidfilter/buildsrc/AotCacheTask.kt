@@ -221,7 +221,12 @@ abstract class AotCacheTask : DefaultTask() {
         trainDuration: Long
     ) {
         val args = mutableListOf(javaExe)
-        args += listOf("-XX:AOTMode=record", "-XX:AOTConfiguration=${aotConfigFile.absolutePath}", "-cp", classpath)
+        args += listOf(
+            "-XX:AOTMode=record",
+            "-XX:AOTConfiguration=${aotConfigFile.absolutePath}",
+            "-XX:+AOTClassLinking",  // Enable full AOT linking
+            "-cp", classpath
+        )
         args += javaOptions
         args += mainClass
 
