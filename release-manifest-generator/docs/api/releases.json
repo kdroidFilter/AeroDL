@@ -1,0 +1,332 @@
+{
+    "generated_at": "2026-02-06T07:59:29.719830673Z",
+    "schema_version": 1,
+    "releases": {
+        "yt-dlp": {
+            "tag_name": "2026.02.04",
+            "body": "[![Installation](https://img.shields.io/badge/-Which%20file%20to%20download%3F-white.svg?style=for-the-badge)](https://github.com/yt-dlp/yt-dlp#installation \"Installation instructions\") [![Discord](https://img.shields.io/discord/807245652072857610?color=blue&labelColor=555555&label=&logo=discord&style=for-the-badge)](https://discord.gg/H5MNcFW63r \"Discord\") [![Donate](https://img.shields.io/badge/_-Donate-red.svg?logo=githubsponsors&labelColor=555555&style=for-the-badge)](https://github.com/yt-dlp/yt-dlp/blob/master/Maintainers.md#maintainers \"Donate\") [![Documentation](https://img.shields.io/badge/-Docs-brightgreen.svg?style=for-the-badge&logo=GitBook&labelColor=555555)](https://github.com/yt-dlp/yt-dlp/tree/2026.02.04#readme \"Documentation\") [![Nightly](https://img.shields.io/badge/Nightly%20builds-purple.svg?style=for-the-badge)](https://github.com/yt-dlp/yt-dlp-nightly-builds/releases/latest \"Nightly builds\") [![Master](https://img.shields.io/badge/Master%20builds-lightblue.svg?style=for-the-badge)](https://github.com/yt-dlp/yt-dlp-master-builds/releases/latest \"Master builds\")\n\n#### A description of the various files is in the [README](https://github.com/yt-dlp/yt-dlp#release-files)\n\nThe zipimport Unix executable contains code licensed under ISC and MIT. The PyInstaller-bundled executables are subject to these and other licenses, all of which are compiled in [THIRD_PARTY_LICENSES.txt](https://github.com/yt-dlp/yt-dlp/blob/bb3af7e6d5373c1a9c11bd5db9a6ebbbdfe55a98/THIRD_PARTY_LICENSES.txt)\n\n---\n\n<details><summary><h3>Changelog</h3></summary>\n\n\n#### Extractor changes\n- **unsupported**: [Update unsupported URLs](https://github.com/yt-dlp/yt-dlp/commit/c677d866d41eb4075b0a5e0c944a6543fc13f15d) ([#15812](https://github.com/yt-dlp/yt-dlp/issues/15812)) by [doe1080](https://github.com/doe1080)\n- **youtube**: [Default to `tv` player JS variant](https://github.com/yt-dlp/yt-dlp/commit/1a895c18aaaf00f557aa8cbacb21faa638842431) ([#15818](https://github.com/yt-dlp/yt-dlp/issues/15818)) by [bashonly](https://github.com/bashonly)\n\n</details>\n",
+            "assets": [
+                {
+                    "name": "SHA2-256SUMS",
+                    "browser_download_url": "https://github.com/yt-dlp/yt-dlp/releases/download/2026.02.04/SHA2-256SUMS"
+                },
+                {
+                    "name": "SHA2-256SUMS.sig",
+                    "browser_download_url": "https://github.com/yt-dlp/yt-dlp/releases/download/2026.02.04/SHA2-256SUMS.sig"
+                },
+                {
+                    "name": "SHA2-512SUMS",
+                    "browser_download_url": "https://github.com/yt-dlp/yt-dlp/releases/download/2026.02.04/SHA2-512SUMS"
+                },
+                {
+                    "name": "SHA2-512SUMS.sig",
+                    "browser_download_url": "https://github.com/yt-dlp/yt-dlp/releases/download/2026.02.04/SHA2-512SUMS.sig"
+                },
+                {
+                    "name": "yt-dlp",
+                    "browser_download_url": "https://github.com/yt-dlp/yt-dlp/releases/download/2026.02.04/yt-dlp"
+                },
+                {
+                    "name": "yt-dlp.exe",
+                    "browser_download_url": "https://github.com/yt-dlp/yt-dlp/releases/download/2026.02.04/yt-dlp.exe"
+                },
+                {
+                    "name": "yt-dlp.tar.gz",
+                    "browser_download_url": "https://github.com/yt-dlp/yt-dlp/releases/download/2026.02.04/yt-dlp.tar.gz"
+                },
+                {
+                    "name": "yt-dlp_arm64.exe",
+                    "browser_download_url": "https://github.com/yt-dlp/yt-dlp/releases/download/2026.02.04/yt-dlp_arm64.exe"
+                },
+                {
+                    "name": "yt-dlp_linux",
+                    "browser_download_url": "https://github.com/yt-dlp/yt-dlp/releases/download/2026.02.04/yt-dlp_linux"
+                },
+                {
+                    "name": "yt-dlp_linux.zip",
+                    "browser_download_url": "https://github.com/yt-dlp/yt-dlp/releases/download/2026.02.04/yt-dlp_linux.zip"
+                },
+                {
+                    "name": "yt-dlp_linux_aarch64",
+                    "browser_download_url": "https://github.com/yt-dlp/yt-dlp/releases/download/2026.02.04/yt-dlp_linux_aarch64"
+                },
+                {
+                    "name": "yt-dlp_linux_aarch64.zip",
+                    "browser_download_url": "https://github.com/yt-dlp/yt-dlp/releases/download/2026.02.04/yt-dlp_linux_aarch64.zip"
+                },
+                {
+                    "name": "yt-dlp_linux_armv7l.zip",
+                    "browser_download_url": "https://github.com/yt-dlp/yt-dlp/releases/download/2026.02.04/yt-dlp_linux_armv7l.zip"
+                },
+                {
+                    "name": "yt-dlp_macos",
+                    "browser_download_url": "https://github.com/yt-dlp/yt-dlp/releases/download/2026.02.04/yt-dlp_macos"
+                },
+                {
+                    "name": "yt-dlp_macos.zip",
+                    "browser_download_url": "https://github.com/yt-dlp/yt-dlp/releases/download/2026.02.04/yt-dlp_macos.zip"
+                },
+                {
+                    "name": "yt-dlp_musllinux",
+                    "browser_download_url": "https://github.com/yt-dlp/yt-dlp/releases/download/2026.02.04/yt-dlp_musllinux"
+                },
+                {
+                    "name": "yt-dlp_musllinux.zip",
+                    "browser_download_url": "https://github.com/yt-dlp/yt-dlp/releases/download/2026.02.04/yt-dlp_musllinux.zip"
+                },
+                {
+                    "name": "yt-dlp_musllinux_aarch64",
+                    "browser_download_url": "https://github.com/yt-dlp/yt-dlp/releases/download/2026.02.04/yt-dlp_musllinux_aarch64"
+                },
+                {
+                    "name": "yt-dlp_musllinux_aarch64.zip",
+                    "browser_download_url": "https://github.com/yt-dlp/yt-dlp/releases/download/2026.02.04/yt-dlp_musllinux_aarch64.zip"
+                },
+                {
+                    "name": "yt-dlp_win.zip",
+                    "browser_download_url": "https://github.com/yt-dlp/yt-dlp/releases/download/2026.02.04/yt-dlp_win.zip"
+                },
+                {
+                    "name": "yt-dlp_win_arm64.zip",
+                    "browser_download_url": "https://github.com/yt-dlp/yt-dlp/releases/download/2026.02.04/yt-dlp_win_arm64.zip"
+                },
+                {
+                    "name": "yt-dlp_win_x86.zip",
+                    "browser_download_url": "https://github.com/yt-dlp/yt-dlp/releases/download/2026.02.04/yt-dlp_win_x86.zip"
+                },
+                {
+                    "name": "yt-dlp_x86.exe",
+                    "browser_download_url": "https://github.com/yt-dlp/yt-dlp/releases/download/2026.02.04/yt-dlp_x86.exe"
+                },
+                {
+                    "name": "_update_spec",
+                    "browser_download_url": "https://github.com/yt-dlp/yt-dlp/releases/download/2026.02.04/_update_spec"
+                }
+            ]
+        },
+        "ffmpeg": {
+            "tag_name": "latest",
+            "body": null,
+            "assets": [
+                {
+                    "name": "checksums.sha256",
+                    "browser_download_url": "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/checksums.sha256"
+                },
+                {
+                    "name": "ffmpeg-master-latest-linux64-gpl.tar.xz",
+                    "browser_download_url": "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz"
+                },
+                {
+                    "name": "ffmpeg-master-latest-linuxarm64-gpl.tar.xz",
+                    "browser_download_url": "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linuxarm64-gpl.tar.xz"
+                },
+                {
+                    "name": "ffmpeg-master-latest-win32-gpl-shared.zip",
+                    "browser_download_url": "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win32-gpl-shared.zip"
+                },
+                {
+                    "name": "ffmpeg-master-latest-win32-gpl.zip",
+                    "browser_download_url": "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win32-gpl.zip"
+                },
+                {
+                    "name": "ffmpeg-master-latest-win64-gpl-shared.zip",
+                    "browser_download_url": "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl-shared.zip"
+                },
+                {
+                    "name": "ffmpeg-master-latest-win64-gpl.zip",
+                    "browser_download_url": "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip"
+                },
+                {
+                    "name": "ffmpeg-master-latest-winarm64-gpl-shared.zip",
+                    "browser_download_url": "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-winarm64-gpl-shared.zip"
+                },
+                {
+                    "name": "ffmpeg-master-latest-winarm64-gpl.zip",
+                    "browser_download_url": "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-winarm64-gpl.zip"
+                }
+            ]
+        },
+        "ffmpeg-macos": {
+            "tag_name": "latest",
+            "body": null,
+            "assets": [
+                {
+                    "name": "checksums.sha256",
+                    "browser_download_url": "https://github.com/kdroidFilter/FFmpeg-Builds/releases/download/latest/checksums.sha256"
+                },
+                {
+                    "name": "ffmpeg-master-latest-macos64-gpl.tar.xz",
+                    "browser_download_url": "https://github.com/kdroidFilter/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-macos64-gpl.tar.xz"
+                },
+                {
+                    "name": "ffmpeg-master-latest-macosarm64-gpl.tar.xz",
+                    "browser_download_url": "https://github.com/kdroidFilter/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-macosarm64-gpl.tar.xz"
+                }
+            ]
+        },
+        "deno": {
+            "tag_name": "v2.6.8",
+            "body": "### 2.6.8 / 2026.02.02\r\n\r\n- feat(npm): support `jsr:` scheme in package.json (#31938)\r\n- feat: Windows on ARM builds (#31917)\r\n- fix(ext/node): enable defensive option on `DatabaseSync` (#32004)\r\n- fix(ext/node): error formatting compatibility (#31970)\r\n- fix(ext/node): implement `sqlite`' `SQLTagStore` (#31945)\r\n- fix(ext/node): use primordials in `_fs_fchown.ts` (#32007)\r\n- fix(flags): correct zsh completions for script arg (#31994)\r\n- fix(install): clean up associated config and lock files during uninstall\r\n  (#31984)\r\n- fix(types): correct types for Worker events (#31981)\r\n- fix: Reload the `CronHandlerImpl` if necessary when the control socket\r\n  receives new envs (#31996)\r\n- fix: upgrade deno_core to 0.383.0 (#32014)",
+            "assets": [
+                {
+                    "name": "deno-aarch64-apple-darwin.zip",
+                    "browser_download_url": "https://github.com/denoland/deno/releases/download/v2.6.8/deno-aarch64-apple-darwin.zip"
+                },
+                {
+                    "name": "deno-aarch64-apple-darwin.zip.sha256sum",
+                    "browser_download_url": "https://github.com/denoland/deno/releases/download/v2.6.8/deno-aarch64-apple-darwin.zip.sha256sum"
+                },
+                {
+                    "name": "deno-aarch64-pc-windows-msvc.zip",
+                    "browser_download_url": "https://github.com/denoland/deno/releases/download/v2.6.8/deno-aarch64-pc-windows-msvc.zip"
+                },
+                {
+                    "name": "deno-aarch64-pc-windows-msvc.zip.sha256sum",
+                    "browser_download_url": "https://github.com/denoland/deno/releases/download/v2.6.8/deno-aarch64-pc-windows-msvc.zip.sha256sum"
+                },
+                {
+                    "name": "deno-aarch64-unknown-linux-gnu.zip",
+                    "browser_download_url": "https://github.com/denoland/deno/releases/download/v2.6.8/deno-aarch64-unknown-linux-gnu.zip"
+                },
+                {
+                    "name": "deno-aarch64-unknown-linux-gnu.zip.sha256sum",
+                    "browser_download_url": "https://github.com/denoland/deno/releases/download/v2.6.8/deno-aarch64-unknown-linux-gnu.zip.sha256sum"
+                },
+                {
+                    "name": "deno-x86_64-apple-darwin.zip",
+                    "browser_download_url": "https://github.com/denoland/deno/releases/download/v2.6.8/deno-x86_64-apple-darwin.zip"
+                },
+                {
+                    "name": "deno-x86_64-apple-darwin.zip.sha256sum",
+                    "browser_download_url": "https://github.com/denoland/deno/releases/download/v2.6.8/deno-x86_64-apple-darwin.zip.sha256sum"
+                },
+                {
+                    "name": "deno-x86_64-pc-windows-msvc.zip",
+                    "browser_download_url": "https://github.com/denoland/deno/releases/download/v2.6.8/deno-x86_64-pc-windows-msvc.zip"
+                },
+                {
+                    "name": "deno-x86_64-pc-windows-msvc.zip.sha256sum",
+                    "browser_download_url": "https://github.com/denoland/deno/releases/download/v2.6.8/deno-x86_64-pc-windows-msvc.zip.sha256sum"
+                },
+                {
+                    "name": "deno-x86_64-unknown-linux-gnu.zip",
+                    "browser_download_url": "https://github.com/denoland/deno/releases/download/v2.6.8/deno-x86_64-unknown-linux-gnu.zip"
+                },
+                {
+                    "name": "deno-x86_64-unknown-linux-gnu.zip.sha256sum",
+                    "browser_download_url": "https://github.com/denoland/deno/releases/download/v2.6.8/deno-x86_64-unknown-linux-gnu.zip.sha256sum"
+                },
+                {
+                    "name": "denort-aarch64-apple-darwin.zip",
+                    "browser_download_url": "https://github.com/denoland/deno/releases/download/v2.6.8/denort-aarch64-apple-darwin.zip"
+                },
+                {
+                    "name": "denort-aarch64-apple-darwin.zip.sha256sum",
+                    "browser_download_url": "https://github.com/denoland/deno/releases/download/v2.6.8/denort-aarch64-apple-darwin.zip.sha256sum"
+                },
+                {
+                    "name": "denort-aarch64-pc-windows-msvc.zip",
+                    "browser_download_url": "https://github.com/denoland/deno/releases/download/v2.6.8/denort-aarch64-pc-windows-msvc.zip"
+                },
+                {
+                    "name": "denort-aarch64-pc-windows-msvc.zip.sha256sum",
+                    "browser_download_url": "https://github.com/denoland/deno/releases/download/v2.6.8/denort-aarch64-pc-windows-msvc.zip.sha256sum"
+                },
+                {
+                    "name": "denort-aarch64-unknown-linux-gnu.zip",
+                    "browser_download_url": "https://github.com/denoland/deno/releases/download/v2.6.8/denort-aarch64-unknown-linux-gnu.zip"
+                },
+                {
+                    "name": "denort-aarch64-unknown-linux-gnu.zip.sha256sum",
+                    "browser_download_url": "https://github.com/denoland/deno/releases/download/v2.6.8/denort-aarch64-unknown-linux-gnu.zip.sha256sum"
+                },
+                {
+                    "name": "denort-x86_64-apple-darwin.zip",
+                    "browser_download_url": "https://github.com/denoland/deno/releases/download/v2.6.8/denort-x86_64-apple-darwin.zip"
+                },
+                {
+                    "name": "denort-x86_64-apple-darwin.zip.sha256sum",
+                    "browser_download_url": "https://github.com/denoland/deno/releases/download/v2.6.8/denort-x86_64-apple-darwin.zip.sha256sum"
+                },
+                {
+                    "name": "denort-x86_64-pc-windows-msvc.zip",
+                    "browser_download_url": "https://github.com/denoland/deno/releases/download/v2.6.8/denort-x86_64-pc-windows-msvc.zip"
+                },
+                {
+                    "name": "denort-x86_64-pc-windows-msvc.zip.sha256sum",
+                    "browser_download_url": "https://github.com/denoland/deno/releases/download/v2.6.8/denort-x86_64-pc-windows-msvc.zip.sha256sum"
+                },
+                {
+                    "name": "denort-x86_64-unknown-linux-gnu.zip",
+                    "browser_download_url": "https://github.com/denoland/deno/releases/download/v2.6.8/denort-x86_64-unknown-linux-gnu.zip"
+                },
+                {
+                    "name": "denort-x86_64-unknown-linux-gnu.zip.sha256sum",
+                    "browser_download_url": "https://github.com/denoland/deno/releases/download/v2.6.8/denort-x86_64-unknown-linux-gnu.zip.sha256sum"
+                },
+                {
+                    "name": "deno_src.tar.gz",
+                    "browser_download_url": "https://github.com/denoland/deno/releases/download/v2.6.8/deno_src.tar.gz"
+                },
+                {
+                    "name": "lib.deno.d.ts",
+                    "browser_download_url": "https://github.com/denoland/deno/releases/download/v2.6.8/lib.deno.d.ts"
+                }
+            ]
+        },
+        "aerodl": {
+            "tag_name": "v1.7.0",
+            "body": "## What's Changed\r\n* fix(ytdlp): pass --js-runtimes to metadata extraction by @kdroidFilter in https://github.com/kdroidFilter/AeroDL/pull/75\r\n* fix(init): improve dependency initialization reliability by @kdroidFilter in https://github.com/kdroidFilter/AeroDL/pull/76\r\n* feat(settings): make bulk download URL validation optional by @kdroidFilter in https://github.com/kdroidFilter/AeroDL/pull/77\r\n* fix: show app name in Windows Task Manager by @kdroidFilter in https://github.com/kdroidFilter/AeroDL/pull/78\r\n\r\n\r\n**Full Changelog**: https://github.com/kdroidFilter/AeroDL/compare/v1.6.2...v1.7.0",
+            "assets": [
+                {
+                    "name": "aerodl-1.7.0-1.aarch64.rpm",
+                    "browser_download_url": "https://github.com/kdroidFilter/AeroDL/releases/download/v1.7.0/aerodl-1.7.0-1.aarch64.rpm"
+                },
+                {
+                    "name": "aerodl-1.7.0-1.x86_64.rpm",
+                    "browser_download_url": "https://github.com/kdroidFilter/AeroDL/releases/download/v1.7.0/aerodl-1.7.0-1.x86_64.rpm"
+                },
+                {
+                    "name": "AeroDl-1.7.0_arm64.dmg",
+                    "browser_download_url": "https://github.com/kdroidFilter/AeroDL/releases/download/v1.7.0/AeroDl-1.7.0_arm64.dmg"
+                },
+                {
+                    "name": "AeroDl-1.7.0_arm64.msi",
+                    "browser_download_url": "https://github.com/kdroidFilter/AeroDL/releases/download/v1.7.0/AeroDl-1.7.0_arm64.msi"
+                },
+                {
+                    "name": "AeroDl-1.7.0_arm64.pkg",
+                    "browser_download_url": "https://github.com/kdroidFilter/AeroDL/releases/download/v1.7.0/AeroDl-1.7.0_arm64.pkg"
+                },
+                {
+                    "name": "AeroDl-1.7.0_x64.dmg",
+                    "browser_download_url": "https://github.com/kdroidFilter/AeroDL/releases/download/v1.7.0/AeroDl-1.7.0_x64.dmg"
+                },
+                {
+                    "name": "AeroDl-1.7.0_x64.msi",
+                    "browser_download_url": "https://github.com/kdroidFilter/AeroDL/releases/download/v1.7.0/AeroDl-1.7.0_x64.msi"
+                },
+                {
+                    "name": "AeroDl-1.7.0_x64.pkg",
+                    "browser_download_url": "https://github.com/kdroidFilter/AeroDL/releases/download/v1.7.0/AeroDl-1.7.0_x64.pkg"
+                },
+                {
+                    "name": "AeroDl-mac-aarch64.zip",
+                    "browser_download_url": "https://github.com/kdroidFilter/AeroDL/releases/download/v1.7.0/AeroDl-mac-aarch64.zip"
+                },
+                {
+                    "name": "AeroDl-mac-x64.zip",
+                    "browser_download_url": "https://github.com/kdroidFilter/AeroDL/releases/download/v1.7.0/AeroDl-mac-x64.zip"
+                },
+                {
+                    "name": "aerodl_1.7.0_amd64.deb",
+                    "browser_download_url": "https://github.com/kdroidFilter/AeroDL/releases/download/v1.7.0/aerodl_1.7.0_amd64.deb"
+                },
+                {
+                    "name": "aerodl_1.7.0_arm64.deb",
+                    "browser_download_url": "https://github.com/kdroidFilter/AeroDL/releases/download/v1.7.0/aerodl_1.7.0_arm64.deb"
+                }
+            ]
+        }
+    }
+}

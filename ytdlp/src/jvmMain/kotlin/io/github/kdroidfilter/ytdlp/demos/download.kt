@@ -26,7 +26,7 @@ fun main() {
 
         // 2. Initialize the wrapper. This is crucial and must be done first.
         println("🔄 Initializing yt-dlp and FFmpeg (may take a moment on the first run)...")
-        val initSuccess = ytDlpWrapper.initialize { event ->
+        val initSuccess = ytDlpWrapper.initialize(manifest = null) { event ->
             // Display initialization events to inform the user
             when (event) {
                 is YtDlpWrapper.InitEvent.DownloadingYtDlp -> println("    -> Downloading yt-dlp...")

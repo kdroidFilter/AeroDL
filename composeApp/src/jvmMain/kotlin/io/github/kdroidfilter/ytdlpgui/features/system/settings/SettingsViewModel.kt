@@ -34,7 +34,6 @@ import io.github.vinceglb.filekit.path
 @Inject
 class SettingsViewModel(
     private val settingsRepository: SettingsRepository,
-    private val supportedSitesRepository: io.github.kdroidfilter.ytdlpgui.data.SupportedSitesRepository,
     private val downloadHistoryRepository: DownloadHistoryRepository,
     private val trayAppState: TrayAppState,
 ) : MVIViewModel<SettingsState, SettingsEvents>() {

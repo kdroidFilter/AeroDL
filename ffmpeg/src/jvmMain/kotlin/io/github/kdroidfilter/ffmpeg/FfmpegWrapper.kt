@@ -5,7 +5,6 @@ import io.github.kdroidfilter.ffmpeg.model.*
 import io.github.kdroidfilter.ffmpeg.util.*
 import io.github.kdroidfilter.logging.debugln
 import io.github.kdroidfilter.logging.errorln
-import io.github.kdroidfilter.platformtools.releasefetcher.github.GitHubReleaseFetcher
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.Json
 import java.io.BufferedReader
@@ -80,8 +79,11 @@ class FfmpegWrapper {
     /**
      * Initialize FFmpeg, downloading if necessary.
      * Emits [InitEvent]s to track progress.
+     *
+     * @param downloadUrl Direct download URL for the FFmpeg archive (null to skip download).
+     * @param archiveName Name of the archive file (null to skip download).
      */
-    fun initialize(onEvent: (InitEvent) -> Unit): Job = scope.launch {
+    fun initialize(downloadUrl: String?, archiveName: String?, onEvent: (InitEvent) -> Unit): Job = scope.launch {
         try {
             onEvent(InitEvent.CheckingFfmpeg)
 
@@ -102,22 +104,18 @@ class FfmpegWrapper {
             }
 
             if (!ffmpegAvailable) {
+                if (downloadUrl == null || archiveName == null) {
+                    onEvent(InitEvent.Error("No download URL available and FFmpeg is not installed."))
+                    return@launch
+                }
+
                 // Download FFmpeg
                 onEvent(InitEvent.DownloadingFfmpeg)
 
-                val assetPattern = PlatformUtils.getFfmpegAssetPatternForSystem()
-                    ?: error("Unsupported platform for FFmpeg download")
-
-                val ffmpegFetcher = if (io.github.kdroidfilter.platformtools.getOperatingSystem() == io.github.kdroidfilter.platformtools.OperatingSystem.MACOS) {
-                    GitHubReleaseFetcher("kdroidFilter", "FFmpeg-Builds")
-                } else {
-                    GitHubReleaseFetcher("yt-dlp", "FFmpeg-Builds")
-                }
-
                 val installedPath = PlatformUtils.downloadAndInstallFfmpeg(
-                    assetPattern = assetPattern,
+                    archiveName = archiveName,
                     forceDownload = false,
-                    ffmpegFetcher = ffmpegFetcher
+                    downloadUrl = downloadUrl
                 ) { bytesRead, totalBytes ->
                     val percent = totalBytes?.let { bytesRead.toDouble() / it * 100 }
                     onEvent(InitEvent.FfmpegProgress(bytesRead, totalBytes, percent))
@@ -145,8 +143,8 @@ class FfmpegWrapper {
     /**
      * Initialize in a specific coroutine scope.
      */
-    fun initializeIn(externalScope: CoroutineScope, onEvent: (InitEvent) -> Unit): Job =
-        externalScope.launch { initialize(onEvent).join() }
+    fun initializeIn(externalScope: CoroutineScope, downloadUrl: String?, archiveName: String?, onEvent: (InitEvent) -> Unit): Job =
+        externalScope.launch { initialize(downloadUrl, archiveName, onEvent).join() }
 
     // --- Availability & Version ---
 

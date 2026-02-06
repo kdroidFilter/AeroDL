@@ -34,7 +34,6 @@ import io.github.kdroidfilter.ytdlpgui.di.AppScope
 @Inject
 class OnboardingViewModel(
     private val settingsRepository: SettingsRepository,
-    private val supportedSitesRepository: io.github.kdroidfilter.ytdlpgui.data.SupportedSitesRepository,
     private val initViewModel: InitViewModel,
     private val trayAppState: TrayAppState,
 ) : MVIViewModel<OnboardingState, OnboardingEvents>() {
