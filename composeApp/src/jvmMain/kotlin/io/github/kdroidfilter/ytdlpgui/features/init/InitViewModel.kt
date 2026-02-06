@@ -6,13 +6,12 @@ import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.binding
 import dev.zacsweers.metrox.viewmodel.ViewModelKey
-import io.github.kdroidfilter.network.KtorConfig
 import io.github.kdroidfilter.platformtools.getAppVersion
-import io.github.kdroidfilter.platformtools.releasefetcher.github.GitHubReleaseFetcher
-import io.github.kdroidfilter.platformtools.releasefetcher.github.model.Asset
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
+import io.github.kdroidfilter.ytdlp.model.ReleaseManifest
 import io.github.kdroidfilter.ffmpeg.FfmpegWrapper
 import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
+import io.github.kdroidfilter.ytdlpgui.data.ReleaseManifestRepository
 import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
 import io.github.kdroidfilter.ytdlpgui.di.AppScope
 import io.github.kevincianfarini.cardiologist.PulseBackpressureStrategy
@@ -28,8 +27,8 @@ class InitViewModel(
     private val ytDlpWrapper: YtDlpWrapper,
     private val ffmpegWrapper: FfmpegWrapper,
     private val settingsRepository: SettingsRepository,
-    private val supportedSitesRepository: io.github.kdroidfilter.ytdlpgui.data.SupportedSitesRepository,
-    private val downloadHistoryRepository: io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
+    private val downloadHistoryRepository: io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository,
+    private val releaseManifestRepository: ReleaseManifestRepository
 ) : MVIViewModel<InitState, InitEvent>() {
 
 
@@ -48,6 +47,10 @@ class InitViewModel(
 
     private var isInitializing = false
 
+    /** Cached manifest for the session (fetched once in init). */
+    @Volatile
+    private var manifest: ReleaseManifest? = null
+
     init {
         viewModelScope.launch {
             // Check if onboarding is completed
@@ -59,8 +62,11 @@ class InitViewModel(
                 return@launch
             }
 
-            // Check for updates
-            checkForUpdates()
+            // Fetch the manifest once for the session
+            manifest = releaseManifestRepository.getManifest()
+
+            // Check for app updates using the manifest
+            manifest?.let { checkForUpdates(it) }
 
             // Already configured → initialize yt-dlp and ffmpeg
             startInitialization(navigateToHomeWhenDone = true)
@@ -76,10 +82,12 @@ class InitViewModel(
             Clock.System
                 .fixedPeriodPulse(12.hours)
                 .beat(strategy = PulseBackpressureStrategy.SkipNext) {
+                    // Use the cached manifest (no re-fetch)
+                    val m = manifest ?: return@beat
                     // App update check
-                    checkForUpdates()
+                    checkForUpdates(m)
                     // yt-dlp update check + auto-download if newer
-                    runCatching { checkAndUpdateYtDlp() }
+                    runCatching { checkAndUpdateYtDlp(m) }
                 }
         }
     }
@@ -88,26 +96,19 @@ class InitViewModel(
      * Periodically checks for yt-dlp updates and downloads the latest binary if available.
      * Runs silently in background (no UI state toggling), leveraging wrapper's caching.
      */
-    private suspend fun checkAndUpdateYtDlp() {
-        if (ytDlpWrapper.hasUpdate()) {
-            ytDlpWrapper.downloadOrUpdate()
+    private suspend fun checkAndUpdateYtDlp(manifest: ReleaseManifest) {
+        if (ytDlpWrapper.hasUpdate(manifest)) {
+            ytDlpWrapper.downloadOrUpdate(manifest)
         }
     }
 
     /**
-     * Check if a new version is available on GitHub
+     * Check if a new app version is available using the manifest
      */
-    private suspend fun checkForUpdates() {
+    private fun checkForUpdates(manifest: ReleaseManifest) {
         runCatching {
             val currentVersion = getAppVersion()
-            val fetcher = GitHubReleaseFetcher(
-                owner = "kdroidFilter",
-                repo = "AeroDl",
-                KtorConfig.createHttpClient()
-            )
-
-            val latestRelease = fetcher.getLatestRelease() ?: return@runCatching
-            val latestVersion = latestRelease.tag_name.removePrefix("v")
+            val latestVersion = manifest.releases.aerodl.tagName.removePrefix("v")
 
             // Compare versions
             if (isNewerVersion(currentVersion, latestVersion)) {
@@ -115,8 +116,8 @@ class InitViewModel(
                     copy(
                         updateAvailable = true,
                         latestVersion = latestVersion,
-                        downloadUrl = getDownloadUrlForPlatform(latestRelease.assets),
-                        releaseBody = latestRelease.body
+                        downloadUrl = "https://kdroidfilter.github.io/AeroDL/",
+                        releaseBody = manifest.releases.aerodl.body
                     )
                 }
             }
@@ -140,14 +141,6 @@ class InitViewModel(
         }
 
         return false
-    }
-
-    /**
-     * Get the download URL - redirects to the website for all platforms
-     */
-    @Suppress("UNUSED_PARAMETER")
-    private fun getDownloadUrlForPlatform(assets: List<Asset>): String {
-        return "https://kdroidfilter.github.io/AeroDL/"
     }
 
     /**
@@ -177,7 +170,7 @@ class InitViewModel(
             ytDlpWrapper.apply {
                 noCheckCertificate = noCheck
                 cookiesFromBrowser = cookies
-            }.initialize { event ->
+            }.initialize(manifest) { event ->
                 when (event) {
                     YtDlpWrapper.InitEvent.CheckingYtDlp -> {
                         update {
@@ -316,12 +309,8 @@ class InitViewModel(
                                 initCompleted = event.success
                             )
                         }
-                        viewModelScope.launch {
-                            // On first initialization, fetch supported sites list from GitHub and store in DB
-                            runCatching { supportedSitesRepository.initializeFromGitHubIfEmpty() }
-
-                            // Navigate to home when requested (update banner is shown later in Downloads screen)
-                            if (navigateToHomeWhenDone) {
+                        if (navigateToHomeWhenDone) {
+                            viewModelScope.launch {
                                 update { copy(navigationState = InitNavigationState.NavigateToHome) }
                             }
                         }

@@ -78,7 +78,6 @@ kotlin {
             implementation(libs.platformtools.core)
             implementation(libs.platformtools.darkmodedetector)
             implementation(libs.platformtools.clipboardmanager)
-            implementation(libs.platformtools.releasefetcher)
             implementation(libs.autolaunch)
             implementation(libs.filekit.core)
             implementation(libs.filekit.dialogs)

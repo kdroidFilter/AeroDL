@@ -1,11 +1,10 @@
 package io.github.kdroidfilter.ytdlp
 
-import io.github.kdroidfilter.network.KtorConfig
 import io.github.kdroidfilter.platformtools.OperatingSystem
 import io.github.kdroidfilter.platformtools.getOperatingSystem
-import io.github.kdroidfilter.platformtools.releasefetcher.github.GitHubReleaseFetcher
 import io.github.kdroidfilter.ytdlp.core.*
 import io.github.kdroidfilter.ytdlp.model.PlaylistInfo
+import io.github.kdroidfilter.ytdlp.model.ReleaseManifest
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
 import io.github.kdroidfilter.ytdlp.util.NetAndArchive
 import io.github.kdroidfilter.ytdlp.util.PlatformUtils
@@ -98,12 +97,6 @@ class YtDlpWrapper {
      */
     var proxy: String? = null
 
-    private val httpClient = KtorConfig.createHttpClient()
-    private val ytdlpFetcher = GitHubReleaseFetcher(owner = "yt-dlp", repo = "yt-dlp", httpClient = httpClient)
-    private val ffmpegFetcher = GitHubReleaseFetcher(owner = "yt-dlp", repo = "FFmpeg-Builds", httpClient = httpClient)
-    private val ffmpegMacOsFetcher = GitHubReleaseFetcher(owner = "kdroidFilter", repo = "FFmpeg-Builds", httpClient = httpClient)
-    private val denoFetcher = GitHubReleaseFetcher(owner = "denoland", repo = "deno", httpClient = httpClient)
-
     private data class ProcessResult(val exitCode: Int, val stdout: List<String>, val stderr: String)
 
     // --- Initialization Events for UI ---
@@ -122,33 +115,37 @@ class YtDlpWrapper {
 
     // --- Public initialization helpers ---
 
-    fun initializeIn(scope: CoroutineScope, onEvent: (InitEvent) -> Unit = {}): Job =
-        scope.launch { initialize(onEvent) }
+    fun initializeIn(scope: CoroutineScope, manifest: ReleaseManifest?, onEvent: (InitEvent) -> Unit = {}): Job =
+        scope.launch { initialize(manifest, onEvent) }
 
-    suspend fun initialize(onEvent: (InitEvent) -> Unit = {}): Boolean {
+    suspend fun initialize(manifest: ReleaseManifest?, onEvent: (InitEvent) -> Unit = {}): Boolean {
         fun pct(read: Long, total: Long?): Double? = total?.takeIf { it > 0 }?.let { read * 100.0 / it }
 
         try {
             onEvent(InitEvent.CheckingYtDlp)
             if (!isAvailable()) {
+                if (manifest == null) {
+                    onEvent(InitEvent.Error("No manifest available and yt-dlp is not installed. Check your internet connection and try again.", null))
+                    onEvent(InitEvent.Completed(false)); return false
+                }
                 onEvent(InitEvent.DownloadingYtDlp)
-                if (!downloadOrUpdate { r, t -> onEvent(InitEvent.YtDlpProgress(r, t, pct(r, t))) }) {
+                if (!downloadOrUpdate(manifest) { r, t -> onEvent(InitEvent.YtDlpProgress(r, t, pct(r, t))) }) {
                     onEvent(InitEvent.Error("Could not download yt-dlp. Check your internet connection and try again.", null))
                     onEvent(InitEvent.Completed(false)); return false
                 }
-            } else if (hasUpdate()) {
+            } else if (manifest != null && hasUpdate(manifest)) {
                 onEvent(InitEvent.UpdatingYtDlp)
-                downloadOrUpdate { r, t -> onEvent(InitEvent.YtDlpProgress(r, t, pct(r, t))) }
+                downloadOrUpdate(manifest) { r, t -> onEvent(InitEvent.YtDlpProgress(r, t, pct(r, t))) }
             }
 
             onEvent(InitEvent.EnsuringFfmpeg)
-            if (!ensureFfmpegAvailable(false) { r, t -> onEvent(InitEvent.FfmpegProgress(r, t, pct(r, t))) }) {
+            if (!ensureFfmpegAvailable(manifest, false) { r, t -> onEvent(InitEvent.FfmpegProgress(r, t, pct(r, t))) }) {
                 onEvent(InitEvent.Error("Could not install FFmpeg. Check your internet connection and try again.", null))
                 onEvent(InitEvent.Completed(false)); return false
             }
 
             onEvent(InitEvent.EnsuringDeno)
-            if (!ensureDenoAvailable(false) { r, t -> onEvent(InitEvent.DenoProgress(r, t, pct(r, t))) }) {
+            if (!ensureDenoAvailable(manifest, false) { r, t -> onEvent(InitEvent.DenoProgress(r, t, pct(r, t))) }) {
                 onEvent(InitEvent.Error("Could not install Deno. Check your internet connection and try again.", null))
                 onEvent(InitEvent.Completed(false)); return false
             }
@@ -164,9 +161,6 @@ class YtDlpWrapper {
                 t.message?.contains("unknown host", ignoreCase = true) == true ||
                 t.message?.contains("name resolution", ignoreCase = true) == true ->
                     "DNS resolution failed. Check your internet connection and try again."
-                t.message?.contains("403", ignoreCase = true) == true ||
-                t.message?.contains("rate limit", ignoreCase = true) == true ->
-                    "GitHub API rate limit reached. Please wait a few minutes and try again."
                 else -> t.message ?: "Initialization error"
             }
             onEvent(InitEvent.Error(message, t))
@@ -211,32 +205,34 @@ class YtDlpWrapper {
     }
 
     /**
-     * Determine if a newer release exists on GitHub.
-     * The "latest tag" is cached for the entire process lifetime to avoid repeated network calls.
+     * Determine if a newer release exists based on the manifest.
+     * The "latest tag" is cached for the entire process lifetime to avoid repeated comparisons.
      * Cache is invalidated after successful download/update or when ytDlpPath changes.
      */
-    suspend fun hasUpdate(): Boolean {
+    suspend fun hasUpdate(manifest: ReleaseManifest): Boolean {
         val currentVersion = version() ?: return true
-        val latestTag = cachedLatestReleaseTag ?: ytdlpFetcher.getLatestRelease()?.tag_name?.also {
+        val latestTag = cachedLatestReleaseTag ?: manifest.releases.ytDlp.tagName.also {
             cachedLatestReleaseTag = it
-        } ?: return false
+        }
         return currentVersion.removePrefix("v").trim() != latestTag.removePrefix("v").trim()
     }
 
     /**
-     * Download or update to the latest available asset for this platform.
+     * Download or update to the latest available asset for this platform using the manifest.
      * Invalidates caches after successful install.
      */
-    suspend fun downloadOrUpdate(onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null): Boolean {
+    suspend fun downloadOrUpdate(
+        manifest: ReleaseManifest,
+        onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null
+    ): Boolean {
         val assetName = PlatformUtils.getYtDlpAssetNameForSystem()
         val destFile = File(PlatformUtils.getDefaultBinaryPath())
         destFile.parentFile?.mkdirs()
 
         return try {
-            val release = ytdlpFetcher.getLatestRelease() ?: return false
-            val asset = release.assets.find { it.name == assetName } ?: return false
+            val asset = manifest.releases.ytDlp.assets.find { it.name == assetName } ?: return false
 
-            PlatformUtils.downloadFile(asset.browser_download_url, destFile, onProgress)
+            PlatformUtils.downloadFile(asset.browserDownloadUrl, destFile, onProgress)
             if (getOperatingSystem() != OperatingSystem.WINDOWS) PlatformUtils.makeExecutable(destFile)
 
             if (destFile.exists() && destFile.canExecute()) {
@@ -262,6 +258,7 @@ class YtDlpWrapper {
     fun getDefaultFfmpegPath(): String = PlatformUtils.getDefaultFfmpegPath()
 
     suspend fun ensureFfmpegAvailable(
+        manifest: ReleaseManifest?,
         forceDownload: Boolean = false,
         onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null
     ): Boolean {
@@ -272,10 +269,12 @@ class YtDlpWrapper {
             ffmpegPath = it
             return true
         }
+        if (manifest == null) return false
         if (getOperatingSystem() in listOf(OperatingSystem.WINDOWS, OperatingSystem.LINUX, OperatingSystem.MACOS)) {
             val assetPattern = PlatformUtils.getFfmpegAssetPatternForSystem() ?: return false
-            val fetcher = if (getOperatingSystem() == OperatingSystem.MACOS) ffmpegMacOsFetcher else ffmpegFetcher
-            val result = PlatformUtils.downloadAndInstallFfmpeg(assetPattern, forceDownload, fetcher, onProgress)
+            val releaseInfo = if (getOperatingSystem() == OperatingSystem.MACOS) manifest.releases.ffmpegMacos else manifest.releases.ffmpeg
+            val asset = releaseInfo.assets.find { it.name.endsWith(assetPattern) && !it.name.contains("shared") } ?: return false
+            val result = PlatformUtils.downloadAndInstallFfmpeg(asset.name, forceDownload, asset.browserDownloadUrl, onProgress)
             if (result != null) ffmpegPath = result
             return result != null
         }
@@ -292,6 +291,7 @@ class YtDlpWrapper {
     }
 
     suspend fun ensureDenoAvailable(
+        manifest: ReleaseManifest?,
         forceDownload: Boolean = false,
         onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null
     ): Boolean {
@@ -302,8 +302,10 @@ class YtDlpWrapper {
             denoPath = it
             return true
         }
+        if (manifest == null) return false
         val assetName = PlatformUtils.getDenoAssetNameForSystem() ?: return false
-        val result = PlatformUtils.downloadAndInstallDeno(assetName, forceDownload, denoFetcher, onProgress)
+        val asset = manifest.releases.deno.assets.find { it.name == assetName } ?: return false
+        val result = PlatformUtils.downloadAndInstallDeno(assetName, forceDownload, asset.browserDownloadUrl, onProgress)
         if (result != null) denoPath = result
         return result != null
     }

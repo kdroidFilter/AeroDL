@@ -35,7 +35,7 @@ fun main() = runBlocking {
 
     // Initialize
     infoln { "Initializing FFmpeg..." }
-    ffmpeg.initialize { event ->
+    ffmpeg.initialize(downloadUrl = null, archiveName = null) { event ->
         when (event) {
             is InitEvent.Completed -> infoln { "FFmpeg ready!" }
             is InitEvent.Error -> {

@@ -19,8 +19,8 @@ import io.github.kdroidfilter.ytdlpgui.core.domain.manager.ClipboardMonitorManag
 import io.github.kdroidfilter.ytdlpgui.core.navigation.NavigationEventBus
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
+import io.github.kdroidfilter.ytdlpgui.data.ReleaseManifestRepository
 import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
-import io.github.kdroidfilter.ytdlpgui.data.SupportedSitesRepository
 import io.github.kdroidfilter.ytdlpgui.db.Database
 import io.github.vinceglb.autolaunch.AutoLaunch
 
@@ -89,9 +89,7 @@ abstract class AppGraph : ViewModelGraph {
 
     @Provides
     @SingleIn(AppScope::class)
-    fun provideSupportedSitesRepository(
-        database: Database
-    ): SupportedSitesRepository = SupportedSitesRepository(database)
+    fun provideReleaseManifestRepository(): ReleaseManifestRepository = ReleaseManifestRepository()
 
     @Provides
     @SingleIn(AppScope::class)
@@ -126,14 +124,12 @@ abstract class AppGraph : ViewModelGraph {
     fun provideClipboardMonitorManager(
         settingsRepository: SettingsRepository,
         trayAppState: TrayAppState,
-        supportedSitesRepository: SupportedSitesRepository,
         navigationEventBus: NavigationEventBus,
         ytDlpWrapper: YtDlpWrapper,
     ): ClipboardMonitorManager {
         val manager = ClipboardMonitorManager(
             settingsRepository,
             trayAppState,
-            supportedSitesRepository,
             navigationEventBus,
             ytDlpWrapper,
         )

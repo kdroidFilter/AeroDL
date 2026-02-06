@@ -25,7 +25,6 @@ import ytdlpgui.composeapp.generated.resources.clipboard_open_in_app
 import androidx.compose.runtime.*
 import io.github.kdroidfilter.ytdlpgui.core.platform.notifications.NotificationThumbUtils
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
-import io.github.kdroidfilter.ytdlpgui.data.SupportedSitesRepository
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 
 /**
@@ -55,7 +54,6 @@ import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 class ClipboardMonitorManager(
     private val settingsRepository: io.github.kdroidfilter.ytdlpgui.data.SettingsRepository,
     private val trayAppState: TrayAppState,
-    private val supportedSitesRepository: SupportedSitesRepository,
     private val navigationEventBus: io.github.kdroidfilter.ytdlpgui.core.navigation.NavigationEventBus,
     private val ytDlpWrapper: YtDlpWrapper,
 ) {

@@ -135,10 +135,18 @@ object PlatformUtils {
 
     // --- Download & Installation ---
 
+    /**
+     * Download and install FFmpeg in the app cache, verifying it runs.
+     *
+     * @param archiveName The file name of the archive to download.
+     * @param forceDownload Re-download even if a working binary already exists.
+     * @param downloadUrl Direct download URL for the archive.
+     * @param onProgress Optional progress callback.
+     */
     suspend fun downloadAndInstallFfmpeg(
-        assetPattern: String,
+        archiveName: String,
         forceDownload: Boolean,
-        ffmpegFetcher: io.github.kdroidfilter.platformtools.releasefetcher.github.GitHubReleaseFetcher,
+        downloadUrl: String,
         onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null
     ): String? = withContext(Dispatchers.IO) {
         val baseDir = File(getDataDir(), "ffmpeg")
@@ -156,16 +164,9 @@ object PlatformUtils {
         binDir.mkdirs()
 
         try {
-            val release = ffmpegFetcher.getLatestRelease()
-                ?: error("Could not fetch FFmpeg release from GitHub")
+            val archive = File(baseDir, archiveName)
 
-            val asset = release.assets.find { it.name.endsWith(assetPattern) && !it.name.contains("shared") }
-                ?: error("Asset matching pattern '$assetPattern' not found")
-
-            val url = asset.browser_download_url
-            val archive = File(baseDir, asset.name)
-
-            downloadFile(url, archive, onProgress)
+            downloadFile(downloadUrl, archive, onProgress)
 
             // Extract archive
             if (archive.name.endsWith(".zip")) extractZip(archive, baseDir)

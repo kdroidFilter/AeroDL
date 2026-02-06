@@ -16,7 +16,6 @@ kotlin {
             implementation(libs.kotlinx.coroutinesSwing)
 
             // Platform tools
-            implementation(libs.platformtools.releasefetcher)
             implementation(libs.platformtools.core)
 
             // FileKit for app data directory

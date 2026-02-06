@@ -14,7 +14,7 @@ fun main() = runBlocking {
 
 
     println("🔧 Initializing yt-dlp/ffmpeg…")
-    val initOk = wrapper.initialize { ev ->
+    val initOk = wrapper.initialize(manifest = null) { ev ->
         when (ev) {
             is InitEvent.CheckingYtDlp -> println("🔍 Checking yt-dlp…")
             is InitEvent.UpdatingYtDlp -> println("🔄 An update is available. Updating yt-dlp...")
