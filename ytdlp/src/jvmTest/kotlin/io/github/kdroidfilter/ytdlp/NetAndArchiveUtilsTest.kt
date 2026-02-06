@@ -54,4 +54,21 @@ class NetAndArchiveUtilsTest {
         assertTrue(selMp4.contains("ext=mp4"))
         assertTrue(selMp4.contains("bestaudio[ext=m4a]"))
     }
+
+    @Test
+    fun selectors_containFallbackFormats() {
+        // Progressive selector should have universal fallback
+        val selProg = NetAndArchive.selectorProgressiveExact(720)
+        assertTrue(selProg.contains("height<=720"), "Progressive selector should have height<= fallback")
+        assertTrue(selProg.contains("bestvideo+bestaudio/best"), "Progressive selector should have universal fallback")
+
+        // Download selector should have height<= fallback
+        val selDl = NetAndArchive.selectorDownloadExact(1080)
+        assertTrue(selDl.contains("height<=1080"), "Download selector should have height<= fallback")
+
+        // MP4 selector should have height<= fallback and universal fallback
+        val selMp4 = NetAndArchive.selectorDownloadExactMp4(480)
+        assertTrue(selMp4.contains("height<=480"), "MP4 selector should have height<= fallback")
+        assertTrue(selMp4.contains("bestvideo+bestaudio/best"), "MP4 selector should have universal fallback")
+    }
 }

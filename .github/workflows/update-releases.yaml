@@ -1,0 +1,41 @@
+name: Update releases manifest
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Generate manifest
+        run: ./gradlew :release-manifest-generator:jvmRun
+        env:
+          MANIFEST_OUTPUT: docs/api/releases.json
+
+      - name: Commit and push if changed
+        run: |
+          git add docs/api/releases.json
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore: update releases manifest [skip ci]"
+          git push

@@ -1,11 +1,10 @@
 package io.github.kdroidfilter.ytdlp
 
-import io.github.kdroidfilter.network.KtorConfig
 import io.github.kdroidfilter.platformtools.OperatingSystem
 import io.github.kdroidfilter.platformtools.getOperatingSystem
-import io.github.kdroidfilter.platformtools.releasefetcher.github.GitHubReleaseFetcher
 import io.github.kdroidfilter.ytdlp.core.*
 import io.github.kdroidfilter.ytdlp.model.PlaylistInfo
+import io.github.kdroidfilter.ytdlp.model.ReleaseManifest
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
 import io.github.kdroidfilter.ytdlp.util.NetAndArchive
 import io.github.kdroidfilter.ytdlp.util.PlatformUtils
@@ -57,6 +56,7 @@ class YtDlpWrapper {
         }
 
     var ffmpegPath: String? = null
+    var denoPath: String? = null
     var downloadDir: File? = File(System.getProperty("user.home"), "Downloads/yt-dlp")
 
     /**
@@ -97,11 +97,6 @@ class YtDlpWrapper {
      */
     var proxy: String? = null
 
-    private val httpClient = KtorConfig.createHttpClient()
-    private val ytdlpFetcher = GitHubReleaseFetcher(owner = "yt-dlp", repo = "yt-dlp", httpClient = httpClient)
-    private val ffmpegFetcher = GitHubReleaseFetcher(owner = "yt-dlp", repo = "FFmpeg-Builds", httpClient = httpClient)
-    private val ffmpegMacOsFetcher = GitHubReleaseFetcher(owner = "kdroidFilter", repo = "FFmpeg-Builds", httpClient = httpClient)
-
     private data class ProcessResult(val exitCode: Int, val stdout: List<String>, val stderr: String)
 
     // --- Initialization Events for UI ---
@@ -110,41 +105,65 @@ class YtDlpWrapper {
         data object DownloadingYtDlp : InitEvent
         data object UpdatingYtDlp : InitEvent
         data object EnsuringFfmpeg : InitEvent
+        data object EnsuringDeno : InitEvent
         data class YtDlpProgress(val bytesRead: Long, val totalBytes: Long?, val percent: Double?) : InitEvent
         data class FfmpegProgress(val bytesRead: Long, val totalBytes: Long?, val percent: Double?) : InitEvent
+        data class DenoProgress(val bytesRead: Long, val totalBytes: Long?, val percent: Double?) : InitEvent
         data class Completed(val success: Boolean) : InitEvent
         data class Error(val message: String, val cause: Throwable? = null) : InitEvent
     }
 
     // --- Public initialization helpers ---
 
-    fun initializeIn(scope: CoroutineScope, onEvent: (InitEvent) -> Unit = {}): Job =
-        scope.launch { initialize(onEvent) }
+    fun initializeIn(scope: CoroutineScope, manifest: ReleaseManifest?, onEvent: (InitEvent) -> Unit = {}): Job =
+        scope.launch { initialize(manifest, onEvent) }
 
-    suspend fun initialize(onEvent: (InitEvent) -> Unit = {}): Boolean {
+    suspend fun initialize(manifest: ReleaseManifest?, onEvent: (InitEvent) -> Unit = {}): Boolean {
         fun pct(read: Long, total: Long?): Double? = total?.takeIf { it > 0 }?.let { read * 100.0 / it }
 
         try {
             onEvent(InitEvent.CheckingYtDlp)
             if (!isAvailable()) {
-                onEvent(InitEvent.DownloadingYtDlp)
-                if (!downloadOrUpdate { r, t -> onEvent(InitEvent.YtDlpProgress(r, t, pct(r, t))) }) {
-                    onEvent(InitEvent.Error("Could not download yt-dlp", null))
+                if (manifest == null) {
+                    onEvent(InitEvent.Error("No manifest available and yt-dlp is not installed. Check your internet connection and try again.", null))
                     onEvent(InitEvent.Completed(false)); return false
                 }
-            } else if (hasUpdate()) {
+                onEvent(InitEvent.DownloadingYtDlp)
+                if (!downloadOrUpdate(manifest) { r, t -> onEvent(InitEvent.YtDlpProgress(r, t, pct(r, t))) }) {
+                    onEvent(InitEvent.Error("Could not download yt-dlp. Check your internet connection and try again.", null))
+                    onEvent(InitEvent.Completed(false)); return false
+                }
+            } else if (manifest != null && hasUpdate(manifest)) {
                 onEvent(InitEvent.UpdatingYtDlp)
-                downloadOrUpdate { r, t -> onEvent(InitEvent.YtDlpProgress(r, t, pct(r, t))) }
+                downloadOrUpdate(manifest) { r, t -> onEvent(InitEvent.YtDlpProgress(r, t, pct(r, t))) }
             }
 
             onEvent(InitEvent.EnsuringFfmpeg)
-            ensureFfmpegAvailable(false) { r, t -> onEvent(InitEvent.FfmpegProgress(r, t, pct(r, t))) }
+            if (!ensureFfmpegAvailable(manifest, false) { r, t -> onEvent(InitEvent.FfmpegProgress(r, t, pct(r, t))) }) {
+                onEvent(InitEvent.Error("Could not install FFmpeg. Check your internet connection and try again.", null))
+                onEvent(InitEvent.Completed(false)); return false
+            }
+
+            onEvent(InitEvent.EnsuringDeno)
+            if (!ensureDenoAvailable(manifest, false) { r, t -> onEvent(InitEvent.DenoProgress(r, t, pct(r, t))) }) {
+                onEvent(InitEvent.Error("Could not install Deno. Check your internet connection and try again.", null))
+                onEvent(InitEvent.Completed(false)); return false
+            }
 
             val success = isAvailable()
             onEvent(InitEvent.Completed(success))
             return success
         } catch (t: Throwable) {
-            onEvent(InitEvent.Error(t.message ?: "Initialization error", t))
+            val message = when {
+                t.message?.contains("timeout", ignoreCase = true) == true ||
+                t.message?.contains("timed out", ignoreCase = true) == true ->
+                    "Network timeout. Check your internet connection and try again."
+                t.message?.contains("unknown host", ignoreCase = true) == true ||
+                t.message?.contains("name resolution", ignoreCase = true) == true ->
+                    "DNS resolution failed. Check your internet connection and try again."
+                else -> t.message ?: "Initialization error"
+            }
+            onEvent(InitEvent.Error(message, t))
             onEvent(InitEvent.Completed(false))
             return false
         }
@@ -186,32 +205,34 @@ class YtDlpWrapper {
     }
 
     /**
-     * Determine if a newer release exists on GitHub.
-     * The "latest tag" is cached for the entire process lifetime to avoid repeated network calls.
+     * Determine if a newer release exists based on the manifest.
+     * The "latest tag" is cached for the entire process lifetime to avoid repeated comparisons.
      * Cache is invalidated after successful download/update or when ytDlpPath changes.
      */
-    suspend fun hasUpdate(): Boolean {
+    suspend fun hasUpdate(manifest: ReleaseManifest): Boolean {
         val currentVersion = version() ?: return true
-        val latestTag = cachedLatestReleaseTag ?: ytdlpFetcher.getLatestRelease()?.tag_name?.also {
+        val latestTag = cachedLatestReleaseTag ?: manifest.releases.ytDlp.tagName.also {
             cachedLatestReleaseTag = it
-        } ?: return false
+        }
         return currentVersion.removePrefix("v").trim() != latestTag.removePrefix("v").trim()
     }
 
     /**
-     * Download or update to the latest available asset for this platform.
+     * Download or update to the latest available asset for this platform using the manifest.
      * Invalidates caches after successful install.
      */
-    suspend fun downloadOrUpdate(onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null): Boolean {
+    suspend fun downloadOrUpdate(
+        manifest: ReleaseManifest,
+        onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null
+    ): Boolean {
         val assetName = PlatformUtils.getYtDlpAssetNameForSystem()
         val destFile = File(PlatformUtils.getDefaultBinaryPath())
         destFile.parentFile?.mkdirs()
 
         return try {
-            val release = ytdlpFetcher.getLatestRelease() ?: return false
-            val asset = release.assets.find { it.name == assetName } ?: return false
+            val asset = manifest.releases.ytDlp.assets.find { it.name == assetName } ?: return false
 
-            PlatformUtils.downloadFile(asset.browser_download_url, destFile, onProgress)
+            PlatformUtils.downloadFile(asset.browserDownloadUrl, destFile, onProgress)
             if (getOperatingSystem() != OperatingSystem.WINDOWS) PlatformUtils.makeExecutable(destFile)
 
             if (destFile.exists() && destFile.canExecute()) {
@@ -237,6 +258,7 @@ class YtDlpWrapper {
     fun getDefaultFfmpegPath(): String = PlatformUtils.getDefaultFfmpegPath()
 
     suspend fun ensureFfmpegAvailable(
+        manifest: ReleaseManifest?,
         forceDownload: Boolean = false,
         onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null
     ): Boolean {
@@ -247,14 +269,116 @@ class YtDlpWrapper {
             ffmpegPath = it
             return true
         }
+        if (manifest == null) return false
         if (getOperatingSystem() in listOf(OperatingSystem.WINDOWS, OperatingSystem.LINUX, OperatingSystem.MACOS)) {
             val assetPattern = PlatformUtils.getFfmpegAssetPatternForSystem() ?: return false
-            val fetcher = if (getOperatingSystem() == OperatingSystem.MACOS) ffmpegMacOsFetcher else ffmpegFetcher
-            val result = PlatformUtils.downloadAndInstallFfmpeg(assetPattern, forceDownload, fetcher, onProgress)
+            val releaseInfo = if (getOperatingSystem() == OperatingSystem.MACOS) manifest.releases.ffmpegMacos else manifest.releases.ffmpeg
+            val asset = releaseInfo.assets.find { it.name.endsWith(assetPattern) && !it.name.contains("shared") } ?: return false
+            val result = PlatformUtils.downloadAndInstallFfmpeg(asset.name, forceDownload, asset.browserDownloadUrl, onProgress)
             if (result != null) ffmpegPath = result
             return result != null
         }
         return false
+    }
+
+    // --- Deno (JavaScript runtime for YouTube) ---
+
+    fun getDefaultDenoPath(): String = PlatformUtils.getDefaultDenoPath()
+
+    suspend fun denoVersion(): String? {
+        val path = denoPath ?: return null
+        return PlatformUtils.denoVersion(path)
+    }
+
+    suspend fun ensureDenoAvailable(
+        manifest: ReleaseManifest?,
+        forceDownload: Boolean = false,
+        onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null
+    ): Boolean {
+        denoPath?.let {
+            if (PlatformUtils.denoVersion(it) != null && !forceDownload) return true
+        }
+        PlatformUtils.findDenoInSystemPath()?.let {
+            denoPath = it
+            return true
+        }
+        if (manifest == null) return false
+        val assetName = PlatformUtils.getDenoAssetNameForSystem() ?: return false
+        val asset = manifest.releases.deno.assets.find { it.name == assetName } ?: return false
+        val result = PlatformUtils.downloadAndInstallDeno(assetName, forceDownload, asset.browserDownloadUrl, onProgress)
+        if (result != null) denoPath = result
+        return result != null
+    }
+
+    // --- Batch Availability Check ---
+
+    /**
+     * Check availability of multiple URLs in a single yt-dlp invocation using --batch-file.
+     * Returns the set of video IDs that yt-dlp could successfully resolve.
+     * URLs that are unavailable or produce errors are silently skipped (--ignore-errors).
+     *
+     * @param urls The list of URLs to check.
+     * @param timeoutSec Maximum time for the entire batch check.
+     * @param onIdResolved Called each time a video ID is successfully resolved.
+     * @return Set of resolved video IDs.
+     */
+    suspend fun checkBatchAvailability(
+        urls: List<String>,
+        timeoutSec: Long = 120,
+        onIdResolved: ((id: String) -> Unit)? = null
+    ): Set<String> = withContext(Dispatchers.IO) {
+        if (urls.isEmpty()) return@withContext emptySet()
+        if (!isAvailable()) return@withContext emptySet()
+
+        val batchFile = File.createTempFile("ytdlp-batch-", ".txt")
+        try {
+            batchFile.writeText(urls.joinToString("\n"))
+
+            val cmd = buildList {
+                add(ytDlpPath)
+                add("--batch-file"); add(batchFile.absolutePath)
+                add("--flat-playlist")
+                add("--simulate")
+                add("--ignore-errors")
+                add("--no-warnings")
+                add("--print"); add("id")
+                addAll(listOf("--socket-timeout", "10"))
+                if (noCheckCertificate) add("--no-check-certificate")
+                denoPath?.takeIf { it.isNotBlank() }?.let { addAll(listOf("--js-runtimes", "deno:$it")) }
+                cookiesFromBrowser?.takeIf { it.isNotBlank() }?.let { addAll(listOf("--cookies-from-browser", it)) }
+                proxy?.takeIf { it.isNotBlank() }?.let { addAll(listOf("--proxy", it)) }
+            }
+
+            val process = ProcessBuilder(cmd).redirectErrorStream(false).start()
+            val resolvedIds = mutableSetOf<String>()
+
+            val readerJob = async {
+                process.inputStream.bufferedReader(StandardCharsets.UTF_8).useLines { lines ->
+                    lines.forEach { line ->
+                        val id = line.trim()
+                        if (id.isNotBlank()) {
+                            resolvedIds.add(id)
+                            onIdResolved?.invoke(id)
+                        }
+                    }
+                }
+            }
+
+            // Drain stderr to prevent blocking
+            val stderrJob = async { process.errorStream.bufferedReader().readText() }
+
+            val exited = withTimeoutOrNull(timeoutSec * 1000) { process.waitFor() }
+            if (exited == null) {
+                process.destroyForcibly()
+            }
+
+            runCatching { readerJob.await() }
+            runCatching { stderrJob.await() }
+
+            resolvedIds
+        } finally {
+            batchFile.delete()
+        }
     }
 
     // --- Network Pre-check ---
@@ -298,7 +422,7 @@ class YtDlpWrapper {
                 infoln { "[YtDlpWrapper] Subtitle options provided: languages=${subOpts.languages}, embed=${subOpts.embedSubtitles}, writeAuto=${subOpts.writeAutoSubtitles}" }
             }
 
-            val cmd = NetAndArchive.buildCommand(ytDlpPath, ffmpegPath, url, finalOptions, downloadDir)
+            val cmd = NetAndArchive.buildCommand(ytDlpPath, ffmpegPath, denoPath, url, finalOptions, downloadDir)
             infoln { "[YtDlpWrapper] Built command with ${cmd.size} arguments" }
             debugln { "[YtDlpWrapper] Full command: ${cmd.joinToString(" ")}" }
 
@@ -845,6 +969,7 @@ class YtDlpWrapper {
             // Aggressively cap network timeouts for faster failures (does not affect cache semantics)
             addAll(listOf("--socket-timeout", "5"))
             if (useNoCheckCert) add("--no-check-certificate")
+            denoPath?.takeIf { it.isNotBlank() }?.let { addAll(listOf("--js-runtimes", "deno:$it")) }
             cookiesFromBrowser?.takeIf { it.isNotBlank() }?.let { addAll(listOf("--cookies-from-browser", it)) }
             proxy?.takeIf { it.isNotBlank() }?.let { addAll(listOf("--proxy", it)) }
             addAll(extraArgs); add(url)

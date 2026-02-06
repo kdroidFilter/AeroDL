@@ -68,7 +68,7 @@ object PlatformUtils {
 
     private suspend fun isMusl(): Boolean = withContext(Dispatchers.IO) {
         try {
-            val p = Runtime.getRuntime().exec(arrayOf("ldd", "--version"))
+            val p = ProcessBuilder("ldd", "--version").redirectErrorStream(true).start()
             val exited = withContext(Dispatchers.IO) { kotlinx.coroutines.withTimeoutOrNull(1500) { p.waitFor() } }
             if (exited == null) {
                 p.destroyForcibly()
@@ -95,8 +95,8 @@ object PlatformUtils {
 
         val uri = java.net.URI.create(url)
         val conn = HttpsConnectionFactory.openConnection(uri.toURL()) {
-            connectTimeout = 12_000
-            readTimeout = 24_000
+            connectTimeout = 15_000
+            readTimeout = 120_000
             instanceFollowRedirects = true
             setRequestProperty("User-Agent", "kdroidFilter-ytdlp/1.0")
         }
@@ -146,6 +146,119 @@ object PlatformUtils {
 
         } catch (_: UnsupportedOperationException) {
             Runtime.getRuntime().exec(arrayOf("chmod", "+x", file.absolutePath)).waitFor()
+        }
+    }
+
+    // --- Deno (JavaScript runtime for yt-dlp) ---
+
+    fun getDefaultDenoPath(): String {
+        val dir = File(getDataDir(), "deno")
+        val exe = if (getOperatingSystem() == OperatingSystem.WINDOWS) "deno.exe" else "deno"
+        return File(dir, exe).absolutePath
+    }
+
+    suspend fun findDenoInSystemPath(): String? = withContext(Dispatchers.IO) {
+        val cmd = if (getOperatingSystem() == OperatingSystem.WINDOWS) listOf("where", "deno") else listOf("which", "deno")
+        try {
+            val p = ProcessBuilder(cmd).redirectErrorStream(true).start()
+            val exited = withContext(Dispatchers.IO) { kotlinx.coroutines.withTimeoutOrNull(1500) { p.waitFor() } }
+            if (exited == null) {
+                p.destroyForcibly(); return@withContext null
+            }
+            val out = p.inputStream.bufferedReader().readText().trim()
+            if (p.exitValue() == 0 && out.isNotBlank()) out.lineSequence().firstOrNull()?.trim() else null
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    suspend fun denoVersion(path: String): String? = withContext(Dispatchers.IO) {
+        try {
+            val p = ProcessBuilder(listOf(path, "--version")).redirectErrorStream(true).start()
+            val exited = withContext(Dispatchers.IO) { kotlinx.coroutines.withTimeoutOrNull(2_000) { p.waitFor() } }
+            if (exited == null) {
+                p.destroyForcibly(); return@withContext null
+            }
+            val out = p.inputStream.bufferedReader().readText().trim()
+            if (p.exitValue() == 0 && out.isNotBlank()) out.lineSequence().firstOrNull() else null
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    /**
+     * Select the appropriate Deno asset name for the current system.
+     * Returns the exact asset name from denoland/deno GitHub releases.
+     * Note: Windows ARM64 is not available, returns null in that case.
+     */
+    fun getDenoAssetNameForSystem(): String? {
+        val os = getOperatingSystem()
+        val arch = (System.getProperty("os.arch") ?: "").lowercase()
+        val isArm64 = arch.contains("aarch64") || arch.contains("arm64")
+
+        return when (os) {
+            OperatingSystem.WINDOWS -> when {
+                isArm64 -> null // Windows ARM64 not available for Deno
+                else -> "deno-x86_64-pc-windows-msvc.zip"
+            }
+            OperatingSystem.LINUX -> if (isArm64) "deno-aarch64-unknown-linux-gnu.zip" else "deno-x86_64-unknown-linux-gnu.zip"
+            OperatingSystem.MACOS -> if (isArm64) "deno-aarch64-apple-darwin.zip" else "deno-x86_64-apple-darwin.zip"
+            else -> null
+        }
+    }
+
+    /**
+     * Download and install Deno in the app cache, verifying it runs.
+     *
+     * @param assetName Expected archive file name (e.g. "deno-x86_64-unknown-linux-gnu.zip").
+     * @param forceDownload Re-download even if a working binary already exists.
+     * @param downloadUrl Direct download URL for the archive.
+     * @param onProgress Optional progress callback.
+     */
+    suspend fun downloadAndInstallDeno(
+        assetName: String,
+        forceDownload: Boolean,
+        downloadUrl: String,
+        onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null
+    ): String? = withContext(Dispatchers.IO) {
+        val denoDir = File(getDataDir(), "deno")
+        val targetDeno = File(denoDir, if (getOperatingSystem() == OperatingSystem.WINDOWS) "deno.exe" else "deno")
+
+        if (!forceDownload && targetDeno.exists() && denoVersion(targetDeno.absolutePath) != null) {
+            return@withContext targetDeno.absolutePath
+        }
+
+        denoDir.mkdirs()
+
+        try {
+            val archive = File(denoDir, assetName)
+
+            downloadFile(downloadUrl, archive, onProgress)
+
+            // Extract zip archive
+            NetAndArchive.extractZip(archive, denoDir)
+
+            // Deno zip contains just the deno binary at the root
+            val foundDeno = denoDir.listFiles()?.firstOrNull {
+                it.isFile && it.name.matches(Regex("^deno(\\.exe)?$")) && it.canRead()
+            } ?: error("Deno binary not found after extraction")
+
+            if (foundDeno.absolutePath != targetDeno.absolutePath) {
+                foundDeno.copyTo(targetDeno, overwrite = true)
+            }
+
+            if (getOperatingSystem() != OperatingSystem.WINDOWS) {
+                makeExecutable(targetDeno)
+            }
+
+            // Clean up archive
+            archive.delete()
+
+            denoVersion(targetDeno.absolutePath) ?: error("Deno is not runnable after installation")
+            targetDeno.absolutePath
+        } catch (t: Throwable) {
+            errorln { "Failed to download/install Deno: ${t.stackTraceToString()}" }
+            null
         }
     }
 
@@ -211,13 +324,16 @@ object PlatformUtils {
     /**
      * Download and install FFmpeg in the app cache, verifying it runs.
      * All platforms use archives (tar.xz or zip) that are extracted.
-     * Uses GitHubReleaseFetcher to get the direct download URL.
-     * For macOS: kdroidFilter/FFmpeg-Builds; for Windows/Linux: yt-dlp/FFmpeg-Builds.
+     *
+     * @param archiveName The file name of the archive to download (e.g. "ffmpeg-master-latest-win64-gpl.zip").
+     * @param forceDownload Re-download even if a working binary already exists.
+     * @param downloadUrl Direct download URL for the archive.
+     * @param onProgress Optional progress callback.
      */
     suspend fun downloadAndInstallFfmpeg(
-        assetPattern: String,
+        archiveName: String,
         forceDownload: Boolean,
-        ffmpegFetcher: io.github.kdroidfilter.platformtools.releasefetcher.github.GitHubReleaseFetcher,
+        downloadUrl: String,
         onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null
     ): String? = withContext(Dispatchers.IO) {
         val baseDir = File(getDataDir(), "ffmpeg")
@@ -235,15 +351,9 @@ object PlatformUtils {
         baseDir.mkdirs(); binDir.mkdirs()
 
         try {
-            val release = ffmpegFetcher.getLatestRelease() ?: error("Could not fetch FFmpeg release from GitHub")
+            val archive = File(baseDir, archiveName)
 
-            val asset = release.assets.find { it.name.endsWith(assetPattern) && !it.name.contains("shared") }
-                ?: error("Asset matching pattern '$assetPattern' not found in FFmpeg release. Available assets: ${release.assets.map { it.name }}")
-
-            val url = asset.browser_download_url
-            val archive = File(baseDir, asset.name)
-
-            downloadFile(url, archive, onProgress)
+            downloadFile(downloadUrl, archive, onProgress)
 
             // Extract archive
             if (archive.name.endsWith(".zip")) NetAndArchive.extractZip(archive, baseDir)

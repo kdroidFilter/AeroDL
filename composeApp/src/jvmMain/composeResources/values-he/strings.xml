@@ -32,6 +32,8 @@
     <string name="checking_ffmpeg">בודק את התקנת FFmpeg…</string>
     <string name="downloading_ytdlp">מוריד את yt-dlp…</string>
     <string name="downloading_ffmpeg">מוריד את FFmpeg…</string>
+    <string name="checking_deno">בודק את התקנת Deno…</string>
+    <string name="downloading_deno">מוריד את Deno…</string>
     <string name="updating_ytdlp">מעדכן את yt-dlp…</string>
     <string name="updating_ffmpeg">מעדכן את FFmpeg…</string>
     <string name="status_checking">בודק…</string>
@@ -45,9 +47,11 @@
     <string name="dependency_info_title">בזמן שאתה מגדיר את הגדרות AeroDL, אנחנו מורידים את התלויות הדרושות לפעולה תקינה של האפליקציה.</string>
     <string name="dependency_ytdlp_tooltip">yt-dlp הוא הכלי המרכזי שמוריד סרטונים מאתרים נתמכים. הוא מטפל בכל העבודה הקשה של הורדת התוכן שלך.</string>
     <string name="dependency_ffmpeg_tooltip">FFmpeg הוא מסגרת מולטימדיה המשמשת להמרה ועיבוד של קבצי אודיו/וידאו. הוא מבטיח שההורדות שלך יהיו בפורמט הרצוי.</string>
+    <string name="dependency_deno_tooltip">Deno היא סביבת ריצה של JavaScript הנדרשת על ידי yt-dlp לחילוץ סרטונים מ-YouTube. היא מבטיחה תאימות לשינויים האחרונים של YouTube.</string>
 
     <!-- הודעות שגיאה -->
     <string name="error_occurred">אירעה שגיאה</string>
+    <string name="init_retry">נסה שוב</string>
 
     <!-- הודעת עדכון -->
     <string name="update_available">גרסה חדשה זמינה: %1$s</string>
@@ -60,6 +64,32 @@
     <string name="settings_screen_title">מסך הגדרות</string>
     <string name="bulk_download_support_notice">הורדת פלייליסטים וערוצי YouTube עדיין אינה נתמכת. אם אתם אוהבים את AeroDL, תוכלו לתמוך בפיתוח דרך Ko-fi.</string>
     <string name="support_on_kofi">תמכו בנו דרך Ko-fi</string>
+
+    <!-- מסך הורדה מרובה -->
+    <string name="bulk_playlist_title">פלייליסט: %1$s</string>
+    <string name="bulk_channel_title">ערוץ: %1$s</string>
+    <string name="bulk_videos_count">%1$d סרטונים</string>
+    <string name="bulk_selected_count">%1$d נבחרו</string>
+    <string name="bulk_checking_availability">בודק זמינות… (%1$d/%2$d)</string>
+    <string name="bulk_select_all">בחר הכל</string>
+    <string name="bulk_deselect_all">בטל בחירה</string>
+    <string name="bulk_download_selected">הורד נבחרים</string>
+    <string name="bulk_no_videos">לא נמצאו סרטונים בפלייליסט זה</string>
+    <string name="bulk_video_unavailable">לא זמין</string>
+    <string name="bulk_starting_downloads">מתחיל הורדות…</string>
+    <string name="bulk_quality">איכות</string>
+    <string name="bulk_available_count">%1$d זמינים</string>
+    <string name="bulk_login_required_title">נדרשת התחברות ל-YouTube</string>
+    <string name="bulk_login_required_desc">אנא התחבר לחשבונך כדי לגשת לפלייליסט זה</string>
+    <string name="bulk_login_check">בודק התחברות…</string>
+    <string name="bulk_login_success">מחובר</string>
+    <string name="bulk_login_back">חזור</string>
+    <string name="bulk_login_continue">המשך</string>
+    <string name="bulk_fallback_loading">טוען דרך הדפדפן…</string>
+    <string name="bulk_fallback_scrolling">גולל… %1$d סרטונים נטענו</string>
+    <string name="bulk_fallback_extracting">מחלץ סרטונים…</string>
+    <string name="bulk_analyzing_videos">מנתח %1$d סרטונים</string>
+
     <string name="about_credits_title">תודות</string>
     <string name="credits_made_by">נוצר על ידי אלי גמבאש</string>
     <string name="credits_thank_jetbrains">תודה ענקית ל‑JetBrains על שיצרו את Kotlin ו‑Compose Multiplatform; בלי העבודה המסורה שלהם האפליקציה הזו לא הייתה רואה אור.</string>
@@ -132,6 +162,7 @@
     <string name="menu_hide_window">הסתר חלון</string>
     <string name="quit">יציאה</string>
     <string name="download_audio">הורד שמע</string>
+    <string name="download_button">הורד</string>
 
     <!-- Single download screen -->
     <string name="download_type_video">וידאו</string>
@@ -178,6 +209,9 @@
     <string name="settings_parallel_downloads_title">הורדות מקבילות</string>
     <string name="settings_parallel_downloads_caption">הגבל כמה הורדות יכולות לרוץ בו-זמנית</string>
     
+    <string name="settings_validate_bulk_urls_title">אמת כתובות URL בהורדה מרובה</string>
+    <string name="settings_validate_bulk_urls_caption">בדוק את הזמינות של כל סרטון לפני הורדה במצב מרובה. השבתת אפשרות זו מאיצה את טעינת רשימות ההשמעה.</string>
+
     <string name="settings_embed_thumbnail_mp3_title">הטמע תמונה ממוזערת ב‑MP3</string>
     <string name="settings_embed_thumbnail_mp3_caption">כאשר מופעל, הטמע את תמונת הווידאו כעטיפת MP3</string>
     
@@ -273,5 +307,7 @@
     <string name="converter_open_folder">פתח תיקייה</string>
     <string name="converter_error">ההמרה נכשלה: %1$s</string>
     <string name="converter_reset">המר קובץ אחר</string>
+    <string name="converter_trim">חיתוך</string>
+    <string name="converter_trim_duration">משך: %1$s</string>
 
 </resources>

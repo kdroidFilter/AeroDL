@@ -14,7 +14,7 @@ fun main() = runBlocking {
 
     // Initialize the wrapper
     println("🔧 Initializing yt-dlp/ffmpeg...")
-    val initOk = wrapper.initialize { event ->
+    val initOk = wrapper.initialize(manifest = null) { event ->
         when (event) {
             is YtDlpWrapper.InitEvent.Completed -> {
                 if (event.success) println("✅ Initialization successful!")

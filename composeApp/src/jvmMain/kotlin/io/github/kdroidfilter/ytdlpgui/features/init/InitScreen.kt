@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import io.github.composefluent.FluentTheme
+import io.github.composefluent.component.AccentButton
 import io.github.composefluent.component.Icon
 import io.github.composefluent.component.ProgressRing
 import io.github.composefluent.component.Text
@@ -38,6 +39,9 @@ import ytdlpgui.composeapp.generated.resources.error_occurred
  
 import ytdlpgui.composeapp.generated.resources.updating_ffmpeg
 import ytdlpgui.composeapp.generated.resources.updating_ytdlp
+import ytdlpgui.composeapp.generated.resources.checking_deno
+import ytdlpgui.composeapp.generated.resources.downloading_deno
+import ytdlpgui.composeapp.generated.resources.init_retry
 
 @Composable
 fun InitScreen(navController: NavHostController) {
@@ -71,12 +75,14 @@ fun InitScreen(navController: NavHostController) {
     
     InitView(
         state = state,
+        onRetry = { viewModel.handleEvent(InitEvent.StartInitialization) },
     )
 }
 
 @Composable
 fun InitView(
     state: InitState,
+    onRetry: () -> Unit = {},
 ) {
 
     Column(
@@ -90,7 +96,8 @@ fun InitView(
         if (state.errorMessage == null) {
             // Show progress ring when any operation is in progress
             val isInProgress = state.checkingYtDlp || state.downloadingYtDlp || state.updatingYtdlp ||
-                    state.checkingFFmpeg || state.downloadingFFmpeg || state.updatingFFmpeg
+                    state.checkingFFmpeg || state.downloadingFFmpeg || state.updatingFFmpeg ||
+                    state.checkingDeno || state.downloadingDeno
 
             if (isInProgress) {
                 ProgressRing(modifier = Modifier.size(48.dp))
@@ -110,6 +117,12 @@ fun InitView(
                 Text(text = stringResource(Res.string.downloading_ffmpeg) + " ${progress.toInt()}%")
             }
             if (state.updatingFFmpeg) Text(text = stringResource(Res.string.updating_ffmpeg))
+
+            if (state.checkingDeno) Text(text = stringResource(Res.string.checking_deno))
+            if (state.downloadingDeno) {
+                val progress = (state.downloadDenoProgress ?: 0f)
+                Text(text = stringResource(Res.string.downloading_deno) + " ${progress.toInt()}%")
+            }
         } else {
             Row {
                 Text(text = stringResource(Res.string.error_occurred))
@@ -117,6 +130,10 @@ fun InitView(
                 Text(
                     text = state.errorMessage, color = FluentTheme.colors.system.critical
                 )
+            }
+            Spacer(Modifier.height(16.dp))
+            AccentButton(onClick = onRetry) {
+                Text(stringResource(Res.string.init_retry))
             }
         }
     }

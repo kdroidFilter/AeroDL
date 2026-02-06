@@ -30,8 +30,10 @@
     <!-- Initialization messages -->
     <string name="checking_ytdlp">Checking for yt-dlp updates…</string>
     <string name="checking_ffmpeg">Checking FFmpeg installation…</string>
+    <string name="checking_deno">Checking Deno installation…</string>
     <string name="downloading_ytdlp">Downloading yt-dlp…</string>
     <string name="downloading_ffmpeg">Downloading FFmpeg…</string>
+    <string name="downloading_deno">Downloading Deno…</string>
     <string name="updating_ytdlp">Updating yt-dlp…</string>
     <string name="updating_ffmpeg">Updating FFmpeg…</string>
     <string name="status_checking">Checking…</string>
@@ -45,9 +47,11 @@
     <string name="dependency_info_title">While you configure AeroDL settings, we are downloading the necessary dependencies for the app to work properly.</string>
     <string name="dependency_ytdlp_tooltip">yt-dlp is the core tool that downloads videos from supported websites. It handles all the heavy lifting of fetching your content.</string>
     <string name="dependency_ffmpeg_tooltip">FFmpeg is a multimedia framework used to convert and process audio and video files. It ensures your downloads are in the format you want.</string>
+    <string name="dependency_deno_tooltip">Deno is a JavaScript runtime required by yt-dlp for YouTube video extraction. It ensures compatibility with YouTube\'s latest changes.</string>
 
     <!-- Error messages -->
     <string name="error_occurred">An error occurred</string>
+    <string name="init_retry">Retry</string>
 
     <!-- Update notification -->
     <string name="update_available">New version available: %1$s</string>
@@ -60,6 +64,32 @@
     <string name="settings_screen_title">Settings Screen</string>
     <string name="bulk_download_support_notice">Playlist and channel downloads aren&#39;t supported yet. If you enjoy AeroDL, you can support the project on Ko-fi.</string>
     <string name="support_on_kofi">Support on Ko-fi</string>
+
+    <!-- Bulk download screen -->
+    <string name="bulk_playlist_title">Playlist: %1$s</string>
+    <string name="bulk_channel_title">Channel: %1$s</string>
+    <string name="bulk_videos_count">%1$d videos</string>
+    <string name="bulk_selected_count">%1$d selected</string>
+    <string name="bulk_checking_availability">Checking availability… (%1$d/%2$d)</string>
+    <string name="bulk_select_all">Select all</string>
+    <string name="bulk_deselect_all">Deselect all</string>
+    <string name="bulk_download_selected">Download selected</string>
+    <string name="bulk_no_videos">No videos found in this playlist</string>
+    <string name="bulk_video_unavailable">Unavailable</string>
+    <string name="bulk_starting_downloads">Starting downloads…</string>
+    <string name="bulk_quality">Quality</string>
+    <string name="bulk_available_count">%1$d available</string>
+    <string name="bulk_login_required_title">YouTube Login Required</string>
+    <string name="bulk_login_required_desc">Please log in to access this playlist</string>
+    <string name="bulk_login_check">Checking login…</string>
+    <string name="bulk_login_success">Logged in</string>
+    <string name="bulk_login_back">Back</string>
+    <string name="bulk_login_continue">Continue</string>
+    <string name="bulk_fallback_loading">Loading via browser…</string>
+    <string name="bulk_fallback_scrolling">Scrolling… %1$d videos loaded</string>
+    <string name="bulk_fallback_extracting">Extracting videos…</string>
+    <string name="bulk_analyzing_videos">analyzing %1$d videos</string>
+
     <string name="about_credits_title">Credits</string>
     <string name="credits_made_by">Crafted by Elie Gambache</string>
     <string name="credits_thank_jetbrains">Huge thanks to JetBrains for creating Kotlin and Compose Multiplatform—without their passionate work, this app simply wouldn&#39;t exist.</string>
@@ -93,6 +123,9 @@
     <string name="settings_include_preset_in_filename_caption">Append the selected quality (e.g., 720p) to the downloaded file name</string>
     <string name="settings_parallel_downloads_title">Parallel downloads</string>
     <string name="settings_parallel_downloads_caption">Limit how many downloads can run simultaneously</string>
+
+    <string name="settings_validate_bulk_urls_title">Validate URLs in bulk download</string>
+    <string name="settings_validate_bulk_urls_caption">Check the availability of each video before downloading in bulk mode. Disabling this speeds up playlist loading.</string>
 
     <!-- Settings: Audio thumbnail embedding -->
     <string name="settings_embed_thumbnail_mp3_title">Embed thumbnail in MP3</string>

@@ -119,29 +119,33 @@ jobs:
           echo "$JAVA_HOME/bin" >> "$GITHUB_PATH"
           echo "Detected JBR at: $JAVA_HOME"
 
+      # Headless display for AOT training (Linux needs Xvfb)
+      - name: Setup headless display
+        uses: pyvista/setup-headless-display-action@v3
+
       # Gradle Setup
       - name: Set up Gradle
         uses: gradle/gradle-build-action@v3
         with:
           gradle-version: '8.14'
 
-      # Builds
+      # Builds (AOT cache is automatically generated via task dependencies)
       - name: Build Linux .deb
         if: startsWith(matrix.os, 'ubuntu') && matrix.pkg == 'deb'
         run: |
           chmod +x ./gradlew
-          ./gradlew :composeApp:createReleaseDistributable :composeApp:packageReleaseDeb
+          ./gradlew :composeApp:packageReleaseDeb
 
       - name: Build Linux .rpm
         if: startsWith(matrix.os, 'ubuntu') && matrix.pkg == 'rpm'
         run: |
           chmod +x ./gradlew
-          ./gradlew :composeApp:createReleaseDistributable :composeApp:packageReleaseRpm
+          ./gradlew :composeApp:packageReleaseRpm
 
       - name: Build Windows .msi
         if: startsWith(matrix.os, 'windows')
         shell: pwsh
-        run: .\gradlew.bat :composeApp:createReleaseDistributable :composeApp:packageReleaseMsi
+        run: .\gradlew.bat :composeApp:packageReleaseMsi
 
       - name: Build macOS .pkg + .dmg + .zip
         if: startsWith(matrix.os, 'macos')
@@ -149,7 +153,7 @@ jobs:
         run: |
           set -euo pipefail
           chmod +x ./gradlew
-          ./gradlew :composeApp:createReleaseDistributable :composeApp:packageReleasePkg :composeApp:packageReleaseDmg
+          ./gradlew :composeApp:packageReleasePkg :composeApp:packageReleaseDmg
           APP_DIR="composeApp/build/compose/binaries/main-release/app"
           APP_BUNDLE=$(find "$APP_DIR" -mindepth 1 -maxdepth 1 -type d -name '*.app' | head -n 1 || true)
           if [ -z "$APP_BUNDLE" ]; then
@@ -162,6 +166,34 @@ jobs:
           ZIP_NAME="${BASENAME}-mac-${ARCH}.zip"
           echo "Creating ZIP $ZIP_NAME from $(basename "$APP_BUNDLE") in $(dirname "$APP_BUNDLE")"
           (cd "$(dirname "$APP_BUNDLE")" && zip -r "$ZIP_NAME" "$(basename "$APP_BUNDLE")")
+
+      # Verify AOT cache was generated
+      - name: Verify AOT cache exists
+        shell: bash
+        run: |
+          AOT_FILE=$(find composeApp/build/compose/binaries -name "aerodl.aot" -type f 2>/dev/null | head -1)
+          if [ -z "$AOT_FILE" ]; then
+            echo "ERROR: aerodl.aot not found!"
+            exit 1
+          fi
+          SIZE=$(stat -f%z "$AOT_FILE" 2>/dev/null || stat -c%s "$AOT_FILE" 2>/dev/null)
+          echo "AOT cache found: $AOT_FILE ($((SIZE / 1024 / 1024)) MB)"
+
+      - name: Verify AOTCache injected in .cfg
+        shell: bash
+        run: |
+          CFG_FILE=$(find composeApp/build/compose/binaries -name "*.cfg" -type f 2>/dev/null | head -1)
+          if [ -z "$CFG_FILE" ]; then
+            echo "ERROR: No .cfg file found!"
+            exit 1
+          fi
+          if grep -q "AOTCache" "$CFG_FILE"; then
+            echo "OK: AOTCache directive found in $CFG_FILE"
+            grep "AOTCache" "$CFG_FILE"
+          else
+            echo "ERROR: AOTCache not found in $CFG_FILE"
+            exit 1
+          fi
 
       # Upload Artifacts
       - name: Upload Linux .deb (amd64/arm64)
@@ -265,18 +297,24 @@ jobs:
       - name: List downloaded files
         run: ls -R
 
-      # Get the latest tag (used in manual workflow dispatch)
-      - name: Get latest tag
+      # Get the tag that triggered this workflow
+      - name: Get tag
         id: get_tag
         run: |
-          tag=$(git describe --tags --abbrev=0)
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            tag=$(git describe --tags --abbrev=0)
+          else
+            tag=${GITHUB_REF#refs/tags/}
+          fi
           echo "TAG=$tag" >> $GITHUB_ENV
 
-      # Upload to latest release (attach to the correct tag)
-      - name: Upload to Latest Release
+      # Create (or update) the GitHub Release and upload artefacts
+      - name: Create Release and upload assets
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.TAG }}
+          name: ${{ env.TAG }}
+          generate_release_notes: true
           files: |
             *.deb
             *.rpm

@@ -34,7 +34,6 @@ import io.github.vinceglb.filekit.path
 @Inject
 class SettingsViewModel(
     private val settingsRepository: SettingsRepository,
-    private val supportedSitesRepository: io.github.kdroidfilter.ytdlpgui.data.SupportedSitesRepository,
     private val downloadHistoryRepository: DownloadHistoryRepository,
     private val trayAppState: TrayAppState,
 ) : MVIViewModel<SettingsState, SettingsEvents>() {
@@ -56,6 +55,7 @@ class SettingsViewModel(
     val autoLaunchEnabled: StateFlow<Boolean> = settingsRepository.autoLaunchEnabled
     val concurrentFragments: StateFlow<Int> = settingsRepository.concurrentFragments
     val proxy: StateFlow<String> = settingsRepository.proxy
+    val validateBulkUrls: StateFlow<Boolean> = settingsRepository.validateBulkUrls
 
     // Note: This ViewModel uses a combined state from multiple sources, so we override uiState
     override val uiState = combine(
@@ -71,6 +71,7 @@ class SettingsViewModel(
         notifyOnComplete,
         concurrentFragments,
         proxy,
+        validateBulkUrls,
     ) { values: Array<Any?> ->
         val loading = values[0] as Boolean
         val noCheck = values[1] as Boolean
@@ -84,6 +85,7 @@ class SettingsViewModel(
         val notify = values[9] as Boolean
         val concurrent = values[10] as Int
         val proxyUrl = values[11] as String
+        val validateBulk = values[12] as Boolean
         SettingsState(
             isLoading = loading,
             noCheckCertificate = noCheck,
@@ -97,6 +99,7 @@ class SettingsViewModel(
             notifyOnComplete = notify,
             concurrentFragments = concurrent,
             proxy = proxyUrl,
+            validateBulkUrls = validateBulk,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -148,6 +151,9 @@ class SettingsViewModel(
             }
             is SettingsEvents.SetProxy -> {
                 settingsRepository.setProxy(event.proxyUrl)
+            }
+            is SettingsEvents.SetValidateBulkUrls -> {
+                settingsRepository.setValidateBulkUrls(event.enabled)
             }
             is SettingsEvents.PickDownloadDir -> {
                 viewModelScope.launch {
