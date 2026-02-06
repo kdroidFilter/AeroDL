@@ -248,6 +248,9 @@ object PlatformUtils {
                         .start()
                         .waitFor()
                 }
+                // Note: We don't codesign ffmpeg/ffprobe because codesigning with --options runtime
+                // can break bundled binaries. Quarantine removal above is sufficient for execution.
+                debugln { "✅ Made ${file.name} executable and removed quarantine" }
             }
         } catch (_: UnsupportedOperationException) {
             Runtime.getRuntime().exec(arrayOf("chmod", "+x", file.absolutePath)).waitFor()

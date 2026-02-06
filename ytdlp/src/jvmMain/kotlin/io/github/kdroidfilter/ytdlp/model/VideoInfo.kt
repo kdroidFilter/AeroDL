@@ -55,6 +55,22 @@ data class VideoInfo(
      */
     fun hasSubtitlesFor(language: String): Boolean =
         availableSubtitles.containsKey(language)
+
+    /**
+     * Detect whether SponsorBlock segments are present in the chapters metadata.
+     * Requires the video info to have been fetched with `--sponsorblock-mark all`.
+     */
+    fun hasSponsorSegments(): Boolean {
+        if (chapters.isEmpty()) return false
+        val tokens = listOf(
+            "sponsor", "selfpromo", "interaction", "music_offtopic",
+            "intro", "outro", "preview", "filler", "nonmusic"
+        )
+        return chapters.any { ch ->
+            val t = ch.title?.lowercase() ?: return@any false
+            t.contains("sponsorblock") || tokens.any { token -> t.contains(token) }
+        }
+    }
 }
 
 /**
