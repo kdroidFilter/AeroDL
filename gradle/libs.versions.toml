@@ -3,7 +3,7 @@
 jvmToolchain = "25"
 
 # Kotlin & Compose
-kotlin = "2.3.0"
+kotlin = "2.3.10"
 composeMultiplatform = "1.10.0"
 composeHotReload = "1.0.0"
 
@@ -22,7 +22,7 @@ cardiologist = "0.8.0"
 # UI Libraries
 fluent = "v0.1.0"
 composemediaplayer = "0.8.7"
-composenativetray = "1.0.9"
+composenativetray = "1.0.10"
 composewebview = "1.0.0-alpha-10"
 
 # Network & Tools
