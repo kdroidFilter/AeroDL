@@ -59,13 +59,25 @@ import java.io.File
 
 @OptIn(ExperimentalTrayAppApi::class, ExperimentalFluentApi::class)
 fun main() {
-    // Configure Skiko render API based on platform
-    when (getOperatingSystem()) {
-        OperatingSystem.WINDOWS -> System.setProperty("skiko.renderApi", "OPENGL")
-        OperatingSystem.LINUX -> if (isNvidiaGpuPresent()) {
-            System.setProperty("skiko.renderApi", "SOFTWARE")
+    // AOT training: auto-exit after the specified duration so JVM shutdown hooks
+    // (which write .aotconf) run reliably on all platforms — including Windows where
+    // external signals (taskkill, Process.destroy) cannot trigger them.
+    System.getProperty("aot.training.autoExit")?.toLongOrNull()?.let { seconds ->
+        Thread({
+            Thread.sleep(seconds * 1000)
+            System.exit(0)
+        }, "aot-training-timer").apply { isDaemon = true; start() }
+    }
+
+    // Configure Skiko render API based on platform (respect pre-set -D flag)
+    if (System.getProperty("skiko.renderApi") == null) {
+        when (getOperatingSystem()) {
+            OperatingSystem.WINDOWS -> System.setProperty("skiko.renderApi", "DIRECT3D")
+            OperatingSystem.LINUX -> if (isNvidiaGpuPresent()) {
+                System.setProperty("skiko.renderApi", "SOFTWARE")
+            }
+            else -> { /* Use default render API */ }
         }
-        else -> { /* Use default render API */ }
     }
 
     application {
