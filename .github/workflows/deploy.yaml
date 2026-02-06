@@ -297,18 +297,24 @@ jobs:
       - name: List downloaded files
         run: ls -R
 
-      # Get the latest tag (used in manual workflow dispatch)
-      - name: Get latest tag
+      # Get the tag that triggered this workflow
+      - name: Get tag
         id: get_tag
         run: |
-          tag=$(git describe --tags --abbrev=0)
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            tag=$(git describe --tags --abbrev=0)
+          else
+            tag=${GITHUB_REF#refs/tags/}
+          fi
           echo "TAG=$tag" >> $GITHUB_ENV
 
-      # Upload to latest release (attach to the correct tag)
-      - name: Upload to Latest Release
+      # Create (or update) the GitHub Release and upload artefacts
+      - name: Create Release and upload assets
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.TAG }}
+          name: ${{ env.TAG }}
+          generate_release_notes: true
           files: |
             *.deb
             *.rpm
