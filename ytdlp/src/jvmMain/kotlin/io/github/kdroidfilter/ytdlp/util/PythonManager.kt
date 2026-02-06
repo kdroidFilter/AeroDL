@@ -44,7 +44,7 @@ object PythonManager {
      * Get the path to the Python executable.
      */
     fun getPythonExecutable(): String {
-        return File(pythonDir, "python/bin/python3").absolutePath
+        return File(pythonDir, "python/bin/python3.12").absolutePath
     }
 
     /**

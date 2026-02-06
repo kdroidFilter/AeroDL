@@ -201,6 +201,7 @@ class YtDlpWrapper {
             } else {
                 listOf(ytDlpPath, "--version")
             }
+            println("⚡ version() command: ${cmd.joinToString(" ")}")
             val proc = ProcessBuilder(cmd).redirectErrorStream(true).start()
             val exited = withTimeoutOrNull(2_000) { proc.waitFor() }
             if (exited == null) {
@@ -981,6 +982,8 @@ class YtDlpWrapper {
                 ffmpegPath?.takeIf { it.isNotBlank() }?.let { addAll(listOf("--ffmpeg-location", it)) }
             }
 
+            println("⚡ Executing command: ${cmd.joinToString(" ")}")
+
             try {
                 val process = ProcessBuilder(cmd).start()
                 val stdoutReader = async { process.inputStream.bufferedReader(StandardCharsets.UTF_8).readLines() }
@@ -1026,12 +1029,21 @@ class YtDlpWrapper {
         }
 
         return withContext(Dispatchers.IO) {
-            val fullCmd = buildList { add(ytDlpPath); addAll(cmdArgs) }
+            val fullCmd = buildList {
+                // On macOS, prepend Python to run the yt-dlp script
+                if (getOperatingSystem() == OperatingSystem.MACOS) {
+                    add(PythonManager.getPythonExecutable())
+                }
+                add(ytDlpPath)
+                addAll(cmdArgs)
+            }
             val cacheKey = fullCmd.joinToString("\u0001")
 
             synchronized(metadataCacheLock) {
                 metadataCache[cacheKey]?.let { return@withContext Result.success(it.json) }
             }
+
+            println("⚡ extractMetadata command: ${fullCmd.joinToString(" ")}")
 
             try {
                 val pb = ProcessBuilder(fullCmd).redirectErrorStream(false)
