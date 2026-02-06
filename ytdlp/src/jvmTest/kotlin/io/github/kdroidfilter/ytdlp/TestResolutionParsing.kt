@@ -7,7 +7,7 @@ fun main() = runBlocking {
 
     // Initialize wrapper
     val wrapper = YtDlpWrapper()
-    wrapper.initialize()
+    wrapper.initialize(manifest = null)
 
     val testUrls = listOf(
         "https://www.youtube.com/watch?v=xXLxSgqVO9c",
