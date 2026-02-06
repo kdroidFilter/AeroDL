@@ -1,6 +1,8 @@
 package io.github.kdroidfilter.ytdlp.util
 
 import io.github.kdroidfilter.network.HttpsConnectionFactory
+import io.github.kdroidfilter.platformtools.OperatingSystem
+import io.github.kdroidfilter.platformtools.getOperatingSystem
 import io.github.kdroidfilter.ytdlp.core.Options
 import io.github.kdroidfilter.ytdlp.core.SubtitleOptions
 import io.github.kdroidfilter.logging.infoln
@@ -87,7 +89,15 @@ object NetAndArchive {
         options: Options,
         downloadDir: File?
     ): List<String> {
-        val cmd = mutableListOf(ytDlpPath, "--newline")
+        val cmd = mutableListOf<String>()
+
+        // On macOS, prepend Python to run the yt-dlp script
+        if (getOperatingSystem() == OperatingSystem.MACOS) {
+            cmd.add(PythonManager.getPythonExecutable())
+        }
+
+        cmd.add(ytDlpPath)
+        cmd.add("--newline")
 
         // Point yt-dlp to the directory that contains ffmpeg AND ffprobe.
         // Passing the directory ensures yt-dlp can locate both tools reliably.
