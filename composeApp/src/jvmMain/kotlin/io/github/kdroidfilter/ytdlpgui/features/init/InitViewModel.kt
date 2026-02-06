@@ -109,19 +109,32 @@ class InitViewModel(
     private fun checkForUpdates(manifest: ReleaseManifest) {
         runCatching {
             val currentVersion = getAppVersion()
-            val latestVersion = manifest.releases.aerodl.tagName.removePrefix("v")
+            val aerodlRelease = manifest.releases.aerodl
+            val latestVersion = aerodlRelease.tagName.removePrefix("v")
 
-            // Compare versions
-            if (isNewerVersion(currentVersion, latestVersion)) {
+            // Compare versions AND check if there are actual installable assets
+            // This prevents notifying users when a release is tagged but assets aren't uploaded yet
+            if (isNewerVersion(currentVersion, latestVersion) && hasInstallableAssets(aerodlRelease)) {
                 update {
                     copy(
                         updateAvailable = true,
                         latestVersion = latestVersion,
                         downloadUrl = "https://kdroidfilter.github.io/AeroDL/",
-                        releaseBody = manifest.releases.aerodl.body
+                        releaseBody = aerodlRelease.body
                     )
                 }
             }
+        }
+    }
+
+    /**
+     * Checks if the release info contains any installable assets (executables/installers)
+     */
+    private fun hasInstallableAssets(releaseInfo: io.github.kdroidfilter.ytdlp.model.ReleaseInfo): Boolean {
+        val installableExtensions = setOf("exe", "msi", "dmg", "pkg", "deb", "rpm")
+        return releaseInfo.assets.any { asset ->
+            val extension = asset.name.substringAfterLast('.', "").lowercase()
+            extension in installableExtensions
         }
     }
 
