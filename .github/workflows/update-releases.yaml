@@ -23,6 +23,8 @@ jobs:
 
       - name: Generate manifest
         run: ./gradlew :release-manifest-generator:jvmRun
+        env:
+          MANIFEST_OUTPUT: docs/api/releases.json
 
       - name: Commit and push if changed
         run: |

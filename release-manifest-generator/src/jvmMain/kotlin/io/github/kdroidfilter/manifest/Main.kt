@@ -57,10 +57,11 @@ fun main() = runBlocking {
         )
     )
 
-    // Write to docs/api/releases.json
-    val outputDir = File("docs/api")
-    outputDir.mkdirs()
-    val outputFile = File(outputDir, "releases.json")
+    // Write to docs/api/releases.json at the project root.
+    // The output path can be overridden via the MANIFEST_OUTPUT env var.
+    val outputPath = System.getenv("MANIFEST_OUTPUT") ?: "docs/api/releases.json"
+    val outputFile = File(outputPath)
+    outputFile.parentFile.mkdirs()
     outputFile.writeText(json.encodeToString(ReleaseManifest.serializer(), manifest))
     println("Manifest written to ${outputFile.absolutePath}")
 
