@@ -1,6 +1,11 @@
+import io.github.kdroidfilter.buildsrc.AotCacheHelper
+import io.github.kdroidfilter.buildsrc.DebPostProcessConfig
+import io.github.kdroidfilter.buildsrc.DebPostProcessHelper
 import io.github.kdroidfilter.buildsrc.NativeCleanupTransformHelper
 import io.github.kdroidfilter.buildsrc.RenameMacPkgTask
 import io.github.kdroidfilter.buildsrc.RenameMsiTask
+import io.github.kdroidfilter.buildsrc.RpmPostProcessConfig
+import io.github.kdroidfilter.buildsrc.RpmPostProcessHelper
 import io.github.kdroidfilter.buildsrc.Versioning
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import java.util.Locale
@@ -14,7 +19,6 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.sqlDelight)
     alias(libs.plugins.metro)
-    alias(libs.plugins.linuxDeps)
 }
 
 val version = Versioning.resolveVersion(project)
@@ -162,7 +166,6 @@ compose.desktop {
             "-DdebugLogs=$debugLogs"
         )
 
-
         nativeDistributions {
             vendor = "KDroidFilter"
             targetFormats(TargetFormat.Pkg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm, TargetFormat.Dmg)
@@ -171,6 +174,8 @@ compose.desktop {
             description = "AeroDl"
 
             // JVM args for performance optimization
+            // Note: -XX:AOTCache=$APPDIR/aerodl.aot is injected by generateDistributableAotCache
+            // into the .cfg file (not here, because nativeDistributions.jvmArgs leak into the run task)
             jvmArgs += listOf(
                 "--enable-native-access=ALL-UNNAMED",
                 "--add-modules=jdk.incubator.vector",
@@ -222,18 +227,171 @@ sqldelight {
     }
 }
 
-linuxDebConfig {
-    // Set StartupWMClass to fix dock/taskbar icon
-    startupWMClass.set("io.github.kdroidfilter.ytdlpgui.MainKt")
-    // For Ubuntu 24 t64 dependencies compatibility with older OSes
-    enableT64AlternativeDeps.set(true)
+// Project Leyden AOT cache for dev mode (./gradlew :composeApp:run)
+// Configured directly on the run task to avoid leaking into nativeDistributions .cfg
+// Usage: -Paot=train|on|auto|off (default: auto)
+afterEvaluate {
+    tasks.named<JavaExec>("run") {
+        val aotMode = project.findProperty("aot")?.toString() ?: "auto"
+        val aotCacheDir = layout.buildDirectory.dir("aot-cache").get().asFile
+        val aotCacheFile = File(aotCacheDir, "aerodl-dev.aot")
+
+        when (aotMode) {
+            "train" -> {
+                aotCacheDir.mkdirs()
+                jvmArgs = (jvmArgs ?: emptyList()) + "-XX:AOTCacheOutput=${aotCacheFile.absolutePath}"
+            }
+            "on" -> {
+                if (aotCacheFile.exists()) {
+                    jvmArgs = (jvmArgs ?: emptyList()) + "-XX:AOTCache=${aotCacheFile.absolutePath}"
+                }
+            }
+            "auto" -> {
+                if (aotCacheFile.exists()) {
+                    jvmArgs = (jvmArgs ?: emptyList()) + "-XX:AOTCache=${aotCacheFile.absolutePath}"
+                } else {
+                    aotCacheDir.mkdirs()
+                    jvmArgs = (jvmArgs ?: emptyList()) + "-XX:AOTCacheOutput=${aotCacheFile.absolutePath}"
+                }
+            }
+            "off" -> { /* AOT disabled */ }
+        }
+    }
 }
+
 
 tasks.withType<Jar> {
     exclude("META-INF/*.SF")
     exclude("META-INF/*.DSA")
     exclude("META-INF/*.RSA")
     exclude("META-INF/*.EC")
+}
+
+// --- Project Leyden: AOT cache generation for distributable ---
+// Trains the app ~20s to record class loading, then creates an AOT cache
+val generateDistributableAotCache = AotCacheHelper.registerTask(
+    project = project,
+    taskName = "generateDistributableAotCache",
+    dependsOnTask = "createDistributable",
+    binariesSubdir = "main"
+)
+
+val generateReleaseDistributableAotCache = AotCacheHelper.registerTask(
+    project = project,
+    taskName = "generateReleaseDistributableAotCache",
+    dependsOnTask = "createReleaseDistributable",
+    binariesSubdir = "main-release"
+)
+
+val debConfig = DebPostProcessConfig(
+    packageName = "aerodl",
+    appName = "AeroDl",
+    execPath = "/opt/aerodl/bin/AeroDl",
+    iconPath = "/opt/aerodl/lib/AeroDl.png",
+    startupWMClass = "io.github.kdroidfilter.ytdlpgui.MainKt",
+    enableT64AlternativeDeps = true
+)
+
+val postProcessReleaseDeb = DebPostProcessHelper.registerTask(
+    project = project,
+    taskName = "postProcessReleaseDeb",
+    buildType = "main-release",
+    config = debConfig
+)
+
+val postProcessDeb = DebPostProcessHelper.registerTask(
+    project = project,
+    taskName = "postProcessDeb",
+    buildType = "main",
+    config = debConfig
+)
+
+val rpmConfig = RpmPostProcessConfig(
+    packageName = "aerodl",
+    appName = "AeroDl",
+    execPath = "/opt/aerodl/bin/AeroDl",
+    iconPath = "/opt/aerodl/lib/AeroDl.png",
+    startupWMClass = "io.github.kdroidfilter.ytdlpgui.MainKt"
+)
+
+val postProcessReleaseRpm = RpmPostProcessHelper.registerTask(
+    project = project,
+    taskName = "postProcessReleaseRpm",
+    buildType = "main-release",
+    config = rpmConfig
+)
+
+val postProcessRpm = RpmPostProcessHelper.registerTask(
+    project = project,
+    taskName = "postProcessRpm",
+    buildType = "main",
+    config = rpmConfig
+)
+
+afterEvaluate {
+    val releaseAotTask = tasks.named("generateReleaseDistributableAotCache")
+    val mainAotTask = tasks.named("generateDistributableAotCache")
+
+    // Configure release packaging tasks
+    // The appImage path must point to the app directory containing .jpackage.xml
+    // Structure: build/compose/binaries/main-release/app/AeroDl/ (Windows/Linux)
+    val releaseAppImageDir = layout.buildDirectory.dir("compose/binaries/main-release/app/AeroDl")
+    tasks.matching { it.name == "packageReleaseMsi" }.configureEach {
+        dependsOn(releaseAotTask)
+        if (this is org.jetbrains.compose.desktop.application.tasks.AbstractJPackageTask) {
+            appImage.set(releaseAppImageDir)
+        }
+    }
+    tasks.matching { it.name == "packageReleaseRpm" }.configureEach {
+        dependsOn(releaseAotTask)
+        if (this is org.jetbrains.compose.desktop.application.tasks.AbstractJPackageTask) {
+            appImage.set(releaseAppImageDir)
+        }
+        finalizedBy(postProcessReleaseRpm)
+    }
+    tasks.matching { it.name == "packageReleaseDeb" }.configureEach {
+        dependsOn(releaseAotTask)
+        if (this is org.jetbrains.compose.desktop.application.tasks.AbstractJPackageTask) {
+            appImage.set(releaseAppImageDir)
+        }
+        finalizedBy(postProcessReleaseDeb)
+    }
+    tasks.matching { it.name.matches(Regex("packageRelease(Dmg|Pkg|DistributionForCurrentOS)")) }.configureEach {
+        dependsOn(releaseAotTask)
+        // macOS already uses --app-image by default, no need to set appImage
+    }
+
+    // Configure non-release packaging tasks
+    val mainAppImageDir = layout.buildDirectory.dir("compose/binaries/main/app/AeroDl")
+    tasks.matching { it.name == "packageMsi" }.configureEach {
+        dependsOn(mainAotTask)
+        if (this is org.jetbrains.compose.desktop.application.tasks.AbstractJPackageTask) {
+            appImage.set(mainAppImageDir)
+        }
+    }
+    tasks.matching { it.name == "packageRpm" }.configureEach {
+        dependsOn(mainAotTask)
+        if (this is org.jetbrains.compose.desktop.application.tasks.AbstractJPackageTask) {
+            appImage.set(mainAppImageDir)
+        }
+        finalizedBy(postProcessRpm)
+    }
+    tasks.matching { it.name == "packageDeb" }.configureEach {
+        dependsOn(mainAotTask)
+        if (this is org.jetbrains.compose.desktop.application.tasks.AbstractJPackageTask) {
+            appImage.set(mainAppImageDir)
+        }
+        finalizedBy(postProcessDeb)
+    }
+    tasks.matching { it.name.matches(Regex("package(Dmg|Pkg|DistributionForCurrentOS)")) && !it.name.contains("Release") }.configureEach {
+        dependsOn(mainAotTask)
+    }
+}
+
+tasks.register<Delete>("aotClean") {
+    group = "compose desktop"
+    description = "Delete the AOT cache to force re-training"
+    delete(layout.buildDirectory.dir("aot-cache"))
 }
 
 // MSIX packaging task (Windows-only)
