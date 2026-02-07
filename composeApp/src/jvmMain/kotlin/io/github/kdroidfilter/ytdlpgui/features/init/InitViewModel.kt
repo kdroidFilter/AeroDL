@@ -52,36 +52,41 @@ class InitViewModel(
     private var manifest: ReleaseManifest? = null
 
     init {
-        if (System.getProperty("aot.training.autoExit") != null) {
-            // During AOT cache recording, skip all network/initialization to keep
-            // the cache lean. Loading Ktor/SSL/serialization classes during training
-            // bloats the cache and wastes ~800 MB of memory at every app startup.
-            viewModelScope.launch {
-                update { copy(initCompleted = true, navigationState = InitNavigationState.NavigateToHome) }
-            }
-        } else {
-            viewModelScope.launch {
+        val isAotTraining = System.getProperty("aot.training.autoExit") != null
+
+        viewModelScope.launch {
+            // Skip network calls during AOT training to keep the cache lean.
+            if (!isAotTraining) {
                 // Fetch the manifest FIRST, regardless of onboarding status
                 // This is needed for downloading yt-dlp/ffmpeg during onboarding
                 manifest = releaseManifestRepository.getManifest()
-
-                // Check if onboarding is completed
-                val onboardingCompleted = settingsRepository.isOnboardingCompleted()
-
-                if (!onboardingCompleted) {
-                    // Not configured → go to onboarding
-                    update { copy(navigationState = InitNavigationState.NavigateToOnboarding) }
-                    return@launch
-                }
-
-                // Check for app updates using the manifest
-                manifest?.let { checkForUpdates(it) }
-
-                // Already configured → initialize yt-dlp and ffmpeg
-                startInitialization(navigateToHomeWhenDone = true)
             }
 
-            // Schedule periodic update checks every 12 hours (no overlap if previous run is still active)
+            // Check if onboarding is completed
+            val onboardingCompleted = settingsRepository.isOnboardingCompleted()
+
+            if (!onboardingCompleted) {
+                // Not configured → go to onboarding
+                update { copy(navigationState = InitNavigationState.NavigateToOnboarding) }
+                return@launch
+            }
+
+            if (isAotTraining) {
+                // During AOT training with completed onboarding, skip downloads
+                // and go straight to home for UI class coverage.
+                update { copy(initCompleted = true, navigationState = InitNavigationState.NavigateToHome) }
+                return@launch
+            }
+
+            // Check for app updates using the manifest
+            manifest?.let { checkForUpdates(it) }
+
+            // Already configured → initialize yt-dlp and ffmpeg
+            startInitialization(navigateToHomeWhenDone = true)
+        }
+
+        // Schedule periodic update checks every 12 hours (no overlap if previous run is still active)
+        if (!isAotTraining) {
             startPeriodicUpdateChecks()
         }
     }
