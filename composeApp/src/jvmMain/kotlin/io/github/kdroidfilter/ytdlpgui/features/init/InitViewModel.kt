@@ -53,27 +53,21 @@ class InitViewModel(
 
     init {
         viewModelScope.launch {
-            // Fetch the manifest FIRST, regardless of onboarding status
-            // This is needed for downloading yt-dlp/ffmpeg during onboarding
-            manifest = releaseManifestRepository.getManifest()
-
             // Check if onboarding is completed
             val onboardingCompleted = settingsRepository.isOnboardingCompleted()
 
             if (!onboardingCompleted) {
-                // Not configured → go to onboarding
+                // First install → fetch manifest from network for onboarding
+                manifest = releaseManifestRepository.fetchManifest()
                 update { copy(navigationState = InitNavigationState.NavigateToOnboarding) }
                 return@launch
             }
 
-            // Check for app updates using the manifest
-            manifest?.let { checkForUpdates(it) }
-
-            // Already configured → initialize yt-dlp and ffmpeg
+            // Already configured → initialize yt-dlp and ffmpeg (no HTTP at startup)
             startInitialization(navigateToHomeWhenDone = true)
         }
 
-        // Schedule periodic update checks every 12 hours (no overlap if previous run is still active)
+        // Schedule periodic update checks every 12 hours
         startPeriodicUpdateChecks()
     }
 
@@ -83,8 +77,9 @@ class InitViewModel(
             Clock.System
                 .fixedPeriodPulse(12.hours)
                 .beat(strategy = PulseBackpressureStrategy.SkipNext) {
-                    // Use the cached manifest (no re-fetch)
-                    val m = manifest ?: return@beat
+                    // Fetch fresh manifest from network
+                    val m = releaseManifestRepository.fetchManifest() ?: return@beat
+                    manifest = m
                     // App update check
                     checkForUpdates(m)
                     // yt-dlp update check + auto-download if newer

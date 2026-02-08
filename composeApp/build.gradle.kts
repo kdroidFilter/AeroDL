@@ -85,6 +85,7 @@ kotlin {
 
             // Serialization
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.kotlinx.serialization.protobuf)
 
             // Settings & Notifications
             implementation(libs.multiplatform.settings)

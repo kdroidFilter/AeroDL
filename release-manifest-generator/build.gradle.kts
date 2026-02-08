@@ -23,6 +23,7 @@ kotlin {
 
             // Serialization
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.kotlinx.serialization.protobuf)
 
             // Coroutines
             implementation(libs.kotlinx.coroutinesSwing)
