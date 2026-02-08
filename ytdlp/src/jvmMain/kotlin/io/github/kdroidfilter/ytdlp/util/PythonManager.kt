@@ -65,13 +65,13 @@ object PythonManager {
             return false
         }
 
-        val arch = System.getProperty("os.arch")
-        val assetName = when {
-            arch.contains("aarch64") || arch.contains("arm") -> "cpython-aarch64-apple-darwin"
-            else -> "cpython-x86_64-apple-darwin"
+        val arch = (System.getProperty("os.arch") ?: "").lowercase()
+        val archToken = when {
+            arch.contains("aarch64") || arch.contains("arm64") -> "aarch64-apple-darwin"
+            else -> "x86_64-apple-darwin"
         }
 
-        debugln { "Downloading Python for architecture: $assetName" }
+        debugln { "Downloading Python for architecture token: $archToken" }
 
         val pythonRelease = manifest.releases.python
         if (pythonRelease == null) {
@@ -79,9 +79,17 @@ object PythonManager {
             return false
         }
 
-        val asset = pythonRelease.assets.find { it.name.contains(assetName) && it.name.endsWith(".tar.gz") }
+        val asset = pythonRelease.assets.find {
+            it.name.contains(archToken) &&
+                it.name.contains("install_only") &&
+                it.name.endsWith(".tar.gz")
+        }
         if (asset == null) {
-            errorln { "Python asset not found for $assetName" }
+            errorln {
+                "Python asset not found for $archToken. Available assets: ${
+                    pythonRelease.assets.joinToString(", ") { it.name }
+                }"
+            }
             return false
         }
 

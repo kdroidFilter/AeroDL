@@ -1,20 +1,20 @@
 package io.github.kdroidfilter.ytdlpgui.data
 
-import io.github.kdroidfilter.logging.LoggerConfig
 import io.github.kdroidfilter.network.KtorConfig
-import io.github.kdroidfilter.platformtools.releasefetcher.github.GitHubReleaseFetcher
-import io.github.kdroidfilter.platformtools.releasefetcher.github.model.Release
 import io.github.kdroidfilter.ytdlp.model.AssetInfo
 import io.github.kdroidfilter.ytdlp.model.ReleaseEntries
 import io.github.kdroidfilter.ytdlp.model.ReleaseInfo
 import io.github.kdroidfilter.ytdlp.model.ReleaseManifest
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import java.time.Instant
 
 /**
- * Fetches release information directly from the GitHub API via GitHubReleaseFetcher.
- * Network fetch happens only during onboarding or periodic checks (not during AOT training).
+ * Builds the release manifest with hardcoded URLs for stable dependencies (FFmpeg, Deno, Python)
+ * and a live GitHub API fetch for yt-dlp (the only frequently-updated component).
  */
 class ReleaseManifestRepository {
 
@@ -24,56 +24,146 @@ class ReleaseManifestRepository {
     fun getCachedManifest(): ReleaseManifest? = cached
 
     /**
-     * Fetches latest releases from the GitHub API in parallel and builds the manifest.
+     * Fetches the latest yt-dlp release from GitHub API and combines it
+     * with hardcoded release info for FFmpeg, Deno, and Python.
      */
     suspend fun fetchManifest(): ReleaseManifest? {
         val httpClient = KtorConfig.createHttpClient()
-        return runCatching {
-            coroutineScope {
-                val ytDlp = async { fetchRelease("yt-dlp", "yt-dlp", httpClient) }
-                val ffmpeg = async { fetchRelease("yt-dlp", "FFmpeg-Builds", httpClient) }
-                val ffmpegMacos = async { fetchRelease("kdroidFilter", "FFmpeg-Builds", httpClient) }
-                val deno = async { fetchRelease("denoland", "deno", httpClient) }
-                val aerodl = async { fetchRelease("kdroidFilter", "AeroDL", httpClient) }
-                val python = async { fetchRelease("indygreg", "python-build-standalone", httpClient) }
+        val fetchedManifest = runCatching {
+            val responseText = httpClient
+                .get("https://api.github.com/repos/yt-dlp/yt-dlp/releases/latest")
+                .bodyAsText()
+            val release = JSON.decodeFromString<GitHubRelease>(responseText)
+            val ytDlpInfo = ReleaseInfo(
+                tagName = release.tagName,
+                body = release.body,
+                assets = release.assets.map { AssetInfo(it.name, it.browserDownloadUrl) }
+            )
+            buildManifest(ytDlpInfo)
+        }.onFailure { error ->
+            System.err.println("[ReleaseManifestRepository] Failed to fetch manifest: ${error.message}")
+        }.getOrNull()
 
-                ReleaseManifest(
-                    generatedAt = Instant.now().toString(),
-                    schemaVersion = 1,
-                    releases = ReleaseEntries(
-                        ytDlp = ytDlp.await(),
-                        ytDlpScript = ytDlp.await(),
-                        python = python.await(),
-                        ffmpeg = ffmpeg.await(),
-                        ffmpegMacos = ffmpegMacos.await(),
-                        deno = deno.await(),
-                        aerodl = aerodl.await()
-                    )
+        httpClient.close()
+
+        val resolved = fetchedManifest
+            ?: cached
+            ?: buildManifest(YTDLP_FALLBACK_RELEASE).also {
+                System.err.println(
+                    "[ReleaseManifestRepository] Using hardcoded yt-dlp fallback release: $YTDLP_FALLBACK_TAG"
                 )
             }
-        }.onFailure { error ->
-            if (LoggerConfig.enabled) {
-                System.err.println("[ReleaseManifestRepository] Failed to fetch manifest: ${error.message}")
-                error.printStackTrace()
-            }
-        }.also {
-            httpClient.close()
-        }.getOrNull()?.also { cached = it }
+
+        cached = resolved
+        return resolved
     }
 
-    private suspend fun fetchRelease(
-        owner: String,
-        repo: String,
-        httpClient: io.ktor.client.HttpClient
-    ): ReleaseInfo {
-        val release = GitHubReleaseFetcher(owner, repo, httpClient).getLatestRelease()
-            ?: error("Failed to fetch $owner/$repo release")
-        return release.toReleaseInfo()
+    companion object {
+        private val JSON = Json { ignoreUnknownKeys = true }
+
+        private fun buildManifest(ytDlpInfo: ReleaseInfo): ReleaseManifest =
+            ReleaseManifest(
+                generatedAt = Instant.now().toString(),
+                schemaVersion = 1,
+                releases = ReleaseEntries(
+                    ytDlp = ytDlpInfo,
+                    ytDlpScript = ytDlpInfo,
+                    python = PYTHON_RELEASE,
+                    ffmpeg = FFMPEG_RELEASE,
+                    ffmpegMacos = FFMPEG_MACOS_RELEASE,
+                    deno = DENO_RELEASE,
+                    aerodl = AERODL_PLACEHOLDER
+                )
+            )
+
+        // ---- yt-dlp fallback (used only when GitHub API is unavailable and no cache exists) ----
+        private const val YTDLP_FALLBACK_TAG = "2025.12.08"
+        private const val YTDLP_FALLBACK_BASE =
+            "https://github.com/yt-dlp/yt-dlp/releases/download/$YTDLP_FALLBACK_TAG"
+        private val YTDLP_FALLBACK_RELEASE = ReleaseInfo(
+            tagName = YTDLP_FALLBACK_TAG,
+            assets = listOf(
+                "yt-dlp",
+                "yt-dlp.exe",
+                "yt-dlp_macos",
+                "yt-dlp_linux",
+                "yt-dlp_linux_aarch64",
+                "yt-dlp_linux_armv7l",
+                "yt-dlp_musllinux",
+                "yt-dlp_musllinux_aarch64",
+                "yt-dlp_win_arm64.exe",
+                "yt-dlp_x86.exe",
+            ).map { AssetInfo(it, "$YTDLP_FALLBACK_BASE/$it") }
+        )
+
+        // ---- FFmpeg for Windows/Linux (yt-dlp/FFmpeg-Builds, tag=latest) ----
+        private const val FFMPEG_BASE = "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest"
+        private val FFMPEG_RELEASE = ReleaseInfo(
+            tagName = "latest",
+            assets = listOf(
+                "ffmpeg-master-latest-win64-gpl.zip",
+                "ffmpeg-master-latest-winarm64-gpl.zip",
+                "ffmpeg-master-latest-win32-gpl.zip",
+                "ffmpeg-master-latest-linux64-gpl.tar.xz",
+                "ffmpeg-master-latest-linuxarm64-gpl.tar.xz",
+            ).map { AssetInfo(it, "$FFMPEG_BASE/$it") }
+        )
+
+        // ---- FFmpeg for macOS (kdroidFilter/FFmpeg-Builds, tag=latest) ----
+        private const val FFMPEG_MACOS_BASE = "https://github.com/kdroidFilter/FFmpeg-Builds/releases/download/latest"
+        private val FFMPEG_MACOS_RELEASE = ReleaseInfo(
+            tagName = "latest",
+            assets = listOf(
+                "ffmpeg-master-latest-macos64-gpl.tar.xz",
+                "ffmpeg-master-latest-macosarm64-gpl.tar.xz",
+            ).map { AssetInfo(it, "$FFMPEG_MACOS_BASE/$it") }
+        )
+
+        // ---- Deno (denoland/deno) ----
+        private const val DENO_VERSION = "v2.6.8"
+        private const val DENO_BASE = "https://github.com/denoland/deno/releases/download/$DENO_VERSION"
+        private val DENO_RELEASE = ReleaseInfo(
+            tagName = DENO_VERSION,
+            assets = listOf(
+                "deno-x86_64-pc-windows-msvc.zip",
+                "deno-aarch64-pc-windows-msvc.zip",
+                "deno-x86_64-unknown-linux-gnu.zip",
+                "deno-aarch64-unknown-linux-gnu.zip",
+                "deno-x86_64-apple-darwin.zip",
+                "deno-aarch64-apple-darwin.zip",
+            ).map { AssetInfo(it, "$DENO_BASE/$it") }
+        )
+
+        // ---- Python standalone for macOS (indygreg/python-build-standalone) ----
+        private const val PYTHON_TAG = "20260203"
+        private const val PYTHON_BASE =
+            "https://github.com/indygreg/python-build-standalone/releases/download/$PYTHON_TAG"
+        private val PYTHON_RELEASE = ReleaseInfo(
+            tagName = PYTHON_TAG,
+            assets = listOf(
+                "cpython-3.12.12+$PYTHON_TAG-aarch64-apple-darwin-install_only.tar.gz",
+                "cpython-3.12.12+$PYTHON_TAG-x86_64-apple-darwin-install_only.tar.gz",
+            ).map { AssetInfo(it, "$PYTHON_BASE/$it") }
+        )
+
+        // ---- AeroDL placeholder (not used for update checks) ----
+        private val AERODL_PLACEHOLDER = ReleaseInfo(
+            tagName = "v0.0.0",
+            assets = emptyList()
+        )
     }
 }
 
-private fun Release.toReleaseInfo() = ReleaseInfo(
-    tagName = tag_name,
-    body = body,
-    assets = assets.map { AssetInfo(it.name, it.browser_download_url) }
+/** Minimal model for the GitHub releases API — only the fields we actually need. */
+@Serializable
+private data class GitHubRelease(
+    @SerialName("tag_name") val tagName: String,
+    val body: String? = null,
+    val assets: List<GitHubAsset> = emptyList(),
+)
+
+@Serializable
+private data class GitHubAsset(
+    val name: String,
+    @SerialName("browser_download_url") val browserDownloadUrl: String,
 )
