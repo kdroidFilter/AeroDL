@@ -28,11 +28,13 @@ class AboutViewModel(
         viewModelScope.launch {
             val ytdlpVersion = ytDlpWrapper.version()
             val ffmpegVersion = ytDlpWrapper.ffmpegVersion()
+            val denoVersion = ytDlpWrapper.denoVersion()
             update {
                 copy(
                     appVersion = getAppVersion(),
                     ytdlpVersion = ytdlpVersion,
-                    ffmpegVersion = ffmpegVersion
+                    ffmpegVersion = ffmpegVersion,
+                    denoVersion = denoVersion
                 )
             }
         }

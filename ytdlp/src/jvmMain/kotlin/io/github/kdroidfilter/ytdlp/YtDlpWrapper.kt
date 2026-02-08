@@ -316,6 +316,12 @@ class YtDlpWrapper {
             ffmpegPath = it
             return true
         }
+        // Check default install location (already downloaded in a previous session)
+        val defaultPath = PlatformUtils.getDefaultFfmpegPath()
+        if (!forceDownload && PlatformUtils.ffmpegVersion(defaultPath) != null) {
+            ffmpegPath = defaultPath
+            return true
+        }
         if (manifest == null) return false
         if (getOperatingSystem() in listOf(OperatingSystem.WINDOWS, OperatingSystem.LINUX, OperatingSystem.MACOS)) {
             val assetPattern = PlatformUtils.getFfmpegAssetPatternForSystem() ?: return false
@@ -347,6 +353,12 @@ class YtDlpWrapper {
         }
         PlatformUtils.findDenoInSystemPath()?.let {
             denoPath = it
+            return true
+        }
+        // Check default install location (already downloaded in a previous session)
+        val defaultPath = PlatformUtils.getDefaultDenoPath()
+        if (!forceDownload && PlatformUtils.denoVersion(defaultPath) != null) {
+            denoPath = defaultPath
             return true
         }
         if (manifest == null) return false

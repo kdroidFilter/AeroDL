@@ -100,6 +100,8 @@
     <string name="ytdlp_version_missing">yt-dlp: לא נמצא</string>
     <string name="ffmpeg_version_label">FFmpeg: %1$s</string>
     <string name="ffmpeg_version_missing">FFmpeg: לא נמצא</string>
+    <string name="deno_version_label">Deno: %1$s</string>
+    <string name="deno_version_missing">Deno: לא נמצא</string>
 
     <!-- הגדרות -->
     <string name="settings_no_check_certificate_title">אי-בדיקת תעודות אבטחה</string>

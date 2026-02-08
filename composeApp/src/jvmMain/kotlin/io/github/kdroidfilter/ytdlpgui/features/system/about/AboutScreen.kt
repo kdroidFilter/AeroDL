@@ -61,6 +61,10 @@ fun AboutView(
         ?.let { stringResource(Res.string.ffmpeg_version_label, it) }
         ?: stringResource(Res.string.ffmpeg_version_missing)
 
+    val denoVersion = state.denoVersion?.takeIf { it.isNotBlank() }
+        ?.let { stringResource(Res.string.deno_version_label, it) }
+        ?: stringResource(Res.string.deno_version_missing)
+
     val scrollState = rememberScrollState()
 
     Row(modifier = Modifier.fillMaxSize()) {
@@ -124,6 +128,7 @@ fun AboutView(
                 Text(text = appVersion, style = FluentTheme.typography.body, textAlign = TextAlign.Center)
                 Text(text = ytdlpVersion, style = FluentTheme.typography.body, textAlign = TextAlign.Center)
                 Text(text = ffmpegVersion, style = FluentTheme.typography.body, textAlign = TextAlign.Center)
+                Text(text = denoVersion, style = FluentTheme.typography.body, textAlign = TextAlign.Center)
                 Spacer(Modifier.height(8.dp))
             }
         }
