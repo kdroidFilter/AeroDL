@@ -17,6 +17,8 @@ import io.github.kdroidfilter.ytdlpgui.di.AppScope
 import io.github.kevincianfarini.cardiologist.PulseBackpressureStrategy
 import io.github.kevincianfarini.cardiologist.fixedPeriodPulse
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
 
@@ -50,6 +52,7 @@ class InitViewModel(
     /** Cached manifest for the session (fetched once in init). */
     @Volatile
     private var manifest: ReleaseManifest? = null
+    private val manifestLoadMutex = Mutex()
 
     init {
         val isAotTraining = System.getProperty("aot.training.autoExit") != null
@@ -61,7 +64,7 @@ class InitViewModel(
             if (!onboardingCompleted) {
                 // First install → fetch manifest from network for onboarding
                 if (!isAotTraining) {
-                    manifest = releaseManifestRepository.fetchManifest()
+                    manifest = ensureManifestLoaded()
                 }
                 update { copy(navigationState = InitNavigationState.NavigateToOnboarding) }
                 return@launch
@@ -70,7 +73,7 @@ class InitViewModel(
             // Already configured → fetch manifest for updates & dependency downloads,
             // but skip during AOT training to avoid class-loading bloat
             if (!isAotTraining) {
-                manifest = releaseManifestRepository.fetchManifest()
+                manifest = ensureManifestLoaded()
             }
             startInitialization(navigateToHomeWhenDone = true)
         }
@@ -87,7 +90,7 @@ class InitViewModel(
             Clock.System
                 .fixedPeriodPulse(12.hours)
                 .beat(strategy = PulseBackpressureStrategy.SkipNext) {
-                    // Fetch fresh manifest from network
+                    // Fetch fresh manifest from network (only yt-dlp is fetched from API)
                     val m = releaseManifestRepository.fetchManifest() ?: return@beat
                     manifest = m
                     // App update check
@@ -170,13 +173,14 @@ class InitViewModel(
         isInitializing = true
 
         viewModelScope.launch {
+            val resolvedManifest = manifest ?: ensureManifestLoaded()
             val noCheck = settingsRepository.noCheckCertificate.value
             val cookies = settingsRepository.cookiesFromBrowser.value.ifBlank { null }
 
             ytDlpWrapper.apply {
                 noCheckCertificate = noCheck
                 cookiesFromBrowser = cookies
-            }.initialize(manifest) { event ->
+            }.initialize(resolvedManifest) { event ->
                 when (event) {
                     YtDlpWrapper.InitEvent.CheckingYtDlp -> {
                         update {
@@ -303,6 +307,7 @@ class InitViewModel(
                         }
 
                         update {
+                            val fallbackError = "Initialization failed. Please retry."
                             copy(
                                 checkingYtDlp = false,
                                 checkingFFmpeg = false,
@@ -312,10 +317,15 @@ class InitViewModel(
                                 downloadingDeno = false,
                                 updatingYtdlp = false,
                                 updatingFFmpeg = false,
-                                initCompleted = event.success
+                                initCompleted = event.success,
+                                errorMessage = when {
+                                    event.success -> null
+                                    errorMessage != null -> errorMessage
+                                    else -> fallbackError
+                                }
                             )
                         }
-                        if (navigateToHomeWhenDone) {
+                        if (navigateToHomeWhenDone && event.success) {
                             viewModelScope.launch {
                                 update { copy(navigationState = InitNavigationState.NavigateToHome) }
                             }
@@ -323,6 +333,16 @@ class InitViewModel(
                     }
                 }
             }
+        }
+    }
+
+    internal suspend fun ensureManifestLoaded(): ReleaseManifest? {
+        manifest?.let { return it }
+        return manifestLoadMutex.withLock {
+            manifest?.let { return it }
+            val resolved = releaseManifestRepository.getCachedManifest() ?: releaseManifestRepository.fetchManifest()
+            manifest = resolved
+            resolved
         }
     }
 }
