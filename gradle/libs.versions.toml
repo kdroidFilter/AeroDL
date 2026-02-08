@@ -16,7 +16,7 @@ junit = "4.13.2"
 
 # Kotlin extensions
 kotlinx-coroutines = "1.10.2"
-serialization-json = "1.9.0"
+serialization = "1.10.0"
 cardiologist = "0.8.0"
 
 # UI Libraries
@@ -33,7 +33,7 @@ jvmNativeTrustedRoots = "1.1.7"
 
 
 # Database
-sqlDelight = "2.1.0"
+sqlDelight = "2.2.1"
 
 # Additional dependencies
 coil = "3.3.0"
@@ -107,8 +107,8 @@ metro-viewmodel-compose = { module = "dev.zacsweers.metro:metrox-viewmodel-compo
 
 
 # Serialization
-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization-json" }
-kotlinx-serialization-protobuf = { module = "org.jetbrains.kotlinx:kotlinx-serialization-protobuf", version.ref = "serialization-json" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
+kotlinx-serialization-protobuf = { module = "org.jetbrains.kotlinx:kotlinx-serialization-protobuf", version.ref = "serialization" }
 
 sqlDelight-driver-sqlite = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "sqlDelight" }
 
