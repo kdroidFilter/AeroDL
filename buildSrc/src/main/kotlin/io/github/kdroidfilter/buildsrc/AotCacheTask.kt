@@ -38,7 +38,7 @@ abstract class AotCacheTask : DefaultTask() {
     init {
         group = "compose desktop"
         aotCacheFileName.convention("aerodl.aot")
-        trainDurationSeconds.convention(20L)
+        trainDurationSeconds.convention(60L)
     }
 
     @TaskAction
@@ -186,46 +186,42 @@ abstract class AotCacheTask : DefaultTask() {
         aotCacheFile: File
     ) {
         val trainDuration = trainDurationSeconds.get()
-        val aotConfigFile = File.createTempFile("aerodl-aot-", ".aotconf")
 
         val options = javaOptions.toMutableList()
         options += "-Daot.training.autoExit=$trainDuration"
 
-        // Step 1: Record
-        logger.lifecycle("[aotCache] Recording class loading profile (~${trainDuration}s)...")
-        recordAotProfile(javaExe, appDir, classpath, options, mainClass, aotConfigFile, trainDuration)
-
-        if (!aotConfigFile.exists() || aotConfigFile.length() == 0L) {
-            throw GradleException("AOT configuration file was not created")
-        }
-        logger.lifecycle("[aotCache] Recorded ${aotConfigFile.length() / 1024}KB of profile data")
-
-        // Step 2: Create cache
-        logger.lifecycle("[aotCache] Creating cache...")
-        createAotCache(javaExe, appDir, classpath, options, mainClass, aotConfigFile, aotCacheFile)
-
-        aotConfigFile.delete()
+        // JDK 25 single-step approach: training + cache creation combined
+        // This automatically enables AOT class linking
+        logger.lifecycle("[aotCache] Training and creating cache (~${trainDuration}s)...")
+        createAotCacheSingleStep(javaExe, appDir, classpath, options, mainClass, aotCacheFile, trainDuration)
 
         if (!aotCacheFile.exists()) {
             throw GradleException("AOT cache file was not created")
         }
     }
 
-    private fun recordAotProfile(
+    /**
+     * JDK 25 single-step AOT cache creation using -XX:AOTCacheOutput
+     * This combines training and cache assembly, automatically enabling class linking.
+     */
+    private fun createAotCacheSingleStep(
         javaExe: String,
         appDir: File,
         classpath: String,
         javaOptions: List<String>,
         mainClass: String,
-        aotConfigFile: File,
+        aotCacheFile: File,
         trainDuration: Long
     ) {
         val args = mutableListOf(javaExe)
-        args += listOf("-XX:AOTMode=record", "-XX:AOTConfiguration=${aotConfigFile.absolutePath}", "-cp", classpath)
+        args += listOf(
+            "-XX:AOTCacheOutput=${aotCacheFile.absolutePath}",
+            "-cp", classpath
+        )
         args += javaOptions
         args += mainClass
 
-        val logFile = File.createTempFile("aerodl-aot-record-", ".log")
+        val logFile = File.createTempFile("aerodl-aot-", ".log")
         val processBuilder = ProcessBuilder(args)
             .directory(appDir)
             .redirectErrorStream(true)
@@ -265,7 +261,7 @@ abstract class AotCacheTask : DefaultTask() {
         // Log output for debugging
         val output = logFile.readText().takeLast(3000)
         if (output.isNotBlank()) {
-            logger.lifecycle("[aotCache] Record output (exit $exitCode):\n$output")
+            logger.lifecycle("[aotCache] Output (exit $exitCode):\n$output")
         }
         logFile.delete()
 
@@ -274,36 +270,6 @@ abstract class AotCacheTask : DefaultTask() {
             logger.lifecycle("[aotCache] JVM crash dump: ${hsErr.name}")
             logger.lifecycle(hsErr.readText().take(2000))
             hsErr.delete()
-        }
-    }
-
-    private fun createAotCache(
-        javaExe: String,
-        appDir: File,
-        classpath: String,
-        javaOptions: List<String>,
-        mainClass: String,
-        aotConfigFile: File,
-        aotCacheFile: File
-    ) {
-        val args = mutableListOf(javaExe)
-        args += listOf(
-            "-XX:AOTMode=create",
-            "-XX:AOTConfiguration=${aotConfigFile.absolutePath}",
-            "-XX:AOTCache=${aotCacheFile.absolutePath}",
-            "-cp", classpath
-        )
-        args += javaOptions
-        args += mainClass
-
-        val process = ProcessBuilder(args)
-            .directory(appDir)
-            .inheritIO()
-            .start()
-
-        val exitCode = process.waitFor()
-        if (exitCode != 0) {
-            throw GradleException("AOT cache creation failed with exit code $exitCode")
         }
     }
 

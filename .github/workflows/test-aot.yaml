@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'composeApp/build.gradle.kts'
+      - 'buildSrc/**'
       - '.github/workflows/test-aot.yaml'
 
 jobs:
