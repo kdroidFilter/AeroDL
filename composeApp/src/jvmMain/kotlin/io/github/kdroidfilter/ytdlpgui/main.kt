@@ -72,7 +72,13 @@ fun main() {
     // Configure Skiko render API based on platform (respect pre-set -D flag)
     if (System.getProperty("skiko.renderApi") == null) {
         when (getOperatingSystem()) {
-            OperatingSystem.WINDOWS -> System.setProperty("skiko.renderApi", "DIRECT3D")
+            OperatingSystem.WINDOWS -> {
+                if (isWindows10()) {
+                    System.setProperty("skiko.renderApi", "OPENGL")
+                } else {
+                    System.setProperty("skiko.renderApi", "DIRECT3D")
+                }
+            }
             OperatingSystem.LINUX -> if (isNvidiaGpuPresent()) {
                 System.setProperty("skiko.renderApi", "SOFTWARE")
             }
@@ -244,6 +250,11 @@ fun clearAppData() {
 private fun clearSettings(settings: Settings) {
     settings.clear()
     infoln { "Settings cleared" }
+}
+
+private fun isWindows10(): Boolean {
+    val osName = System.getProperty("os.name", "").lowercase()
+    return osName.contains("windows 10")
 }
 
 private fun isNvidiaGpuPresent(): Boolean {
