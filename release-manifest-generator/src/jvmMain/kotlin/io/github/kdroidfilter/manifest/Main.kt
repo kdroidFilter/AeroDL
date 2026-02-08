@@ -8,7 +8,9 @@ import io.github.kdroidfilter.ytdlp.model.ReleaseEntries
 import io.github.kdroidfilter.ytdlp.model.ReleaseInfo
 import io.github.kdroidfilter.ytdlp.model.ReleaseManifest
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.protobuf.ProtoBuf
 import java.io.File
 import java.time.Instant
 
@@ -63,13 +65,21 @@ fun main() = runBlocking {
         )
     )
 
-    // Write to docs/api/releases.json at the project root.
-    // The output path can be overridden via the MANIFEST_OUTPUT env var.
-    val outputPath = System.getenv("MANIFEST_OUTPUT") ?: "docs/api/releases.json"
-    val outputFile = File(outputPath)
-    outputFile.parentFile.mkdirs()
-    outputFile.writeText(json.encodeToString(ReleaseManifest.serializer(), manifest))
-    println("Manifest written to ${outputFile.absolutePath}")
+    // Write to docs/api/ at the project root.
+    // The output path can be overridden via the MANIFEST_OUTPUT env var (directory path).
+    val outputDir = File(System.getenv("MANIFEST_OUTPUT") ?: "docs/api")
+    outputDir.mkdirs()
+
+    // JSON (for backwards compatibility / human readability)
+    val jsonFile = File(outputDir, "releases.json")
+    jsonFile.writeText(json.encodeToString(ReleaseManifest.serializer(), manifest))
+    println("JSON manifest written to ${jsonFile.absolutePath}")
+
+    // Protobuf (compact binary format for the client)
+    @OptIn(ExperimentalSerializationApi::class)
+    val pbFile = File(outputDir, "releases.pb")
+    pbFile.writeBytes(ProtoBuf.encodeToByteArray(ReleaseManifest.serializer(), manifest))
+    println("Protobuf manifest written to ${pbFile.absolutePath} (${pbFile.length()} bytes)")
 
     httpClient.close()
 }

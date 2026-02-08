@@ -26,11 +26,11 @@ jobs:
       - name: Generate manifest
         run: ./gradlew :release-manifest-generator:jvmRun
         env:
-          MANIFEST_OUTPUT: docs/api/releases.json
+          MANIFEST_OUTPUT: ${{ github.workspace }}/docs/api
 
       - name: Commit and push if changed
         run: |
-          git add docs/api/releases.json
+          git add docs/api/releases.json docs/api/releases.pb
           if git diff --cached --quiet; then
             echo "No changes"
             exit 0

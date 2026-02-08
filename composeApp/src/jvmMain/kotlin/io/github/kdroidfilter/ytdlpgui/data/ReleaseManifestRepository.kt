@@ -1,36 +1,44 @@
 package io.github.kdroidfilter.ytdlpgui.data
 
 import io.github.kdroidfilter.logging.LoggerConfig
-import io.github.kdroidfilter.network.KtorConfig
+import io.github.kdroidfilter.network.HttpsConnectionFactory
 import io.github.kdroidfilter.ytdlp.model.ReleaseManifest
-import io.ktor.client.call.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-import kotlinx.serialization.json.Json
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.protobuf.ProtoBuf
 
 /**
- * Fetches and caches the static release manifest.
- * Only ONE network call per application session; subsequent calls return the cached result.
+ * Fetches the static release manifest in protobuf format.
+ * No HTTP call at startup to avoid AOT cache memory bloat.
+ * Network fetch happens only during onboarding or periodic checks.
  */
+@OptIn(ExperimentalSerializationApi::class)
 class ReleaseManifestRepository {
-
-    private val json = Json { ignoreUnknownKeys = true }
-    private val httpClient by lazy { KtorConfig.createHttpClient(json = json) }
 
     @Volatile
     private var cached: ReleaseManifest? = null
 
-    suspend fun getManifest(): ReleaseManifest? {
-        cached?.let { return it }
+    /**
+     * Returns the in-memory cached manifest, or null if not yet fetched.
+     */
+    fun getCachedManifest(): ReleaseManifest? = cached
 
+    /**
+     * Fetches manifest from network as protobuf and caches in memory.
+     */
+    suspend fun fetchManifest(): ReleaseManifest? {
         return runCatching {
-            val response: HttpResponse = httpClient.get(MANIFEST_URL) {
-                header(HttpHeaders.UserAgent, "AeroDl/1.0")
-                header(HttpHeaders.Accept, "application/json")
+            val conn = HttpsConnectionFactory.openConnection(MANIFEST_URL) {
+                connectTimeout = 15_000
+                readTimeout = 30_000
+                setRequestProperty("User-Agent", "AeroDl/1.0")
+                setRequestProperty("Accept", "application/octet-stream")
             }
-            val body = response.bodyAsText()
-            json.decodeFromString<ReleaseManifest>(body)
+            val bytes = try {
+                conn.inputStream.readBytes()
+            } finally {
+                conn.disconnect()
+            }
+            ProtoBuf.decodeFromByteArray(ReleaseManifest.serializer(), bytes)
         }.onFailure { error ->
             if (LoggerConfig.enabled) {
                 System.err.println("[ReleaseManifestRepository] Failed to fetch manifest: ${error.message}")
@@ -40,6 +48,6 @@ class ReleaseManifestRepository {
     }
 
     companion object {
-        const val MANIFEST_URL = "https://kdroidfilter.github.io/AeroDL/api/releases.json"
+        const val MANIFEST_URL = "https://kdroidfilter.github.io/AeroDL/api/releases.pb"
     }
 }
