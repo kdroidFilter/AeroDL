@@ -52,15 +52,10 @@ class InitViewModel(
     private var manifest: ReleaseManifest? = null
 
     init {
-        val isAotTraining = System.getProperty("aot.training.autoExit") != null
-
         viewModelScope.launch {
-            // Skip network calls during AOT training to keep the cache lean.
-            if (!isAotTraining) {
-                // Fetch the manifest FIRST, regardless of onboarding status
-                // This is needed for downloading yt-dlp/ffmpeg during onboarding
-                manifest = releaseManifestRepository.getManifest()
-            }
+            // Fetch the manifest FIRST, regardless of onboarding status
+            // This is needed for downloading yt-dlp/ffmpeg during onboarding
+            manifest = releaseManifestRepository.getManifest()
 
             // Check if onboarding is completed
             val onboardingCompleted = settingsRepository.isOnboardingCompleted()
@@ -68,13 +63,6 @@ class InitViewModel(
             if (!onboardingCompleted) {
                 // Not configured → go to onboarding
                 update { copy(navigationState = InitNavigationState.NavigateToOnboarding) }
-                return@launch
-            }
-
-            if (isAotTraining) {
-                // During AOT training with completed onboarding, skip downloads
-                // and go straight to home for UI class coverage.
-                update { copy(initCompleted = true, navigationState = InitNavigationState.NavigateToHome) }
                 return@launch
             }
 
@@ -86,9 +74,7 @@ class InitViewModel(
         }
 
         // Schedule periodic update checks every 12 hours (no overlap if previous run is still active)
-        if (!isAotTraining) {
-            startPeriodicUpdateChecks()
-        }
+        startPeriodicUpdateChecks()
     }
 
     @OptIn(kotlin.time.ExperimentalTime::class)

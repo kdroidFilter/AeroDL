@@ -126,6 +126,8 @@ jobs:
       # Gradle Setup
       - name: Set up Gradle
         uses: gradle/gradle-build-action@v3
+        with:
+          gradle-version: '8.14'
 
       # Builds (AOT cache is automatically generated via task dependencies)
       - name: Build Linux .deb
@@ -142,10 +144,8 @@ jobs:
 
       - name: Build Windows .msi
         if: startsWith(matrix.os, 'windows')
-        shell: bash
-        run: |
-          chmod +x ./gradlew
-          ./gradlew :composeApp:packageReleaseMsi
+        shell: pwsh
+        run: .\gradlew.bat :composeApp:packageReleaseMsi
 
       - name: Build macOS .pkg + .dmg + .zip
         if: startsWith(matrix.os, 'macos')
