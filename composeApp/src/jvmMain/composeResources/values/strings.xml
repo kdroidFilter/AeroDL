@@ -100,6 +100,8 @@
     <string name="ytdlp_version_missing">yt-dlp: Not found</string>
     <string name="ffmpeg_version_label">FFmpeg: %1$s</string>
     <string name="ffmpeg_version_missing">FFmpeg: Not found</string>
+    <string name="deno_version_label">Deno: %1$s</string>
+    <string name="deno_version_missing">Deno: Not found</string>
 
     <!-- Settings screen strings -->
     <string name="settings_no_check_certificate_title">No check certificate</string>
