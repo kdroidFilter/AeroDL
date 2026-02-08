@@ -27,12 +27,7 @@ class ReleaseManifestRepository {
      */
     suspend fun fetchManifest(): ReleaseManifest? {
         return runCatching {
-            val conn = HttpsConnectionFactory.openConnection(MANIFEST_URL) {
-                connectTimeout = 15_000
-                readTimeout = 30_000
-                setRequestProperty("User-Agent", "AeroDl/1.0")
-                setRequestProperty("Accept", "application/octet-stream")
-            }
+            val conn = HttpsConnectionFactory.openConnection(MANIFEST_URL)
             val bytes = try {
                 conn.inputStream.readBytes()
             } finally {
