@@ -317,6 +317,17 @@ object NetAndArchive {
             has("ssl: certificate verify failed", "self signed certificate", "certificate has expired") -> "TLS/Certificate problem (try --no-check-certificate if appropriate)."
             has("http error 403") -> "HTTP 403 Forbidden (access denied)."
             has("http error 429", "too many requests", "rate limited") -> "Rate limited (HTTP 429)."
+            has(
+                "sign in to confirm you're not a bot",
+                "use --cookies-from-browser",
+                "use --cookies",
+                "authentication required",
+                "login required",
+                "log in",
+                "age-restricted and only available",
+                "this video may be inappropriate for some users",
+                "members-only",
+            ) -> "Authentication required (YouTube bot verification or login). Configure cookies from a logged-in browser and retry."
             has("copyright", "unavailable", "this video is not available") -> "Content not available or restricted."
             has("proxy", "socks", "http proxy") -> "Proxy/network configuration error."
             else -> null

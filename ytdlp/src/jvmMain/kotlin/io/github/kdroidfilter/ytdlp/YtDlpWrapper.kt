@@ -729,6 +729,15 @@ class YtDlpWrapper {
                     if (exitCode != 0) {
                         val lines = mutableListOf<String>().also { tail.drainTo(it) }
                         val diagnostic = NetAndArchive.diagnose(lines)
+                        val isAuthDiagnostic =
+                            diagnostic?.contains("Authentication required", ignoreCase = true) == true
+                        val authHint = when {
+                            !isAuthDiagnostic -> null
+                            finalOptions.cookiesFromBrowser.isNullOrBlank() ->
+                                "Hint: Configure 'Cookies from browser' in AeroDL settings (Firefox recommended) while logged in to YouTube, then retry."
+                            else ->
+                                "Hint: Refresh your login in '${finalOptions.cookiesFromBrowser}' and retry. If it still fails, switch cookies source to Firefox."
+                        }
 
                         // Extract all ERROR lines
                         val errorLines = lines.filter { it.trim().startsWith("ERROR:", ignoreCase = true) }
@@ -737,11 +746,20 @@ class YtDlpWrapper {
                         val errorMsg = buildString {
                             append("yt-dlp failed (exit $exitCode). ${diagnostic ?: ""}".trim())
 
+                            authHint?.let {
+                                append("\n\n")
+                                append(it)
+                            }
+
                             if (errorLines.isNotEmpty()) {
                                 append("\n\n")
                                 append("Errors:\n")
                                 errorLines.forEach { errorLine ->
-                                    append("• ${errorLine.removePrefix("ERROR:").trim()}\n")
+                                    val cleaned = errorLine.replaceFirst(
+                                        Regex("^ERROR:\\s*", RegexOption.IGNORE_CASE),
+                                        "",
+                                    ).trim()
+                                    append("• $cleaned\n")
                                 }
                             }
 
@@ -750,12 +768,21 @@ class YtDlpWrapper {
                             append(tailPreview)
                         }
 
-                        errorln { "[YtDlpWrapper] Download failed with exit code $exitCode" }
-                        errorln { "[YtDlpWrapper] Diagnostic: ${diagnostic ?: "none"}" }
-                        if (errorLines.isNotEmpty()) {
-                            errorln { "[YtDlpWrapper] ERROR lines found: ${errorLines.joinToString("; ")}" }
+                        fun logFailure(message: () -> String) {
+                            if (diagnostic != null) {
+                                warnln(message)
+                            } else {
+                                errorln(message)
+                            }
                         }
-                        errorln { "[YtDlpWrapper] Last output:\n${lines.takeLast(min(15, lines.size)).joinToString("\n")}" }
+
+                        logFailure { "[YtDlpWrapper] Download failed with exit code $exitCode" }
+                        logFailure { "[YtDlpWrapper] Diagnostic: ${diagnostic ?: "none"}" }
+                        authHint?.let { logFailure { "[YtDlpWrapper] $it" } }
+                        if (errorLines.isNotEmpty()) {
+                            logFailure { "[YtDlpWrapper] ERROR lines found: ${errorLines.joinToString("; ")}" }
+                        }
+                        logFailure { "[YtDlpWrapper] Last output:\n${lines.takeLast(min(15, lines.size)).joinToString("\n")}" }
                         onEvent(Event.Error(errorMsg))
                     } else {
                         infoln { "[YtDlpWrapper] Download completed successfully" }

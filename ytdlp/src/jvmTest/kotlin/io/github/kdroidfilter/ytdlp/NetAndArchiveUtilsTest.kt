@@ -39,6 +39,20 @@ class NetAndArchiveUtilsTest {
     }
 
     @Test
+    fun diagnose_detectsYouTubeAuthenticationRequirement() {
+        val diagnostic = NetAndArchive.diagnose(
+            listOf(
+                "[youtube] FMqiGAXHVNs: Downloading ios player API JSON",
+                "ERROR: [youtube] FMqiGAXHVNs: Sign in to confirm you're not a bot. Use --cookies-from-browser or --cookies for the authentication.",
+            ),
+        )
+
+        assertNotNull(diagnostic)
+        assertTrue(diagnostic.contains("Authentication required"))
+        assertTrue(diagnostic.contains("cookies", ignoreCase = true))
+    }
+
+    @Test
     fun selectors_containExpectedConstraints() {
         val selProg = NetAndArchive.selectorProgressiveExact(720)
         assertTrue(selProg.contains("height=720"))
