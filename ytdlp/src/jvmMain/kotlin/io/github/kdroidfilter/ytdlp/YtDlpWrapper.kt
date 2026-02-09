@@ -14,6 +14,8 @@ import io.github.kdroidfilter.logging.infoln
 import io.github.kdroidfilter.logging.debugln
 import io.github.kdroidfilter.logging.warnln
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.time.Duration
@@ -100,7 +102,21 @@ class YtDlpWrapper {
      */
     var proxy: String? = null
 
+    private val ytDlpSelfUpdateMutex = Mutex()
+    @Volatile
+    private var lastYtDlpSelfUpdateAttemptAtMs: Long = 0L
+    private val selfUpdateCooldownMs = 10 * 60 * 1000L
+    private val selfUpdateTimeoutSec = 120L
+
     private data class ProcessResult(val exitCode: Int, val stdout: List<String>, val stderr: String)
+    internal data class DownloadAttemptResult(val exitCode: Int, val lines: List<String>)
+
+    // Internal test hooks to avoid process/network side effects in JVM tests.
+    internal var downloadAvailabilityOverride: (suspend () -> Boolean)? = null
+    internal var downloadNetworkCheckOverride: ((targetUrl: String, connectTimeoutMs: Int, readTimeoutMs: Int) -> Result<Unit>)? = null
+    internal var downloadAttemptRunnerOverride: (suspend (cmd: List<String>, onEvent: (Event) -> Unit, emitStarted: Boolean) -> DownloadAttemptResult)? = null
+    internal var selfUpdateRunnerOverride: (suspend () -> Boolean)? = null
+    internal var nowProvider: () -> Long = { System.currentTimeMillis() }
 
     private data class AvailabilitySnapshot(
         val path: String,
@@ -651,7 +667,8 @@ class YtDlpWrapper {
     fun download(url: String, options: Options = Options(), onEvent: (Event) -> Unit): Handle {
         val job = scope.launch {
             infoln { "[YtDlpWrapper] Starting download for URL: $url" }
-            if (!isAvailable()) {
+            val available = downloadAvailabilityOverride?.invoke() ?: isAvailable()
+            if (!available) {
                 val error = "yt-dlp is not available. Please call initialize() first."
                 errorln { "[YtDlpWrapper] $error" }
                 onEvent(Event.Error(error))
@@ -659,7 +676,9 @@ class YtDlpWrapper {
             }
 
             infoln { "[YtDlpWrapper] Checking network connectivity..." }
-            checkNetwork(url, 5000, 5000).getOrElse {
+            val networkResult = downloadNetworkCheckOverride?.invoke(url, 5000, 5000)
+                ?: checkNetwork(url, 5000, 5000)
+            networkResult.getOrElse {
                 val networkError = it.message ?: "Network unavailable"
                 errorln { "[YtDlpWrapper] Network pre-check failed: $networkError" }
                 onEvent(Event.NetworkProblem(networkError))
@@ -678,116 +697,117 @@ class YtDlpWrapper {
                 infoln { "[YtDlpWrapper] Subtitle options provided: languages=${subOpts.languages}, embed=${subOpts.embedSubtitles}, writeAuto=${subOpts.writeAutoSubtitles}" }
             }
 
-            val cmd = NetAndArchive.buildCommand(ytDlpPath, ffmpegPath, denoPath, url, finalOptions, downloadDir)
-            infoln { "[YtDlpWrapper] Built command with ${cmd.size} arguments" }
-            debugln { "[YtDlpWrapper] Full command: ${cmd.joinToString(" ")}" }
-
-            val process: Process = try {
-                ProcessBuilder(cmd).directory(downloadDir).redirectErrorStream(true).start()
-            } catch (t: Throwable) {
-                val error = "Failed to start the yt-dlp process: ${t.message}"
-                errorln(t) { "[YtDlpWrapper] $error" }
-                onEvent(Event.Error(error, t))
-                return@launch
-            }
-
-            infoln { "[YtDlpWrapper] Process started successfully" }
-            onEvent(Event.Started)
-            val tail = ArrayBlockingQueue<String>(120)
+            val initialCmd = NetAndArchive.buildCommand(ytDlpPath, ffmpegPath, denoPath, url, finalOptions, downloadDir)
+            infoln { "[YtDlpWrapper] Built command with ${initialCmd.size} arguments" }
+            debugln { "[YtDlpWrapper] Full command: ${initialCmd.joinToString(" ")}" }
 
             try {
-                val downloadLogic: suspend CoroutineScope.() -> Unit = {
-                    val readerJob = launch {
-                        try {
-                            process.inputStream.bufferedReader(StandardCharsets.UTF_8).useLines { lines ->
-                                lines.forEach { line ->
-                                    if (!isActive) return@forEach
-                                    if (!tail.offer(line)) {
-                                        tail.poll(); tail.offer(line)
-                                    }
-                                    val progress = NetAndArchive.parseProgress(line)
-                                    if (progress != null) {
-                                        val speed = NetAndArchive.parseSpeedBytesPerSec(line)
-                                        onEvent(Event.Progress(progress, speed, line))
-                                    } else {
-                                        onEvent(Event.Log(line))
-                                    }
-                                }
+                suspend fun downloadLogic() {
+                    var attemptResult = try {
+                        runDownloadAttempt(initialCmd, onEvent, emitStarted = true)
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (t: Throwable) {
+                        val error = "Failed to start or run the yt-dlp process: ${t.message}"
+                        errorln(t) { "[YtDlpWrapper] $error" }
+                        onEvent(Event.Error(error, t))
+                        onEvent(Event.Completed(-1, false))
+                        return
+                    }
+
+                    var attemptedSelfUpdate = false
+                    var selfUpdateSucceeded = false
+                    var retriedAfterSelfUpdate = false
+
+                    val shouldRetryAfterSelfUpdate =
+                        attemptResult.exitCode != 0 &&
+                            NetAndArchive.isYouTubeExtractorIssue(attemptResult.lines)
+
+                    if (shouldRetryAfterSelfUpdate) {
+                        attemptedSelfUpdate = true
+                        selfUpdateSucceeded = trySelfUpdateYtDlpForExtractorIssue()
+                        if (selfUpdateSucceeded) {
+                            retriedAfterSelfUpdate = true
+                            val retryCmd = NetAndArchive.buildCommand(ytDlpPath, ffmpegPath, denoPath, url, finalOptions, downloadDir)
+                            infoln { "[YtDlpWrapper] Retrying once after yt-dlp self-update." }
+                            debugln { "[YtDlpWrapper] Retry command: ${retryCmd.joinToString(" ")}" }
+                            onEvent(
+                                Event.Log(
+                                    "[AeroDL] YouTube extractor mismatch detected. Updated yt-dlp and retrying once..."
+                                )
+                            )
+                            attemptResult = try {
+                                runDownloadAttempt(retryCmd, onEvent)
+                            } catch (e: CancellationException) {
+                                throw e
+                            } catch (t: Throwable) {
+                                val error = "Retry failed to start or run the yt-dlp process: ${t.message}"
+                                errorln(t) { "[YtDlpWrapper] $error" }
+                                onEvent(Event.Error(error, t))
+                                onEvent(Event.Completed(-1, false))
+                                return
                             }
-                        } catch (e: Exception) {
-                            if (isActive) {
-                                val error = "I/O error while reading yt-dlp output: ${e.message}"
-                                errorln(e) { "[YtDlpWrapper] $error" }
-                                onEvent(Event.Error(error, e))
-                            }
+                        } else {
+                            onEvent(
+                                Event.Log(
+                                    "[AeroDL] YouTube extractor mismatch detected, but automatic yt-dlp update was skipped or failed."
+                                )
+                            )
                         }
                     }
 
-                    val exitCode = process.waitFor()
-                    readerJob.join()
-
-                    if (exitCode != 0) {
-                        val lines = mutableListOf<String>().also { tail.drainTo(it) }
-                        val diagnostic = NetAndArchive.diagnose(lines)
-                        val isAuthDiagnostic =
-                            diagnostic?.contains("Authentication required", ignoreCase = true) == true
-                        val authHint = when {
-                            !isAuthDiagnostic -> null
-                            finalOptions.cookiesFromBrowser.isNullOrBlank() ->
-                                "Hint: Configure 'Cookies from browser' in AeroDL settings (Firefox recommended) while logged in to YouTube, then retry."
-                            else ->
-                                "Hint: Refresh your login in '${finalOptions.cookiesFromBrowser}' and retry. If it still fails, switch cookies source to Firefox."
-                        }
-
-                        // Extract all ERROR lines
-                        val errorLines = lines.filter { it.trim().startsWith("ERROR:", ignoreCase = true) }
-
-                        // Build error message
-                        val errorMsg = buildString {
-                            append("yt-dlp failed (exit $exitCode). ${diagnostic ?: ""}".trim())
-
-                            authHint?.let {
-                                append("\n\n")
-                                append(it)
-                            }
-
-                            if (errorLines.isNotEmpty()) {
-                                append("\n\n")
-                                append("Errors:\n")
-                                errorLines.forEach { errorLine ->
-                                    val cleaned = errorLine.replaceFirst(
-                                        Regex("^ERROR:\\s*", RegexOption.IGNORE_CASE),
-                                        "",
-                                    ).trim()
-                                    append("• $cleaned\n")
-                                }
-                            }
-
-                            append("\n--- Last output ---\n")
-                            val tailPreview = if (lines.isEmpty()) "(no output captured)" else lines.takeLast(min(15, lines.size)).joinToString("\n")
-                            append(tailPreview)
-                        }
-
-                        fun logFailure(message: () -> String) {
-                            if (diagnostic != null) {
-                                warnln(message)
-                            } else {
-                                errorln(message)
-                            }
-                        }
-
-                        logFailure { "[YtDlpWrapper] Download failed with exit code $exitCode" }
-                        logFailure { "[YtDlpWrapper] Diagnostic: ${diagnostic ?: "none"}" }
-                        authHint?.let { logFailure { "[YtDlpWrapper] $it" } }
-                        if (errorLines.isNotEmpty()) {
-                            logFailure { "[YtDlpWrapper] ERROR lines found: ${errorLines.joinToString("; ")}" }
-                        }
-                        logFailure { "[YtDlpWrapper] Last output:\n${lines.takeLast(min(15, lines.size)).joinToString("\n")}" }
-                        onEvent(Event.Error(errorMsg))
-                    } else {
+                    val exitCode = attemptResult.exitCode
+                    if (exitCode == 0) {
                         infoln { "[YtDlpWrapper] Download completed successfully" }
+                        onEvent(Event.Completed(exitCode, true))
+                        return
                     }
-                    onEvent(Event.Completed(exitCode, exitCode == 0))
+
+                    val lines = attemptResult.lines
+                    val diagnostic = NetAndArchive.diagnose(lines)
+                    val isAuthIssue = NetAndArchive.isYouTubeAuthenticationIssue(lines)
+                    val isExtractorIssue = NetAndArchive.isYouTubeExtractorIssue(lines)
+                    val authHint = when {
+                        !isAuthIssue -> null
+                        finalOptions.cookiesFromBrowser.isNullOrBlank() ->
+                            "Configure 'Cookies from browser' in AeroDL settings while logged in to YouTube, then retry."
+                        else ->
+                            "Refresh your login in '${finalOptions.cookiesFromBrowser}' and retry. If it still fails, switch cookies source."
+                    }
+
+                    val extractorHint = when {
+                        !isExtractorIssue -> null
+                        retriedAfterSelfUpdate ->
+                            "AeroDL retried after updating yt-dlp, but YouTube still rejected extraction."
+                        attemptedSelfUpdate && !selfUpdateSucceeded ->
+                            "Automatic yt-dlp self-update was skipped or failed. Please update yt-dlp manually and retry."
+                        else ->
+                            "YouTube extractor challenge/hash mismatch detected. Update yt-dlp and retry."
+                    }
+
+                    val errorMsg = buildDownloadErrorMessage(
+                        exitCode = exitCode,
+                        lines = lines,
+                        diagnostic = diagnostic,
+                        hints = listOfNotNull(authHint, extractorHint),
+                    )
+
+                    fun logFailure(message: () -> String) {
+                        if (diagnostic != null) warnln(message) else errorln(message)
+                    }
+
+                    logFailure { "[YtDlpWrapper] Download failed with exit code $exitCode" }
+                    logFailure { "[YtDlpWrapper] Diagnostic: ${diagnostic ?: "none"}" }
+                    authHint?.let { logFailure { "[YtDlpWrapper] Hint: $it" } }
+                    extractorHint?.let { logFailure { "[YtDlpWrapper] Hint: $it" } }
+                    val errorLines = lines.filter { it.trim().startsWith("ERROR:", ignoreCase = true) }
+                    if (errorLines.isNotEmpty()) {
+                        logFailure { "[YtDlpWrapper] ERROR lines found: ${errorLines.joinToString("; ")}" }
+                    }
+                    logFailure { "[YtDlpWrapper] Last output:\n${lines.takeLast(min(15, lines.size)).joinToString("\n")}" }
+
+                    onEvent(Event.Error(errorMsg))
+                    onEvent(Event.Completed(exitCode, false))
                 }
 
                 val timeoutMillis = finalOptions.timeout?.toMillis()
@@ -795,7 +815,6 @@ class YtDlpWrapper {
                     withTimeoutOrNull(timeoutMillis) {
                         downloadLogic()
                     } ?: run {
-                        process.destroyForcibly()
                         onEvent(Event.Error("Download timed out after ${finalOptions.timeout.toMinutes()} minutes."))
                         onEvent(Event.Completed(-1, false))
                     }
@@ -804,16 +823,191 @@ class YtDlpWrapper {
                 }
 
             } catch (e: CancellationException) {
-                process.destroyForcibly()
                 onEvent(Event.Cancelled)
             } catch (t: Throwable) {
-                process.destroyForcibly()
                 errorln(t) { "[YtDlpWrapper] Unexpected error during download pipeline." }
                 onEvent(Event.Error("An unexpected error occurred during download.", t))
                 onEvent(Event.Completed(-1, false))
             }
         }
         return Handle(job)
+    }
+
+    private suspend fun runDownloadAttempt(
+        cmd: List<String>,
+        onEvent: (Event) -> Unit,
+        emitStarted: Boolean = false,
+    ): DownloadAttemptResult {
+        downloadAttemptRunnerOverride?.let { return it(cmd, onEvent, emitStarted) }
+        return runDownloadAttemptWithProcess(cmd, onEvent, emitStarted)
+    }
+
+    private suspend fun runDownloadAttemptWithProcess(
+        cmd: List<String>,
+        onEvent: (Event) -> Unit,
+        emitStarted: Boolean = false,
+    ): DownloadAttemptResult = coroutineScope {
+        val process = ProcessBuilder(cmd)
+            .directory(downloadDir)
+            .redirectErrorStream(true)
+            .start()
+        if (emitStarted) onEvent(Event.Started)
+        val tail = ArrayBlockingQueue<String>(120)
+
+        try {
+            val readerJob = launch {
+                try {
+                    process.inputStream.bufferedReader(StandardCharsets.UTF_8).useLines { lines ->
+                        lines.forEach { line ->
+                            if (!isActive) return@forEach
+                            if (!tail.offer(line)) {
+                                tail.poll()
+                                tail.offer(line)
+                            }
+                            val progress = NetAndArchive.parseProgress(line)
+                            if (progress != null) {
+                                val speed = NetAndArchive.parseSpeedBytesPerSec(line)
+                                onEvent(Event.Progress(progress, speed, line))
+                            } else {
+                                onEvent(Event.Log(line))
+                            }
+                        }
+                    }
+                } catch (t: Throwable) {
+                    if (isActive) {
+                        throw IllegalStateException("I/O error while reading yt-dlp output: ${t.message}", t)
+                    }
+                }
+            }
+
+            val exitCode = process.waitFor()
+            readerJob.join()
+            val lines = mutableListOf<String>().also { tail.drainTo(it) }
+            DownloadAttemptResult(exitCode, lines)
+        } catch (e: CancellationException) {
+            process.destroyForcibly()
+            throw e
+        } catch (t: Throwable) {
+            process.destroyForcibly()
+            throw t
+        }
+    }
+
+    private suspend fun trySelfUpdateYtDlpForExtractorIssue(): Boolean = ytDlpSelfUpdateMutex.withLock {
+        val now = nowProvider()
+        if (now - lastYtDlpSelfUpdateAttemptAtMs < selfUpdateCooldownMs) {
+            debugln { "[YtDlpWrapper] Skipping yt-dlp self-update because cooldown is active." }
+            return@withLock false
+        }
+        lastYtDlpSelfUpdateAttemptAtMs = now
+
+        selfUpdateRunnerOverride?.let { runner ->
+            return@withLock try {
+                val success = runner()
+                if (success) {
+                    cachedVersion = null
+                    cachedLatestReleaseTag = null
+                    synchronized(metadataCacheLock) { metadataCache.clear() }
+                }
+                success
+            } catch (e: CancellationException) {
+                throw e
+            } catch (t: Throwable) {
+                warnln(t) { "[YtDlpWrapper] yt-dlp self-update failed: ${t.message}" }
+                false
+            }
+        }
+
+        return@withLock runSelfUpdateWithProcess()
+    }
+
+    private suspend fun runSelfUpdateWithProcess(): Boolean {
+        val cmd = buildList {
+            if (getOperatingSystem() == OperatingSystem.MACOS) {
+                add(PythonManager.getPythonExecutable())
+            }
+            add(ytDlpPath)
+            add("-U")
+        }
+
+        infoln { "[YtDlpWrapper] Attempting yt-dlp self-update (-U) due to extractor/hash mismatch..." }
+        return try {
+            coroutineScope {
+                val process = ProcessBuilder(cmd).redirectErrorStream(true).start()
+                val outputDeferred = async(Dispatchers.IO) {
+                    process.inputStream.bufferedReader(StandardCharsets.UTF_8).readText()
+                }
+
+                val exited = withTimeoutOrNull(selfUpdateTimeoutSec * 1000) { process.waitFor() }
+                if (exited == null) {
+                    process.destroyForcibly()
+                    warnln { "[YtDlpWrapper] yt-dlp self-update timed out after ${selfUpdateTimeoutSec}s." }
+                    false
+                } else {
+                    val output = runCatching { outputDeferred.await() }.getOrDefault("")
+                    val success = process.exitValue() == 0
+                    val preview = output.lineSequence().take(12).joinToString("\n")
+                    if (success) {
+                        cachedVersion = null
+                        cachedLatestReleaseTag = null
+                        synchronized(metadataCacheLock) { metadataCache.clear() }
+                        infoln { "[YtDlpWrapper] yt-dlp self-update completed successfully." }
+                        if (preview.isNotBlank()) {
+                            debugln { "[YtDlpWrapper] Self-update output:\n$preview" }
+                        }
+                    } else {
+                        warnln { "[YtDlpWrapper] yt-dlp self-update failed (exit ${process.exitValue()})." }
+                        if (preview.isNotBlank()) {
+                            warnln { "[YtDlpWrapper] Self-update output:\n$preview" }
+                        }
+                    }
+                    success
+                }
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (t: Throwable) {
+            warnln(t) { "[YtDlpWrapper] yt-dlp self-update failed: ${t.message}" }
+            false
+        }
+    }
+
+    private fun buildDownloadErrorMessage(
+        exitCode: Int,
+        lines: List<String>,
+        diagnostic: String?,
+        hints: List<String>,
+    ): String {
+        val errorLines = lines.filter { it.trim().startsWith("ERROR:", ignoreCase = true) }
+
+        return buildString {
+            append("yt-dlp failed (exit $exitCode). ${diagnostic ?: ""}".trim())
+
+            val uniqueHints = hints.map { it.trim() }.filter { it.isNotBlank() }.distinct()
+            if (uniqueHints.isNotEmpty()) {
+                append("\n\nHints:\n")
+                uniqueHints.forEach { append("• $it\n") }
+            }
+
+            if (errorLines.isNotEmpty()) {
+                append("\nErrors:\n")
+                errorLines.forEach { errorLine ->
+                    val cleaned = errorLine.replaceFirst(
+                        Regex("^ERROR:\\s*", RegexOption.IGNORE_CASE),
+                        "",
+                    ).trim()
+                    append("• $cleaned\n")
+                }
+            }
+
+            append("\n--- Last output ---\n")
+            val tailPreview = if (lines.isEmpty()) {
+                "(no output captured)"
+            } else {
+                lines.takeLast(min(15, lines.size)).joinToString("\n")
+            }
+            append(tailPreview)
+        }
     }
 
     // --- Direct URL Helpers ---
