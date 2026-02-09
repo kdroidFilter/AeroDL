@@ -465,10 +465,11 @@ class YtDlpWrapper {
 
     fun getDefaultFfmpegPath(): String = PlatformUtils.getDefaultFfmpegPath()
 
-    private fun hasSiblingFfprobe(ffmpegExecutablePath: String): Boolean {
+    private suspend fun hasRunnableSiblingFfprobe(ffmpegExecutablePath: String): Boolean {
         val ffmpegFile = File(ffmpegExecutablePath)
         val ffprobeName = if (ffmpegFile.name.endsWith(".exe", ignoreCase = true)) "ffprobe.exe" else "ffprobe"
-        return ffmpegFile.parentFile?.let { File(it, ffprobeName).exists() } == true
+        val ffprobePath = ffmpegFile.parentFile?.let { File(it, ffprobeName).absolutePath } ?: return false
+        return PlatformUtils.ffprobeVersion(ffprobePath) != null
     }
 
     suspend fun ensureFfmpegAvailable(
@@ -479,13 +480,16 @@ class YtDlpWrapper {
         ffmpegPath?.let {
             if (!forceDownload &&
                 PlatformUtils.ffmpegVersion(it) != null &&
-                hasSiblingFfprobe(it)
+                hasRunnableSiblingFfprobe(it)
             ) {
                 return true
             }
         }
         PlatformUtils.findFfmpegInSystemPath()?.let {
-            if (!forceDownload && hasSiblingFfprobe(it)) {
+            if (!forceDownload &&
+                PlatformUtils.ffmpegVersion(it) != null &&
+                hasRunnableSiblingFfprobe(it)
+            ) {
                 ffmpegPath = it
                 return true
             }
@@ -494,15 +498,31 @@ class YtDlpWrapper {
         val defaultPath = PlatformUtils.getDefaultFfmpegPath()
         if (!forceDownload &&
             PlatformUtils.ffmpegVersion(defaultPath) != null &&
-            hasSiblingFfprobe(defaultPath)
+            hasRunnableSiblingFfprobe(defaultPath)
         ) {
             ffmpegPath = defaultPath
             return true
         }
         if (manifest == null) return false
-        if (getOperatingSystem() in listOf(OperatingSystem.WINDOWS, OperatingSystem.LINUX, OperatingSystem.MACOS)) {
+        if (getOperatingSystem() == OperatingSystem.MACOS) {
+            val releaseInfo = manifest.releases.ffmpegMacos
+            val (ffmpegAssetName, ffprobeAssetName) = PlatformUtils.getFfmpegAndFfprobeMacosAssetNamesForSystem() ?: return false
+            val ffmpegAsset = releaseInfo.assets.find { it.name == ffmpegAssetName } ?: return false
+            val ffprobeAsset = releaseInfo.assets.find { it.name == ffprobeAssetName } ?: return false
+            val result = PlatformUtils.downloadAndInstallFfmpegMacosBinaries(
+                ffmpegAssetName = ffmpegAsset.name,
+                ffprobeAssetName = ffprobeAsset.name,
+                forceDownload = forceDownload,
+                ffmpegDownloadUrl = ffmpegAsset.browserDownloadUrl,
+                ffprobeDownloadUrl = ffprobeAsset.browserDownloadUrl,
+                onProgress = onProgress,
+            )
+            if (result != null) ffmpegPath = result
+            return result != null
+        }
+        if (getOperatingSystem() in listOf(OperatingSystem.WINDOWS, OperatingSystem.LINUX)) {
             val assetPattern = PlatformUtils.getFfmpegAssetPatternForSystem() ?: return false
-            val releaseInfo = if (getOperatingSystem() == OperatingSystem.MACOS) manifest.releases.ffmpegMacos else manifest.releases.ffmpeg
+            val releaseInfo = manifest.releases.ffmpeg
             val asset = releaseInfo.assets.find { it.name.endsWith(assetPattern) && !it.name.contains("shared") } ?: return false
             val result = PlatformUtils.downloadAndInstallFfmpeg(asset.name, forceDownload, asset.browserDownloadUrl, onProgress)
             if (result != null) ffmpegPath = result
