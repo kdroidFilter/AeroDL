@@ -13,6 +13,7 @@ import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.binding
 import dev.zacsweers.metrox.viewmodel.ViewModelKey
+import io.github.kdroidfilter.logging.errorln
 import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
 import io.github.kdroidfilter.ytdlpgui.di.AppScope
 
@@ -50,7 +51,7 @@ class HomeViewModel(
                 // Validate immediately after pasting
                 validateLink(pasted)
             } catch (e: Exception) {
-                e.printStackTrace()
+                errorln(e) { "Failed to read clipboard contents: ${e.message}" }
             }
         }
     }

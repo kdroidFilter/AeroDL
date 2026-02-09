@@ -7,11 +7,10 @@ kotlin {
 
     sourceSets {
         jvmMain.dependencies {
-            // No external deps; simple console logger
+            implementation(libs.sentry.core)
         }
         jvmTest.dependencies {
             implementation(libs.kotlin.test)
         }
     }
 }
-
