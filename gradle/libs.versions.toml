@@ -34,6 +34,8 @@ jvmNativeTrustedRoots = "1.1.7"
 
 # Database
 sqlDelight = "2.2.1"
+sentry = "6.0.0"
+sentrySdk = "8.32.0"
 
 # Additional dependencies
 coil = "3.3.0"
@@ -90,6 +92,7 @@ knotify = { module = "io.github.kdroidfilter:knotify", version.ref = "knotify" }
 knotify-compose = { module = "io.github.kdroidfilter:knotify-compose", version.ref = "knotify" }
 
 cardiologist = { module = "io.github.kevincianfarini.cardiologist:cardiologist", version.ref = "cardiologist" }
+sentry-core = { module = "io.sentry:sentry", version.ref = "sentrySdk" }
 
 
 # Ktor
@@ -126,4 +129,5 @@ sqlDelight = { id = "app.cash.sqldelight", version.ref = "sqlDelight" }
 hydraulicConveyor = { id = "dev.hydraulic.conveyor", version.ref = "hydraulicConveyor" }
 buildConfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildConfig" }
 linuxDeps = { id = "io.github.kdroidfilter.compose.linux.packagedeps", version.ref = "linuxDeps" }
+sentryJvmGradle = { id = "io.sentry.jvm.gradle", version.ref = "sentry" }
 caupain = "com.deezer.caupain:1.7.1"

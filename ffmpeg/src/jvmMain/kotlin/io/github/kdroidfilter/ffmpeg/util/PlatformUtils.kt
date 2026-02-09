@@ -190,7 +190,7 @@ object PlatformUtils {
             getFfmpegVersion(targetFfmpeg.absolutePath) ?: error("FFmpeg is not runnable after installation")
             targetFfmpeg.absolutePath
         } catch (t: Throwable) {
-            errorln { "Failed to download/install FFmpeg: ${t.stackTraceToString()}" }
+            errorln(t) { "Failed to download/install FFmpeg: ${t.message}" }
             null
         }
     }

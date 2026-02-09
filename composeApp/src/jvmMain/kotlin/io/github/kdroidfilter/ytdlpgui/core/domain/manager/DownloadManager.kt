@@ -476,7 +476,7 @@ class DownloadManager(
 
             is Event.Error -> {
                 errorln { "[DownloadManager] Download error for item $id: ${event.message}" }
-                event.cause?.let { errorln { "[DownloadManager] Error cause: ${it.message}" } }
+                event.cause?.let { errorln(it) { "[DownloadManager] Error cause: ${it.message}" } }
                 update(id) { it.copy(status = DownloadItem.Status.Failed, message = event.message) }
                 runCatching { if (finalPathSink.exists()) finalPathSink.delete() }
                 maybeStartPending()

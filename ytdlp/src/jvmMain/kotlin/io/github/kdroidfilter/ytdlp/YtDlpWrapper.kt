@@ -12,6 +12,7 @@ import io.github.kdroidfilter.ytdlp.util.PythonManager
 import io.github.kdroidfilter.logging.errorln
 import io.github.kdroidfilter.logging.infoln
 import io.github.kdroidfilter.logging.debugln
+import io.github.kdroidfilter.logging.warnln
 import kotlinx.coroutines.*
 import java.io.File
 import java.nio.charset.StandardCharsets
@@ -27,6 +28,7 @@ import kotlin.math.min
  */
 class YtDlpWrapper {
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private val versionCommandTimeoutMs = 5_000L
 
     // --- Lifetime caches (thread-safe) ---
 
@@ -100,6 +102,14 @@ class YtDlpWrapper {
 
     private data class ProcessResult(val exitCode: Int, val stdout: List<String>, val stderr: String)
 
+    private data class AvailabilitySnapshot(
+        val path: String,
+        val exists: Boolean,
+        val canExecute: Boolean,
+        val version: String?,
+        val probeError: String?,
+    )
+
     // --- Initialization Events for UI ---
     sealed interface InitEvent {
         data object CheckingYtDlp : InitEvent
@@ -116,11 +126,24 @@ class YtDlpWrapper {
 
     // --- Public initialization helpers ---
 
-    fun initializeIn(scope: CoroutineScope, manifest: ReleaseManifest?, onEvent: (InitEvent) -> Unit = {}): Job =
-        scope.launch { initialize(manifest, onEvent) }
+    fun initializeIn(
+        scope: CoroutineScope,
+        manifest: ReleaseManifest?,
+        manifestSource: String? = null,
+        onEvent: (InitEvent) -> Unit = {},
+    ): Job = scope.launch { initialize(manifest, manifestSource, onEvent) }
 
-    suspend fun initialize(manifest: ReleaseManifest?, onEvent: (InitEvent) -> Unit = {}): Boolean {
+    suspend fun initialize(
+        manifest: ReleaseManifest?,
+        manifestSource: String? = null,
+        onEvent: (InitEvent) -> Unit = {},
+    ): Boolean {
         fun pct(read: Long, total: Long?): Double? = total?.takeIf { it > 0 }?.let { read * 100.0 / it }
+        val resolvedManifestSource = manifestSource ?: "unknown"
+
+        infoln {
+            "[YtDlpWrapper] initialize start: manifestPresent=${manifest != null}, manifestSource=$resolvedManifestSource, ytDlpPath=$ytDlpPath, os=${getOperatingSystem()}"
+        }
 
         try {
             // On macOS, we need Python + yt-dlp script instead of PyInstaller binary
@@ -130,7 +153,16 @@ class YtDlpWrapper {
                 // Download Python if needed
                 if (PythonManager.needsPythonDownload()) {
                     if (manifest == null) {
-                        onEvent(InitEvent.Error("No manifest available. Check your internet connection and try again.", null))
+                        val availability = probeAvailability()
+                        warnln {
+                            "[YtDlpWrapper] Missing manifest for Python bootstrap. source=$resolvedManifestSource, ytDlpPath=${availability.path}, exists=${availability.exists}, canExecute=${availability.canExecute}, version=${availability.version ?: "null"}, probeError=${availability.probeError ?: "none"}"
+                        }
+                        onEvent(
+                            InitEvent.Error(
+                                "Cannot install Python because the release manifest is unavailable (source=$resolvedManifestSource). Verify access to api.github.com and github.com, then retry.",
+                                null,
+                            ),
+                        )
                         onEvent(InitEvent.Completed(false)); return false
                     }
                     onEvent(InitEvent.CheckingYtDlp)  // Reuse event for progress
@@ -143,13 +175,27 @@ class YtDlpWrapper {
 
             onEvent(InitEvent.CheckingYtDlp)
             if (!isAvailable()) {
+                val availability = probeAvailability()
+                warnln {
+                    "[YtDlpWrapper] yt-dlp not available during init. source=$resolvedManifestSource, ytDlpPath=${availability.path}, exists=${availability.exists}, canExecute=${availability.canExecute}, version=${availability.version ?: "null"}, probeError=${availability.probeError ?: "none"}"
+                }
                 if (manifest == null) {
-                    onEvent(InitEvent.Error("No manifest available and yt-dlp is not installed. Check your internet connection and try again.", null))
+                    onEvent(
+                        InitEvent.Error(
+                            buildManifestUnavailableYtDlpMessage(availability, resolvedManifestSource),
+                            null,
+                        ),
+                    )
                     onEvent(InitEvent.Completed(false)); return false
                 }
                 onEvent(InitEvent.DownloadingYtDlp)
                 if (!downloadOrUpdate(manifest) { r, t -> onEvent(InitEvent.YtDlpProgress(r, t, pct(r, t))) }) {
-                    onEvent(InitEvent.Error("Could not download yt-dlp. Check your internet connection and try again.", null))
+                    onEvent(
+                        InitEvent.Error(
+                            "Could not download yt-dlp from release assets. Verify access to github.com and retry.",
+                            null,
+                        ),
+                    )
                     onEvent(InitEvent.Completed(false)); return false
                 }
             } else if (manifest != null && hasUpdate(manifest)) {
@@ -159,13 +205,23 @@ class YtDlpWrapper {
 
             onEvent(InitEvent.EnsuringFfmpeg)
             if (!ensureFfmpegAvailable(manifest, false) { r, t -> onEvent(InitEvent.FfmpegProgress(r, t, pct(r, t))) }) {
-                onEvent(InitEvent.Error("Could not install FFmpeg. Check your internet connection and try again.", null))
+                val msg = if (manifest == null) {
+                    "FFmpeg is not installed and the release manifest is unavailable (source=$resolvedManifestSource), so AeroDL cannot download it. Verify access to api.github.com and github.com."
+                } else {
+                    "Could not install FFmpeg. Check your internet connection and try again."
+                }
+                onEvent(InitEvent.Error(msg, null))
                 onEvent(InitEvent.Completed(false)); return false
             }
 
             onEvent(InitEvent.EnsuringDeno)
             if (!ensureDenoAvailable(manifest, false) { r, t -> onEvent(InitEvent.DenoProgress(r, t, pct(r, t))) }) {
-                onEvent(InitEvent.Error("Could not install Deno. Check your internet connection and try again.", null))
+                val msg = if (manifest == null) {
+                    "Deno is not installed and the release manifest is unavailable (source=$resolvedManifestSource), so AeroDL cannot download it. Verify access to api.github.com and github.com."
+                } else {
+                    "Could not install Deno. Check your internet connection and try again."
+                }
+                onEvent(InitEvent.Error(msg, null))
                 onEvent(InitEvent.Completed(false)); return false
             }
 
@@ -182,6 +238,9 @@ class YtDlpWrapper {
                     "DNS resolution failed. Check your internet connection and try again."
                 else -> t.message ?: "Initialization error"
             }
+            errorln(t) {
+                "[YtDlpWrapper] initialize failure: manifestSource=$resolvedManifestSource, ytDlpPath=$ytDlpPath, error=${t.message}"
+            }
             onEvent(InitEvent.Error(message, t))
             onEvent(InitEvent.Completed(false))
             return false
@@ -193,28 +252,17 @@ class YtDlpWrapper {
     /**
      * Lifetime-cached version. First resolve by spawning the process once, then reuse.
      */
-    suspend fun version(): String? = withContext(Dispatchers.IO) {
-        cachedVersion?.let { return@withContext it }
-        try {
-            val cmd = if (getOperatingSystem() == OperatingSystem.MACOS) {
-                listOf(PythonManager.getPythonExecutable(), ytDlpPath, "--version")
-            } else {
-                listOf(ytDlpPath, "--version")
-            }
-            println("⚡ version() command: ${cmd.joinToString(" ")}")
-            val proc = ProcessBuilder(cmd).redirectErrorStream(true).start()
-            val exited = withTimeoutOrNull(2_000) { proc.waitFor() }
-            if (exited == null) {
-                proc.destroyForcibly()
-                return@withContext null
-            }
-            val out = proc.inputStream.bufferedReader().readText().trim()
-            val res = if (proc.exitValue() == 0 && out.isNotBlank()) out else null
-            if (res != null) cachedVersion = res
-            res
-        } catch (_: Exception) {
-            null
+    suspend fun version(timeoutMs: Long = versionCommandTimeoutMs): String? {
+        cachedVersion?.let { return it }
+        val snapshot = probeAvailability(timeoutMs)
+        if (snapshot.version != null) {
+            cachedVersion = snapshot.version
+            return snapshot.version
         }
+        if (snapshot.probeError != null) {
+            debugln { "[YtDlpWrapper] version() probe failed: ${snapshot.probeError}" }
+        }
+        return null
     }
 
     suspend fun ffmpegVersion(): String? {
@@ -222,11 +270,113 @@ class YtDlpWrapper {
         return PlatformUtils.ffmpegVersion(path)
     }
 
-    suspend fun isAvailable(): Boolean {
-        val file = File(ytDlpPath)
-        if (!(file.exists() && file.canExecute())) return false
-        // Avoid respawning if version is already known
-        return version() != null
+    suspend fun isAvailable(timeoutMs: Long = versionCommandTimeoutMs): Boolean {
+        cachedVersion?.let { return true }
+        val snapshot = probeAvailability(timeoutMs)
+        if (snapshot.version != null) {
+            cachedVersion = snapshot.version
+            return true
+        }
+        debugln {
+            "[YtDlpWrapper] isAvailable=false path=${snapshot.path}, exists=${snapshot.exists}, canExecute=${snapshot.canExecute}, probeError=${snapshot.probeError ?: "none"}"
+        }
+        return false
+    }
+
+    private suspend fun probeAvailability(timeoutMs: Long = versionCommandTimeoutMs): AvailabilitySnapshot =
+        withContext(Dispatchers.IO) {
+            val file = File(ytDlpPath)
+            val exists = file.exists()
+            val canExecute = file.canExecute()
+            val os = getOperatingSystem()
+
+            if (!exists) {
+                return@withContext AvailabilitySnapshot(
+                    path = file.absolutePath,
+                    exists = false,
+                    canExecute = canExecute,
+                    version = null,
+                    probeError = "binary_not_found",
+                )
+            }
+
+            if (os != OperatingSystem.WINDOWS && !canExecute) {
+                return@withContext AvailabilitySnapshot(
+                    path = file.absolutePath,
+                    exists = true,
+                    canExecute = false,
+                    version = null,
+                    probeError = "binary_not_executable",
+                )
+            }
+
+            val cmd = if (os == OperatingSystem.MACOS) {
+                listOf(PythonManager.getPythonExecutable(), ytDlpPath, "--version")
+            } else {
+                listOf(ytDlpPath, "--version")
+            }
+
+            try {
+                val proc = ProcessBuilder(cmd).redirectErrorStream(true).start()
+                val exited = withTimeoutOrNull(timeoutMs) { proc.waitFor() }
+                if (exited == null) {
+                    proc.destroyForcibly()
+                    return@withContext AvailabilitySnapshot(
+                        path = file.absolutePath,
+                        exists = true,
+                        canExecute = canExecute,
+                        version = null,
+                        probeError = "version_timeout_${timeoutMs}ms",
+                    )
+                }
+
+                val output = proc.inputStream.bufferedReader(StandardCharsets.UTF_8).readText().trim()
+                return@withContext if (proc.exitValue() == 0 && output.isNotBlank()) {
+                    AvailabilitySnapshot(
+                        path = file.absolutePath,
+                        exists = true,
+                        canExecute = canExecute,
+                        version = output.lineSequence().first().trim(),
+                        probeError = null,
+                    )
+                } else {
+                    val sample = output.lineSequence().firstOrNull()?.take(200).orEmpty()
+                    AvailabilitySnapshot(
+                        path = file.absolutePath,
+                        exists = true,
+                        canExecute = canExecute,
+                        version = null,
+                        probeError = "version_exit_${proc.exitValue()}${if (sample.isNotBlank()) ": $sample" else ""}",
+                    )
+                }
+            } catch (t: Throwable) {
+                val reason = t.message?.replace("\\s+".toRegex(), " ")?.take(200).orEmpty()
+                AvailabilitySnapshot(
+                    path = file.absolutePath,
+                    exists = true,
+                    canExecute = canExecute,
+                    version = null,
+                    probeError = "${t.javaClass.simpleName}${if (reason.isNotBlank()) ": $reason" else ""}",
+                )
+            }
+        }
+
+    private fun buildManifestUnavailableYtDlpMessage(
+        availability: AvailabilitySnapshot,
+        manifestSource: String,
+    ): String {
+        val binaryState = when {
+            !availability.exists ->
+                "No local yt-dlp binary was found at '${availability.path}'."
+            getOperatingSystem() != OperatingSystem.WINDOWS && !availability.canExecute ->
+                "A local yt-dlp binary exists at '${availability.path}' but is not executable."
+            availability.version == null ->
+                "A local yt-dlp binary exists at '${availability.path}' but it could not be started (${availability.probeError ?: "unknown error"})."
+            else ->
+                "Local yt-dlp version '${availability.version}' is available at '${availability.path}'."
+        }
+
+        return "Release manifest is unavailable (source=$manifestSource). $binaryState AeroDL cannot install/update yt-dlp without access to api.github.com and github.com."
     }
 
     /**
@@ -295,7 +445,7 @@ class YtDlpWrapper {
                 }
             }
         } catch (e: Exception) {
-            errorln { "Error during yt-dlp download/update: ${e.stackTraceToString()}" }
+            errorln(e) { "Error during yt-dlp download/update: ${e.message}" }
             false
         }
     }
@@ -489,8 +639,7 @@ class YtDlpWrapper {
                 ProcessBuilder(cmd).directory(downloadDir).redirectErrorStream(true).start()
             } catch (t: Throwable) {
                 val error = "Failed to start the yt-dlp process: ${t.message}"
-                errorln { "[YtDlpWrapper] $error" }
-                errorln { "[YtDlpWrapper] Stack trace: ${t.stackTraceToString()}" }
+                errorln(t) { "[YtDlpWrapper] $error" }
                 onEvent(Event.Error(error, t))
                 return@launch
             }
@@ -521,8 +670,7 @@ class YtDlpWrapper {
                         } catch (e: Exception) {
                             if (isActive) {
                                 val error = "I/O error while reading yt-dlp output: ${e.message}"
-                                errorln { "[YtDlpWrapper] $error" }
-                                errorln { "[YtDlpWrapper] Stack trace: ${e.stackTraceToString()}" }
+                                errorln(e) { "[YtDlpWrapper] $error" }
                                 onEvent(Event.Error(error, e))
                             }
                         }
@@ -586,6 +734,7 @@ class YtDlpWrapper {
                 onEvent(Event.Cancelled)
             } catch (t: Throwable) {
                 process.destroyForcibly()
+                errorln(t) { "[YtDlpWrapper] Unexpected error during download pipeline." }
                 onEvent(Event.Error("An unexpected error occurred during download.", t))
                 onEvent(Event.Completed(-1, false))
             }
@@ -1009,6 +1158,7 @@ class YtDlpWrapper {
 
                 Result.success(ProcessResult(process.exitValue(), stdoutReader.await(), stderrReader.await()))
             } catch (t: Throwable) {
+                errorln(t) { "Failed to start/run yt-dlp process." }
                 Result.failure(IllegalStateException("Failed to start/run yt-dlp process", t))
             }
         }
@@ -1084,6 +1234,7 @@ class YtDlpWrapper {
                 }
 
             } catch (t: Throwable) {
+                errorln(t) { "Failed to start yt-dlp process for metadata." }
                 Result.failure(IllegalStateException("Failed to start yt-dlp process for metadata", t))
             }
         }

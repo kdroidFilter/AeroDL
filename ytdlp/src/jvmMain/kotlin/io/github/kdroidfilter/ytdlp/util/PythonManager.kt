@@ -107,8 +107,7 @@ object PythonManager {
             debugln { "Python installed successfully" }
             true
         } catch (e: Exception) {
-            errorln { "Failed to download Python: ${e.message}" }
-            e.printStackTrace()
+            errorln(e) { "Failed to download Python: ${e.message}" }
             false
         }
     }
@@ -146,8 +145,7 @@ object PythonManager {
             debugln { "yt-dlp script downloaded successfully" }
             true
         } catch (e: Exception) {
-            errorln { "Failed to download yt-dlp script: ${e.message}" }
-            e.printStackTrace()
+            errorln(e) { "Failed to download yt-dlp script: ${e.message}" }
             false
         }
     }

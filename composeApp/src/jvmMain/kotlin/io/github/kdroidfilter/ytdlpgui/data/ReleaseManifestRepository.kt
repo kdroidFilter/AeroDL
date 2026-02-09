@@ -1,5 +1,7 @@
 package io.github.kdroidfilter.ytdlpgui.data
 
+import io.github.kdroidfilter.logging.infoln
+import io.github.kdroidfilter.logging.warnln
 import io.github.kdroidfilter.network.KtorConfig
 import io.github.kdroidfilter.ytdlp.model.AssetInfo
 import io.github.kdroidfilter.ytdlp.model.ReleaseEntries
@@ -18,10 +20,21 @@ import java.time.Instant
  */
 class ReleaseManifestRepository {
 
+    enum class ManifestSource(val label: String) {
+        NETWORK("network"),
+        CACHE("cache"),
+        FALLBACK("fallback"),
+    }
+
     @Volatile
     private var cached: ReleaseManifest? = null
 
+    @Volatile
+    private var lastManifestSource: ManifestSource? = null
+
     fun getCachedManifest(): ReleaseManifest? = cached
+
+    fun getLastManifestSource(): ManifestSource? = lastManifestSource
 
     /**
      * Fetches the latest yt-dlp release from GitHub API and combines it
@@ -37,24 +50,31 @@ class ReleaseManifestRepository {
             val ytDlpInfo = ReleaseInfo(
                 tagName = release.tagName,
                 body = release.body,
-                assets = release.assets.map { AssetInfo(it.name, it.browserDownloadUrl) }
+                assets = release.assets.map { AssetInfo(it.name, it.browserDownloadUrl) },
             )
             buildManifest(ytDlpInfo)
         }.onFailure { error ->
-            System.err.println("[ReleaseManifestRepository] Failed to fetch manifest: ${error.message}")
+            warnln { "[ReleaseManifestRepository] Failed to fetch manifest from GitHub API: ${error.message}" }
         }.getOrNull()
 
         httpClient.close()
 
-        val resolved = fetchedManifest
-            ?: cached
-            ?: buildManifest(YTDLP_FALLBACK_RELEASE).also {
-                System.err.println(
+        val (resolved, source) = when {
+            fetchedManifest != null -> fetchedManifest to ManifestSource.NETWORK
+            cached != null -> cached!! to ManifestSource.CACHE
+            else -> buildManifest(YTDLP_FALLBACK_RELEASE).also {
+                warnln {
                     "[ReleaseManifestRepository] Using hardcoded yt-dlp fallback release: $YTDLP_FALLBACK_TAG"
-                )
-            }
+                }
+            } to ManifestSource.FALLBACK
+        }
+
+        infoln {
+            "[ReleaseManifestRepository] Manifest source=${source.label}, yt-dlp tag=${resolved.releases.ytDlp.tagName}"
+        }
 
         cached = resolved
+        lastManifestSource = source
         return resolved
     }
 
@@ -72,8 +92,8 @@ class ReleaseManifestRepository {
                     ffmpeg = FFMPEG_RELEASE,
                     ffmpegMacos = FFMPEG_MACOS_RELEASE,
                     deno = DENO_RELEASE,
-                    aerodl = AERODL_PLACEHOLDER
-                )
+                    aerodl = AERODL_PLACEHOLDER,
+                ),
             )
 
         // ---- yt-dlp fallback (used only when GitHub API is unavailable and no cache exists) ----
@@ -93,7 +113,7 @@ class ReleaseManifestRepository {
                 "yt-dlp_musllinux_aarch64",
                 "yt-dlp_win_arm64.exe",
                 "yt-dlp_x86.exe",
-            ).map { AssetInfo(it, "$YTDLP_FALLBACK_BASE/$it") }
+            ).map { AssetInfo(it, "$YTDLP_FALLBACK_BASE/$it") },
         )
 
         // ---- FFmpeg for Windows/Linux (yt-dlp/FFmpeg-Builds, tag=latest) ----
@@ -106,7 +126,7 @@ class ReleaseManifestRepository {
                 "ffmpeg-master-latest-win32-gpl.zip",
                 "ffmpeg-master-latest-linux64-gpl.tar.xz",
                 "ffmpeg-master-latest-linuxarm64-gpl.tar.xz",
-            ).map { AssetInfo(it, "$FFMPEG_BASE/$it") }
+            ).map { AssetInfo(it, "$FFMPEG_BASE/$it") },
         )
 
         // ---- FFmpeg for macOS (kdroidFilter/FFmpeg-Builds, tag=latest) ----
@@ -116,7 +136,7 @@ class ReleaseManifestRepository {
             assets = listOf(
                 "ffmpeg-master-latest-macos64-gpl.tar.xz",
                 "ffmpeg-master-latest-macosarm64-gpl.tar.xz",
-            ).map { AssetInfo(it, "$FFMPEG_MACOS_BASE/$it") }
+            ).map { AssetInfo(it, "$FFMPEG_MACOS_BASE/$it") },
         )
 
         // ---- Deno (denoland/deno) ----
@@ -131,7 +151,7 @@ class ReleaseManifestRepository {
                 "deno-aarch64-unknown-linux-gnu.zip",
                 "deno-x86_64-apple-darwin.zip",
                 "deno-aarch64-apple-darwin.zip",
-            ).map { AssetInfo(it, "$DENO_BASE/$it") }
+            ).map { AssetInfo(it, "$DENO_BASE/$it") },
         )
 
         // ---- Python standalone for macOS (indygreg/python-build-standalone) ----
@@ -143,18 +163,18 @@ class ReleaseManifestRepository {
             assets = listOf(
                 "cpython-3.12.12+$PYTHON_TAG-aarch64-apple-darwin-install_only.tar.gz",
                 "cpython-3.12.12+$PYTHON_TAG-x86_64-apple-darwin-install_only.tar.gz",
-            ).map { AssetInfo(it, "$PYTHON_BASE/$it") }
+            ).map { AssetInfo(it, "$PYTHON_BASE/$it") },
         )
 
         // ---- AeroDL placeholder (not used for update checks) ----
         private val AERODL_PLACEHOLDER = ReleaseInfo(
             tagName = "v0.0.0",
-            assets = emptyList()
+            assets = emptyList(),
         )
     }
 }
 
-/** Minimal model for the GitHub releases API — only the fields we actually need. */
+/** Minimal model for the GitHub releases API - only the fields we actually need. */
 @Serializable
 private data class GitHubRelease(
     @SerialName("tag_name") val tagName: String,

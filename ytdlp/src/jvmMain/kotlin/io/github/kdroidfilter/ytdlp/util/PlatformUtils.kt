@@ -261,7 +261,7 @@ object PlatformUtils {
             denoVersion(targetDeno.absolutePath) ?: error("Deno is not runnable after installation")
             targetDeno.absolutePath
         } catch (t: Throwable) {
-            errorln { "Failed to download/install Deno: ${t.stackTraceToString()}" }
+            errorln(t) { "Failed to download/install Deno: ${t.message}" }
             null
         }
     }
@@ -384,7 +384,7 @@ object PlatformUtils {
             ffmpegVersion(targetFfmpeg.absolutePath) ?: error("FFmpeg is not runnable after installation")
             targetFfmpeg.absolutePath
         } catch (t: Throwable) {
-            errorln { "Failed to download/install FFmpeg: ${t.stackTraceToString()}" }
+            errorln(t) { "Failed to download/install FFmpeg: ${t.message}" }
             null
         }
     }
