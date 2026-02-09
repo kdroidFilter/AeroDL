@@ -10,6 +10,8 @@ import io.github.vinceglb.filekit.databasesDir
 import io.github.vinceglb.filekit.path
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.net.HttpURLConnection
@@ -19,6 +21,7 @@ import java.nio.file.Files
 import java.nio.file.attribute.PosixFilePermission
 
 object PlatformUtils {
+    private val ffmpegInstallMutex = Mutex()
 
     // --- yt-dlp ---
 
@@ -339,53 +342,59 @@ object PlatformUtils {
         forceDownload: Boolean,
         downloadUrl: String,
         onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null
-    ): String? = withContext(Dispatchers.IO) {
-        val baseDir = File(getDataDir(), "ffmpeg")
-        val binDir = File(baseDir, "bin")
-        val targetFfmpeg = File(binDir, if (getOperatingSystem() == OperatingSystem.WINDOWS) "ffmpeg.exe" else "ffmpeg")
-        val targetFfprobe = File(binDir, if (getOperatingSystem() == OperatingSystem.WINDOWS) "ffprobe.exe" else "ffprobe")
+    ): String? = ffmpegInstallMutex.withLock {
+        withContext(Dispatchers.IO) {
+            val baseDir = File(getDataDir(), "ffmpeg")
+            val binDir = File(baseDir, "bin")
+            val targetFfmpeg = File(binDir, if (getOperatingSystem() == OperatingSystem.WINDOWS) "ffmpeg.exe" else "ffmpeg")
+            val targetFfprobe = File(binDir, if (getOperatingSystem() == OperatingSystem.WINDOWS) "ffprobe.exe" else "ffprobe")
 
-        if (!forceDownload && targetFfmpeg.exists() && ffmpegVersion(targetFfmpeg.absolutePath) != null) {
-            if (targetFfprobe.exists()) {
+            if (!forceDownload &&
+                targetFfmpeg.exists() &&
+                targetFfprobe.exists() &&
+                ffmpegVersion(targetFfmpeg.absolutePath) != null
+            ) {
                 return@withContext targetFfmpeg.absolutePath
             }
-            // Continue to (re)install to retrieve ffprobe as well.
-        }
 
-        baseDir.mkdirs(); binDir.mkdirs()
+            baseDir.mkdirs(); binDir.mkdirs()
 
-        try {
-            val archive = File(baseDir, archiveName)
+            var extractDir: File? = null
+            try {
+                val archive = File(baseDir, archiveName)
+                downloadFile(downloadUrl, archive, onProgress)
 
-            downloadFile(downloadUrl, archive, onProgress)
+                // Extract in an isolated temp folder to avoid mixing stale files.
+                extractDir = Files.createTempDirectory(baseDir.toPath(), "extract-").toFile()
+                if (archive.name.endsWith(".zip")) NetAndArchive.extractZip(archive, extractDir)
+                else if (archive.name.endsWith(".tar.xz")) NetAndArchive.extractTarXzWithSystemTar(archive, extractDir)
+                else error("Unsupported FFmpeg archive: ${archive.name}")
 
-            // Extract archive
-            if (archive.name.endsWith(".zip")) NetAndArchive.extractZip(archive, baseDir)
-            else if (archive.name.endsWith(".tar.xz")) NetAndArchive.extractTarXzWithSystemTar(archive, baseDir)
-            else error("Unsupported FFmpeg archive: ${archive.name}")
+                // Locate binaries only inside this extraction.
+                val foundFfmpeg = extractDir.walkTopDown()
+                    .firstOrNull { it.isFile && it.name.matches(Regex("^ffmpeg(\\.exe)?$")) && it.canRead() }
+                    ?: error("FFmpeg binary not found after extraction")
+                val foundFfprobe = extractDir.walkTopDown()
+                    .firstOrNull { it.isFile && it.name.matches(Regex("^ffprobe(\\.exe)?$")) && it.canRead() }
+                    ?: error("FFprobe binary not found after extraction")
 
-            // Locate ffmpeg and ffprobe within the extracted tree
-            val foundFfmpeg = baseDir.walkTopDown()
-                .firstOrNull { it.isFile && it.name.matches(Regex("^ffmpeg(\\.exe)?$")) && it.canRead() }
-                ?: error("FFmpeg binary not found after extraction")
-            foundFfmpeg.copyTo(targetFfmpeg, overwrite = true)
-
-            val foundFfprobe = baseDir.walkTopDown()
-                .firstOrNull { it.isFile && it.name.matches(Regex("^ffprobe(\\.exe)?$")) && it.canRead() }
-            if (foundFfprobe != null) {
+                foundFfmpeg.copyTo(targetFfmpeg, overwrite = true)
                 foundFfprobe.copyTo(targetFfprobe, overwrite = true)
-            }
 
-            if (getOperatingSystem() != OperatingSystem.WINDOWS) {
-                makeExecutable(targetFfmpeg)
-                if (targetFfprobe.exists()) makeExecutable(targetFfprobe)
-            }
+                if (getOperatingSystem() != OperatingSystem.WINDOWS) {
+                    makeExecutable(targetFfmpeg)
+                    makeExecutable(targetFfprobe)
+                }
 
-            ffmpegVersion(targetFfmpeg.absolutePath) ?: error("FFmpeg is not runnable after installation")
-            targetFfmpeg.absolutePath
-        } catch (t: Throwable) {
-            errorln(t) { "Failed to download/install FFmpeg: ${t.message}" }
-            null
+                ffmpegVersion(targetFfmpeg.absolutePath) ?: error("FFmpeg is not runnable after installation")
+                if (!targetFfprobe.exists()) error("FFprobe is not available after installation")
+                targetFfmpeg.absolutePath
+            } catch (t: Throwable) {
+                errorln(t) { "Failed to download/install FFmpeg: ${t.message}" }
+                null
+            } finally {
+                extractDir?.deleteRecursively()
+            }
         }
     }
 }
