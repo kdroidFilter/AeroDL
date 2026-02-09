@@ -154,12 +154,15 @@ class YtDlpWrapper {
                 if (PythonManager.needsPythonDownload()) {
                     if (manifest == null) {
                         val availability = probeAvailability()
+                        val msg =
+                            "Cannot install Python because the release manifest is unavailable (source=$resolvedManifestSource). Verify access to api.github.com and github.com, then retry."
                         warnln {
                             "[YtDlpWrapper] Missing manifest for Python bootstrap. source=$resolvedManifestSource, ytDlpPath=${availability.path}, exists=${availability.exists}, canExecute=${availability.canExecute}, version=${availability.version ?: "null"}, probeError=${availability.probeError ?: "none"}"
                         }
+                        errorln { "[YtDlpWrapper] $msg" }
                         onEvent(
                             InitEvent.Error(
-                                "Cannot install Python because the release manifest is unavailable (source=$resolvedManifestSource). Verify access to api.github.com and github.com, then retry.",
+                                msg,
                                 null,
                             ),
                         )
@@ -167,7 +170,9 @@ class YtDlpWrapper {
                     }
                     onEvent(InitEvent.CheckingYtDlp)  // Reuse event for progress
                     if (!PythonManager.downloadPython(manifest) { r, t -> onEvent(InitEvent.YtDlpProgress(r, t, pct(r, t))) }) {
-                        onEvent(InitEvent.Error("Could not download Python. Check your internet connection and try again.", null))
+                        val msg = "Could not download Python. Check your internet connection and try again."
+                        errorln { "[YtDlpWrapper] $msg" }
+                        onEvent(InitEvent.Error(msg, null))
                         onEvent(InitEvent.Completed(false)); return false
                     }
                 }
@@ -180,9 +185,11 @@ class YtDlpWrapper {
                     "[YtDlpWrapper] yt-dlp not available during init. source=$resolvedManifestSource, ytDlpPath=${availability.path}, exists=${availability.exists}, canExecute=${availability.canExecute}, version=${availability.version ?: "null"}, probeError=${availability.probeError ?: "none"}"
                 }
                 if (manifest == null) {
+                    val msg = buildManifestUnavailableYtDlpMessage(availability, resolvedManifestSource)
+                    errorln { "[YtDlpWrapper] $msg" }
                     onEvent(
                         InitEvent.Error(
-                            buildManifestUnavailableYtDlpMessage(availability, resolvedManifestSource),
+                            msg,
                             null,
                         ),
                     )
@@ -190,9 +197,11 @@ class YtDlpWrapper {
                 }
                 onEvent(InitEvent.DownloadingYtDlp)
                 if (!downloadOrUpdate(manifest) { r, t -> onEvent(InitEvent.YtDlpProgress(r, t, pct(r, t))) }) {
+                    val msg = "Could not download yt-dlp from release assets. Verify access to github.com and retry."
+                    errorln { "[YtDlpWrapper] $msg" }
                     onEvent(
                         InitEvent.Error(
-                            "Could not download yt-dlp from release assets. Verify access to github.com and retry.",
+                            msg,
                             null,
                         ),
                     )
@@ -210,6 +219,7 @@ class YtDlpWrapper {
                 } else {
                     "Could not install FFmpeg. Check your internet connection and try again."
                 }
+                errorln { "[YtDlpWrapper] $msg" }
                 onEvent(InitEvent.Error(msg, null))
                 onEvent(InitEvent.Completed(false)); return false
             }
@@ -221,6 +231,7 @@ class YtDlpWrapper {
                 } else {
                     "Could not install Deno. Check your internet connection and try again."
                 }
+                errorln { "[YtDlpWrapper] $msg" }
                 onEvent(InitEvent.Error(msg, null))
                 onEvent(InitEvent.Completed(false)); return false
             }
