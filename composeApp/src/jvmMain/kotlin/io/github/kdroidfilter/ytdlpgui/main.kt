@@ -52,6 +52,7 @@ import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsEvents
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.databasesDir
 import io.github.vinceglb.filekit.path
+import io.sentry.Sentry
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.getString
 import ytdlpgui.composeapp.generated.resources.*
@@ -59,6 +60,8 @@ import java.io.File
 
 @OptIn(ExperimentalTrayAppApi::class, ExperimentalFluentApi::class)
 fun main() {
+    initializeSentry()
+
     // AOT training: auto-exit after the specified duration so JVM shutdown hooks
     // (which write .aotconf) run reliably on all platforms — including Windows where
     // external signals (taskkill, Process.destroy) cannot trigger them.
@@ -88,6 +91,7 @@ fun main() {
 
     application {
         allowComposeNativeTrayLogging = LoggerConfig.enabled
+
         val cleanInstall = System.getProperty("cleanInstall", "false").toBoolean()
         SingleInstanceManager.configuration = SingleInstanceManager.Configuration(
             lockIdentifier = "aerodl"
@@ -230,6 +234,21 @@ fun main() {
     }
 }
 
+private fun initializeSentry() {
+    val sentryEnvironment = System.getenv("SENTRY_ENVIRONMENT")
+        ?.trim()
+        ?.takeIf { it.isNotEmpty() }
+        ?: "development"
+
+    Sentry.init { options ->
+        options.dsn = "https://e77a755df2930d297caf9d6d0fd07deb@o4510855773093888.ingest.de.sentry.io/4510855774797904"
+        options.environment = sentryEnvironment
+        options.release = getAppVersion()
+        options.isDebug = LoggerConfig.enabled
+    }
+    infoln { "Sentry initialized for environment '$sentryEnvironment'." }
+}
+
 fun clearAppData() {
     // Clear only AeroDL's data directory (yt-dlp/FFmpeg binaries)
     // Do NOT clear the shared java.io.tmpdir as it affects other applications
@@ -240,7 +259,7 @@ fun clearAppData() {
                 if (file.isDirectory) file.deleteRecursively()
                 else file.delete()
             } catch (e: Exception) {
-                errorln { "Failed to delete ${file.absolutePath}: ${e.message}" }
+                errorln(e) { "Failed to delete ${file.absolutePath}: ${e.message}" }
             }
         }
     }

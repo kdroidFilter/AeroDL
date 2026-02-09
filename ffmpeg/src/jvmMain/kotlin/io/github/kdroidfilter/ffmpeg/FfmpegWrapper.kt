@@ -135,7 +135,7 @@ class FfmpegWrapper {
 
             onEvent(InitEvent.Completed(success = true))
         } catch (e: Exception) {
-            errorln { "FFmpeg initialization failed: ${e.message}" }
+            errorln(e) { "FFmpeg initialization failed: ${e.message}" }
             onEvent(InitEvent.Error(e.message ?: "Unknown error", e))
         }
     }
@@ -219,7 +219,7 @@ class FfmpegWrapper {
 
             Result.success(mediaInfo)
         } catch (e: Exception) {
-            errorln { "FFprobe analysis failed: ${e.message}" }
+            errorln(e) { "FFprobe analysis failed: ${e.message}" }
             Result.failure(e)
         }
     }
@@ -341,7 +341,7 @@ class FfmpegWrapper {
             } catch (e: CancellationException) {
                 onEvent(ConversionEvent.Cancelled)
             } catch (e: Exception) {
-                errorln { "Conversion error: ${e.message}" }
+                errorln(e) { "Conversion error: ${e.message}" }
                 onEvent(ConversionEvent.Error(e.message ?: "Unknown error", e))
             }
         }

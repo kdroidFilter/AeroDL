@@ -6,6 +6,8 @@ import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.binding
 import dev.zacsweers.metrox.viewmodel.ViewModelKey
+import io.github.kdroidfilter.logging.errorln
+import io.github.kdroidfilter.logging.infoln
 import io.github.kdroidfilter.platformtools.getAppVersion
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlp.model.ReleaseManifest
@@ -52,6 +54,8 @@ class InitViewModel(
     /** Cached manifest for the session (fetched once in init). */
     @Volatile
     private var manifest: ReleaseManifest? = null
+    @Volatile
+    private var manifestSourceLabel: String = "unknown"
     private val manifestLoadMutex = Mutex()
 
     init {
@@ -93,6 +97,9 @@ class InitViewModel(
                     // Fetch fresh manifest from network (only yt-dlp is fetched from API)
                     val m = releaseManifestRepository.fetchManifest() ?: return@beat
                     manifest = m
+                    manifestSourceLabel =
+                        releaseManifestRepository.getLastManifestSource()?.label ?: "unknown"
+                    infoln { "[InitViewModel] Periodic manifest refresh source=$manifestSourceLabel" }
                     // App update check
                     checkForUpdates(m)
                     // yt-dlp update check + auto-download if newer
@@ -176,163 +183,168 @@ class InitViewModel(
             val resolvedManifest = manifest ?: ensureManifestLoaded()
             val noCheck = settingsRepository.noCheckCertificate.value
             val cookies = settingsRepository.cookiesFromBrowser.value.ifBlank { null }
+            val sourceLabel = manifestSourceLabel
 
             ytDlpWrapper.apply {
                 noCheckCertificate = noCheck
                 cookiesFromBrowser = cookies
-            }.initialize(resolvedManifest) { event ->
-                when (event) {
-                    YtDlpWrapper.InitEvent.CheckingYtDlp -> {
-                        update {
-                            copy(
-                                checkingYtDlp = true,
-                                downloadingYtDlp = false,
-                                downloadYtDlpProgress = null,
-                                checkingFFmpeg = false,
-                                downloadingFFmpeg = false,
-                                downloadFfmpegProgress = null,
-                                checkingDeno = false,
-                                downloadingDeno = false,
-                                downloadDenoProgress = null,
-                                updatingYtdlp = false,
-                                updatingFFmpeg = false,
-                                errorMessage = null,
-                                initCompleted = false,
-                            )
-                        }
-                    }
-                    YtDlpWrapper.InitEvent.DownloadingYtDlp -> {
-                        update {
-                            copy(
-                                checkingYtDlp = false,
-                                downloadingYtDlp = true,
-                                downloadYtDlpProgress = null,
-                                errorMessage = null
-                            )
-                        }
-                    }
-                    YtDlpWrapper.InitEvent.UpdatingYtDlp -> {
-                        update {
-                            copy(
-                                checkingYtDlp = false,
-                                updatingYtdlp = true,
-                                downloadingYtDlp = false,
-                                downloadYtDlpProgress = null,
-                                errorMessage = null
-                            )
-                        }
-                    }
-                    YtDlpWrapper.InitEvent.EnsuringFfmpeg -> {
-                        update {
-                            copy(
-                                checkingFFmpeg = true,
-                                downloadingFFmpeg = false,
-                                downloadFfmpegProgress = null,
-                                errorMessage = null,
-                                checkingYtDlp = false,
-                                downloadingYtDlp = false,
-                                updatingYtdlp = false,
-                            )
-                        }
-                    }
-                    is YtDlpWrapper.InitEvent.YtDlpProgress -> {
-                        update {
-                            copy(
-                                downloadingYtDlp = true,
-                                downloadYtDlpProgress = (event.percent ?: 0.0).toFloat()
-                            )
-                        }
-                    }
-                    is YtDlpWrapper.InitEvent.FfmpegProgress -> {
-                        update {
-                            copy(
-                                checkingFFmpeg = false,
-                                downloadingFFmpeg = true,
-                                downloadingYtDlp = false,
-                                downloadFfmpegProgress = (event.percent ?: 0.0).toFloat()
-                            )
-                        }
-                    }
-                    YtDlpWrapper.InitEvent.EnsuringDeno -> {
-                        update {
-                            copy(
-                                checkingDeno = true,
-                                downloadingDeno = false,
-                                downloadDenoProgress = null,
-                                checkingFFmpeg = false,
-                                downloadingFFmpeg = false,
-                                errorMessage = null
-                            )
-                        }
-                    }
-                    is YtDlpWrapper.InitEvent.DenoProgress -> {
-                        update {
-                            copy(
-                                checkingDeno = false,
-                                downloadingDeno = true,
-                                downloadingFFmpeg = false,
-                                downloadDenoProgress = (event.percent ?: 0.0).toFloat()
-                            )
-                        }
-                    }
-                    is YtDlpWrapper.InitEvent.Error -> {
-                        isInitializing = false
-                        update {
-                            copy(
-                                errorMessage = event.message,
-                                checkingYtDlp = false,
-                                checkingFFmpeg = false,
-                                checkingDeno = false,
-                                downloadingYtDlp = false,
-                                downloadingFFmpeg = false,
-                                downloadingDeno = false,
-                                updatingYtdlp = false,
-                                updatingFFmpeg = false,
-                                initCompleted = false
-                            )
-                        }
-                    }
-                    is YtDlpWrapper.InitEvent.Completed -> {
-                        isInitializing = false
-
-                        // Sync FFmpeg path from YtDlpWrapper to FfmpegWrapper
-                        ytDlpWrapper.ffmpegPath?.let { path ->
-                            ffmpegWrapper.ffmpegPath = path
-                            // Also sync ffprobe path (same directory)
-                            val ffprobeExe = if (path.endsWith(".exe")) "ffprobe.exe" else "ffprobe"
-                            val ffprobePath = java.io.File(path).parentFile?.let {
-                                java.io.File(it, ffprobeExe).absolutePath
+            }.initialize(
+                manifest = resolvedManifest,
+                onEvent = { event ->
+                    when (event) {
+                        YtDlpWrapper.InitEvent.CheckingYtDlp -> {
+                            update {
+                                copy(
+                                    checkingYtDlp = true,
+                                    downloadingYtDlp = false,
+                                    downloadYtDlpProgress = null,
+                                    checkingFFmpeg = false,
+                                    downloadingFFmpeg = false,
+                                    downloadFfmpegProgress = null,
+                                    checkingDeno = false,
+                                    downloadingDeno = false,
+                                    downloadDenoProgress = null,
+                                    updatingYtdlp = false,
+                                    updatingFFmpeg = false,
+                                    errorMessage = null,
+                                    initCompleted = false,
+                                )
                             }
-                            ffprobePath?.let { ffmpegWrapper.ffprobePath = it }
                         }
+                        YtDlpWrapper.InitEvent.DownloadingYtDlp -> {
+                            update {
+                                copy(
+                                    checkingYtDlp = false,
+                                    downloadingYtDlp = true,
+                                    downloadYtDlpProgress = null,
+                                    errorMessage = null
+                                )
+                            }
+                        }
+                        YtDlpWrapper.InitEvent.UpdatingYtDlp -> {
+                            update {
+                                copy(
+                                    checkingYtDlp = false,
+                                    updatingYtdlp = true,
+                                    downloadingYtDlp = false,
+                                    downloadYtDlpProgress = null,
+                                    errorMessage = null
+                                )
+                            }
+                        }
+                        YtDlpWrapper.InitEvent.EnsuringFfmpeg -> {
+                            update {
+                                copy(
+                                    checkingFFmpeg = true,
+                                    downloadingFFmpeg = false,
+                                    downloadFfmpegProgress = null,
+                                    errorMessage = null,
+                                    checkingYtDlp = false,
+                                    downloadingYtDlp = false,
+                                    updatingYtdlp = false,
+                                )
+                            }
+                        }
+                        is YtDlpWrapper.InitEvent.YtDlpProgress -> {
+                            update {
+                                copy(
+                                    downloadingYtDlp = true,
+                                    downloadYtDlpProgress = (event.percent ?: 0.0).toFloat()
+                                )
+                            }
+                        }
+                        is YtDlpWrapper.InitEvent.FfmpegProgress -> {
+                            update {
+                                copy(
+                                    checkingFFmpeg = false,
+                                    downloadingFFmpeg = true,
+                                    downloadingYtDlp = false,
+                                    downloadFfmpegProgress = (event.percent ?: 0.0).toFloat()
+                                )
+                            }
+                        }
+                        YtDlpWrapper.InitEvent.EnsuringDeno -> {
+                            update {
+                                copy(
+                                    checkingDeno = true,
+                                    downloadingDeno = false,
+                                    downloadDenoProgress = null,
+                                    checkingFFmpeg = false,
+                                    downloadingFFmpeg = false,
+                                    errorMessage = null
+                                )
+                            }
+                        }
+                        is YtDlpWrapper.InitEvent.DenoProgress -> {
+                            update {
+                                copy(
+                                    checkingDeno = false,
+                                    downloadingDeno = true,
+                                    downloadingFFmpeg = false,
+                                    downloadDenoProgress = (event.percent ?: 0.0).toFloat()
+                                )
+                            }
+                        }
+                        is YtDlpWrapper.InitEvent.Error -> {
+                            isInitializing = false
+                            update {
+                                copy(
+                                    errorMessage = event.message,
+                                    checkingYtDlp = false,
+                                    checkingFFmpeg = false,
+                                    checkingDeno = false,
+                                    downloadingYtDlp = false,
+                                    downloadingFFmpeg = false,
+                                    downloadingDeno = false,
+                                    updatingYtdlp = false,
+                                    updatingFFmpeg = false,
+                                    initCompleted = false
+                                )
+                            }
+                        }
+                        is YtDlpWrapper.InitEvent.Completed -> {
+                            isInitializing = false
 
-                        update {
-                            val fallbackError = "Initialization failed. Please retry."
-                            copy(
-                                checkingYtDlp = false,
-                                checkingFFmpeg = false,
-                                checkingDeno = false,
-                                downloadingYtDlp = false,
-                                downloadingFFmpeg = false,
-                                downloadingDeno = false,
-                                updatingYtdlp = false,
-                                updatingFFmpeg = false,
-                                initCompleted = event.success,
-                                errorMessage = when {
-                                    event.success -> null
-                                    errorMessage != null -> errorMessage
-                                    else -> fallbackError
+                            // Sync FFmpeg path from YtDlpWrapper to FfmpegWrapper
+                            ytDlpWrapper.ffmpegPath?.let { path ->
+                                ffmpegWrapper.ffmpegPath = path
+                                // Also sync ffprobe path (same directory)
+                                val ffprobeExe = if (path.endsWith(".exe")) "ffprobe.exe" else "ffprobe"
+                                val ffprobePath = java.io.File(path).parentFile?.let {
+                                    java.io.File(it, ffprobeExe).absolutePath
                                 }
-                            )
-                        }
-                        if (navigateToHomeWhenDone && event.success) {
-                            viewModelScope.launch {
-                                update { copy(navigationState = InitNavigationState.NavigateToHome) }
+                                ffprobePath?.let { ffmpegWrapper.ffprobePath = it }
+                            }
+
+                            update {
+                                val fallbackError = "Initialization failed. Please retry."
+                                copy(
+                                    checkingYtDlp = false,
+                                    checkingFFmpeg = false,
+                                    checkingDeno = false,
+                                    downloadingYtDlp = false,
+                                    downloadingFFmpeg = false,
+                                    downloadingDeno = false,
+                                    updatingYtdlp = false,
+                                    updatingFFmpeg = false,
+                                    initCompleted = event.success,
+                                    errorMessage = when {
+                                        event.success -> null
+                                        errorMessage != null -> errorMessage
+                                        else -> fallbackError
+                                    }
+                                )
+                            }
+                            if (navigateToHomeWhenDone && event.success) {
+                                viewModelScope.launch {
+                                    update { copy(navigationState = InitNavigationState.NavigateToHome) }
+                                }
                             }
                         }
                     }
-                }
-            }
+                },
+                manifestSource = sourceLabel,
+            )
         }
     }
 
@@ -340,7 +352,19 @@ class InitViewModel(
         manifest?.let { return it }
         return manifestLoadMutex.withLock {
             manifest?.let { return it }
-            val resolved = releaseManifestRepository.getCachedManifest() ?: releaseManifestRepository.fetchManifest()
+            val cachedManifest = releaseManifestRepository.getCachedManifest()
+            val resolved = cachedManifest ?: releaseManifestRepository.fetchManifest()
+            manifestSourceLabel = when {
+                cachedManifest != null -> ReleaseManifestRepository.ManifestSource.CACHE.label
+                else -> releaseManifestRepository.getLastManifestSource()?.label ?: "unknown"
+            }
+            if (resolved != null) {
+                infoln {
+                    "[InitViewModel] Manifest loaded source=$manifestSourceLabel, yt-dlp tag=${resolved.releases.ytDlp.tagName}"
+                }
+            } else {
+                errorln { "[InitViewModel] Manifest load failed source=$manifestSourceLabel" }
+            }
             manifest = resolved
             resolved
         }
