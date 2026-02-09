@@ -14,7 +14,7 @@ object LoggerConfig {
     @Volatile var level: LoggingLevel = LoggingLevel.VERBOSE
     @Volatile var showTimestamp: Boolean = true
     @Volatile var useColors: Boolean = true
-    @Volatile var sentryEnabled: Boolean = !System.getenv("SENTRY_DSN").isNullOrBlank()
+    @Volatile var sentryEnabled: Boolean = true
     @Volatile var sentryLevel: LoggingLevel = LoggingLevel.ERROR
 }
 
@@ -42,7 +42,9 @@ private fun shouldLogToConsole(minLevel: LoggingLevel): Boolean {
 }
 
 private fun shouldLogToSentry(minLevel: LoggingLevel): Boolean {
-    return LoggerConfig.sentryEnabled && minLevel.priority >= LoggerConfig.sentryLevel.priority
+    return LoggerConfig.sentryEnabled &&
+        Sentry.isEnabled() &&
+        minLevel.priority >= LoggerConfig.sentryLevel.priority
 }
 
 private fun toSentryLevel(level: LoggingLevel): SentryLevel = when (level.priority) {

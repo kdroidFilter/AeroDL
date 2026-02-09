@@ -287,6 +287,9 @@ class InitViewModel(
                         }
                         is YtDlpWrapper.InitEvent.Error -> {
                             isInitializing = false
+                            event.cause?.let { cause ->
+                                errorln(cause) { "[InitViewModel] Initialization error: ${event.message}" }
+                            } ?: errorln { "[InitViewModel] Initialization error: ${event.message}" }
                             update {
                                 copy(
                                     errorMessage = event.message,
