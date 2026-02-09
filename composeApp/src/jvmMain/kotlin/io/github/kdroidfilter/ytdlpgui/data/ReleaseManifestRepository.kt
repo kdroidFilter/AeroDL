@@ -129,13 +129,15 @@ class ReleaseManifestRepository {
             ).map { AssetInfo(it, "$FFMPEG_BASE/$it") },
         )
 
-        // ---- FFmpeg for macOS (kdroidFilter/FFmpeg-Builds, tag=latest) ----
-        private const val FFMPEG_MACOS_BASE = "https://github.com/kdroidFilter/FFmpeg-Builds/releases/download/latest"
+        // ---- FFmpeg for macOS (eugeneware/ffmpeg-static, tag=b6.1.1) ----
+        private const val FFMPEG_MACOS_BASE = "https://github.com/eugeneware/ffmpeg-static/releases/download/b6.1.1"
         private val FFMPEG_MACOS_RELEASE = ReleaseInfo(
-            tagName = "latest",
+            tagName = "b6.1.1",
             assets = listOf(
-                "ffmpeg-master-latest-macos64-gpl.tar.xz",
-                "ffmpeg-master-latest-macosarm64-gpl.tar.xz",
+                "ffmpeg-darwin-x64",
+                "ffmpeg-darwin-arm64",
+                "ffprobe-darwin-x64",
+                "ffprobe-darwin-arm64",
             ).map { AssetInfo(it, "$FFMPEG_MACOS_BASE/$it") },
         )
 
