@@ -306,11 +306,32 @@ object PlatformUtils {
         }
     }
 
+    suspend fun ffprobeVersion(path: String): String? = withContext(Dispatchers.IO) {
+        try {
+            val p = ProcessBuilder(listOf(path, "-version")).redirectErrorStream(true).start()
+            val exited = withContext(Dispatchers.IO) { kotlinx.coroutines.withTimeoutOrNull(2_000) { p.waitFor() } }
+            if (exited == null) {
+                p.destroyForcibly(); return@withContext null
+            }
+            val out = p.inputStream.bufferedReader().readText().trim()
+            if (p.exitValue() == 0 && out.isNotBlank()) out.lineSequence().firstOrNull() else null
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    fun getFfmpegAndFfprobeMacosAssetNamesForSystem(): Pair<String, String>? {
+        if (getOperatingSystem() != OperatingSystem.MACOS) return null
+        val arch = (System.getProperty("os.arch") ?: "").lowercase()
+        val suffix = if (arch.contains("aarch64") || arch.contains("arm64")) "darwin-arm64" else "darwin-x64"
+        return "ffmpeg-$suffix" to "ffprobe-$suffix"
+    }
+
 
     /**
      * Select the appropriate FFmpeg asset pattern for the current system.
      * Returns a pattern to match against available assets in the GitHub release.
-     * All platforms use kdroidFilter/FFmpeg-Builds repo with tar.xz/zip archives.
+     * Windows/Linux use yt-dlp FFmpeg-Builds archives.
      */
     fun getFfmpegAssetPatternForSystem(): String? {
         val os = getOperatingSystem()
@@ -323,7 +344,7 @@ object PlatformUtils {
                 else -> "win64-gpl.zip"
             }
             OperatingSystem.LINUX -> if (isArm64) "linuxarm64-gpl.tar.xz" else "linux64-gpl.tar.xz"
-            OperatingSystem.MACOS -> if (isArm64) "macosarm64-gpl.tar.xz" else "macos64-gpl.tar.xz"
+            OperatingSystem.MACOS -> null
             else -> null
         }
     }
@@ -394,6 +415,57 @@ object PlatformUtils {
                 null
             } finally {
                 extractDir?.deleteRecursively()
+            }
+        }
+    }
+
+    suspend fun downloadAndInstallFfmpegMacosBinaries(
+        ffmpegAssetName: String,
+        ffprobeAssetName: String,
+        forceDownload: Boolean,
+        ffmpegDownloadUrl: String,
+        ffprobeDownloadUrl: String,
+        onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null
+    ): String? = ffmpegInstallMutex.withLock {
+        withContext(Dispatchers.IO) {
+            val baseDir = File(getDataDir(), "ffmpeg")
+            val binDir = File(baseDir, "bin")
+            val targetFfmpeg = File(binDir, "ffmpeg")
+            val targetFfprobe = File(binDir, "ffprobe")
+
+            if (!forceDownload &&
+                targetFfmpeg.exists() &&
+                targetFfprobe.exists() &&
+                ffmpegVersion(targetFfmpeg.absolutePath) != null &&
+                ffprobeVersion(targetFfprobe.absolutePath) != null
+            ) {
+                return@withContext targetFfmpeg.absolutePath
+            }
+
+            baseDir.mkdirs(); binDir.mkdirs()
+
+            val ffmpegTemp = File(baseDir, "$ffmpegAssetName.tmp")
+            val ffprobeTemp = File(baseDir, "$ffprobeAssetName.tmp")
+
+            try {
+                downloadFile(ffmpegDownloadUrl, ffmpegTemp, onProgress)
+                downloadFile(ffprobeDownloadUrl, ffprobeTemp, null)
+
+                ffmpegTemp.copyTo(targetFfmpeg, overwrite = true)
+                ffprobeTemp.copyTo(targetFfprobe, overwrite = true)
+
+                makeExecutable(targetFfmpeg)
+                makeExecutable(targetFfprobe)
+
+                ffmpegVersion(targetFfmpeg.absolutePath) ?: error("FFmpeg is not runnable after installation")
+                ffprobeVersion(targetFfprobe.absolutePath) ?: error("FFprobe is not runnable after installation")
+                targetFfmpeg.absolutePath
+            } catch (t: Throwable) {
+                errorln(t) { "Failed to download/install macOS FFmpeg binaries: ${t.message}" }
+                null
+            } finally {
+                ffmpegTemp.delete()
+                ffprobeTemp.delete()
             }
         }
     }
