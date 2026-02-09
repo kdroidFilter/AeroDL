@@ -235,19 +235,13 @@ fun main() {
 }
 
 private fun initializeSentry() {
-    val dsn = System.getenv("SENTRY_DSN")?.trim().orEmpty()
-    if (dsn.isEmpty()) {
-        infoln { "Sentry disabled: SENTRY_DSN is not set." }
-        return
-    }
-
     val sentryEnvironment = System.getenv("SENTRY_ENVIRONMENT")
         ?.trim()
         ?.takeIf { it.isNotEmpty() }
         ?: "development"
 
     Sentry.init { options ->
-        options.dsn = dsn
+        options.dsn = "https://e77a755df2930d297caf9d6d0fd07deb@o4510855773093888.ingest.de.sentry.io/4510855774797904"
         options.environment = sentryEnvironment
         options.release = getAppVersion()
         options.isDebug = LoggerConfig.enabled
