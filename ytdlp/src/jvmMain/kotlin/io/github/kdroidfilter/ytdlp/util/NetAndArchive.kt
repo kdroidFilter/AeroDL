@@ -307,32 +307,71 @@ object NetAndArchive {
     }
 
     // --- Error Diagnosis ---
-    fun diagnose(lines: List<String>): String? {
-        val joined = lines.joinToString("\n").lowercase()
-        fun has(vararg needles: String) = needles.any { joined.contains(it.lowercase()) }
-        return when {
-            has("connection refused", "no route to host", "network is unreachable") -> "Connection problem to remote host."
-            has("timed out", "timeout", "operation timed out", "read timed out") -> "Network timeout."
-            has("unknown host", "name or service not known", "temporary failure in name resolution") -> "DNS resolution failed."
-            has("ssl: certificate verify failed", "self signed certificate", "certificate has expired") -> "TLS/Certificate problem (try --no-check-certificate if appropriate)."
-            has("http error 403") -> "HTTP 403 Forbidden (access denied)."
-            has("http error 429", "too many requests", "rate limited") -> "Rate limited (HTTP 429)."
-            has(
-                "sign in to confirm you're not a bot",
-                "use --cookies-from-browser",
-                "use --cookies",
-                "authentication required",
-                "login required",
-                "log in",
-                "age-restricted and only available",
-                "this video may be inappropriate for some users",
-                "members-only",
-            ) -> "Authentication required (YouTube bot verification or login). Configure cookies from a logged-in browser and retry."
-            has("copyright", "unavailable", "this video is not available") -> "Content not available or restricted."
-            has("proxy", "socks", "http proxy") -> "Proxy/network configuration error."
-            else -> null
-        }
-    }
+    private data class DiagnosisRule(
+        val pattern: Regex,
+        val diagnostic: String,
+    )
+
+    private val connectionIssuePattern = Regex(
+        "(connection refused|no route to host|network is unreachable)",
+        RegexOption.IGNORE_CASE,
+    )
+    private val timeoutIssuePattern = Regex(
+        "(timed out|timeout|operation timed out|read timed out)",
+        RegexOption.IGNORE_CASE,
+    )
+    private val dnsIssuePattern = Regex(
+        "(unknown host|name or service not known|temporary failure in name resolution)",
+        RegexOption.IGNORE_CASE,
+    )
+    private val tlsIssuePattern = Regex(
+        "(ssl: certificate verify failed|self signed certificate|certificate has expired)",
+        RegexOption.IGNORE_CASE,
+    )
+    private val http403Pattern = Regex("http error 403", RegexOption.IGNORE_CASE)
+    private val http429Pattern = Regex("(http error 429|too many requests|rate limited)", RegexOption.IGNORE_CASE)
+    private val youTubeAuthPattern = Regex(
+        "(sign in to confirm you're not a bot|use --cookies-from-browser|use --cookies|authentication required|login required|\\blog in\\b|age-restricted and only available|this video may be inappropriate for some users|members-only)",
+        RegexOption.IGNORE_CASE,
+    )
+    private val youTubeExtractorPattern = Regex(
+        "(hash mismatch|signature extraction failed|nsig extraction failed|decrypt nsig|unable to extract initial player response|could not find player|youtube said: unable to handle request)",
+        RegexOption.IGNORE_CASE,
+    )
+    private val contentIssuePattern = Regex(
+        "(copyright|this video is not available|\\bunavailable\\b)",
+        RegexOption.IGNORE_CASE,
+    )
+    private val proxyIssuePattern = Regex("(proxy|socks|http proxy)", RegexOption.IGNORE_CASE)
+
+    private val diagnosisRules = listOf(
+        DiagnosisRule(connectionIssuePattern, "Connection problem to remote host."),
+        DiagnosisRule(timeoutIssuePattern, "Network timeout."),
+        DiagnosisRule(dnsIssuePattern, "DNS resolution failed."),
+        DiagnosisRule(tlsIssuePattern, "TLS/Certificate problem (try --no-check-certificate if appropriate)."),
+        DiagnosisRule(http403Pattern, "HTTP 403 Forbidden (access denied)."),
+        DiagnosisRule(http429Pattern, "Rate limited (HTTP 429)."),
+        DiagnosisRule(
+            youTubeAuthPattern,
+            "Authentication required (YouTube bot verification or login). Configure cookies from a logged-in browser and retry.",
+        ),
+        DiagnosisRule(
+            youTubeExtractorPattern,
+            "YouTube extractor challenge changed (hash/signature mismatch). Update yt-dlp and retry.",
+        ),
+        DiagnosisRule(contentIssuePattern, "Content not available or restricted."),
+        DiagnosisRule(proxyIssuePattern, "Proxy/network configuration error."),
+    )
+
+    private fun matches(lines: List<String>, pattern: Regex): Boolean =
+        lines.any { pattern.containsMatchIn(it) }
+
+    fun isYouTubeAuthenticationIssue(lines: List<String>): Boolean = matches(lines, youTubeAuthPattern)
+
+    fun isYouTubeExtractorIssue(lines: List<String>): Boolean = matches(lines, youTubeExtractorPattern)
+
+    fun diagnose(lines: List<String>): String? =
+        diagnosisRules.firstOrNull { matches(lines, it.pattern) }?.diagnostic
 
     // --- Small Utilities ---
     fun startNoopProcess(): Process = try {

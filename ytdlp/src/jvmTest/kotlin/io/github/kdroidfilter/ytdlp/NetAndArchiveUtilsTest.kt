@@ -53,6 +53,52 @@ class NetAndArchiveUtilsTest {
     }
 
     @Test
+    fun youtubeAuthenticationIssue_detectsMembersOnlyAndAgeRestrictedSignals() {
+        val membersOnlyLines = listOf(
+            "ERROR: This video is members-only. Join this channel to get access.",
+            "ERROR: Use --cookies-from-browser for the authentication.",
+        )
+        val ageRestrictedLines = listOf(
+            "ERROR: This video may be inappropriate for some users.",
+            "Sign in to confirm your age",
+        )
+
+        assertTrue(NetAndArchive.isYouTubeAuthenticationIssue(membersOnlyLines))
+        assertTrue(NetAndArchive.isYouTubeAuthenticationIssue(ageRestrictedLines))
+        assertTrue(NetAndArchive.diagnose(membersOnlyLines)?.contains("Authentication required") == true)
+        assertTrue(NetAndArchive.diagnose(ageRestrictedLines)?.contains("Authentication required") == true)
+    }
+
+    @Test
+    fun diagnose_detectsYouTubeExtractorMismatch() {
+        val lines = listOf(
+            "[youtube] abc123: Downloading player API JSON",
+            "WARNING: [youtube] abc123: nsig extraction failed: hash mismatch while solving challenge",
+            "ERROR: Signature extraction failed: Some formats may be missing",
+        )
+
+        val diagnostic = NetAndArchive.diagnose(lines)
+
+        assertNotNull(diagnostic)
+        assertTrue(diagnostic.contains("extractor", ignoreCase = true))
+        assertTrue(NetAndArchive.isYouTubeExtractorIssue(lines))
+        assertTrue(!NetAndArchive.isYouTubeAuthenticationIssue(lines))
+    }
+
+    @Test
+    fun diagnose_prioritizesNetworkIssuesWhenMultipleSignalsExist() {
+        val lines = listOf(
+            "ERROR: Read timed out while downloading webpage",
+            "ERROR: Sign in to confirm you're not a bot",
+        )
+
+        val diagnostic = NetAndArchive.diagnose(lines)
+
+        assertNotNull(diagnostic)
+        assertTrue(diagnostic.contains("Network timeout"))
+    }
+
+    @Test
     fun selectors_containExpectedConstraints() {
         val selProg = NetAndArchive.selectorProgressiveExact(720)
         assertTrue(selProg.contains("height=720"))
