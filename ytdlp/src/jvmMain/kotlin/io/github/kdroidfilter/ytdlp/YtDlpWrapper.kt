@@ -465,21 +465,37 @@ class YtDlpWrapper {
 
     fun getDefaultFfmpegPath(): String = PlatformUtils.getDefaultFfmpegPath()
 
+    private fun hasSiblingFfprobe(ffmpegExecutablePath: String): Boolean {
+        val ffmpegFile = File(ffmpegExecutablePath)
+        val ffprobeName = if (ffmpegFile.name.endsWith(".exe", ignoreCase = true)) "ffprobe.exe" else "ffprobe"
+        return ffmpegFile.parentFile?.let { File(it, ffprobeName).exists() } == true
+    }
+
     suspend fun ensureFfmpegAvailable(
         manifest: ReleaseManifest?,
         forceDownload: Boolean = false,
         onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null
     ): Boolean {
         ffmpegPath?.let {
-            if (PlatformUtils.ffmpegVersion(it) != null && !forceDownload) return true
+            if (!forceDownload &&
+                PlatformUtils.ffmpegVersion(it) != null &&
+                hasSiblingFfprobe(it)
+            ) {
+                return true
+            }
         }
         PlatformUtils.findFfmpegInSystemPath()?.let {
-            ffmpegPath = it
-            return true
+            if (!forceDownload && hasSiblingFfprobe(it)) {
+                ffmpegPath = it
+                return true
+            }
         }
         // Check default install location (already downloaded in a previous session)
         val defaultPath = PlatformUtils.getDefaultFfmpegPath()
-        if (!forceDownload && PlatformUtils.ffmpegVersion(defaultPath) != null) {
+        if (!forceDownload &&
+            PlatformUtils.ffmpegVersion(defaultPath) != null &&
+            hasSiblingFfprobe(defaultPath)
+        ) {
             ffmpegPath = defaultPath
             return true
         }

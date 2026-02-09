@@ -26,6 +26,7 @@ import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.binding
 import dev.zacsweers.metrox.viewmodel.ViewModelKey
+import io.github.kdroidfilter.logging.errorln
 import io.github.kdroidfilter.ytdlpgui.di.AppScope
 import io.github.vinceglb.filekit.path
 
@@ -197,9 +198,13 @@ class SettingsViewModel(
                 dataDir.listFiles()?.forEach { file ->
                     try {
                         if (file.isDirectory) file.deleteRecursively() else file.delete()
-                    } catch (_: Exception) { /* ignore */ }
+                    } catch (e: Exception) {
+                        errorln(e) { "[SettingsViewModel] Failed to delete ${file.absolutePath}: ${e.message}" }
+                    }
                 }
             }
-        } catch (_: Exception) { /* ignore */ }
+        } catch (e: Exception) {
+            errorln(e) { "[SettingsViewModel] Failed to clear app data directory: ${e.message}" }
+        }
     }
 }
