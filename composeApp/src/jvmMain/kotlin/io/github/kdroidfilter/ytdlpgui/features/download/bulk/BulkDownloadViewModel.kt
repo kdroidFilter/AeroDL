@@ -275,6 +275,8 @@ class BulkDownloadViewModel @AssistedInject constructor(
 
         handleVideoListSuccess(videoInfoList)
         _fallbackState.value = FallbackState.Completed
+        _webViewExtractor.value?.reset()
+        _webViewExtractor.value = null
     }
 
     /**
@@ -284,6 +286,8 @@ class BulkDownloadViewModel @AssistedInject constructor(
         errorln { "[BulkDownloadViewModel] Fallback extraction error: $message" }
         trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
         _fallbackState.value = FallbackState.Error(message)
+        _webViewExtractor.value?.reset()
+        _webViewExtractor.value = null
         _errorMessage.value = message
     }
 
