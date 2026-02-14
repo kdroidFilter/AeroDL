@@ -756,10 +756,25 @@ private fun HiddenExtractionWebView(
 
     var loginChecked by remember { mutableStateOf(false) }
     var channelConverted by remember { mutableStateOf(false) }
-    var playlistUrl by remember { mutableStateOf<String?>(null) }
     var isScrolling by remember { mutableStateOf(false) }
     var lastVideoCount by remember { mutableStateOf(0) }
     var noChangeCount by remember { mutableStateOf(0) }
+    var webViewActive by remember { mutableStateOf(true) }
+
+    fun closeExtractionWebView() {
+        if (!webViewActive) return
+        isScrolling = false
+        webViewActive = false
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            isScrolling = false
+            runCatching { navigator.stopLoading() }
+        }
+    }
+
+    if (!webViewActive) return
 
     // Check login status when page loads
     LaunchedEffect(state.isLoading) {
@@ -767,7 +782,7 @@ private fun HiddenExtractionWebView(
             infoln { "[HiddenExtractionWebView] Page loaded, checking login status..." }
             loginChecked = true
             navigator.evaluateJavaScript(checkLoginStatusJs) { result ->
-                val status = result?.removeSurrounding("\"")?.trim()
+                val status = result.removeSurrounding("\"").trim()
                 val loggedIn = when (status) {
                     "true" -> true
                     "false" -> false
@@ -789,11 +804,11 @@ private fun HiddenExtractionWebView(
                 if (channelId != null) {
                     val uploadsPlaylistUrl = extractor.channelIdToUploadsPlaylistUrl(channelId)
                     infoln { "[HiddenExtractionWebView] Converted to playlist URL: $uploadsPlaylistUrl" }
-                    playlistUrl = uploadsPlaylistUrl
                     channelConverted = true
                     navigator.loadUrl(uploadsPlaylistUrl)
                 } else {
                     infoln { "[HiddenExtractionWebView] Failed to extract channel ID" }
+                    closeExtractionWebView()
                     onExtractionError("Failed to extract channel ID")
                 }
             }
@@ -824,7 +839,7 @@ private fun HiddenExtractionWebView(
         if (isScrolling) {
             while (isScrolling) {
                 navigator.evaluateJavaScript(scrollAndCountJs) { result ->
-                    val count = result?.removeSurrounding("\"")?.toIntOrNull() ?: 0
+                    val count = result.removeSurrounding("\"").toIntOrNull() ?: 0
                     infoln { "[HiddenExtractionWebView] Scrolling... $count videos loaded" }
                     onExtractionProgress(count)
 
@@ -841,7 +856,8 @@ private fun HiddenExtractionWebView(
                         isScrolling = false
 
                         navigator.evaluateJavaScript(extractPlaylistLinksJs) { extractResult ->
-                            if (extractResult == null) {
+                            if (extractResult.isBlank()) {
+                                closeExtractionWebView()
                                 onExtractionError("Null result from extraction")
                                 return@evaluateJavaScript
                             }
@@ -851,9 +867,11 @@ private fun HiddenExtractionWebView(
                                     .distinctBy { it.url }
                                 infoln { "[HiddenExtractionWebView] Extracted ${videos.size} videos" }
                                 extractor.updateExtractedVideos(videos)
+                                closeExtractionWebView()
                                 onExtractionComplete()
                             } catch (e: Exception) {
                                 infoln { "[HiddenExtractionWebView] Parsing error: ${e.message}" }
+                                closeExtractionWebView()
                                 onExtractionError(e.message ?: "Unknown parsing error")
                             }
                         }
@@ -867,8 +885,8 @@ private fun HiddenExtractionWebView(
 
     // Visible window for WebView (needed for proper rendering)
    Window(
-        onCloseRequest = { },
-        visible = true,
+        onCloseRequest = { closeExtractionWebView() },
+        visible = webViewActive,
         title = "WebView Extractor",
         state = WindowState(
             width = 800.dp,
