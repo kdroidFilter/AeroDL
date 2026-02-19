@@ -147,6 +147,7 @@ nucleus.application {
         packageVersion = version
         description = "AeroDl"
         homepage = "https://github.com/kdroidFilter/AeroDL"
+        artifactName = $$"${name}-${version}-${os}-${arch}.${ext}"
         cleanupNativeLibs = true
         enableAotCache = true
         compressionLevel = CompressionLevel.Maximum
