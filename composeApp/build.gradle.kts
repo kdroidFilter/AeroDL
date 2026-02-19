@@ -1,3 +1,4 @@
+import io.github.kdroidfilter.nucleus.desktop.application.dsl.CompressionLevel
 import io.github.kdroidfilter.nucleus.desktop.application.dsl.ReleaseChannel
 import io.github.kdroidfilter.nucleus.desktop.application.dsl.ReleaseType
 import io.github.kdroidfilter.nucleus.desktop.application.dsl.TargetFormat
@@ -155,6 +156,7 @@ nucleus.application {
         description = "AeroDl"
         cleanupNativeLibs = true
         enableAotCache = true
+        compressionLevel = CompressionLevel.Maximum
 
         jvmArgs += listOf(
             "-XX:+UseCompactObjectHeaders",
