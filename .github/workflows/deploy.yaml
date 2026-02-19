@@ -71,24 +71,6 @@ jobs:
           chmod +x ./gradlew
           ./gradlew :composeApp:packageReleaseDistributionForCurrentOS --stacktrace --no-daemon
 
-      - name: Create .app ZIP (macOS only)
-        if: runner.os == 'macOS'
-        shell: bash
-        run: |
-          set -euo pipefail
-          APP_DIR="composeApp/build/compose/binaries/main-release/app"
-          APP_BUNDLE=$(find "$APP_DIR" -mindepth 1 -maxdepth 1 -type d -name '*.app' | head -n 1 || true)
-          if [ -z "$APP_BUNDLE" ]; then
-            echo "No .app bundle found in $APP_DIR"
-            exit 1
-          fi
-          echo "Found app bundle at: $APP_BUNDLE"
-          ARCH="${{ matrix.arch }}"
-          BASENAME="$(basename "$APP_BUNDLE" .app)"
-          ZIP_NAME="${BASENAME}-mac-${ARCH}.zip"
-          echo "Creating ZIP $ZIP_NAME"
-          (cd "$(dirname "$APP_BUNDLE")" && zip -r "$ZIP_NAME" "$(basename "$APP_BUNDLE")")
-
       - name: Upload packaged artifacts
         if: always()
         uses: actions/upload-artifact@v5

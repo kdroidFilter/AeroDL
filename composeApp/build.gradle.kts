@@ -141,6 +141,7 @@ nucleus.application {
             TargetFormat.Rpm,
             TargetFormat.Portable,
             TargetFormat.AppImage,
+            TargetFormat.Zip,
         )
         packageName = "AeroDl"
         packageVersion = version
