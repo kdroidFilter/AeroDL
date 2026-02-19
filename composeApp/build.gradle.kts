@@ -154,6 +154,7 @@ nucleus.application {
         packageName = "AeroDl"
         packageVersion = version
         description = "AeroDl"
+        homepage = "https://github.com/kdroidFilter/AeroDL"
         cleanupNativeLibs = true
         enableAotCache = true
         compressionLevel = CompressionLevel.Maximum
@@ -200,6 +201,7 @@ nucleus.application {
             packageName = "aerodl"
             iconFile.set(project.file("icons/logo.png"))
             packageVersion = version
+            maintainer = "kdroidfilter@gmail.com"
         }
     }
 }
