@@ -93,7 +93,7 @@
     <string name="about_credits_title">תודות</string>
     <string name="credits_made_by">נוצר על ידי אלי גמבאש</string>
     <string name="credits_thank_jetbrains">תודה ענקית ל‑JetBrains על שיצרו את Kotlin ו‑Compose Multiplatform; בלי העבודה המסורה שלהם האפליקציה הזו לא הייתה רואה אור.</string>
-    <string name="credits_thank_oss">אני מודה מכל הלב לכל המפתחות והמפתחים שמפרסמים ומתחזקים את ספריות הקוד הפתוח שעליהן אני מסתמך; הנדיבות והמקצועיות שלכם מזינות כל שורת קוד בפרויקט.</string>
+    <string name="credits_thank_oss">אני מודה מכל הלב לכל המפתחים שמפרסמים ומתחזקים את ספריות הקוד הפתוח שעליהן אני מסתמך; הנדיבות והמקצועיות שלכם מזינות כל שורת קוד בפרויקט.</string>
     <string name="credits_github_prompt">גלו את שאר הפרויקטים שלי ב‑GitHub</string>
     <string name="about_versions_title">גרסאות הכלים</string>
     <string name="ytdlp_version_label">yt-dlp: %1$s</string>
