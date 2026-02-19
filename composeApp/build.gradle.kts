@@ -27,23 +27,6 @@ sentry {
     authToken = System.getenv("SENTRY_AUTH_TOKEN")
 }
 
-// Turn 0.x[.y] into 1.x[.y] for macOS (DMG/PKG require MAJOR > 0)
-fun macSafeVersion(ver: String): String {
-    // Strip prerelease/build metadata for packaging (e.g., 0.1.0-beta -> 0.1.0)
-    val core = ver.substringBefore('-').substringBefore('+')
-    val parts = core.split('.')
-
-    return if (parts.isNotEmpty() && parts[0] == "0") {
-        when (parts.size) {
-            1 -> "1.0"                 // "0"      -> "1.0"
-            2 -> "1.${parts[1]}"       // "0.1"    -> "1.1"
-            else -> "1.${parts[1]}.${parts[2]}" // "0.1.2" -> "1.1.2"
-        }
-    } else {
-        core // already >= 1.x or something else; leave as-is
-    }
-}
-
 kotlin {
     jvm()
     jvmToolchain(libs.versions.jvmToolchain.get().toInt())
@@ -203,7 +186,7 @@ nucleus.application {
             bundleID = "io.github.kdroidfilter.ytdlpgui"
             dockName = "AeroDl"
             iconFile.set(project.file("icons/logo.icns"))
-            packageVersion = macSafeVersion(version)
+            packageVersion = version
         }
         linux {
             packageName = "aerodl"
