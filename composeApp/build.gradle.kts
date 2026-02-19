@@ -150,7 +150,15 @@ nucleus.application {
 
     nativeDistributions {
         vendor = "KDroidFilter"
-        targetFormats(TargetFormat.Pkg, TargetFormat.Dmg, TargetFormat.Nsis, TargetFormat.Deb, TargetFormat.Rpm)
+        targetFormats(
+            TargetFormat.Pkg,
+            TargetFormat.Dmg,
+            TargetFormat.Nsis,
+            TargetFormat.Deb,
+            TargetFormat.Rpm,
+            TargetFormat.Portable,
+            TargetFormat.AppImage,
+        )
         packageName = "AeroDl"
         packageVersion = version
         description = "AeroDl"
