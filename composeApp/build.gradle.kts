@@ -201,7 +201,7 @@ nucleus.application {
             packageName = "aerodl"
             iconFile.set(project.file("icons/logo.png"))
             packageVersion = version
-            maintainer = "kdroidfilter@gmail.com"
+            debMaintainer = "kdroidfilter@gmail.com"
         }
     }
 }
