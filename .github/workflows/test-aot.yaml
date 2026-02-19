@@ -34,7 +34,7 @@ jobs:
           submodules: recursive
 
       - name: Setup Nucleus
-        uses: kdroidFilter/Nucleus/.github/actions/setup-nucleus@v1.1.1
+        uses: kdroidFilter/Nucleus/.github/actions/setup-nucleus@v1.1.2
         with:
           packaging-tools: 'true'
           setup-gradle: 'true'
@@ -42,11 +42,6 @@ jobs:
       - name: Verify JDK
         shell: bash
         run: java -version
-
-      - name: Clean npm cache (Windows ARM workaround)
-        if: runner.os == 'Windows'
-        shell: bash
-        run: npm cache clean --force
 
       - name: Build installer
         shell: bash

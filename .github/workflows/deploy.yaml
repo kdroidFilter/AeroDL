@@ -60,15 +60,10 @@ jobs:
           echo "GITHUB_REF=refs/tags/$tag" >> "$GITHUB_ENV"
 
       - name: Setup Nucleus
-        uses: kdroidFilter/Nucleus/.github/actions/setup-nucleus@v1.1.1
+        uses: kdroidFilter/Nucleus/.github/actions/setup-nucleus@v1.1.2
         with:
           packaging-tools: 'true'
           setup-gradle: 'true'
-
-      - name: Clean npm cache (Windows ARM workaround)
-        if: runner.os == 'Windows'
-        shell: bash
-        run: npm cache clean --force
 
       - name: Build packages
         shell: bash
@@ -142,7 +137,7 @@ jobs:
           path: artifacts/release-assets-macOS-amd64
 
       - name: Build universal binary
-        uses: kdroidFilter/Nucleus/.github/actions/build-macos-universal@v1.1.1
+        uses: kdroidFilter/Nucleus/.github/actions/build-macos-universal@v1.1.2
         with:
           arm64-path: artifacts/release-assets-macOS-arm64
           x64-path: artifacts/release-assets-macOS-amd64
@@ -183,7 +178,7 @@ jobs:
           path: artifacts/release-assets-Windows-arm64
 
       - name: Build APPX Bundle
-        uses: kdroidFilter/Nucleus/.github/actions/build-windows-appxbundle@v1.1.1
+        uses: kdroidFilter/Nucleus/.github/actions/build-windows-appxbundle@v1.1.2
         with:
           amd64-path: artifacts/release-assets-Windows-amd64
           arm64-path: artifacts/release-assets-Windows-arm64
@@ -248,14 +243,14 @@ jobs:
         run: find artifacts -type f | head -100
 
       - name: Generate update YML files
-        uses: kdroidFilter/Nucleus/.github/actions/generate-update-yml@v1.1.1
+        uses: kdroidFilter/Nucleus/.github/actions/generate-update-yml@v1.1.2
         with:
           artifacts-path: artifacts
           version: ${{ env.VERSION }}
           channel: ${{ env.CHANNEL }}
 
       - name: Publish release
-        uses: kdroidFilter/Nucleus/.github/actions/publish-release@v1.1.1
+        uses: kdroidFilter/Nucleus/.github/actions/publish-release@v1.1.2
         with:
           artifacts-path: artifacts
           tag: ${{ env.TAG }}
