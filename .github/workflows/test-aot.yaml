@@ -43,6 +43,11 @@ jobs:
         shell: bash
         run: java -version
 
+      - name: Clean npm cache (Windows ARM workaround)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: npm cache clean --force
+
       - name: Build installer
         shell: bash
         run: |

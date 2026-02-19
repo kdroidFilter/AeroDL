@@ -65,6 +65,11 @@ jobs:
           packaging-tools: 'true'
           setup-gradle: 'true'
 
+      - name: Clean npm cache (Windows ARM workaround)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: npm cache clean --force
+
       - name: Build packages
         shell: bash
         run: |
