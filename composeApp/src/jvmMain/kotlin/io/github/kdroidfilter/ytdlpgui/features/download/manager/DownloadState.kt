@@ -15,8 +15,10 @@ data class DownloadState(
     // App update info (sourced from InitViewModel)
     val updateAvailable: Boolean = false,
     val updateVersion: String? = null,
-    val updateUrl: String? = null,
     val updateBody: String? = null,
+    val updateDownloading: Boolean = false,
+    val updateDownloadProgress: Double = 0.0,
+    val updateReadyToInstall: Boolean = false,
     // UI: history search
     val searchQuery: String = "",
     // Whether any history exists (pre-filter)
@@ -226,7 +228,6 @@ data class DownloadState(
         val withUpdateInfoState = DownloadState(
             updateAvailable = true,
             updateVersion = "1.2.3",
-            updateUrl = "https://example.com/download",
             updateBody = """
                 ## Nouveautés
                 - Améliorations de performance

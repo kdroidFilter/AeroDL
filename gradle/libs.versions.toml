@@ -28,6 +28,7 @@ composewebview = "1.0.0-alpha-10"
 # Network & Tools
 ktor = "3.4.0"
 platformtools = "0.7.5"
+nucleus = "1.1.4"
 metro = "0.10.2"
 jvmNativeTrustedRoots = "1.1.7"
 
@@ -74,10 +75,15 @@ composewebview = { module = "io.github.kdroidfilter:composewebview", version.ref
 
 # Platform Tools
 platformtools-core = { module = "io.github.kdroidfilter:platformtools.core", version.ref = "platformtools" }
-platformtools-darkmodedetector = { module = "io.github.kdroidfilter:platformtools.darkmodedetector", version.ref = "platformtools" }
 platformtools-clipboardmanager = { module = "io.github.kdroidfilter:platformtools.clipboardmanager", version.ref = "platformtools" }
 platformtools-releasefetcher = { module = "io.github.kdroidfilter:platformtools.releasefetcher", version.ref = "platformtools" }
 platformtools-appmanager = { module = "io.github.kdroidfilter:platformtools.appmanager", version.ref = "platformtools" }
+
+# Nucleus
+nucleus-core-runtime = { module = "io.github.kdroidfilter:nucleus.core-runtime", version.ref = "nucleus" }
+nucleus-aot-runtime = { module = "io.github.kdroidfilter:nucleus.aot-runtime", version.ref = "nucleus" }
+nucleus-darkmode-detector = { module = "io.github.kdroidfilter:nucleus.darkmode-detector", version.ref = "nucleus" }
+nucleus-updater-runtime = { module = "io.github.kdroidfilter:nucleus.updater-runtime", version.ref = "nucleus" }
 
 # Additional libraries
 coil = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
@@ -130,4 +136,5 @@ hydraulicConveyor = { id = "dev.hydraulic.conveyor", version.ref = "hydraulicCon
 buildConfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildConfig" }
 linuxDeps = { id = "io.github.kdroidfilter.compose.linux.packagedeps", version.ref = "linuxDeps" }
 sentryJvmGradle = { id = "io.sentry.jvm.gradle", version.ref = "sentry" }
+nucleus = { id = "io.github.kdroidfilter.nucleus", version.ref = "nucleus" }
 caupain = "com.deezer.caupain:1.7.1"

@@ -48,7 +48,6 @@ import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.TaskType
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository.HistoryItem
 import dev.zacsweers.metrox.viewmodel.metroViewModel
-import io.github.kdroidfilter.ytdlpgui.core.design.components.UpdateInfoBar
 import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -90,11 +89,15 @@ fun DownloadView(
 
     Row(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
-            if (state.updateAvailable && state.updateVersion != null && state.updateUrl != null) {
+            if (state.updateAvailable && state.updateVersion != null) {
                 UpdateInfoBar(
                     updateVersion = state.updateVersion,
                     updateBody = state.updateBody,
-                    updateUrl = state.updateUrl,
+                    isDownloading = state.updateDownloading,
+                    downloadProgress = state.updateDownloadProgress,
+                    isReadyToInstall = state.updateReadyToInstall,
+                    onDownload = { onEvent(DownloadEvents.DownloadUpdate) },
+                    onInstall = { onEvent(DownloadEvents.InstallUpdate) },
                     onDismiss = { onEvent(DownloadEvents.DismissUpdateInfoBar) },
                     modifier = Modifier
                 )
