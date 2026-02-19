@@ -23,6 +23,9 @@
 
 -keep class com.kdroid.composetray.** { *; }
 
+# Nucleus runtime, dark mode detector, and updater
+-keep class io.github.kdroidfilter.nucleus.** { *; }
+
 -assumenosideeffects public class androidx.compose.runtime.ComposerKt {
     void sourceInformation(androidx.compose.runtime.Composer,java.lang.String);
     void sourceInformationMarkerStart(androidx.compose.runtime.Composer,int,java.lang.String);

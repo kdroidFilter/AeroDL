@@ -32,9 +32,12 @@ data class InitState(
     // Update check
     val updateAvailable: Boolean = false,
     val latestVersion: String? = null,
-    val downloadUrl: String? = null,
     val releaseBody: String? = null,
     val updateDismissed: Boolean = false,
+    // Update download (in-app via NucleusUpdater)
+    val updateDownloading: Boolean = false,
+    val updateDownloadProgress: Double = 0.0,
+    val updateFile: java.io.File? = null,
     val navigationState: InitNavigationState = InitNavigationState.None
 ) {
     companion object {

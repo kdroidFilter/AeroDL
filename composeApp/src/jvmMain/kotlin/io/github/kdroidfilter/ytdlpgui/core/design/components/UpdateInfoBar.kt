@@ -8,6 +8,7 @@ import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
@@ -24,22 +25,29 @@ import io.github.composefluent.component.AccentButton
 import io.github.composefluent.component.Icon
 import io.github.composefluent.component.InfoBar
 import io.github.composefluent.component.InfoBarDefaults
+import io.github.composefluent.component.ProgressBar
 import io.github.composefluent.component.Text
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.ArrowDownload
+import io.github.composefluent.icons.regular.ArrowSync
 import io.github.kdroidfilter.ytdlpgui.core.platform.browser.openUrlInBrowser
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.download_update
 import ytdlpgui.composeapp.generated.resources.update_available
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalFluentApi::class)
 @Composable
 internal fun UpdateInfoBar(
     updateVersion: String,
     updateBody: String?,
-    updateUrl: String,
+    isDownloading: Boolean,
+    downloadProgress: Double,
+    isReadyToInstall: Boolean,
+    onDownload: () -> Unit,
+    onInstall: () -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -62,19 +70,54 @@ internal fun UpdateInfoBar(
         colors = InfoBarDefaults.colors(),
         icon = { InfoBarDefaults.Badge() },
         action = {
-            Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.Center) {
-                AccentButton(onClick = {
-                    openUrlInBrowser(updateUrl)
-                    onDismiss()
-                }) {
-                    Icon(
-                        Icons.Default.ArrowDownload, contentDescription = stringResource(Res.string.download_update),
-                    )
-                    Text(
-                        stringResource(Res.string.download_update),
-                        style = FluentTheme.typography.body,
-                        fontSize = 12.sp,
-                    )
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                when {
+                    isReadyToInstall -> {
+                        AccentButton(onClick = onInstall) {
+                            Icon(
+                                Icons.Default.ArrowSync,
+                                contentDescription = null,
+                            )
+                            Text(
+                                "Installer et redémarrer",
+                                style = FluentTheme.typography.body,
+                                fontSize = 12.sp,
+                            )
+                        }
+                    }
+                    isDownloading -> {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            ProgressBar(
+                                progress = (downloadProgress / 100.0).toFloat(),
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                "${downloadProgress.roundToInt()}%",
+                                style = FluentTheme.typography.caption,
+                            )
+                        }
+                    }
+                    else -> {
+                        AccentButton(onClick = onDownload) {
+                            Icon(
+                                Icons.Default.ArrowDownload,
+                                contentDescription = stringResource(Res.string.download_update),
+                            )
+                            Text(
+                                stringResource(Res.string.download_update),
+                                style = FluentTheme.typography.body,
+                                fontSize = 12.sp,
+                            )
+                        }
+                    }
                 }
             }
         },
@@ -172,7 +215,11 @@ private fun UpdateInfoBarPreview() {
             - Corrections de bugs
             Consultez le changelog complet [ici](https://example.com/changelog).
         """.trimIndent(),
-        updateUrl = "https://example.com/download",
+        isDownloading = false,
+        downloadProgress = 0.0,
+        isReadyToInstall = false,
+        onDownload = {},
+        onInstall = {},
         onDismiss = {},
     )
 }

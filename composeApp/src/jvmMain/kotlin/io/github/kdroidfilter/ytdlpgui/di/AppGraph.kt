@@ -15,6 +15,8 @@ import dev.zacsweers.metrox.viewmodel.ViewModelGraph
 import io.github.kdroidfilter.network.CoilConfig
 import io.github.kdroidfilter.ffmpeg.FfmpegWrapper
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
+import io.github.kdroidfilter.nucleus.updater.NucleusUpdater
+import io.github.kdroidfilter.nucleus.updater.provider.GitHubProvider
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.ClipboardMonitorManager
 import io.github.kdroidfilter.ytdlpgui.core.navigation.NavigationEventBus
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
@@ -30,6 +32,9 @@ abstract class AppGraph : ViewModelGraph {
     // Managers
     abstract val downloadManager: DownloadManager
     abstract val clipboardMonitorManager: ClipboardMonitorManager
+
+    // Updater
+    abstract val nucleusUpdater: NucleusUpdater
 
     // Core dependencies
     abstract val autoLaunch: AutoLaunch
@@ -48,6 +53,12 @@ abstract class AppGraph : ViewModelGraph {
 
     // Factory for ConverterOptionsViewModel (needs SavedStateHandle via assisted injection)
     abstract val converterOptionsViewModelFactory: io.github.kdroidfilter.ytdlpgui.features.converter.ConverterOptionsViewModel.Factory
+
+    @Provides
+    @SingleIn(AppScope::class)
+    fun provideNucleusUpdater(): NucleusUpdater = NucleusUpdater {
+        provider = GitHubProvider(owner = "kdroidFilter", repo = "AeroDL")
+    }
 
     @Provides
     @SingleIn(AppScope::class)

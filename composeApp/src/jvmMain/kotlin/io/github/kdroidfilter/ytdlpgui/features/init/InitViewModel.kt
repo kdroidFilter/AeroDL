@@ -8,13 +8,16 @@ import dev.zacsweers.metro.binding
 import dev.zacsweers.metrox.viewmodel.ViewModelKey
 import io.github.kdroidfilter.logging.errorln
 import io.github.kdroidfilter.logging.infoln
-import io.github.kdroidfilter.platformtools.getAppVersion
+import io.github.kdroidfilter.logging.warnln
+import io.github.kdroidfilter.nucleus.updater.NucleusUpdater
+import io.github.kdroidfilter.nucleus.updater.UpdateResult
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlp.model.ReleaseManifest
 import io.github.kdroidfilter.ffmpeg.FfmpegWrapper
 import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
 import io.github.kdroidfilter.ytdlpgui.data.ReleaseManifestRepository
 import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
+import io.github.kdroidfilter.nucleus.aot.runtime.AotRuntime
 import io.github.kdroidfilter.ytdlpgui.di.AppScope
 import io.github.kevincianfarini.cardiologist.PulseBackpressureStrategy
 import io.github.kevincianfarini.cardiologist.fixedPeriodPulse
@@ -32,7 +35,8 @@ class InitViewModel(
     private val ffmpegWrapper: FfmpegWrapper,
     private val settingsRepository: SettingsRepository,
     private val downloadHistoryRepository: io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository,
-    private val releaseManifestRepository: ReleaseManifestRepository
+    private val releaseManifestRepository: ReleaseManifestRepository,
+    private val nucleusUpdater: NucleusUpdater,
 ) : MVIViewModel<InitState, InitEvent>() {
 
 
@@ -59,7 +63,7 @@ class InitViewModel(
     private val manifestLoadMutex = Mutex()
 
     init {
-        val isAotTraining = System.getProperty("aot.training.autoExit") != null
+        val isAotTraining = AotRuntime.isTraining()
 
         viewModelScope.launch {
             // Check if onboarding is completed
@@ -101,7 +105,7 @@ class InitViewModel(
                         releaseManifestRepository.getLastManifestSource()?.label ?: "unknown"
                     infoln { "[InitViewModel] Periodic manifest refresh source=$manifestSourceLabel" }
                     // App update check
-                    checkForUpdates(m)
+                    checkForAppUpdates()
                     // yt-dlp update check + auto-download if newer
                     runCatching { checkAndUpdateYtDlp(m) }
                 }
@@ -119,44 +123,48 @@ class InitViewModel(
     }
 
     /**
-     * Check if a new app version is available using the manifest
+     * Check if a new app version is available using NucleusUpdater.
      */
-    private fun checkForUpdates(manifest: ReleaseManifest) {
-        runCatching {
-            val currentVersion = getAppVersion()
-            val latestVersion = manifest.releases.aerodl.tagName.removePrefix("v")
+    private suspend fun checkForAppUpdates() {
+        if (!nucleusUpdater.isUpdateSupported()) return
+        when (val result = nucleusUpdater.checkForUpdates()) {
+            is UpdateResult.Available -> update {
+                copy(
+                    updateAvailable = true,
+                    latestVersion = result.info.version,
+                )
+            }
+            is UpdateResult.NotAvailable -> {}
+            is UpdateResult.Error -> warnln { "Update check failed: ${result.exception.message}" }
+        }
+    }
 
-            // Compare versions
-            if (isNewerVersion(currentVersion, latestVersion)) {
-                update {
-                    copy(
-                        updateAvailable = true,
-                        latestVersion = latestVersion,
-                        downloadUrl = "https://kdroidfilter.github.io/AeroDL/",
-                        releaseBody = manifest.releases.aerodl.body
-                    )
+    /** Download the update installer and track progress. */
+    fun downloadUpdate() {
+        viewModelScope.launch {
+            if (uiState.value.updateDownloading) return@launch
+            // Re-check to obtain UpdateInfo for download
+            val result = nucleusUpdater.checkForUpdates()
+            if (result !is UpdateResult.Available) return@launch
+            update { copy(updateDownloading = true, updateDownloadProgress = 0.0) }
+            nucleusUpdater.downloadUpdate(result.info).collect { progress ->
+                update { copy(updateDownloadProgress = progress.percent) }
+                if (progress.file != null) {
+                    update {
+                        copy(
+                            updateDownloading = false,
+                            updateFile = progress.file,
+                        )
+                    }
                 }
             }
         }
     }
 
-    /**
-     * Compare two version strings (e.g., "1.0.0" vs "1.0.1")
-     * Returns true if newVersion is newer than currentVersion
-     */
-    private fun isNewerVersion(currentVersion: String, newVersion: String): Boolean {
-        val current = currentVersion.split(".").mapNotNull { it.toIntOrNull() }
-        val new = newVersion.split(".").mapNotNull { it.toIntOrNull() }
-
-        for (i in 0 until maxOf(current.size, new.size)) {
-            val currentPart = current.getOrNull(i) ?: 0
-            val newPart = new.getOrNull(i) ?: 0
-
-            if (newPart > currentPart) return true
-            if (newPart < currentPart) return false
-        }
-
-        return false
+    /** Install the downloaded update and restart the application. */
+    fun installUpdate() {
+        val file = uiState.value.updateFile ?: return
+        nucleusUpdater.installAndRestart(file)
     }
 
     /**

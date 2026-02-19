@@ -19,12 +19,13 @@ import dev.zacsweers.metrox.viewmodel.LocalMetroViewModelFactory
 import dev.zacsweers.metrox.viewmodel.metroViewModel
 import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import io.github.kdroidfilter.ytdlpgui.di.rememberWindowViewModelStoreOwner
+import io.github.kdroidfilter.nucleus.aot.runtime.AotRuntime
 import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsViewModel
 import coil3.SingletonImageLoader
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import com.kdroid.composetray.tray.api.TrayApp
 import com.kdroid.composetray.tray.api.rememberTrayAppState
-import com.kdroid.composetray.utils.SingleInstanceManager
+import io.github.kdroidfilter.nucleus.core.runtime.SingleInstanceManager
 import com.kdroid.composetray.utils.allowComposeNativeTrayLogging
 import com.kdroid.composetray.utils.isMenuBarInDarkMode
 import com.russhwolf.settings.Settings
@@ -40,7 +41,7 @@ import io.github.kdroidfilter.logging.LoggerConfig
 import io.github.kdroidfilter.logging.errorln
 import io.github.kdroidfilter.logging.infoln
 import io.github.kdroidfilter.platformtools.OperatingSystem
-import io.github.kdroidfilter.platformtools.darkmodedetector.isSystemInDarkMode
+import io.github.kdroidfilter.nucleus.darkmodedetector.isSystemInDarkMode
 import io.github.kdroidfilter.platformtools.getAppVersion
 import io.github.kdroidfilter.platformtools.getOperatingSystem
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnly
@@ -62,12 +63,11 @@ import java.io.File
 fun main() {
     initializeSentry()
 
-    // AOT training: auto-exit after the specified duration so JVM shutdown hooks
-    // (which write .aotconf) run reliably on all platforms — including Windows where
-    // external signals (taskkill, Process.destroy) cannot trigger them.
-    System.getProperty("aot.training.autoExit")?.toLongOrNull()?.let { seconds ->
+    // AOT training: auto-exit so JVM shutdown hooks (which write .aotconf)
+    // run reliably on all platforms. Nucleus AotRuntime handles detection.
+    if (AotRuntime.isTraining()) {
         Thread({
-            Thread.sleep(seconds * 1000)
+            Thread.sleep(30_000)
             System.exit(0)
         }, "aot-training-timer").apply { isDaemon = true; start() }
     }
@@ -139,7 +139,7 @@ fun main() {
 
 
                 val isSingleInstance = SingleInstanceManager.isSingleInstance(
-                    onRestoreRequest = {
+                    onRestoreRequest = { // Path.() -> Unit; we ignore the Path
                         trayAppState.show()
                     }
                 )

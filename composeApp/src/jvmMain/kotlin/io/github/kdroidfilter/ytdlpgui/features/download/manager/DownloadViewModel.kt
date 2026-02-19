@@ -109,10 +109,12 @@ class DownloadViewModel(
             errorDialogItem = base.errorItem,
             searchQuery = base.searchQuery,
             hasAnyHistory = base.hasAnyHistory,
-            updateAvailable = initState.updateAvailable && !initState.updateDismissed && initState.latestVersion != null && initState.downloadUrl != null,
+            updateAvailable = initState.updateAvailable && !initState.updateDismissed && initState.latestVersion != null,
             updateVersion = initState.latestVersion,
-            updateUrl = initState.downloadUrl,
             updateBody = initState.releaseBody,
+            updateDownloading = initState.updateDownloading,
+            updateDownloadProgress = initState.updateDownloadProgress,
+            updateReadyToInstall = initState.updateFile != null,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -151,6 +153,12 @@ class DownloadViewModel(
             }
             DownloadEvents.DismissUpdateInfoBar -> {
                 initViewModel.dismissUpdateInfo()
+            }
+            DownloadEvents.DownloadUpdate -> {
+                initViewModel.downloadUpdate()
+            }
+            DownloadEvents.InstallUpdate -> {
+                initViewModel.installUpdate()
             }
             is DownloadEvents.UpdateSearchQuery -> {
                 _searchQuery.value = event.query
