@@ -185,21 +185,24 @@ function filterAssetsByPlatform(assets, platform) {
   }));
 
   if (platform.os === "windows") {
-    return list.filter(a => /\.(msi|exe)$/i.test(a.name))
+    return list.filter(a => /\.(msi|exe)$/i.test(a.name) && !/\.blockmap$/i.test(a.name))
       .sort((a, b) => {
-        if (a.lname.endsWith('.msi') && !b.lname.endsWith('.msi')) return -1;
-        if (!a.lname.endsWith('.msi') && b.lname.endsWith('.msi')) return 1;
+        // NSIS installers first, then portable, then MSI
+        const aIsNsis = a.lname.includes('-nsis');
+        const bIsNsis = b.lname.includes('-nsis');
+        if (aIsNsis && !bIsNsis) return -1;
+        if (!aIsNsis && bIsNsis) return 1;
         return 0;
       });
   }
 
   if (platform.os === "linux") {
     if (platform.distro === "deb") {
-      return list.filter(a => /\.deb$/i.test(a.name));
+      return list.filter(a => /\.(deb|AppImage)$/i.test(a.name));
     } else if (platform.distro === "rpm") {
-      return list.filter(a => /\.rpm$/i.test(a.name));
+      return list.filter(a => /\.(rpm|AppImage)$/i.test(a.name));
     } else {
-      return list.filter(a => /\.(deb|rpm)$/i.test(a.name))
+      return list.filter(a => /\.(deb|rpm|AppImage)$/i.test(a.name))
         .sort((a, b) => {
           if (a.lname.endsWith('.deb') && !b.lname.endsWith('.deb')) return -1;
           if (!a.lname.endsWith('.deb') && b.lname.endsWith('.deb')) return 1;
@@ -445,6 +448,7 @@ async function renderApp() {
     const linuxAssets = filterAssetsByPlatform(assets, platform);
     const debAssets = linuxAssets.filter(a => a.name.toLowerCase().endsWith('.deb'));
     const rpmAssets = linuxAssets.filter(a => a.name.toLowerCase().endsWith('.rpm'));
+    const appImageLinux = linuxAssets.filter(a => /\.appimage$/i.test(a.name));
 
     mainDownloadBlock = `
       <div class="section section-box">
@@ -467,7 +471,7 @@ async function renderApp() {
         </p>
       </div>
 
-      ${(debAssets.length > 0 || rpmAssets.length > 0) ? `
+      ${(debAssets.length > 0 || rpmAssets.length > 0 || appImageLinux.length > 0) ? `
         <div class="section section-box">
           <h2 class="section-title">
             <span class="material-symbols-outlined">download</span>
@@ -499,6 +503,16 @@ async function renderApp() {
                   Fedora/RHEL/openSUSE (.rpm)
                 </h3>
                 ${renderLinuxArchOptions(rpmAssets, 'rpm')}
+              </div>
+            ` : ''}
+
+            ${appImageLinux.length > 0 ? `
+              <div class="linux-distro-section" style="margin-top:1.5rem;">
+                <h3 style="color:var(--text-main);font-size:1rem;margin:0 0 0.75rem 0;display:flex;align-items:center;gap:0.4rem;">
+                  <span class="material-symbols-outlined">package_2</span>
+                  AppImage (portable)
+                </h3>
+                ${renderLinuxArchOptions(appImageLinux, 'appimage')}
               </div>
             ` : ''}
           ` : ''}
@@ -752,12 +766,13 @@ function renderManualDownloadLinks(assets) {
 function renderCrossPlatformSection(allAssets) {
   if (!allAssets || allAssets.length === 0) return '';
 
-  const windowsAssets = allAssets.filter(a => /\.(msi|exe)$/i.test(a.name));
+  const windowsAssets = allAssets.filter(a => /\.(msi|exe)$/i.test(a.name) && !/\.blockmap$/i.test(a.name));
   const macAssets = allAssets.filter(a => /\.dmg$/i.test(a.name));
   const debAssets = allAssets.filter(a => /\.deb$/i.test(a.name));
   const rpmAssets = allAssets.filter(a => /\.rpm$/i.test(a.name));
+  const appImageAssets = allAssets.filter(a => /\.AppImage$/i.test(a.name));
 
-  if (windowsAssets.length === 0 && macAssets.length === 0 && debAssets.length === 0 && rpmAssets.length === 0) {
+  if (windowsAssets.length === 0 && macAssets.length === 0 && debAssets.length === 0 && rpmAssets.length === 0 && appImageAssets.length === 0) {
     return '';
   }
 
@@ -793,7 +808,7 @@ function renderCrossPlatformSection(allAssets) {
                 <span>macOS</span>
               </button>
             ` : ''}
-            ${(debAssets.length > 0 || rpmAssets.length > 0) ? `
+            ${(debAssets.length > 0 || rpmAssets.length > 0 || appImageAssets.length > 0) ? `
               <button class="tab-button ${appState.selectedOS === 'linux' ? 'active' : ''}"
                       onclick="setState({selectedOS: 'linux'})" data-tooltip="Linux">
                 <span class="material-symbols-outlined">computer</span>
@@ -823,7 +838,7 @@ function renderCrossPlatformSection(allAssets) {
               </div>
             ` : ''}
 
-            ${appState.selectedOS === 'linux' && (debAssets.length > 0 || rpmAssets.length > 0) ? `
+            ${appState.selectedOS === 'linux' && (debAssets.length > 0 || rpmAssets.length > 0 || appImageAssets.length > 0) ? `
               <div class="platform-downloads">
                 <h3 class="platform-title">
                   <span class="material-symbols-outlined">computer</span>
@@ -845,6 +860,15 @@ function renderCrossPlatformSection(allAssets) {
                       Fedora/RHEL (.rpm)
                     </h4>
                     ${renderPlatformAssets(rpmAssets, 'rpm')}
+                  </div>
+                ` : ''}
+                ${appImageAssets.length > 0 ? `
+                  <div class="distro-group">
+                    <h4 class="distro-title">
+                      <span class="material-symbols-outlined">package_2</span>
+                      AppImage (portable)
+                    </h4>
+                    ${renderPlatformAssets(appImageAssets, 'linux')}
                   </div>
                 ` : ''}
               </div>

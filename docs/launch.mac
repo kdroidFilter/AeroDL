@@ -5,6 +5,7 @@ set -e
 # ─── Config ───────────────────────────────────────────────────────────
 repo="kdroidFilter/AeroDL"
 app_name="AeroDl"
+artifact_name="aerodl"
 
 # ─── Colors & Symbols ────────────────────────────────────────────────
 BOLD='\033[1m'
@@ -134,10 +135,10 @@ success "Found ${BOLD}${YELLOW}${version}${RESET}"
 # Detect architecture
 arch=$(arch)
 if [[ "$arch" == "i386" ]]; then
-  mac_zip_url="https://github.com/${repo}/releases/download/${version}/${app_name}-${version_number}-mac-x64.zip"
+  mac_zip_url="https://github.com/${repo}/releases/download/${version}/${artifact_name}-${version_number}-mac-x64.zip"
   arch_label="Intel (x64)"
 elif [[ "$arch" == "arm64" ]]; then
-  mac_zip_url="https://github.com/${repo}/releases/download/${version}/${app_name}-${version_number}-mac-arm64.zip"
+  mac_zip_url="https://github.com/${repo}/releases/download/${version}/${artifact_name}-${version_number}-mac-arm64.zip"
   arch_label="Apple Silicon (arm64)"
 else
   fail "Unsupported CPU architecture: $arch"
