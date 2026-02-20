@@ -86,8 +86,9 @@ class InitViewModel(
             startInitialization(navigateToHomeWhenDone = true)
         }
 
-        // Schedule periodic update checks every 12 hours
+        // Check for app updates immediately at startup, then every 12 hours
         if (!isAotTraining) {
+            viewModelScope.launch { checkForAppUpdates() }
             startPeriodicUpdateChecks()
         }
     }
