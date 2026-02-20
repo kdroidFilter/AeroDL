@@ -22,16 +22,9 @@ kotlin {
             implementation(libs.coil)
             implementation(libs.coil.network)
 
-            // Security - Native trusted roots
-            // Exclude signed BouncyCastle jars to avoid digest errors after ProGuard.
-            implementation("org.jetbrains.nativecerts:jvm-native-trusted-roots:${libs.versions.jvmNativeTrustedRoots.get()}") {
-                exclude(group = "org.bouncycastle", module = "bcpkix-jdk18on")
-                exclude(group = "org.bouncycastle", module = "bcprov-jdk18on")
-            }
-
-            // Re-introduce BouncyCastle via local, de-signed jars placed in this module's `libs/` folder.
-            // See `network/libs/README-bouncycastle.txt` for instructions to strip signatures.
-            implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
+            // Nucleus native HTTPS modules (replaces jvm-native-trusted-roots + BouncyCastle)
+            implementation(libs.nucleus.native.http.ktor)    // KtorConfig + native SSL
+            implementation(libs.nucleus.native.http.okhttp)  // CoilConfig OkHttp client
 
             // Internal logging module for shared logging config
             implementation(project(":logging"))

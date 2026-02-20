@@ -28,9 +28,8 @@ composewebview = "1.0.0-alpha-10"
 # Network & Tools
 ktor = "3.4.0"
 platformtools = "0.7.5"
-nucleus = "1.1.6"
+nucleus = "1.2.0"
 metro = "0.10.2"
-jvmNativeTrustedRoots = "1.1.7"
 
 
 # Database
@@ -84,6 +83,9 @@ nucleus-core-runtime = { module = "io.github.kdroidfilter:nucleus.core-runtime",
 nucleus-aot-runtime = { module = "io.github.kdroidfilter:nucleus.aot-runtime", version.ref = "nucleus" }
 nucleus-darkmode-detector = { module = "io.github.kdroidfilter:nucleus.darkmode-detector", version.ref = "nucleus" }
 nucleus-updater-runtime = { module = "io.github.kdroidfilter:nucleus.updater-runtime", version.ref = "nucleus" }
+nucleus-native-ssl = { module = "io.github.kdroidfilter:nucleus.native-ssl", version.ref = "nucleus" }
+nucleus-native-http-okhttp = { module = "io.github.kdroidfilter:nucleus.native-http-okhttp", version.ref = "nucleus" }
+nucleus-native-http-ktor = { module = "io.github.kdroidfilter:nucleus.native-http-ktor", version.ref = "nucleus" }
 
 # Additional libraries
 coil = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
@@ -121,8 +123,6 @@ kotlinx-serialization-protobuf = { module = "org.jetbrains.kotlinx:kotlinx-seria
 
 sqlDelight-driver-sqlite = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "sqlDelight" }
 
-# Security
-jvm-native-trusted-roots = { module = "org.jetbrains.nativecerts:jvm-native-trusted-roots", version.ref = "jvmNativeTrustedRoots" }
 
 [plugins]
 composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }

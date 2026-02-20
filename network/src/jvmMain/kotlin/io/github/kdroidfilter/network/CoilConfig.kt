@@ -6,10 +6,11 @@ import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.util.DebugLogger
 import coil3.util.Logger
 import coil3.memory.MemoryCache
-import okhttp3.OkHttpClient
-import java.io.File
-import okio.Path.Companion.toPath
 import io.github.kdroidfilter.logging.LoggerConfig
+import io.github.kdroidfilter.nucleus.nativehttp.okhttp.NativeOkHttpClient.withNativeSsl
+import okhttp3.OkHttpClient
+import okio.Path.Companion.toPath
+import java.io.File
 
 /**
  * Provides Coil ImageLoader configuration that uses native OS certificate stores.
@@ -23,7 +24,7 @@ object CoilConfig {
      */
     fun createOkHttpClient(): OkHttpClient {
         return OkHttpClient.Builder()
-            .sslSocketFactory(TrustedRootsSSL.socketFactory, TrustedRootsSSL.trustManager)
+            .withNativeSsl()
             .build()
     }
 
