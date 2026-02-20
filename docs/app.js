@@ -410,7 +410,9 @@ async function renderApp() {
     const archGroups = groupAssetsByArch(windowsAssets);
 
     if (platform.arch && archGroups[platform.arch]?.length > 0) {
-      const recommended = archGroups[platform.arch][0];
+      const archAssets = archGroups[platform.arch];
+      const installer = archAssets.find(a => a.lname.includes('-nsis')) || archAssets[0];
+      const portable = archAssets.find(a => a.lname.includes('-portable'));
       mainDownloadBlock = `
         <div class="section section-box">
           <h2 class="section-title">
@@ -418,16 +420,27 @@ async function renderApp() {
             <span>Download</span>
           </h2>
           <p style="color:var(--accent-soft);margin:0 0 1rem 0;font-size:0.95rem;">
-            Recommended for you:
-            <strong>${recommended.name}</strong>
-            (${recommended.size})
+            Installer (recommended):
+            <strong>${installer.name}</strong>
+            (${installer.size})
           </p>
           <div class="btn-row">
-            <a href="${recommended.url}" target="_blank" class="btn btn-primary">
+            <a href="${installer.url}" target="_blank" class="btn btn-primary">
               <span class="material-symbols-outlined">download</span>
-              <span>Download Now</span>
+              <span>Download Installer</span>
             </a>
           </div>
+          ${portable ? `
+            <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(100,149,237,0.1);">
+              <p style="color:var(--accent-soft);margin:0 0 0.75rem 0;font-size:0.9rem;">
+                Portable version (no installation required):
+              </p>
+              <a href="${portable.url}" target="_blank" class="btn btn-secondary" style="width:100%;">
+                <span class="material-symbols-outlined">download</span>
+                <span>${portable.name} (${portable.size})</span>
+              </a>
+            </div>
+          ` : ''}
           ${archGroups[platform.arch === 'x64' ? 'arm64' : 'x64']?.length > 0 ? `
             <div style="margin-top:1rem;text-align:center;">
               <button class="toggle-button" onclick="setState({showAllAssets: !appState.showAllAssets})">
