@@ -23,8 +23,25 @@
 
 -keep class com.kdroid.composetray.** { *; }
 
-# Nucleus runtime, dark mode detector, and updater
+# Nucleus runtime, dark mode detector, updater, and native SSL/HTTP
 -keep class io.github.kdroidfilter.nucleus.** { *; }
+
+# Nucleus NativeSSL JNI bridges — the native .dylib/.dll calls back into Java using
+# these exact class/method names. Explicit native-method markers are required even
+# with the broad keep above, so the optimizer does not prune them as dead code.
+-keepclasseswithmembers class io.github.kdroidfilter.nucleus.nativessl.mac.NativeSslBridge {
+    native <methods>;
+}
+-keepclasseswithmembers class io.github.kdroidfilter.nucleus.nativessl.windows.WindowsSslBridge {
+    native <methods>;
+}
+# Nucleus darkmode detector JNI bridge (libnucleus_darkmode.dylib / nucleus_windows_theme.dll)
+-keepclasseswithmembers class io.github.kdroidfilter.nucleus.darkmodedetector.** {
+    native <methods>;
+}
+# Suppress warnings for platform-specific native bridges absent on other OSes
+-dontwarn io.github.kdroidfilter.nucleus.nativessl.**
+-dontwarn io.github.kdroidfilter.nucleus.nativehttp.**
 
 -assumenosideeffects public class androidx.compose.runtime.ComposerKt {
     void sourceInformation(androidx.compose.runtime.Composer,java.lang.String);
@@ -69,9 +86,9 @@
 -dontwarn org.conscrypt.**
 -dontwarn org.bouncycastle.**
 -dontwarn org.openjsse.**
-# Keep BouncyCastle and NativeCerts classes intact to avoid bytecode changes
-# that can invalidate signed JAR digests during release optimization.
+# Keep BouncyCastle intact to avoid bytecode changes that can invalidate signed JAR digests.
 -keep class org.bouncycastle.** { *; }
+# jvm-native-trusted-roots (replaced by nucleus.native-ssl in 1.2.0, kept for backward compat)
 -keep class org.jetbrains.nativecerts.** { *; }
 
 # Keep Ktor Kotlinx Serialization provider loaded via ServiceLoader
