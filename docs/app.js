@@ -431,14 +431,18 @@ async function renderApp() {
             </a>
           </div>
           ${portable ? `
-            <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(100,149,237,0.1);">
-              <p style="color:var(--accent-soft);margin:0 0 0.75rem 0;font-size:0.9rem;">
+            <div style="margin-top:1.5rem;">
+              <p style="color:var(--accent-soft);margin:0 0 1rem 0;font-size:0.95rem;">
                 Portable version (no installation required):
+                <strong>${portable.name}</strong>
+                (${portable.size})
               </p>
-              <a href="${portable.url}" target="_blank" class="btn btn-secondary" style="width:100%;">
-                <span class="material-symbols-outlined">download</span>
-                <span>${portable.name} (${portable.size})</span>
-              </a>
+              <div class="btn-row">
+                <a href="${portable.url}" target="_blank" class="btn btn-primary">
+                  <span class="material-symbols-outlined">download</span>
+                  <span>Download Portable Version</span>
+                </a>
+              </div>
             </div>
           ` : ''}
           ${archGroups[platform.arch === 'x64' ? 'arm64' : 'x64']?.length > 0 ? `
