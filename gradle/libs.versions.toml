@@ -84,6 +84,7 @@ nucleus-aot-runtime = { module = "io.github.kdroidfilter:nucleus.aot-runtime", v
 nucleus-darkmode-detector = { module = "io.github.kdroidfilter:nucleus.darkmode-detector", version.ref = "nucleus" }
 nucleus-updater-runtime = { module = "io.github.kdroidfilter:nucleus.updater-runtime", version.ref = "nucleus" }
 nucleus-native-ssl = { module = "io.github.kdroidfilter:nucleus.native-ssl", version.ref = "nucleus" }
+nucleus-native-http = { module = "io.github.kdroidfilter:nucleus.native-http", version.ref = "nucleus" }
 nucleus-native-http-okhttp = { module = "io.github.kdroidfilter:nucleus.native-http-okhttp", version.ref = "nucleus" }
 nucleus-native-http-ktor = { module = "io.github.kdroidfilter:nucleus.native-http-ktor", version.ref = "nucleus" }
 

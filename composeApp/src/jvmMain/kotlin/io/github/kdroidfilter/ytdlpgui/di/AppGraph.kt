@@ -15,6 +15,7 @@ import dev.zacsweers.metrox.viewmodel.ViewModelGraph
 import io.github.kdroidfilter.network.CoilConfig
 import io.github.kdroidfilter.ffmpeg.FfmpegWrapper
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
+import io.github.kdroidfilter.nucleus.nativehttp.NativeHttpClient
 import io.github.kdroidfilter.nucleus.updater.NucleusUpdater
 import io.github.kdroidfilter.nucleus.updater.provider.GitHubProvider
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.ClipboardMonitorManager
@@ -58,6 +59,7 @@ abstract class AppGraph : ViewModelGraph {
     @SingleIn(AppScope::class)
     fun provideNucleusUpdater(): NucleusUpdater = NucleusUpdater {
         provider = GitHubProvider(owner = "kdroidFilter", repo = "AeroDL")
+        httpClient = NativeHttpClient.create()
     }
 
     @Provides

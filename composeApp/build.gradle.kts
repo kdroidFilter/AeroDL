@@ -74,6 +74,7 @@ kotlin {
             implementation(libs.nucleus.aot.runtime)
             implementation(libs.nucleus.darkmode.detector)
             implementation(libs.nucleus.updater.runtime)
+            implementation(libs.nucleus.native.http)
 
             // Serialization
             implementation(libs.kotlinx.serialization.json)
