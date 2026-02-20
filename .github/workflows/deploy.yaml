@@ -79,6 +79,7 @@ jobs:
           path: |
             composeApp/build/compose/binaries/**/*.deb
             composeApp/build/compose/binaries/**/*.rpm
+            composeApp/build/compose/binaries/**/*.AppImage
             composeApp/build/compose/binaries/**/*.exe
             composeApp/build/compose/binaries/**/*.appx
             !composeApp/build/compose/binaries/**/runtime/**
