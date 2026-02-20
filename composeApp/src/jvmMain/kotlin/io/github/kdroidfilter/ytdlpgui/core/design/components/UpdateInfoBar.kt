@@ -51,32 +51,37 @@ internal fun UpdateInfoBar(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    InfoBar(
-        title = {
-            Text(
-                stringResource(Res.string.update_available, updateVersion),
-                style = FluentTheme.typography.caption
-            )
-        },
-        message = {
-            if (!updateBody.isNullOrBlank()) {
-                MarkdownBody(
-                    text = updateBody,
-                    modifier = Modifier.fillMaxWidth()
+    if (isDownloading) {
+        UpdateDownloadProgress(
+            progress = downloadProgress,
+            modifier = modifier,
+        )
+    } else {
+        InfoBar(
+            title = {
+                Text(
+                    stringResource(Res.string.update_available, updateVersion),
+                    style = FluentTheme.typography.caption
                 )
-            }
-        },
-        modifier = modifier.fillMaxWidth(),
-        colors = InfoBarDefaults.colors(),
-        icon = { InfoBarDefaults.Badge() },
-        action = {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                when {
-                    isReadyToInstall -> {
+            },
+            message = {
+                if (!updateBody.isNullOrBlank()) {
+                    MarkdownBody(
+                        text = updateBody,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            modifier = modifier.fillMaxWidth(),
+            colors = InfoBarDefaults.colors(),
+            icon = { InfoBarDefaults.Badge() },
+            action = {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (isReadyToInstall) {
                         AccentButton(onClick = onInstall) {
                             Icon(
                                 Icons.Default.ArrowSync,
@@ -88,24 +93,7 @@ internal fun UpdateInfoBar(
                                 fontSize = 12.sp,
                             )
                         }
-                    }
-                    isDownloading -> {
-                        Column(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                        ) {
-                            ProgressBar(
-                                progress = (downloadProgress / 100.0).toFloat(),
-                                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-                            )
-                            Spacer(Modifier.height(4.dp))
-                            Text(
-                                "${downloadProgress.roundToInt()}%",
-                                style = FluentTheme.typography.caption,
-                            )
-                        }
-                    }
-                    else -> {
+                    } else {
                         AccentButton(onClick = onDownload) {
                             Icon(
                                 Icons.Default.ArrowDownload,
@@ -119,10 +107,35 @@ internal fun UpdateInfoBar(
                         }
                     }
                 }
-            }
-        },
-        closeAction = { InfoBarDefaults.CloseActionButton(onClick = onDismiss) },
-    )
+            },
+            closeAction = { InfoBarDefaults.CloseActionButton(onClick = onDismiss) },
+        )
+    }
+}
+
+@Composable
+private fun UpdateDownloadProgress(
+    progress: Double,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier.fillMaxWidth().padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text(
+            "Téléchargement de la mise à jour…",
+            style = FluentTheme.typography.caption,
+        )
+        ProgressBar(
+            progress = (progress / 100.0).toFloat(),
+            modifier = Modifier.weight(1f),
+        )
+        Text(
+            "${progress.roundToInt()}%",
+            style = FluentTheme.typography.caption,
+        )
+    }
 }
 
 @Composable
