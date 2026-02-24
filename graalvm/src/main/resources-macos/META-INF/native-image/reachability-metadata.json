@@ -4,7 +4,10 @@
       "type": "android.os.Build"
     },
     {
-      "type": "androidx.compose.ui.awt.ComposeWindow"
+      "type": "android.os.Build$VERSION"
+    },
+    {
+      "type": "androidx.compose.ui.awt.ComposeDialog"
     },
     {
       "type": "androidx.compose.ui.awt.ComposeWindowPanel"
@@ -19,926 +22,627 @@
       "type": "androidx.compose.ui.scene.skia.WindowSkiaLayerComponent$contentComponent$1"
     },
     {
-      "type": "com.sun.java.accessibility.internal.AccessBridge",
+      "type": "apple.security.AppleProvider",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "boolean[]",
+      "jniAccessible": true
+    },
+    {
+      "type": "byte[]",
+      "jniAccessible": true
+    },
+    {
+      "type": "byte[][]"
+    },
+    {
+      "type": "char[]"
+    },
+    {
+      "type": "coil3.RealImageLoader"
+    },
+    {
+      "type": "coil3.compose.internal.DeferredDispatchCoroutineDispatcher"
+    },
+    {
+      "type": "coil3.network.okhttp.internal.OkHttpNetworkFetcherServiceLoaderTarget"
+    },
+    {
+      "type": "com.apple.eawt._AppEventHandler",
       "jniAccessible": true,
       "methods": [
         {
-          "name": "activateAccessibleHyperlink",
+          "name": "handleNativeNotification",
           "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "javax.accessibility.AccessibleHyperlink"
-          ]
-        },
-        {
-          "name": "addAccessibilityEventNotification",
-          "parameterTypes": [
-            "long"
-          ]
-        },
-        {
-          "name": "addAccessibleSelectionFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
             "int"
           ]
+        }
+      ]
+    },
+    {
+      "type": "com.apple.eawt._AppMenuBarHandler",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "initMenuStates",
+          "parameterTypes": [
+            "boolean",
+            "boolean",
+            "boolean",
+            "boolean"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.apple.laf.AquaKeyBindings",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.apple.laf.AquaLookAndFeel",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.apple.laf.AquaPanelUI",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
         },
         {
-          "name": "addJavaEventNotification",
+          "name": "createUI",
           "parameterTypes": [
-            "long"
+            "javax.swing.JComponent"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.apple.laf.AquaRootPaneUI",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "createUI",
+          "parameterTypes": [
+            "javax.swing.JComponent"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.apple.laf.resources.aqua"
+    },
+    {
+      "type": "com.kdroid.composetray.lib.mac.MacOSMenuBarThemeDetector$themeChangedCallback$1"
+    },
+    {
+      "type": "com.kdroid.composetray.lib.mac.MacTrayManager$MacTray",
+      "fields": [
+        {
+          "name": "cb"
+        },
+        {
+          "name": "icon_filepath"
+        },
+        {
+          "name": "menu"
+        },
+        {
+          "name": "tooltip"
+        }
+      ]
+    },
+    {
+      "type": "com.kdroid.composetray.lib.mac.MacTrayManager$MacTrayLibrary"
+    },
+    {
+      "type": "com.kdroid.composetray.lib.mac.MacTrayManager$MacTrayMenuItem",
+      "fields": [
+        {
+          "name": "cb"
+        },
+        {
+          "name": "checked"
+        },
+        {
+          "name": "disabled"
+        },
+        {
+          "name": "icon_filepath"
+        },
+        {
+          "name": "submenu"
+        },
+        {
+          "name": "text"
+        }
+      ],
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.kdroid.composetray.lib.mac.MacTrayManager$MacTrayMenuItem[]"
+    },
+    {
+      "type": "com.kdroid.composetray.lib.mac.MacTrayManager$MenuItemCallback",
+      "methods": [
+        {
+          "name": "invoke",
+          "parameterTypes": [
+            "com.sun.jna.Pointer"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.kdroid.composetray.lib.mac.MacTrayManager$ThemeCallback",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "invoke",
+          "parameterTypes": [
+            "int"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.kdroid.composetray.lib.mac.MacTrayManager$TrayCallback",
+      "methods": [
+        {
+          "name": "invoke",
+          "parameterTypes": [
+            "com.sun.jna.Pointer"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.kdroid.composetray.lib.mac.MacTrayManager$initializeNativeMenuItem$1$callback$1"
+    },
+    {
+      "type": "com.kdroid.composetray.lib.mac.MacTrayManager$initializeOnLeftClickCallback$1"
+    },
+    {
+      "type": "com.sun.crypto.provider.AESCipher$General",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.sun.crypto.provider.ARCFOURCipher",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.sun.crypto.provider.ChaCha20Cipher$ChaCha20Poly1305",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.sun.crypto.provider.DESCipher",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.sun.crypto.provider.DESedeCipher",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.sun.crypto.provider.DHParameters",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.sun.crypto.provider.GaloisCounterMode$AESGCM",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.sun.crypto.provider.HKDFKeyDerivation$HKDFSHA256",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "javax.crypto.KDFParameters"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.sun.crypto.provider.HKDFKeyDerivation$HKDFSHA384",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "javax.crypto.KDFParameters"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.sun.crypto.provider.HmacCore$HmacSHA256",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.sun.crypto.provider.HmacCore$HmacSHA384",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.sun.crypto.provider.TlsMasterSecretGenerator",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.sun.jna.Callback",
+      "jniAccessible": true
+    },
+    {
+      "type": "com.sun.jna.CallbackProxy",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "callback",
+          "parameterTypes": [
+            "java.lang.Object[]"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.sun.jna.CallbackReference",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "getCallback",
+          "parameterTypes": [
+            "java.lang.Class",
+            "com.sun.jna.Pointer",
+            "boolean"
           ]
         },
         {
-          "name": "clearAccessibleSelectionFromContext",
+          "name": "getFunctionPointer",
           "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
+            "com.sun.jna.Callback",
+            "boolean"
           ]
         },
         {
-          "name": "decrementReference",
+          "name": "getNativeString",
           "parameterTypes": [
+            "java.lang.Object",
+            "boolean"
+          ]
+        },
+        {
+          "name": "initializeThread",
+          "parameterTypes": [
+            "com.sun.jna.Callback",
+            "com.sun.jna.CallbackReference$AttachOptions"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "com.sun.jna.CallbackReference$AttachOptions",
+      "jniAccessible": true
+    },
+    {
+      "type": "com.sun.jna.FromNativeConverter",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "nativeType",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.sun.jna.IntegerType",
+      "jniAccessible": true,
+      "fields": [
+        {
+          "name": "value"
+        }
+      ]
+    },
+    {
+      "type": "com.sun.jna.JNIEnv",
+      "jniAccessible": true
+    },
+    {
+      "type": "com.sun.jna.Native",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "dispose",
+          "parameterTypes": []
+        },
+        {
+          "name": "fromNative",
+          "parameterTypes": [
+            "com.sun.jna.FromNativeConverter",
+            "java.lang.Object",
+            "java.lang.reflect.Method"
+          ]
+        },
+        {
+          "name": "fromNative",
+          "parameterTypes": [
+            "java.lang.Class",
             "java.lang.Object"
           ]
         },
         {
-          "name": "doAccessibleActions",
+          "name": "fromNative",
           "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "java.lang.String"
+            "java.lang.reflect.Method",
+            "java.lang.Object"
           ]
         },
         {
-          "name": "getAccessibleActionFromContext",
+          "name": "nativeType",
           "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
+            "java.lang.Class"
           ]
         },
         {
-          "name": "getAccessibleActionName",
+          "name": "toNative",
           "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "int"
+            "com.sun.jna.ToNativeConverter",
+            "java.lang.Object"
           ]
-        },
+        }
+      ]
+    },
+    {
+      "type": "com.sun.jna.Native$ffi_callback",
+      "jniAccessible": true,
+      "methods": [
         {
-          "name": "getAccessibleActionsCount",
+          "name": "invoke",
           "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
+            "long",
+            "long",
+            "long"
           ]
-        },
+        }
+      ]
+    },
+    {
+      "type": "com.sun.jna.NativeMapped",
+      "jniAccessible": true,
+      "methods": [
         {
-          "name": "getAccessibleAttributeSetAtIndexFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleAttributesAtIndexFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleBoundsOnScreenFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleCaretPositionFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleCharCountFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleChildFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleChildrenCountFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleComponentFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleContextAt",
-          "parameterTypes": [
-            "int",
-            "int",
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleContextWithFocus",
+          "name": "toNative",
           "parameterTypes": []
-        },
-        {
-          "name": "getAccessibleDescriptionFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleHeightFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleHeightTextRectAtIndexFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleHyperlink",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleHypertext",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleHyperlinkCount",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleHyperlinkEndIndex",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleHyperlink"
-          ]
-        },
-        {
-          "name": "getAccessibleHyperlinkStartIndex",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleHyperlink"
-          ]
-        },
-        {
-          "name": "getAccessibleHyperlinkText",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleHyperlink"
-          ]
-        },
-        {
-          "name": "getAccessibleHyperlinkURL",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleHyperlink"
-          ]
-        },
-        {
-          "name": "getAccessibleHypertext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleHypertextLinkIndex",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleHypertext",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleIconDescription",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleIconHeight",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleIconWidth",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleIconsCount",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleIndexAtPointFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "int",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleIndexInParentFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleKeyBindingChar",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleKeyBindingModifiers",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleKeyBindingsCount",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleLetterAtIndexFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleNameFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleParentFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleRelationCount",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleRelationKey",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleRelationTarget",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "int",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleRelationTargetCount",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleRoleStringFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleRoleStringFromContext_en_US",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleSelectionCountFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleSelectionFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleSelectionFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleSentenceAtIndexFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleStatesStringFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleStatesStringFromContext_en_US",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleTableCellAccessibleContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleTable",
-            "int",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleTableCellColumnExtent",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleTable",
-            "int",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleTableCellIndex",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleTable",
-            "int",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleTableCellRowExtent",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleTable",
-            "int",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleTableColumn",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleTable",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleTableColumnCount",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleTableColumnDescription",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleTable",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleTableColumnHeader",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleTableColumnHeaderColumnCount",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleTableColumnHeaderRowCount",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleTableColumnSelectionCount",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleTable"
-          ]
-        },
-        {
-          "name": "getAccessibleTableColumnSelections",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleTable",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleTableFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleTableIndex",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleTable",
-            "int",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleTableRow",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleTable",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleTableRowCount",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleTableRowDescription",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleTable",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleTableRowHeader",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleTableRowHeaderColumnCount",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleTableRowHeaderRowCount",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleTableRowSelectionCount",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleTable"
-          ]
-        },
-        {
-          "name": "getAccessibleTableRowSelections",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleTable",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleTextFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleTextLineLeftBoundsFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleTextLineRightBoundsFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleTextRangeFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "int",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleTextRectAtIndexFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleTextSelectedTextFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleTextSelectionEndFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleTextSelectionStartFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleValueFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleWidthFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleWidthTextRectAtIndexFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleWordAtIndexFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleXcoordFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleXcoordTextRectAtIndexFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "int"
-          ]
-        },
-        {
-          "name": "getAccessibleYcoordFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAccessibleYcoordTextRectAtIndexFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "int"
-          ]
-        },
-        {
-          "name": "getActiveDescendent",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getAlignmentFromAttributeSet",
-          "parameterTypes": [
-            "javax.swing.text.AttributeSet"
-          ]
-        },
-        {
-          "name": "getBackgroundColorFromAttributeSet",
-          "parameterTypes": [
-            "javax.swing.text.AttributeSet"
-          ]
-        },
-        {
-          "name": "getBidiLevelFromAttributeSet",
-          "parameterTypes": [
-            "javax.swing.text.AttributeSet"
-          ]
-        },
-        {
-          "name": "getBoldFromAttributeSet",
-          "parameterTypes": [
-            "javax.swing.text.AttributeSet"
-          ]
-        },
-        {
-          "name": "getCaretLocationHeight",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getCaretLocationWidth",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getCaretLocationX",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getCaretLocationY",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getContextFromAccessibleTable",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleTable"
-          ]
-        },
-        {
-          "name": "getContextFromNativeWindowHandle",
-          "parameterTypes": [
-            "int"
-          ]
-        },
-        {
-          "name": "getCurrentAccessibleValueFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getFirstLineIndentFromAttributeSet",
-          "parameterTypes": [
-            "javax.swing.text.AttributeSet"
-          ]
-        },
-        {
-          "name": "getFontFamilyFromAttributeSet",
-          "parameterTypes": [
-            "javax.swing.text.AttributeSet"
-          ]
-        },
-        {
-          "name": "getFontSizeFromAttributeSet",
-          "parameterTypes": [
-            "javax.swing.text.AttributeSet"
-          ]
-        },
-        {
-          "name": "getForegroundColorFromAttributeSet",
-          "parameterTypes": [
-            "javax.swing.text.AttributeSet"
-          ]
-        },
-        {
-          "name": "getItalicFromAttributeSet",
-          "parameterTypes": [
-            "javax.swing.text.AttributeSet"
-          ]
-        },
-        {
-          "name": "getJavaVersionProperty",
-          "parameterTypes": []
-        },
-        {
-          "name": "getLeftIndentFromAttributeSet",
-          "parameterTypes": [
-            "javax.swing.text.AttributeSet"
-          ]
-        },
-        {
-          "name": "getLineSpacingFromAttributeSet",
-          "parameterTypes": [
-            "javax.swing.text.AttributeSet"
-          ]
-        },
-        {
-          "name": "getMaximumAccessibleValueFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getMinimumAccessibleValueFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getNativeWindowHandleFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getObjectDepth",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getParentWithRole",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "java.lang.String"
-          ]
-        },
-        {
-          "name": "getParentWithRoleElseRoot",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "java.lang.String"
-          ]
-        },
-        {
-          "name": "getRightIndentFromAttributeSet",
-          "parameterTypes": [
-            "javax.swing.text.AttributeSet"
-          ]
-        },
-        {
-          "name": "getSpaceAboveFromAttributeSet",
-          "parameterTypes": [
-            "javax.swing.text.AttributeSet"
-          ]
-        },
-        {
-          "name": "getSpaceBelowFromAttributeSet",
-          "parameterTypes": [
-            "javax.swing.text.AttributeSet"
-          ]
-        },
-        {
-          "name": "getStrikethroughFromAttributeSet",
-          "parameterTypes": [
-            "javax.swing.text.AttributeSet"
-          ]
-        },
-        {
-          "name": "getSubscriptFromAttributeSet",
-          "parameterTypes": [
-            "javax.swing.text.AttributeSet"
-          ]
-        },
-        {
-          "name": "getSuperscriptFromAttributeSet",
-          "parameterTypes": [
-            "javax.swing.text.AttributeSet"
-          ]
-        },
-        {
-          "name": "getTopLevelObject",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getUnderlineFromAttributeSet",
-          "parameterTypes": [
-            "javax.swing.text.AttributeSet"
-          ]
-        },
-        {
-          "name": "getVirtualAccessibleNameFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "getVisibleChild",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "int"
-          ]
-        },
-        {
-          "name": "getVisibleChildrenCount",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
-        },
-        {
-          "name": "isAccessibleChildSelectedFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "int"
-          ]
-        },
-        {
-          "name": "isAccessibleTableCellSelected",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleTable",
-            "int",
-            "int"
-          ]
-        },
-        {
-          "name": "isAccessibleTableColumnSelected",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleTable",
-            "int"
-          ]
-        },
-        {
-          "name": "isAccessibleTableRowSelected",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleTable",
-            "int"
-          ]
-        },
-        {
-          "name": "isJavaWindow",
-          "parameterTypes": [
-            "int"
-          ]
-        },
-        {
-          "name": "removeAccessibilityEventNotification",
+        }
+      ]
+    },
+    {
+      "type": "com.sun.jna.Pointer",
+      "jniAccessible": true,
+      "fields": [
+        {
+          "name": "peer"
+        }
+      ],
+      "methods": [
+        {
+          "name": "<init>",
           "parameterTypes": [
             "long"
           ]
+        }
+      ]
+    },
+    {
+      "type": "com.sun.jna.PointerType",
+      "jniAccessible": true,
+      "fields": [
+        {
+          "name": "pointer"
+        }
+      ]
+    },
+    {
+      "type": "com.sun.jna.Structure",
+      "jniAccessible": true,
+      "fields": [
+        {
+          "name": "memory"
         },
         {
-          "name": "removeAccessibleSelectionFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "int"
-          ]
+          "name": "typeInfo"
+        }
+      ],
+      "methods": [
+        {
+          "name": "autoRead",
+          "parameterTypes": []
         },
         {
-          "name": "removeJavaEventNotification",
+          "name": "autoWrite",
+          "parameterTypes": []
+        },
+        {
+          "name": "getTypeInfo",
+          "parameterTypes": []
+        },
+        {
+          "name": "newInstance",
           "parameterTypes": [
+            "java.lang.Class",
             "long"
           ]
+        }
+      ]
+    },
+    {
+      "type": "com.sun.jna.Structure$ByValue",
+      "jniAccessible": true
+    },
+    {
+      "type": "com.sun.jna.Structure$FFIType",
+      "fields": [
+        {
+          "name": "alignment"
         },
         {
-          "name": "requestFocus",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
+          "name": "elements"
         },
         {
-          "name": "selectAllAccessibleSelectionFromContext",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext"
-          ]
+          "name": "size"
         },
         {
-          "name": "selectTextRange",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "int",
-            "int"
-          ]
+          "name": "type"
+        }
+      ],
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.sun.jna.Structure$FFIType$FFITypes",
+      "jniAccessible": true,
+      "fields": [
+        {
+          "name": "ffi_type_double"
         },
         {
-          "name": "setCaretPosition",
-          "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
-            "int"
-          ]
+          "name": "ffi_type_float"
         },
         {
-          "name": "setTextContents",
+          "name": "ffi_type_longdouble"
+        },
+        {
+          "name": "ffi_type_pointer"
+        },
+        {
+          "name": "ffi_type_sint16"
+        },
+        {
+          "name": "ffi_type_sint32"
+        },
+        {
+          "name": "ffi_type_sint64"
+        },
+        {
+          "name": "ffi_type_sint8"
+        },
+        {
+          "name": "ffi_type_uint16"
+        },
+        {
+          "name": "ffi_type_uint32"
+        },
+        {
+          "name": "ffi_type_uint64"
+        },
+        {
+          "name": "ffi_type_uint8"
+        },
+        {
+          "name": "ffi_type_void"
+        }
+      ]
+    },
+    {
+      "type": "com.sun.jna.Structure$FFIType$size_t",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.sun.jna.WString",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "<init>",
           "parameterTypes": [
-            "javax.accessibility.AccessibleContext",
             "java.lang.String"
           ]
+        }
+      ]
+    },
+    {
+      "type": "com.sun.jna.ptr.IntByReference",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
         }
       ]
     },
@@ -946,22 +650,409 @@
       "type": "com.sun.swing.internal.plaf.basic.resources.basic"
     },
     {
-      "type": "com.sun.swing.internal.plaf.metal.resources.metal"
+      "type": "int"
     },
     {
-      "type": "java.awt.AWTEvent",
-      "jniAccessible": true,
+      "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Converter$Graph",
       "fields": [
         {
-          "name": "bdata"
-        },
+          "name": "INSTANCE"
+        }
+      ],
+      "methods": [
         {
-          "name": "consumed"
-        },
-        {
-          "name": "id"
+          "name": "serializer",
+          "parameterTypes": []
         }
       ]
+    },
+    {
+      "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Converter$Input",
+      "fields": [
+        {
+          "name": "INSTANCE"
+        }
+      ],
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Converter$Options",
+      "fields": [
+        {
+          "name": "Companion"
+        }
+      ]
+    },
+    {
+      "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Converter$Options$Companion",
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Download$Bulk",
+      "fields": [
+        {
+          "name": "Companion"
+        }
+      ]
+    },
+    {
+      "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Download$Bulk$Companion",
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Download$Graph",
+      "fields": [
+        {
+          "name": "INSTANCE"
+        }
+      ],
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Download$Single",
+      "fields": [
+        {
+          "name": "Companion"
+        }
+      ]
+    },
+    {
+      "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Download$Single$Companion",
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$InitScreen",
+      "fields": [
+        {
+          "name": "INSTANCE"
+        }
+      ],
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$MainNavigation$Downloader",
+      "fields": [
+        {
+          "name": "INSTANCE"
+        }
+      ],
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$MainNavigation$Graph",
+      "fields": [
+        {
+          "name": "INSTANCE"
+        }
+      ],
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$MainNavigation$Home",
+      "fields": [
+        {
+          "name": "INSTANCE"
+        }
+      ],
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Onboarding$Autostart",
+      "fields": [
+        {
+          "name": "INSTANCE"
+        }
+      ],
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Onboarding$Clipboard",
+      "fields": [
+        {
+          "name": "INSTANCE"
+        }
+      ],
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Onboarding$Cookies",
+      "fields": [
+        {
+          "name": "INSTANCE"
+        }
+      ],
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Onboarding$DownloadDir",
+      "fields": [
+        {
+          "name": "INSTANCE"
+        }
+      ],
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Onboarding$Finish",
+      "fields": [
+        {
+          "name": "INSTANCE"
+        }
+      ],
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Onboarding$GnomeFocus",
+      "fields": [
+        {
+          "name": "INSTANCE"
+        }
+      ],
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Onboarding$Graph",
+      "fields": [
+        {
+          "name": "INSTANCE"
+        }
+      ],
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Onboarding$NoCheckCert",
+      "fields": [
+        {
+          "name": "INSTANCE"
+        }
+      ],
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Onboarding$Welcome",
+      "fields": [
+        {
+          "name": "INSTANCE"
+        }
+      ],
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$SecondaryNavigation$About",
+      "fields": [
+        {
+          "name": "INSTANCE"
+        }
+      ],
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$SecondaryNavigation$Graph",
+      "fields": [
+        {
+          "name": "INSTANCE"
+        }
+      ],
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$SecondaryNavigation$Settings",
+      "fields": [
+        {
+          "name": "INSTANCE"
+        }
+      ],
+      "methods": [
+        {
+          "name": "serializer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.github.vinceglb.filekit.dialogs.platform.mac.foundation.Foundation$initRunnableSupport$callback$1",
+      "methods": [
+        {
+          "name": "callback",
+          "parameterTypes": [
+            "io.github.vinceglb.filekit.dialogs.platform.mac.foundation.ID",
+            "java.lang.String",
+            "io.github.vinceglb.filekit.dialogs.platform.mac.foundation.ID"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "io.github.vinceglb.filekit.dialogs.platform.mac.foundation.ID",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "io.ktor.client.HttpClient"
+    },
+    {
+      "type": "io.ktor.client.call.HttpClientCall"
+    },
+    {
+      "type": "io.ktor.client.engine.HttpClientEngineBase"
+    },
+    {
+      "type": "io.ktor.client.engine.cio.Endpoint"
+    },
+    {
+      "type": "io.ktor.client.plugins.logging.HttpClientCallLogger"
+    },
+    {
+      "type": "io.ktor.network.selector.InterestSuspensionsMap"
+    },
+    {
+      "type": "io.ktor.network.selector.LockFreeMPSCQueue"
+    },
+    {
+      "type": "io.ktor.network.selector.LockFreeMPSCQueueCore"
+    },
+    {
+      "type": "io.ktor.network.selector.SelectInterest[]"
+    },
+    {
+      "type": "io.ktor.network.selector.SelectableBase"
+    },
+    {
+      "type": "io.ktor.network.sockets.SocketBase"
+    },
+    {
+      "type": "io.ktor.serialization.kotlinx.json.KotlinxSerializationJsonExtensionProvider"
+    },
+    {
+      "type": "io.ktor.util.collections.CopyOnWriteHashMap"
+    },
+    {
+      "type": "io.ktor.utils.io.ByteChannel"
+    },
+    {
+      "type": "io.ktor.utils.io.pool.DefaultPool"
+    },
+    {
+      "type": "io.sentry.opentelemetry.OtelContextScopesStorage"
+    },
+    {
+      "type": "io.sentry.opentelemetry.OtelSpanFactory"
+    },
+    {
+      "type": "io.sentry.opentelemetry.agent.AgentMarker"
+    },
+    {
+      "type": "io.sentry.opentelemetry.agent.AgentlessMarker"
+    },
+    {
+      "type": "io.sentry.opentelemetry.agent.AgentlessSpringMarker"
+    },
+    {
+      "type": "io.sentry.spotlight.SpotlightIntegration"
     },
     {
       "type": "java.awt.AlphaComposite",
@@ -974,10 +1065,6 @@
           "name": "rule"
         }
       ]
-    },
-    {
-      "type": "java.awt.Canvas",
-      "jniAccessible": true
     },
     {
       "type": "java.awt.Color",
@@ -994,39 +1081,12 @@
       "jniAccessible": true,
       "fields": [
         {
-          "name": "appContext"
-        },
-        {
-          "name": "background"
-        },
-        {
-          "name": "cursor"
-        },
-        {
-          "name": "enabled"
-        },
-        {
-          "name": "focusable"
-        },
-        {
-          "name": "foreground"
-        },
-        {
-          "name": "graphicsConfig"
-        },
-        {
           "name": "height"
-        },
-        {
-          "name": "parent"
         },
         {
           "name": "peer"
         },
         {
-          "name": "visible"
-        },
-        {
           "name": "width"
         },
         {
@@ -1035,266 +1095,138 @@
         {
           "name": "y"
         }
-      ],
-      "methods": [
-        {
-          "name": "getFont_NoClientCode",
-          "parameterTypes": []
-        },
-        {
-          "name": "getLocationOnScreen_NoTreeLock",
-          "parameterTypes": []
-        },
-        {
-          "name": "getToolkitImpl",
-          "parameterTypes": []
-        },
-        {
-          "name": "isEnabledImpl",
-          "parameterTypes": []
-        }
       ]
     },
     {
-      "type": "java.awt.Container",
+      "type": "java.awt.DisplayMode",
       "jniAccessible": true,
-      "fields": [
-        {
-          "name": "layoutMgr"
-        }
-      ]
-    },
-    {
-      "type": "java.awt.Cursor",
-      "jniAccessible": true,
-      "fields": [
-        {
-          "name": "pData"
-        },
-        {
-          "name": "type"
-        }
-      ],
       "methods": [
         {
-          "name": "setPData",
+          "name": "<init>",
           "parameterTypes": [
-            "long"
+            "int",
+            "int",
+            "int",
+            "int"
           ]
         }
       ]
     },
     {
-      "type": "java.awt.Dialog",
-      "jniAccessible": true,
-      "fields": [
-        {
-          "name": "title"
-        },
-        {
-          "name": "undecorated"
-        }
-      ]
-    },
-    {
-      "type": "java.awt.Dimension",
-      "jniAccessible": true,
-      "fields": [
-        {
-          "name": "height"
-        },
-        {
-          "name": "width"
-        }
-      ]
-    },
-    {
-      "type": "java.awt.Font",
-      "jniAccessible": true,
-      "fields": [
-        {
-          "name": "name"
-        },
-        {
-          "name": "pData"
-        },
-        {
-          "name": "size"
-        },
-        {
-          "name": "style"
-        }
-      ],
-      "methods": [
-        {
-          "name": "getFont",
-          "parameterTypes": [
-            "java.lang.String"
-          ]
-        },
-        {
-          "name": "getFontPeer",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "java.awt.Frame",
-      "jniAccessible": true,
-      "fields": [
-        {
-          "name": "undecorated"
-        }
-      ]
+      "type": "java.awt.Image"
     },
     {
       "type": "java.awt.Insets",
       "jniAccessible": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "int",
+            "int",
+            "int",
+            "int"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "java.awt.SequencedEvent"
+    },
+    {
+      "type": "java.awt.SystemColor",
       "fields": [
         {
-          "name": "bottom"
+          "name": "activeCaption"
         },
         {
-          "name": "left"
+          "name": "activeCaptionBorder"
         },
         {
-          "name": "right"
+          "name": "activeCaptionText"
         },
         {
-          "name": "top"
-        }
-      ],
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "int",
-            "int",
-            "int",
-            "int"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "java.awt.Point",
-      "jniAccessible": true,
-      "fields": [
-        {
-          "name": "x"
+          "name": "control"
         },
         {
-          "name": "y"
-        }
-      ],
-      "methods": [
+          "name": "controlDkShadow"
+        },
         {
-          "name": "<init>",
-          "parameterTypes": [
-            "int",
-            "int"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "java.awt.Rectangle",
-      "jniAccessible": true,
-      "methods": [
+          "name": "controlHighlight"
+        },
         {
-          "name": "<init>",
-          "parameterTypes": [
-            "int",
-            "int",
-            "int",
-            "int"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "java.awt.SequencedEvent",
-      "jniAccessible": true,
-      "methods": [
+          "name": "controlLtHighlight"
+        },
         {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.awt.AWTEvent"
-          ]
+          "name": "controlShadow"
+        },
+        {
+          "name": "controlText"
+        },
+        {
+          "name": "desktop"
+        },
+        {
+          "name": "inactiveCaption"
+        },
+        {
+          "name": "inactiveCaptionBorder"
+        },
+        {
+          "name": "inactiveCaptionText"
+        },
+        {
+          "name": "info"
+        },
+        {
+          "name": "infoText"
+        },
+        {
+          "name": "menu"
+        },
+        {
+          "name": "menuText"
+        },
+        {
+          "name": "scrollbar"
+        },
+        {
+          "name": "text"
+        },
+        {
+          "name": "textHighlight"
+        },
+        {
+          "name": "textHighlightText"
+        },
+        {
+          "name": "textInactiveText"
+        },
+        {
+          "name": "textText"
+        },
+        {
+          "name": "window"
+        },
+        {
+          "name": "windowBorder"
+        },
+        {
+          "name": "windowText"
         }
       ]
     },
     {
       "type": "java.awt.Toolkit",
-      "jniAccessible": true,
-      "methods": [
-        {
-          "name": "getDefaultToolkit",
-          "parameterTypes": []
-        },
-        {
-          "name": "getFontMetrics",
-          "parameterTypes": [
-            "java.awt.Font"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "java.awt.Window",
-      "jniAccessible": true,
       "fields": [
         {
-          "name": "autoRequestFocus"
-        },
-        {
-          "name": "locationByPlatform"
-        }
-      ]
-    },
-    {
-      "type": "java.awt.Window$Type",
-      "jniAccessible": true
-    },
-    {
-      "type": "java.awt.desktop.UserSessionEvent$Reason",
-      "jniAccessible": true,
-      "fields": [
-        {
-          "name": "CONSOLE"
-        },
-        {
-          "name": "LOCK"
-        },
-        {
-          "name": "REMOTE"
-        },
-        {
-          "name": "UNSPECIFIED"
-        }
-      ]
-    },
-    {
-      "type": "java.awt.event.ComponentEvent",
-      "jniAccessible": true,
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.awt.Component",
-            "int"
-          ]
+          "name": "eventListener"
         }
       ]
     },
     {
       "type": "java.awt.event.InputEvent",
       "jniAccessible": true,
-      "fields": [
-        {
-          "name": "modifiers"
-        }
-      ],
       "methods": [
         {
           "name": "getButtonDownMasks",
@@ -1304,67 +1236,12 @@
     },
     {
       "type": "java.awt.event.KeyEvent",
-      "jniAccessible": true,
       "fields": [
         {
           "name": "VK_CONTEXT_MENU"
         },
         {
           "name": "VK_F10"
-        },
-        {
-          "name": "extendedKeyCode"
-        },
-        {
-          "name": "keyChar"
-        },
-        {
-          "name": "keyCode"
-        },
-        {
-          "name": "primaryLevelUnicode"
-        },
-        {
-          "name": "rawCode"
-        },
-        {
-          "name": "scancode"
-        }
-      ]
-    },
-    {
-      "type": "java.awt.event.MouseEvent",
-      "jniAccessible": true,
-      "fields": [
-        {
-          "name": "button"
-        },
-        {
-          "name": "causedByTouchEvent"
-        },
-        {
-          "name": "x"
-        },
-        {
-          "name": "y"
-        }
-      ],
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.awt.Component",
-            "int",
-            "long",
-            "int",
-            "int",
-            "int",
-            "int",
-            "int",
-            "int",
-            "boolean",
-            "int"
-          ]
         }
       ]
     },
@@ -1393,26 +1270,6 @@
       ]
     },
     {
-      "type": "java.awt.geom.GeneralPath",
-      "jniAccessible": true,
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        },
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "int",
-            "byte[]",
-            "int",
-            "float[]",
-            "int"
-          ]
-        }
-      ]
-    },
-    {
       "type": "java.awt.geom.Path2D",
       "jniAccessible": true,
       "fields": [
@@ -1437,96 +1294,29 @@
       ]
     },
     {
-      "type": "java.awt.geom.Point2D$Float",
+      "type": "java.awt.geom.Point2D$Double",
       "jniAccessible": true,
-      "fields": [
-        {
-          "name": "x"
-        },
-        {
-          "name": "y"
-        }
-      ],
       "methods": [
         {
           "name": "<init>",
           "parameterTypes": [
-            "float",
-            "float"
+            "double",
+            "double"
           ]
         }
       ]
     },
     {
-      "type": "java.awt.geom.Rectangle2D$Float",
+      "type": "java.awt.geom.Rectangle2D$Double",
       "jniAccessible": true,
-      "fields": [
-        {
-          "name": "height"
-        },
-        {
-          "name": "width"
-        },
-        {
-          "name": "x"
-        },
-        {
-          "name": "y"
-        }
-      ],
       "methods": [
         {
           "name": "<init>",
-          "parameterTypes": []
-        },
-        {
-          "name": "<init>",
           "parameterTypes": [
-            "float",
-            "float",
-            "float",
-            "float"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "java.awt.image.BufferedImage",
-      "jniAccessible": true,
-      "fields": [
-        {
-          "name": "colorModel"
-        },
-        {
-          "name": "imageType"
-        },
-        {
-          "name": "raster"
-        }
-      ],
-      "methods": [
-        {
-          "name": "getRGB",
-          "parameterTypes": [
-            "int",
-            "int",
-            "int",
-            "int",
-            "int[]",
-            "int",
-            "int"
-          ]
-        },
-        {
-          "name": "setRGB",
-          "parameterTypes": [
-            "int",
-            "int",
-            "int",
-            "int",
-            "int[]",
-            "int",
-            "int"
+            "double",
+            "double",
+            "double",
+            "double"
           ]
         }
       ]
@@ -1568,32 +1358,11 @@
       ]
     },
     {
-      "type": "java.awt.image.DirectColorModel",
-      "jniAccessible": true,
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "int",
-            "int",
-            "int",
-            "int"
-          ]
-        }
-      ]
-    },
-    {
       "type": "java.awt.image.IndexColorModel",
       "jniAccessible": true,
       "fields": [
         {
           "name": "allgrayopaque"
-        },
-        {
-          "name": "colorData"
-        },
-        {
-          "name": "lookupcache"
         },
         {
           "name": "map_size"
@@ -1607,94 +1376,7 @@
       ]
     },
     {
-      "type": "java.awt.image.Raster",
-      "jniAccessible": true,
-      "fields": [
-        {
-          "name": "dataBuffer"
-        },
-        {
-          "name": "height"
-        },
-        {
-          "name": "minX"
-        },
-        {
-          "name": "minY"
-        },
-        {
-          "name": "numBands"
-        },
-        {
-          "name": "numDataElements"
-        },
-        {
-          "name": "sampleModel"
-        },
-        {
-          "name": "sampleModelTranslateX"
-        },
-        {
-          "name": "sampleModelTranslateY"
-        },
-        {
-          "name": "width"
-        }
-      ]
-    },
-    {
-      "type": "java.awt.image.SampleModel",
-      "jniAccessible": true,
-      "fields": [
-        {
-          "name": "height"
-        },
-        {
-          "name": "width"
-        }
-      ],
-      "methods": [
-        {
-          "name": "getPixels",
-          "parameterTypes": [
-            "int",
-            "int",
-            "int",
-            "int",
-            "int[]",
-            "java.awt.image.DataBuffer"
-          ]
-        },
-        {
-          "name": "setPixels",
-          "parameterTypes": [
-            "int",
-            "int",
-            "int",
-            "int",
-            "int[]",
-            "java.awt.image.DataBuffer"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "java.awt.image.SinglePixelPackedSampleModel",
-      "jniAccessible": true,
-      "fields": [
-        {
-          "name": "bitMasks"
-        },
-        {
-          "name": "bitOffsets"
-        },
-        {
-          "name": "bitSizes"
-        },
-        {
-          "name": "maxBitSize"
-        }
-      ]
+      "type": "java.io.InputStream"
     },
     {
       "type": "java.io.OutputStream",
@@ -1715,9 +1397,26 @@
       ]
     },
     {
+      "type": "java.io.Reader"
+    },
+    {
       "type": "java.lang.Boolean",
       "jniAccessible": true,
+      "fields": [
+        {
+          "name": "TYPE"
+        },
+        {
+          "name": "value"
+        }
+      ],
       "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "boolean"
+          ]
+        },
         {
           "name": "booleanValue",
           "parameterTypes": []
@@ -1731,18 +1430,86 @@
       ]
     },
     {
-      "type": "java.lang.Enum",
+      "type": "java.lang.Byte",
+      "jniAccessible": true,
+      "fields": [
+        {
+          "name": "TYPE"
+        },
+        {
+          "name": "value"
+        }
+      ],
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "byte"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "java.lang.Character",
+      "jniAccessible": true,
+      "fields": [
+        {
+          "name": "TYPE"
+        },
+        {
+          "name": "value"
+        }
+      ],
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "char"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "java.lang.Class",
       "jniAccessible": true,
       "methods": [
         {
-          "name": "name",
+          "name": "getComponentType",
           "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.lang.Double",
+      "jniAccessible": true,
+      "fields": [
+        {
+          "name": "TYPE"
+        },
+        {
+          "name": "value"
+        }
+      ],
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "double"
+          ]
         }
       ]
     },
     {
       "type": "java.lang.Float",
       "jniAccessible": true,
+      "fields": [
+        {
+          "name": "TYPE"
+        },
+        {
+          "name": "value"
+        }
+      ],
       "methods": [
         {
           "name": "<init>",
@@ -1753,12 +1520,114 @@
       ]
     },
     {
+      "type": "java.lang.Integer",
+      "jniAccessible": true,
+      "fields": [
+        {
+          "name": "TYPE"
+        },
+        {
+          "name": "value"
+        }
+      ],
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "int"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "java.lang.Long",
+      "jniAccessible": true,
+      "fields": [
+        {
+          "name": "TYPE"
+        },
+        {
+          "name": "value"
+        }
+      ],
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "long"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "java.lang.Object",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "toString",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.lang.Object[]"
+    },
+    {
       "type": "java.lang.RuntimeException",
       "jniAccessible": true
     },
     {
+      "type": "java.lang.Short",
+      "jniAccessible": true,
+      "fields": [
+        {
+          "name": "TYPE"
+        },
+        {
+          "name": "value"
+        }
+      ],
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "short"
+          ]
+        }
+      ]
+    },
+    {
       "type": "java.lang.String",
-      "jniAccessible": true
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "byte[]"
+          ]
+        },
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "byte[]",
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "getBytes",
+          "parameterTypes": []
+        },
+        {
+          "name": "getBytes",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "toCharArray",
+          "parameterTypes": []
+        }
+      ]
     },
     {
       "type": "java.lang.System",
@@ -1769,16 +1638,12 @@
           "parameterTypes": [
             "java.lang.String"
           ]
-        }
-      ]
-    },
-    {
-      "type": "java.lang.Thread",
-      "jniAccessible": true,
-      "methods": [
+        },
         {
-          "name": "currentThread",
-          "parameterTypes": []
+          "name": "load",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
         }
       ]
     },
@@ -1789,6 +1654,227 @@
         {
           "name": "printStackTrace",
           "parameterTypes": []
+        },
+        {
+          "name": "toString",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.lang.UnsatisfiedLinkError",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "java.lang.Void",
+      "jniAccessible": true,
+      "fields": [
+        {
+          "name": "TYPE"
+        }
+      ]
+    },
+    {
+      "type": "java.lang.invoke.MethodHandle"
+    },
+    {
+      "type": "java.lang.invoke.MethodHandles"
+    },
+    {
+      "type": "java.lang.invoke.MethodHandles$Lookup"
+    },
+    {
+      "type": "java.lang.invoke.MethodType"
+    },
+    {
+      "type": "java.lang.reflect.Method",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "getParameterTypes",
+          "parameterTypes": []
+        },
+        {
+          "name": "getReturnType",
+          "parameterTypes": []
+        },
+        {
+          "name": "isDefault",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.net.StandardSocketOptions"
+    },
+    {
+      "type": "java.net.URL"
+    },
+    {
+      "type": "java.nio.Buffer",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "position",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.nio.ByteBuffer",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "array",
+          "parameterTypes": []
+        },
+        {
+          "name": "arrayOffset",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.nio.CharBuffer",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "array",
+          "parameterTypes": []
+        },
+        {
+          "name": "arrayOffset",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.nio.DoubleBuffer",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "array",
+          "parameterTypes": []
+        },
+        {
+          "name": "arrayOffset",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.nio.FloatBuffer",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "array",
+          "parameterTypes": []
+        },
+        {
+          "name": "arrayOffset",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.nio.IntBuffer",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "array",
+          "parameterTypes": []
+        },
+        {
+          "name": "arrayOffset",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.nio.LongBuffer",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "array",
+          "parameterTypes": []
+        },
+        {
+          "name": "arrayOffset",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.nio.ShortBuffer",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "array",
+          "parameterTypes": []
+        },
+        {
+          "name": "arrayOffset",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "java.nio.file.Files"
+    },
+    {
+      "type": "java.rmi.MarshalledObject"
+    },
+    {
+      "type": "java.rmi.Remote"
+    },
+    {
+      "type": "java.security.AlgorithmParametersSpi"
+    },
+    {
+      "type": "java.security.KeyStoreSpi"
+    },
+    {
+      "type": "java.security.interfaces.ECPrivateKey"
+    },
+    {
+      "type": "java.security.interfaces.ECPublicKey"
+    },
+    {
+      "type": "java.security.interfaces.RSAPrivateKey"
+    },
+    {
+      "type": "java.security.interfaces.RSAPublicKey"
+    },
+    {
+      "type": "java.sql.SQLException"
+    },
+    {
+      "type": "java.util.ArrayList",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "add",
+          "parameterTypes": [
+            "java.lang.Object"
+          ]
+        },
+        {
+          "name": "contains",
+          "parameterTypes": [
+            "java.lang.Object"
+          ]
         }
       ]
     },
@@ -1807,238 +1893,30 @@
       ]
     },
     {
+      "type": "java.util.List"
+    },
+    {
       "type": "java.util.Locale",
       "jniAccessible": true,
       "methods": [
         {
-          "name": "forLanguageTag",
+          "name": "<init>",
           "parameterTypes": [
+            "java.lang.String",
+            "java.lang.String",
             "java.lang.String"
           ]
         }
       ]
     },
     {
-      "type": "java.util.Locale[]"
-    },
-    {
       "type": "java.util.concurrent.ScheduledThreadPoolExecutor"
     },
     {
-      "type": "javax.accessibility.AccessibleRole",
-      "fields": [
-        {
-          "name": "ALERT"
-        },
-        {
-          "name": "AWT_COMPONENT"
-        },
-        {
-          "name": "CANVAS"
-        },
-        {
-          "name": "CHECK_BOX"
-        },
-        {
-          "name": "COLOR_CHOOSER"
-        },
-        {
-          "name": "COLUMN_HEADER"
-        },
-        {
-          "name": "COMBO_BOX"
-        },
-        {
-          "name": "DATE_EDITOR"
-        },
-        {
-          "name": "DESKTOP_ICON"
-        },
-        {
-          "name": "DESKTOP_PANE"
-        },
-        {
-          "name": "DIALOG"
-        },
-        {
-          "name": "DIRECTORY_PANE"
-        },
-        {
-          "name": "EDITBAR"
-        },
-        {
-          "name": "FILE_CHOOSER"
-        },
-        {
-          "name": "FILLER"
-        },
-        {
-          "name": "FONT_CHOOSER"
-        },
-        {
-          "name": "FOOTER"
-        },
-        {
-          "name": "FRAME"
-        },
-        {
-          "name": "GLASS_PANE"
-        },
-        {
-          "name": "GROUP_BOX"
-        },
-        {
-          "name": "HEADER"
-        },
-        {
-          "name": "HTML_CONTAINER"
-        },
-        {
-          "name": "HYPERLINK"
-        },
-        {
-          "name": "ICON"
-        },
-        {
-          "name": "INTERNAL_FRAME"
-        },
-        {
-          "name": "LABEL"
-        },
-        {
-          "name": "LAYERED_PANE"
-        },
-        {
-          "name": "LIST"
-        },
-        {
-          "name": "LIST_ITEM"
-        },
-        {
-          "name": "MENU"
-        },
-        {
-          "name": "MENU_BAR"
-        },
-        {
-          "name": "MENU_ITEM"
-        },
-        {
-          "name": "OPTION_PANE"
-        },
-        {
-          "name": "PAGE_TAB"
-        },
-        {
-          "name": "PAGE_TAB_LIST"
-        },
-        {
-          "name": "PANEL"
-        },
-        {
-          "name": "PARAGRAPH"
-        },
-        {
-          "name": "PASSWORD_TEXT"
-        },
-        {
-          "name": "POPUP_MENU"
-        },
-        {
-          "name": "PROGRESS_BAR"
-        },
-        {
-          "name": "PROGRESS_MONITOR"
-        },
-        {
-          "name": "PUSH_BUTTON"
-        },
-        {
-          "name": "RADIO_BUTTON"
-        },
-        {
-          "name": "ROOT_PANE"
-        },
-        {
-          "name": "ROW_HEADER"
-        },
-        {
-          "name": "RULER"
-        },
-        {
-          "name": "SCROLL_BAR"
-        },
-        {
-          "name": "SCROLL_PANE"
-        },
-        {
-          "name": "SEPARATOR"
-        },
-        {
-          "name": "SLIDER"
-        },
-        {
-          "name": "SPIN_BOX"
-        },
-        {
-          "name": "SPLIT_PANE"
-        },
-        {
-          "name": "STATUS_BAR"
-        },
-        {
-          "name": "SWING_COMPONENT"
-        },
-        {
-          "name": "TABLE"
-        },
-        {
-          "name": "TEXT"
-        },
-        {
-          "name": "TOGGLE_BUTTON"
-        },
-        {
-          "name": "TOOL_BAR"
-        },
-        {
-          "name": "TOOL_TIP"
-        },
-        {
-          "name": "TREE"
-        },
-        {
-          "name": "UNKNOWN"
-        },
-        {
-          "name": "VIEWPORT"
-        },
-        {
-          "name": "WINDOW"
-        }
-      ]
+      "type": "kotlin.SafePublicationLazyImpl"
     },
     {
-      "type": "javax.swing.plaf.basic.BasicPanelUI",
-      "methods": [
-        {
-          "name": "createUI",
-          "parameterTypes": [
-            "javax.swing.JComponent"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "javax.swing.plaf.metal.MetalRootPaneUI",
-      "methods": [
-        {
-          "name": "createUI",
-          "parameterTypes": [
-            "javax.swing.JComponent"
-          ]
-        }
-      ]
+      "type": "kotlin.coroutines.SafeContinuation"
     },
     {
       "type": "kotlin.jvm.functions.Function0",
@@ -2067,6 +1945,9 @@
     },
     {
       "type": "kotlinx.coroutines.EventLoopImplBase"
+    },
+    {
+      "type": "kotlinx.coroutines.InvokeOnCancelling"
     },
     {
       "type": "kotlinx.coroutines.JobSupport"
@@ -2127,6 +2008,21 @@
     },
     {
       "type": "kotlinx.coroutines.sync.SemaphoreAndMutexImpl"
+    },
+    {
+      "type": "kotlinx.coroutines.test.internal.TestMainDispatcher$NonConcurrentlyModifiable"
+    },
+    {
+      "type": "kotlinx.coroutines.test.internal.TestMainDispatcherFactory",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "kotlinx.io.RefCountingCopyTracker"
     },
     {
       "type": "org.jetbrains.skia.AnimationFrameInfo",
@@ -2651,6 +2547,9 @@
       ]
     },
     {
+      "type": "org.jetbrains.skia.paragraph.TextBox[]"
+    },
+    {
       "type": "org.jetbrains.skia.shaper.BidiRun",
       "jniAccessible": true,
       "fields": [
@@ -2862,11 +2761,187 @@
       "type": "org.jetbrains.skiko.SkiaLayer$1"
     },
     {
-      "type": "org.jetbrains.skiko.redrawer.Direct3DRedrawer",
+      "type": "org.jetbrains.skiko.redrawer.MetalRedrawer",
       "jniAccessible": true,
       "methods": [
         {
-          "name": "isAdapterSupported",
+          "name": "onOcclusionStateChanged",
+          "parameterTypes": [
+            "boolean"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.slf4j.Logger"
+    },
+    {
+      "type": "org.slf4j.simple.SimpleServiceProvider"
+    },
+    {
+      "type": "org.sqlite.BusyHandler",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "callback",
+          "parameterTypes": [
+            "int"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.sqlite.Collation",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "xCompare",
+          "parameterTypes": [
+            "java.lang.String",
+            "java.lang.String"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.sqlite.Function",
+      "jniAccessible": true,
+      "fields": [
+        {
+          "name": "args"
+        },
+        {
+          "name": "context"
+        },
+        {
+          "name": "value"
+        }
+      ],
+      "methods": [
+        {
+          "name": "xFunc",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.sqlite.Function$Aggregate",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "clone",
+          "parameterTypes": []
+        },
+        {
+          "name": "xFinal",
+          "parameterTypes": []
+        },
+        {
+          "name": "xStep",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.sqlite.Function$Window",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "xInverse",
+          "parameterTypes": []
+        },
+        {
+          "name": "xValue",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.sqlite.JDBC"
+    },
+    {
+      "type": "org.sqlite.ProgressHandler",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "progress",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "org.sqlite.core.DB",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "onCommit",
+          "parameterTypes": [
+            "boolean"
+          ]
+        },
+        {
+          "name": "onUpdate",
+          "parameterTypes": [
+            "int",
+            "java.lang.String",
+            "java.lang.String",
+            "long"
+          ]
+        },
+        {
+          "name": "throwex",
+          "parameterTypes": []
+        },
+        {
+          "name": "throwex",
+          "parameterTypes": [
+            "int"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.sqlite.core.DB$ProgressObserver",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "progress",
+          "parameterTypes": [
+            "int",
+            "int"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "org.sqlite.core.NativeDB",
+      "jniAccessible": true,
+      "fields": [
+        {
+          "name": "busyHandler"
+        },
+        {
+          "name": "commitListener"
+        },
+        {
+          "name": "pointer"
+        },
+        {
+          "name": "progressHandler"
+        },
+        {
+          "name": "updateListener"
+        }
+      ],
+      "methods": [
+        {
+          "name": "stringToUtf8ByteArray",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "throwex",
           "parameterTypes": [
             "java.lang.String"
           ]
@@ -2888,597 +2963,11 @@
       ]
     },
     {
-      "type": "sun.awt.EmbeddedFrame",
-      "jniAccessible": true
-    },
-    {
-      "type": "sun.awt.ExtendedKeyCodes",
-      "jniAccessible": true,
-      "methods": [
-        {
-          "name": "getExtendedKeyCodeForChar",
-          "parameterTypes": [
-            "int"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "sun.awt.FontDescriptor",
-      "jniAccessible": true,
-      "fields": [
-        {
-          "name": "nativeName"
-        },
-        {
-          "name": "useUnicode"
-        }
-      ]
-    },
-    {
-      "type": "sun.awt.LightweightFrame",
-      "jniAccessible": true
-    },
-    {
-      "type": "sun.awt.PlatformFont",
-      "jniAccessible": true,
-      "fields": [
-        {
-          "name": "componentFonts"
-        },
-        {
-          "name": "fontConfig"
-        }
-      ],
-      "methods": [
-        {
-          "name": "makeConvertedMultiFontString",
-          "parameterTypes": [
-            "java.lang.String"
-          ]
-        }
-      ]
-    },
-    {
       "type": "sun.awt.SunHints",
       "jniAccessible": true,
       "fields": [
         {
           "name": "INTVAL_STROKE_PURE"
-        }
-      ]
-    },
-    {
-      "type": "sun.awt.SunToolkit",
-      "jniAccessible": true,
-      "methods": [
-        {
-          "name": "isTouchKeyboardAutoShowEnabled",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "sun.awt.Symbol",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "sun.awt.TimedWindowEvent",
-      "jniAccessible": true,
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.awt.Window",
-            "int",
-            "java.awt.Window",
-            "int",
-            "int",
-            "long"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "sun.awt.Win32GraphicsConfig",
-      "jniAccessible": true,
-      "fields": [
-        {
-          "name": "visual"
-        }
-      ]
-    },
-    {
-      "type": "sun.awt.Win32GraphicsDevice",
-      "jniAccessible": true,
-      "fields": [
-        {
-          "name": "dynamicColorModel"
-        }
-      ]
-    },
-    {
-      "type": "sun.awt.Win32GraphicsEnvironment",
-      "jniAccessible": true,
-      "methods": [
-        {
-          "name": "dwmCompositionChanged",
-          "parameterTypes": [
-            "boolean"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "sun.awt.im.InputMethodWindow",
-      "jniAccessible": true
-    },
-    {
-      "type": "sun.awt.image.BufImgSurfaceData$ICMColorData",
-      "jniAccessible": true,
-      "fields": [
-        {
-          "name": "pData"
-        }
-      ],
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "long"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "sun.awt.image.IntegerComponentRaster",
-      "jniAccessible": true,
-      "fields": [
-        {
-          "name": "data"
-        },
-        {
-          "name": "dataOffsets"
-        },
-        {
-          "name": "pixelStride"
-        },
-        {
-          "name": "scanlineStride"
-        },
-        {
-          "name": "type"
-        }
-      ]
-    },
-    {
-      "type": "sun.awt.image.SunVolatileImage",
-      "jniAccessible": true,
-      "fields": [
-        {
-          "name": "volSurfaceManager"
-        }
-      ]
-    },
-    {
-      "type": "sun.awt.image.VolatileSurfaceManager",
-      "jniAccessible": true,
-      "fields": [
-        {
-          "name": "sdCurrent"
-        }
-      ]
-    },
-    {
-      "type": "sun.awt.windows.WCanvasPeer"
-    },
-    {
-      "type": "sun.awt.windows.WComponentPeer",
-      "jniAccessible": true,
-      "fields": [
-        {
-          "name": "hwnd"
-        },
-        {
-          "name": "winGraphicsConfig"
-        }
-      ],
-      "methods": [
-        {
-          "name": "disposeLater",
-          "parameterTypes": []
-        },
-        {
-          "name": "handleExpose",
-          "parameterTypes": [
-            "int",
-            "int",
-            "int",
-            "int"
-          ]
-        },
-        {
-          "name": "postEvent",
-          "parameterTypes": [
-            "java.awt.AWTEvent"
-          ]
-        },
-        {
-          "name": "replaceSurfaceData",
-          "parameterTypes": []
-        },
-        {
-          "name": "replaceSurfaceDataLater",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "sun.awt.windows.WDesktopPeer",
-      "jniAccessible": true,
-      "methods": [
-        {
-          "name": "systemSleepCallback",
-          "parameterTypes": [
-            "boolean"
-          ]
-        },
-        {
-          "name": "userSessionCallback",
-          "parameterTypes": [
-            "boolean",
-            "java.awt.desktop.UserSessionEvent$Reason"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "sun.awt.windows.WDesktopProperties",
-      "jniAccessible": true,
-      "fields": [
-        {
-          "name": "pData"
-        }
-      ],
-      "methods": [
-        {
-          "name": "setBooleanProperty",
-          "parameterTypes": [
-            "java.lang.String",
-            "boolean"
-          ]
-        },
-        {
-          "name": "setColorProperty",
-          "parameterTypes": [
-            "java.lang.String",
-            "int",
-            "int",
-            "int"
-          ]
-        },
-        {
-          "name": "setFontProperty",
-          "parameterTypes": [
-            "java.lang.String",
-            "java.lang.String",
-            "int",
-            "int"
-          ]
-        },
-        {
-          "name": "setIntegerProperty",
-          "parameterTypes": [
-            "java.lang.String",
-            "int"
-          ]
-        },
-        {
-          "name": "setSoundProperty",
-          "parameterTypes": [
-            "java.lang.String",
-            "java.lang.String"
-          ]
-        },
-        {
-          "name": "setStringProperty",
-          "parameterTypes": [
-            "java.lang.String",
-            "java.lang.String"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "sun.awt.windows.WFontPeer",
-      "jniAccessible": true,
-      "fields": [
-        {
-          "name": "textComponentFontName"
-        }
-      ]
-    },
-    {
-      "type": "sun.awt.windows.WFramePeer",
-      "jniAccessible": true,
-      "methods": [
-        {
-          "name": "getExtendedState",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "sun.awt.windows.WGlobalCursorManager",
-      "jniAccessible": true,
-      "methods": [
-        {
-          "name": "nativeUpdateCursor",
-          "parameterTypes": [
-            "java.awt.Component"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "sun.awt.windows.WObjectPeer",
-      "jniAccessible": true,
-      "fields": [
-        {
-          "name": "createError"
-        },
-        {
-          "name": "destroyed"
-        },
-        {
-          "name": "pData"
-        },
-        {
-          "name": "target"
-        }
-      ],
-      "methods": [
-        {
-          "name": "getPeerForTarget",
-          "parameterTypes": [
-            "java.lang.Object"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "sun.awt.windows.WPanelPeer",
-      "jniAccessible": true,
-      "fields": [
-        {
-          "name": "insets_"
-        }
-      ]
-    },
-    {
-      "type": "sun.awt.windows.WToolkit",
-      "jniAccessible": true,
-      "methods": [
-        {
-          "name": "displayChanged",
-          "parameterTypes": []
-        },
-        {
-          "name": "paletteChanged",
-          "parameterTypes": []
-        },
-        {
-          "name": "windowsSettingChange",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "sun.awt.windows.WWindowPeer",
-      "jniAccessible": true,
-      "fields": [
-        {
-          "name": "windowType"
-        }
-      ],
-      "methods": [
-        {
-          "name": "draggedToNewScreen",
-          "parameterTypes": []
-        },
-        {
-          "name": "notifyWindowStateChanged",
-          "parameterTypes": [
-            "int",
-            "int"
-          ]
-        },
-        {
-          "name": "setBackground",
-          "parameterTypes": [
-            "java.awt.Color"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "sun.awt.windows.WingDings",
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "sun.font.CharToGlyphMapper",
-      "jniAccessible": true,
-      "methods": [
-        {
-          "name": "charToGlyph",
-          "parameterTypes": [
-            "int"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "sun.font.Font2D",
-      "jniAccessible": true,
-      "methods": [
-        {
-          "name": "canDisplay",
-          "parameterTypes": [
-            "char"
-          ]
-        },
-        {
-          "name": "charToGlyphRaw",
-          "parameterTypes": [
-            "int"
-          ]
-        },
-        {
-          "name": "charToVariationGlyphRaw",
-          "parameterTypes": [
-            "int",
-            "int"
-          ]
-        },
-        {
-          "name": "getMapper",
-          "parameterTypes": []
-        },
-        {
-          "name": "getTableBytes",
-          "parameterTypes": [
-            "int"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "sun.font.FontStrike",
-      "jniAccessible": true,
-      "methods": [
-        {
-          "name": "getGlyphMetrics",
-          "parameterTypes": [
-            "int"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "sun.font.GlyphList",
-      "jniAccessible": true,
-      "fields": [
-        {
-          "name": "gposx"
-        },
-        {
-          "name": "gposy"
-        },
-        {
-          "name": "images"
-        },
-        {
-          "name": "lcdRGBOrder"
-        },
-        {
-          "name": "lcdSubPixPos"
-        },
-        {
-          "name": "len"
-        },
-        {
-          "name": "positions"
-        },
-        {
-          "name": "usePositions"
-        }
-      ]
-    },
-    {
-      "type": "sun.font.PhysicalStrike",
-      "jniAccessible": true,
-      "fields": [
-        {
-          "name": "pScalerContext"
-        }
-      ],
-      "methods": [
-        {
-          "name": "adjustPoint",
-          "parameterTypes": [
-            "java.awt.geom.Point2D$Float"
-          ]
-        },
-        {
-          "name": "getGlyphPoint",
-          "parameterTypes": [
-            "int",
-            "int"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "sun.font.StrikeMetrics",
-      "jniAccessible": true,
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "float",
-            "float",
-            "float",
-            "float",
-            "float",
-            "float",
-            "float",
-            "float",
-            "float",
-            "float"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "sun.font.TrueTypeFont",
-      "jniAccessible": true,
-      "methods": [
-        {
-          "name": "readBlock",
-          "parameterTypes": [
-            "java.nio.ByteBuffer",
-            "int",
-            "int"
-          ]
-        },
-        {
-          "name": "readBytes",
-          "parameterTypes": [
-            "int",
-            "int"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "sun.font.Type1Font",
-      "jniAccessible": true,
-      "methods": [
-        {
-          "name": "readFile",
-          "parameterTypes": [
-            "java.nio.ByteBuffer"
-          ]
         }
       ]
     },
@@ -3979,6 +3468,43 @@
       ]
     },
     {
+      "type": "sun.java2d.metal.MTLLayer",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "drawInMTLContext",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.java2d.metal.MTLSurfaceData",
+      "jniAccessible": true,
+      "fields": [
+        {
+          "name": "nativeHeight"
+        },
+        {
+          "name": "nativeWidth"
+        }
+      ],
+      "methods": [
+        {
+          "name": "dispose",
+          "parameterTypes": [
+            "long",
+            "sun.java2d.metal.MTLGraphicsConfig"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.java2d.metal.MTLSurfaceData$MTLLayerSurfaceData"
+    },
+    {
+      "type": "sun.java2d.metal.MTLSurfaceData$MTLOffScreenSurfaceData"
+    },
+    {
       "type": "sun.java2d.pipe.Region",
       "jniAccessible": true,
       "fields": [
@@ -4018,61 +3544,629 @@
       ]
     },
     {
-      "type": "sun.java2d.windows.WindowsFlags",
+      "type": "sun.lwawt.LWComponentPeer",
       "jniAccessible": true,
       "fields": [
         {
-          "name": "d3dEnabled"
-        },
-        {
-          "name": "d3dSet"
-        },
-        {
-          "name": "setHighDPIAware"
+          "name": "platformComponent"
         }
       ]
+    },
+    {
+      "type": "sun.lwawt.macosx.CPlatformComponent",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "getPointer",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.lwawt.macosx.CPlatformView",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "deliverMouseEvent",
+          "parameterTypes": [
+            "sun.lwawt.macosx.NSEvent"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.lwawt.macosx.CPlatformWindow",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "deliverMoveResizeEvent",
+          "parameterTypes": [
+            "int",
+            "int",
+            "int",
+            "int",
+            "boolean"
+          ]
+        },
+        {
+          "name": "deliverWindowFocusEvent",
+          "parameterTypes": [
+            "boolean",
+            "sun.lwawt.macosx.CPlatformWindow"
+          ]
+        },
+        {
+          "name": "isBlocked",
+          "parameterTypes": []
+        },
+        {
+          "name": "isVisible",
+          "parameterTypes": []
+        },
+        {
+          "name": "windowDidBecomeMain",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.lwawt.macosx.LWCToolkit",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "installToolkitThreadInJava",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.lwawt.macosx.NSEvent",
+      "jniAccessible": true,
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "int",
+            "int",
+            "int",
+            "int",
+            "int",
+            "int",
+            "int",
+            "int",
+            "double",
+            "double",
+            "int"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.pkcs12.PKCS12KeyStore",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.pkcs12.PKCS12KeyStore$DualFormatPKCS12",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.DSA$SHA224withDSA",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.DSA$SHA256withDSA",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.JavaKeyStore$DualFormatJKS",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.JavaKeyStore$JKS",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.MD5",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.NativePRNG",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.security.SecureRandomParameters"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.SHA",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.SHA2$SHA224",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.SHA2$SHA256",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.SHA5$SHA384",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.SHA5$SHA512",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.X509Factory",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.provider.certpath.PKIXCertPathValidator",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.rsa.PSSParameters",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.rsa.RSAKeyFactory$Legacy",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.rsa.RSAPSSSignature",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.rsa.RSASignature$SHA224withRSA",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.rsa.RSASignature$SHA256withRSA",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.rsa.RSASignature$SHA384withRSA",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.ssl.KeyManagerFactoryImpl$SunX509",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.ssl.SSLContextImpl$DefaultSSLContext",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.ssl.SSLContextImpl$TLSContext",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.ssl.TrustManagerFactoryImpl$PKIXFactory",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.AuthorityInfoAccessExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.AuthorityKeyIdentifierExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.BasicConstraintsExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.CRLDistributionPointsExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.CertificatePoliciesExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.ExtendedKeyUsageExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.KeyUsageExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.NetscapeCertTypeExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.PrivateKeyUsageExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.SubjectAlternativeNameExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.security.x509.SubjectKeyIdentifierExtension",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "java.lang.Boolean",
+            "java.lang.Object"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "sun.text.resources.cldr.FormatData"
+    },
+    {
+      "type": "sun.util.resources.cldr.CalendarData"
+    },
+    {
+      "type": "sun.util.resources.cldr.TimeZoneNames"
+    },
+    {
+      "type": "sun.util.resources.cldr.TimeZoneNames_en"
+    },
+    {
+      "type": "sun.util.resources.cldr.TimeZoneNames_en_US"
+    },
+    {
+      "type": "void"
+    },
+    {
+      "type": {
+        "proxy": [
+          "com.kdroid.composetray.lib.mac.ApplicationServices"
+        ]
+      }
+    },
+    {
+      "type": {
+        "proxy": [
+          "com.kdroid.composetray.lib.mac.ObjectiveC"
+        ]
+      }
+    },
+    {
+      "type": {
+        "proxy": [
+          "io.github.vinceglb.filekit.dialogs.platform.mac.foundation.FoundationLibrary"
+        ]
+      }
     }
   ],
   "resources": [
     {
+      "glob": "META-INF/MANIFEST.MF"
+    },
+    {
+      "glob": "META-INF/maven/org.xerial/sqlite-jdbc/pom.properties"
+    },
+    {
+      "glob": "META-INF/services/coil3.util.DecoderServiceLoaderTarget"
+    },
+    {
+      "glob": "META-INF/services/coil3.util.FetcherServiceLoaderTarget"
+    },
+    {
+      "glob": "META-INF/services/io.ktor.serialization.kotlinx.KotlinxSerializationExtensionProvider"
+    },
+    {
       "glob": "META-INF/services/java.awt.im.spi.InputMethodDescriptor"
     },
     {
-      "glob": "META-INF/services/javax.accessibility.AccessibilityProvider"
+      "glob": "META-INF/services/java.net.spi.InetAddressResolverProvider"
+    },
+    {
+      "glob": "META-INF/services/java.net.spi.URLStreamHandlerProvider"
+    },
+    {
+      "glob": "META-INF/services/java.nio.channels.spi.SelectorProvider"
+    },
+    {
+      "glob": "META-INF/services/java.sql.Driver"
+    },
+    {
+      "glob": "META-INF/services/java.time.zone.ZoneRulesProvider"
+    },
+    {
+      "glob": "META-INF/services/java.util.prefs.PreferencesFactory"
     },
     {
       "glob": "META-INF/services/kotlinx.coroutines.internal.MainDispatcherFactory"
     },
     {
-      "glob": "skiko-windows-x64.dll.sha256"
+      "glob": "META-INF/services/org.slf4j.spi.SLF4JServiceProvider"
+    },
+    {
+      "glob": "com/sun/jna/darwin-aarch64/libjnidispatch.jnilib"
+    },
+    {
+      "glob": "composeResources/ytdlpgui.composeapp.generated.resources/values-fr/strings.jvmMain.cvr"
+    },
+    {
+      "glob": "composeResources/ytdlpgui.composeapp.generated.resources/values/strings.jvmMain.cvr"
+    },
+    {
+      "glob": "darwin-aarch64/libMacTray.dylib"
+    },
+    {
+      "glob": "libskiko-macos-arm64.dylib.sha256"
+    },
+    {
+      "glob": "nucleus/native/darwin-aarch64/libnucleus_darkmode.dylib"
+    },
+    {
+      "glob": "nucleus/native/darwin-aarch64/libnucleus_ssl.dylib"
+    },
+    {
+      "glob": "org/sqlite/native/Mac/aarch64/libsqlitejdbc.dylib"
+    },
+    {
+      "glob": "sentry-debug-meta.properties"
+    },
+    {
+      "glob": "sentry-external-modules.txt"
+    },
+    {
+      "glob": "simplelogger.properties"
+    },
+    {
+      "module": "java.base",
+      "glob": "jdk/internal/icu/impl/data/icudt76b/nfc.nrm"
+    },
+    {
+      "module": "java.base",
+      "glob": "jdk/internal/icu/impl/data/icudt76b/nfkc.nrm"
+    },
+    {
+      "module": "java.base",
+      "glob": "jdk/internal/icu/impl/data/icudt76b/uprops.icu"
+    },
+    {
+      "module": "java.base",
+      "glob": "sun/net/idn/uidna.spp"
+    },
+    {
+      "module": "java.datatransfer",
+      "glob": "sun/datatransfer/resources/flavormap.properties"
     },
     {
       "module": "java.desktop",
-      "glob": "com/sun/accessibility/internal/resources/accessibility_en_US.properties"
+      "glob": "com/apple/laf/resources/aqua_fr_IL.properties"
     },
     {
       "module": "java.desktop",
-      "glob": "com/sun/swing/internal/plaf/basic/resources/basic_fr_FR.properties"
+      "glob": "com/sun/swing/internal/plaf/basic/resources/basic_fr_IL.properties"
     },
     {
       "module": "java.desktop",
-      "glob": "com/sun/swing/internal/plaf/metal/resources/metal_fr_FR.properties"
+      "glob": "sun/awt/resources/awt_fr_IL.properties"
     },
     {
       "module": "java.desktop",
-      "glob": "sun/awt/resources/awt_fr_FR.properties"
+      "glob": "sun/awt/resources/awtosx_fr.properties"
     },
     {
-      "bundle": "com.sun.accessibility.internal.resources.accessibility"
+      "module": "java.desktop",
+      "glob": "sun/awt/resources/awtosx_fr_IL.properties"
+    },
+    {
+      "bundle": "com.apple.laf.resources.aqua"
     },
     {
       "bundle": "com.sun.swing.internal.plaf.basic.resources.basic"
     },
     {
-      "bundle": "com.sun.swing.internal.plaf.metal.resources.metal"
+      "bundle": "sun.awt.resources.awt"
     },
     {
-      "bundle": "sun.awt.resources.awt"
+      "bundle": "sun.awt.resources.awtosx"
     }
   ]
 }
