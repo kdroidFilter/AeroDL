@@ -46,6 +46,8 @@ knotify = "0.4.3"
 confettikit = "0.7.0"
 
 
+graalvmNative = "0.11.4"
+
 hydraulicConveyor = "1.12"
 buildConfig = "6.0.7"
 linuxDeps = "0.2.4"
@@ -138,4 +140,5 @@ buildConfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildConfig
 linuxDeps = { id = "io.github.kdroidfilter.compose.linux.packagedeps", version.ref = "linuxDeps" }
 sentryJvmGradle = { id = "io.sentry.jvm.gradle", version.ref = "sentry" }
 nucleus = { id = "io.github.kdroidfilter.nucleus", version.ref = "nucleus" }
+graalvmNative = { id = "org.graalvm.buildtools.native", version.ref = "graalvmNative" }
 caupain = "com.deezer.caupain:1.7.1"

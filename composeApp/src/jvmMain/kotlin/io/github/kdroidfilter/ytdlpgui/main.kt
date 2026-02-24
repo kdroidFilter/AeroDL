@@ -54,13 +54,25 @@ import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.databasesDir
 import io.github.vinceglb.filekit.path
 import io.sentry.Sentry
+import java.io.File as JFile
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.getString
 import ytdlpgui.composeapp.generated.resources.*
 import java.io.File
 
+private val isNativeImage = System.getProperty("org.graalvm.nativeimage.imagecode") != null
+
 @OptIn(ExperimentalTrayAppApi::class, ExperimentalFluentApi::class)
 fun main() {
+    if (isNativeImage) {
+        // Force Metal L&F to avoid platform-specific L&F loading native modules unsupported in native image
+        System.setProperty("swing.defaultlaf", "javax.swing.plaf.metal.MetalLookAndFeel")
+
+        // Set java.home to the executable's directory so Skiko can find jawt (lib/ on macOS and Linux, bin/ on Windows)
+        val execDir = JFile(ProcessHandle.current().info().command().orElse("")).parentFile?.absolutePath ?: "."
+        System.setProperty("java.home", execDir)
+    }
+
     initializeSentry()
 
     // AOT training: auto-exit so JVM shutdown hooks (which write .aotconf)

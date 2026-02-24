@@ -7,5 +7,6 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform) apply false
     alias(libs.plugins.nucleus) apply false
     alias(libs.plugins.sqlDelight).apply(false)
+    alias(libs.plugins.graalvmNative) apply false
     alias(libs.plugins.caupain)
 }
