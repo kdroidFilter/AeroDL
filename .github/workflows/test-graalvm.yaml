@@ -39,4 +39,4 @@ jobs:
         shell: bash
         run: |
           chmod +x ./gradlew
-          ./gradlew :composeApp:packageGraalvmNative --stacktrace --no-daemon
+          ./gradlew :composeApp:packageGraalvmNative -Pgraalvm.march=compatibility --stacktrace --no-daemon

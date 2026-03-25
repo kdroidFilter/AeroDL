@@ -126,7 +126,7 @@ nucleus.application {
         imageName = "aerodl"
         javaLanguageVersion = 25
         jvmVendor = JvmVendorSpec.BELLSOFT
-        march = "native"
+        march = project.findProperty("graalvm.march")?.toString() ?: "native"
         buildArgs.addAll(
             "-H:+AddAllCharsets",
             "-Djava.awt.headless=false",
