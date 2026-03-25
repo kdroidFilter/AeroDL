@@ -75,6 +75,7 @@ kotlin {
             implementation(libs.nucleus.darkmode.detector)
             implementation(libs.nucleus.updater.runtime)
             implementation(libs.nucleus.native.http)
+            implementation(libs.nucleus.graalvm.runtime)
 
             // Serialization
             implementation(libs.kotlinx.serialization.json)
@@ -119,6 +120,21 @@ kotlin {
 
 nucleus.application {
     mainClass = "io.github.kdroidfilter.ytdlpgui.MainKt"
+
+    graalvm {
+        isEnabled = true
+        imageName = "aerodl"
+        javaLanguageVersion = 25
+        jvmVendor = JvmVendorSpec.BELLSOFT
+        march = project.findProperty("graalvm.march")?.toString() ?: "native"
+        buildArgs.addAll(
+            "-H:+AddAllCharsets",
+            "-Djava.awt.headless=false",
+            "--enable-native-access=ALL-UNNAMED",
+            "-Os",
+        )
+        nativeImageConfigBaseDir = project.layout.projectDirectory.dir("graalvm-config")
+    }
 
     val cleanInstall = project.findProperty("cleanInstall")?.toString()?.toBoolean() ?: false
     val debugLogs = project.findProperty("debugLogs")?.toString()?.toBoolean() ?: false

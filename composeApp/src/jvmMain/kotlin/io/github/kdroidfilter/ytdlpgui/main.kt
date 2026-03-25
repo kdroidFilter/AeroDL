@@ -20,6 +20,7 @@ import dev.zacsweers.metrox.viewmodel.metroViewModel
 import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import io.github.kdroidfilter.ytdlpgui.di.rememberWindowViewModelStoreOwner
 import io.github.kdroidfilter.nucleus.aot.runtime.AotRuntime
+import io.github.kdroidfilter.nucleus.graalvm.GraalVmInitializer
 import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsViewModel
 import coil3.SingletonImageLoader
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
@@ -61,6 +62,7 @@ import java.io.File
 
 @OptIn(ExperimentalTrayAppApi::class, ExperimentalFluentApi::class)
 fun main() {
+    GraalVmInitializer.initialize()
     initializeSentry()
 
     // AOT training: auto-exit so JVM shutdown hooks (which write .aotconf)
@@ -117,6 +119,7 @@ fun main() {
                         appName = runBlocking { getString(Res.string.app_name) },
                     )
                 )
+
                 val autoLaunch = appGraph.autoLaunch
                 val trayAppState = rememberTrayAppState(
                     initialWindowSize = DpSize(350.dp, 500.dp),
