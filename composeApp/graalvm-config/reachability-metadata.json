@@ -40,7 +40,7 @@
                 {
                     "name": "<init>",
                     "parameterTypes": [
-
+                        
                     ]
                 }
             ]
@@ -140,7 +140,7 @@
                 {
                     "name": "toNative",
                     "parameterTypes": [
-
+                        
                     ]
                 }
             ]
@@ -169,19 +169,19 @@
                 {
                     "name": "autoRead",
                     "parameterTypes": [
-
+                        
                     ]
                 },
                 {
                     "name": "autoWrite",
                     "parameterTypes": [
-
+                        
                     ]
                 },
                 {
                     "name": "getTypeInfo",
                     "parameterTypes": [
-
+                        
                     ]
                 },
                 {
@@ -217,7 +217,7 @@
                 {
                     "name": "<init>",
                     "parameterTypes": [
-
+                        
                     ]
                 }
             ]
@@ -273,7 +273,7 @@
                 {
                     "name": "<init>",
                     "parameterTypes": [
-
+                        
                     ]
                 }
             ]
@@ -333,7 +333,7 @@
                 {
                     "name": "<init>",
                     "parameterTypes": [
-
+                        
                     ]
                 }
             ]
@@ -344,7 +344,7 @@
                 {
                     "name": "<init>",
                     "parameterTypes": [
-
+                        
                     ]
                 }
             ]
@@ -355,7 +355,7 @@
                 {
                     "name": "<init>",
                     "parameterTypes": [
-
+                        
                     ]
                 }
             ]
@@ -366,7 +366,7 @@
                 {
                     "name": "<init>",
                     "parameterTypes": [
-
+                        
                     ]
                 }
             ]
@@ -377,7 +377,7 @@
                 {
                     "name": "<init>",
                     "parameterTypes": [
-
+                        
                     ]
                 }
             ]
@@ -388,7 +388,7 @@
                 {
                     "name": "<init>",
                     "parameterTypes": [
-
+                        
                     ]
                 }
             ]
@@ -399,7 +399,7 @@
                 {
                     "name": "<init>",
                     "parameterTypes": [
-
+                        
                     ]
                 }
             ]
@@ -410,7 +410,7 @@
                 {
                     "name": "<init>",
                     "parameterTypes": [
-
+                        
                     ]
                 }
             ]
@@ -421,7 +421,7 @@
                 {
                     "name": "<init>",
                     "parameterTypes": [
-
+                        
                     ]
                 }
             ]
@@ -432,7 +432,7 @@
                 {
                     "name": "<init>",
                     "parameterTypes": [
-
+                        
                     ]
                 }
             ]
@@ -443,7 +443,7 @@
                 {
                     "name": "<init>",
                     "parameterTypes": [
-
+                        
                     ]
                 }
             ]
@@ -473,7 +473,7 @@
                 {
                     "name": "<init>",
                     "parameterTypes": [
-
+                        
                     ]
                 }
             ]
@@ -484,7 +484,7 @@
                 {
                     "name": "<init>",
                     "parameterTypes": [
-
+                        
                     ]
                 }
             ]
@@ -495,7 +495,7 @@
                 {
                     "name": "<init>",
                     "parameterTypes": [
-
+                        
                     ]
                 }
             ]
@@ -506,7 +506,7 @@
                 {
                     "name": "<init>",
                     "parameterTypes": [
-
+                        
                     ]
                 }
             ]
@@ -570,7 +570,7 @@
                 {
                     "name": "<init>",
                     "parameterTypes": [
-
+                        
                     ]
                 }
             ]
@@ -636,7 +636,7 @@
                 {
                     "name": "<init>",
                     "parameterTypes": [
-
+                        
                     ]
                 }
             ]
@@ -647,7 +647,7 @@
                 {
                     "name": "<init>",
                     "parameterTypes": [
-
+                        
                     ]
                 }
             ]
@@ -657,91 +657,245 @@
         },
         {
             "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$InitScreen$Companion",
-            "methods": [{"name": "serializer", "parameterTypes": []}]
+            "methods": [
+                {
+                    "name": "serializer",
+                    "parameterTypes": [
+                        
+                    ]
+                }
+            ]
         },
         {
             "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$MainNavigation$Graph$Companion",
-            "methods": [{"name": "serializer", "parameterTypes": []}]
+            "methods": [
+                {
+                    "name": "serializer",
+                    "parameterTypes": [
+                        
+                    ]
+                }
+            ]
         },
         {
             "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$MainNavigation$Home$Companion",
-            "methods": [{"name": "serializer", "parameterTypes": []}]
+            "methods": [
+                {
+                    "name": "serializer",
+                    "parameterTypes": [
+                        
+                    ]
+                }
+            ]
         },
         {
             "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$MainNavigation$Downloader$Companion",
-            "methods": [{"name": "serializer", "parameterTypes": []}]
+            "methods": [
+                {
+                    "name": "serializer",
+                    "parameterTypes": [
+                        
+                    ]
+                }
+            ]
         },
         {
             "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$SecondaryNavigation$Graph$Companion",
-            "methods": [{"name": "serializer", "parameterTypes": []}]
+            "methods": [
+                {
+                    "name": "serializer",
+                    "parameterTypes": [
+                        
+                    ]
+                }
+            ]
         },
         {
             "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$SecondaryNavigation$Settings$Companion",
-            "methods": [{"name": "serializer", "parameterTypes": []}]
+            "methods": [
+                {
+                    "name": "serializer",
+                    "parameterTypes": [
+                        
+                    ]
+                }
+            ]
         },
         {
             "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$SecondaryNavigation$About$Companion",
-            "methods": [{"name": "serializer", "parameterTypes": []}]
+            "methods": [
+                {
+                    "name": "serializer",
+                    "parameterTypes": [
+                        
+                    ]
+                }
+            ]
         },
         {
             "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Onboarding$Graph$Companion",
-            "methods": [{"name": "serializer", "parameterTypes": []}]
+            "methods": [
+                {
+                    "name": "serializer",
+                    "parameterTypes": [
+                        
+                    ]
+                }
+            ]
         },
         {
             "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Onboarding$Welcome$Companion",
-            "methods": [{"name": "serializer", "parameterTypes": []}]
+            "methods": [
+                {
+                    "name": "serializer",
+                    "parameterTypes": [
+                        
+                    ]
+                }
+            ]
         },
         {
             "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Onboarding$DownloadDir$Companion",
-            "methods": [{"name": "serializer", "parameterTypes": []}]
+            "methods": [
+                {
+                    "name": "serializer",
+                    "parameterTypes": [
+                        
+                    ]
+                }
+            ]
         },
         {
             "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Onboarding$Cookies$Companion",
-            "methods": [{"name": "serializer", "parameterTypes": []}]
+            "methods": [
+                {
+                    "name": "serializer",
+                    "parameterTypes": [
+                        
+                    ]
+                }
+            ]
         },
         {
             "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Onboarding$NoCheckCert$Companion",
-            "methods": [{"name": "serializer", "parameterTypes": []}]
+            "methods": [
+                {
+                    "name": "serializer",
+                    "parameterTypes": [
+                        
+                    ]
+                }
+            ]
         },
         {
             "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Onboarding$GnomeFocus$Companion",
-            "methods": [{"name": "serializer", "parameterTypes": []}]
+            "methods": [
+                {
+                    "name": "serializer",
+                    "parameterTypes": [
+                        
+                    ]
+                }
+            ]
         },
         {
             "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Onboarding$Clipboard$Companion",
-            "methods": [{"name": "serializer", "parameterTypes": []}]
+            "methods": [
+                {
+                    "name": "serializer",
+                    "parameterTypes": [
+                        
+                    ]
+                }
+            ]
         },
         {
             "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Onboarding$Autostart$Companion",
-            "methods": [{"name": "serializer", "parameterTypes": []}]
+            "methods": [
+                {
+                    "name": "serializer",
+                    "parameterTypes": [
+                        
+                    ]
+                }
+            ]
         },
         {
             "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Onboarding$Finish$Companion",
-            "methods": [{"name": "serializer", "parameterTypes": []}]
+            "methods": [
+                {
+                    "name": "serializer",
+                    "parameterTypes": [
+                        
+                    ]
+                }
+            ]
         },
         {
             "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Download$Graph$Companion",
-            "methods": [{"name": "serializer", "parameterTypes": []}]
+            "methods": [
+                {
+                    "name": "serializer",
+                    "parameterTypes": [
+                        
+                    ]
+                }
+            ]
         },
         {
             "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Download$Bulk$Companion",
-            "methods": [{"name": "serializer", "parameterTypes": []}]
+            "methods": [
+                {
+                    "name": "serializer",
+                    "parameterTypes": [
+                        
+                    ]
+                }
+            ]
         },
         {
             "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Download$Single$Companion",
-            "methods": [{"name": "serializer", "parameterTypes": []}]
+            "methods": [
+                {
+                    "name": "serializer",
+                    "parameterTypes": [
+                        
+                    ]
+                }
+            ]
         },
         {
             "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Converter$Graph$Companion",
-            "methods": [{"name": "serializer", "parameterTypes": []}]
+            "methods": [
+                {
+                    "name": "serializer",
+                    "parameterTypes": [
+                        
+                    ]
+                }
+            ]
         },
         {
             "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Converter$Input$Companion",
-            "methods": [{"name": "serializer", "parameterTypes": []}]
+            "methods": [
+                {
+                    "name": "serializer",
+                    "parameterTypes": [
+                        
+                    ]
+                }
+            ]
         },
         {
             "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Converter$Options$Companion",
-            "methods": [{"name": "serializer", "parameterTypes": []}]
+            "methods": [
+                {
+                    "name": "serializer",
+                    "parameterTypes": [
+                        
+                    ]
+                }
+            ]
         },
         {
             "type": "io.ktor.client.plugins.logging.HttpClientCallLogger"
@@ -806,7 +960,7 @@
                 {
                     "name": "lostSelectionOwnershipImpl",
                     "parameterTypes": [
-
+                        
                     ]
                 }
             ]
@@ -817,7 +971,7 @@
                 {
                     "name": "<init>",
                     "parameterTypes": [
-
+                        
                     ]
                 }
             ]
@@ -828,7 +982,7 @@
                 {
                     "name": "<init>",
                     "parameterTypes": [
-
+                        
                     ]
                 }
             ]
@@ -848,7 +1002,7 @@
                 {
                     "name": "<init>",
                     "parameterTypes": [
-
+                        
                     ]
                 }
             ]
@@ -1196,7 +1350,9 @@
             "methods": [
                 {
                     "name": "<init>",
-                    "parameterTypes": []
+                    "parameterTypes": [
+                        
+                    ]
                 }
             ]
         },
@@ -1225,7 +1381,7 @@
                 {
                     "name": "nativeType",
                     "parameterTypes": [
-
+                        
                     ]
                 }
             ]
@@ -1304,7 +1460,7 @@
                 {
                     "name": "xFunc",
                     "parameterTypes": [
-
+                        
                     ]
                 }
             ]
@@ -1316,19 +1472,19 @@
                 {
                     "name": "clone",
                     "parameterTypes": [
-
+                        
                     ]
                 },
                 {
                     "name": "xFinal",
                     "parameterTypes": [
-
+                        
                     ]
                 },
                 {
                     "name": "xStep",
                     "parameterTypes": [
-
+                        
                     ]
                 }
             ]
@@ -1340,13 +1496,13 @@
                 {
                     "name": "xInverse",
                     "parameterTypes": [
-
+                        
                     ]
                 },
                 {
                     "name": "xValue",
                     "parameterTypes": [
-
+                        
                     ]
                 }
             ]
@@ -1358,7 +1514,7 @@
                 {
                     "name": "progress",
                     "parameterTypes": [
-
+                        
                     ]
                 }
             ]
@@ -1385,7 +1541,7 @@
                 {
                     "name": "throwex",
                     "parameterTypes": [
-
+                        
                     ]
                 },
                 {
@@ -1450,6 +1606,50 @@
                     "com.kdroid.composetray.lib.windows.WindowsNativeTrayLibrary"
                 ]
             }
+        },
+        {
+            "type": "com.sun.jna.platform.win32.WinNT$HRESULT",
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+                        
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "io.github.kdroidfilter.knotify.platform.windows.callbacks.ToastActivatedActionCallback"
+        },
+        {
+            "type": "io.github.kdroidfilter.knotify.platform.windows.callbacks.ToastActivatedCallback"
+        },
+        {
+            "type": "io.github.kdroidfilter.knotify.platform.windows.callbacks.ToastDismissedCallback",
+            "methods": [
+                {
+                    "name": "invoke",
+                    "parameterTypes": [
+                        "com.sun.jna.Pointer",
+                        "int"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "io.github.kdroidfilter.knotify.platform.windows.callbacks.ToastFailedCallback"
+        },
+        {
+            "type": "io.github.kdroidfilter.knotify.platform.windows.provider.WindowsNotificationProvider$createCallbacks$activatedActionCallback$1"
+        },
+        {
+            "type": "io.github.kdroidfilter.knotify.platform.windows.provider.WindowsNotificationProvider$createCallbacks$activatedCallback$1"
+        },
+        {
+            "type": "io.github.kdroidfilter.knotify.platform.windows.provider.WindowsNotificationProvider$createCallbacks$dismissedCallback$1"
+        },
+        {
+            "type": "io.github.kdroidfilter.knotify.platform.windows.provider.WindowsNotificationProvider$createCallbacks$failedCallback$1"
         }
     ],
     "resources": [
