@@ -1,0 +1,1468 @@
+{
+    "reflection": [
+        {
+            "type": "coil3.RealImageLoader"
+        },
+        {
+            "type": "com.kdroid.composetray.lib.windows.StdCallCallback",
+            "methods": [
+                {
+                    "name": "invoke",
+                    "parameterTypes": [
+                        "com.kdroid.composetray.lib.windows.WindowsNativeTrayMenuItem"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.kdroid.composetray.lib.windows.WindowsNativeTrayMenuItem",
+            "fields": [
+                {
+                    "name": "cb"
+                },
+                {
+                    "name": "checked"
+                },
+                {
+                    "name": "disabled"
+                },
+                {
+                    "name": "icon_path"
+                },
+                {
+                    "name": "submenu"
+                },
+                {
+                    "name": "text"
+                }
+            ],
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.kdroid.composetray.lib.windows.WindowsNativeTrayMenuItem[]"
+        },
+        {
+            "type": "com.kdroid.composetray.lib.windows.WindowsTrayManager$initializeNativeMenuItem$1$callback$1"
+        },
+        {
+            "type": "com.sun.crypto.provider.HKDFKeyDerivation$HKDFSHA256",
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+                        "javax.crypto.KDFParameters"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.CallbackProxy",
+            "jniAccessible": true,
+            "methods": [
+                {
+                    "name": "callback",
+                    "parameterTypes": [
+                        "java.lang.Object[]"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.CallbackReference",
+            "jniAccessible": true,
+            "methods": [
+                {
+                    "name": "getCallback",
+                    "parameterTypes": [
+                        "java.lang.Class",
+                        "com.sun.jna.Pointer",
+                        "boolean"
+                    ]
+                },
+                {
+                    "name": "getFunctionPointer",
+                    "parameterTypes": [
+                        "com.sun.jna.Callback",
+                        "boolean"
+                    ]
+                },
+                {
+                    "name": "getNativeString",
+                    "parameterTypes": [
+                        "java.lang.Object",
+                        "boolean"
+                    ]
+                },
+                {
+                    "name": "initializeThread",
+                    "parameterTypes": [
+                        "com.sun.jna.Callback",
+                        "com.sun.jna.CallbackReference$AttachOptions"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.CallbackReference$AttachOptions",
+            "jniAccessible": true
+        },
+        {
+            "type": "com.sun.jna.IntegerType",
+            "jniAccessible": true,
+            "fields": [
+                {
+                    "name": "value"
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.JNIEnv",
+            "jniAccessible": true
+        },
+        {
+            "type": "com.sun.jna.Native",
+            "jniAccessible": true,
+            "allDeclaredFields": true,
+            "allDeclaredMethods": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "com.sun.jna.NativeMapped",
+            "jniAccessible": true,
+            "methods": [
+                {
+                    "name": "toNative",
+                    "parameterTypes": [
+
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.PointerType",
+            "jniAccessible": true,
+            "fields": [
+                {
+                    "name": "pointer"
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.Structure",
+            "jniAccessible": true,
+            "fields": [
+                {
+                    "name": "memory"
+                },
+                {
+                    "name": "typeInfo"
+                }
+            ],
+            "methods": [
+                {
+                    "name": "autoRead",
+                    "parameterTypes": [
+
+                    ]
+                },
+                {
+                    "name": "autoWrite",
+                    "parameterTypes": [
+
+                    ]
+                },
+                {
+                    "name": "getTypeInfo",
+                    "parameterTypes": [
+
+                    ]
+                },
+                {
+                    "name": "newInstance",
+                    "parameterTypes": [
+                        "java.lang.Class",
+                        "long"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.Structure$ByValue",
+            "jniAccessible": true
+        },
+        {
+            "type": "com.sun.jna.Structure$FFIType",
+            "fields": [
+                {
+                    "name": "alignment"
+                },
+                {
+                    "name": "elements"
+                },
+                {
+                    "name": "size"
+                },
+                {
+                    "name": "type"
+                }
+            ],
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.Structure$FFIType$FFITypes",
+            "jniAccessible": true,
+            "fields": [
+                {
+                    "name": "ffi_type_double"
+                },
+                {
+                    "name": "ffi_type_float"
+                },
+                {
+                    "name": "ffi_type_longdouble"
+                },
+                {
+                    "name": "ffi_type_pointer"
+                },
+                {
+                    "name": "ffi_type_sint16"
+                },
+                {
+                    "name": "ffi_type_sint32"
+                },
+                {
+                    "name": "ffi_type_sint64"
+                },
+                {
+                    "name": "ffi_type_sint8"
+                },
+                {
+                    "name": "ffi_type_uint16"
+                },
+                {
+                    "name": "ffi_type_uint32"
+                },
+                {
+                    "name": "ffi_type_uint64"
+                },
+                {
+                    "name": "ffi_type_uint8"
+                },
+                {
+                    "name": "ffi_type_void"
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.Structure$FFIType$size_t",
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.WString",
+            "jniAccessible": true,
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+                        "java.lang.String"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.Library",
+            "jniAccessible": true
+        },
+        {
+            "type": "com.sun.jna.win32.StdCallLibrary",
+            "jniAccessible": true
+        },
+        {
+            "type": "com.sun.jna.platform.win32.Advapi32",
+            "jniAccessible": true,
+            "allPublicMethods": true
+        },
+        {
+            "type": "com.sun.jna.platform.win32.Advapi32Util",
+            "allPublicMethods": true
+        },
+        {
+            "type": "com.sun.jna.platform.win32.Kernel32",
+            "jniAccessible": true,
+            "allPublicMethods": true
+        },
+        {
+            "type": "com.sun.jna.platform.win32.User32",
+            "jniAccessible": true,
+            "allPublicMethods": true
+        },
+        {
+            "type": "com.sun.jna.platform.win32.Shell32",
+            "jniAccessible": true,
+            "allPublicMethods": true
+        },
+        {
+            "type": "com.sun.jna.platform.win32.W32APIOptions",
+            "allPublicFields": true,
+            "allPublicMethods": true
+        },
+        {
+            "type": "com.sun.jna.platform.win32.WinNT$HANDLE",
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.platform.win32.BaseTSD$ULONG_PTR",
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.platform.win32.WinDef$ATOM",
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.platform.win32.WinDef$HBRUSH",
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.platform.win32.WinDef$HCURSOR",
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.platform.win32.WinDef$HICON",
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.platform.win32.WinDef$HINSTANCE",
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.platform.win32.WinDef$HMODULE",
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.platform.win32.WinDef$HWND",
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.platform.win32.WinDef$LPARAM",
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.platform.win32.WinDef$LRESULT",
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.platform.win32.WinDef$POINT",
+            "fields": [
+                {
+                    "name": "x"
+                },
+                {
+                    "name": "y"
+                }
+            ],
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+                        "com.sun.jna.Pointer"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.platform.win32.WinDef$WPARAM",
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.platform.win32.WinReg$HKEY",
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.platform.win32.WinReg$HKEYByReference",
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.platform.win32.WinUser$HHOOK",
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.platform.win32.WinUser$LowLevelMouseProc",
+            "methods": [
+                {
+                    "name": "callback",
+                    "parameterTypes": [
+                        "int",
+                        "com.sun.jna.platform.win32.WinDef$WPARAM",
+                        "com.sun.jna.platform.win32.WinUser$MSLLHOOKSTRUCT"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.platform.win32.WinUser$MSG",
+            "fields": [
+                {
+                    "name": "hWnd"
+                },
+                {
+                    "name": "lParam"
+                },
+                {
+                    "name": "message"
+                },
+                {
+                    "name": "pt"
+                },
+                {
+                    "name": "time"
+                },
+                {
+                    "name": "wParam"
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.platform.win32.WinUser$MSLLHOOKSTRUCT",
+            "fields": [
+                {
+                    "name": "dwExtraInfo"
+                },
+                {
+                    "name": "flags"
+                },
+                {
+                    "name": "mouseData"
+                },
+                {
+                    "name": "pt"
+                },
+                {
+                    "name": "time"
+                }
+            ],
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.platform.win32.WinUser$WNDCLASSEX",
+            "fields": [
+                {
+                    "name": "cbClsExtra"
+                },
+                {
+                    "name": "cbSize"
+                },
+                {
+                    "name": "cbWndExtra"
+                },
+                {
+                    "name": "hCursor"
+                },
+                {
+                    "name": "hIcon"
+                },
+                {
+                    "name": "hIconSm"
+                },
+                {
+                    "name": "hInstance"
+                },
+                {
+                    "name": "hbrBackground"
+                },
+                {
+                    "name": "lpfnWndProc"
+                },
+                {
+                    "name": "lpszClassName"
+                },
+                {
+                    "name": "lpszMenuName"
+                },
+                {
+                    "name": "style"
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.platform.win32.WinUser$WindowProc",
+            "methods": [
+                {
+                    "name": "callback",
+                    "parameterTypes": [
+                        "com.sun.jna.platform.win32.WinDef$HWND",
+                        "int",
+                        "com.sun.jna.platform.win32.WinDef$WPARAM",
+                        "com.sun.jna.platform.win32.WinDef$LPARAM"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.ptr.IntByReference",
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.ptr.PointerByReference",
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "int"
+        },
+        {
+            "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$InitScreen$Companion",
+            "methods": [{"name": "serializer", "parameterTypes": []}]
+        },
+        {
+            "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$MainNavigation$Graph$Companion",
+            "methods": [{"name": "serializer", "parameterTypes": []}]
+        },
+        {
+            "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$MainNavigation$Home$Companion",
+            "methods": [{"name": "serializer", "parameterTypes": []}]
+        },
+        {
+            "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$MainNavigation$Downloader$Companion",
+            "methods": [{"name": "serializer", "parameterTypes": []}]
+        },
+        {
+            "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$SecondaryNavigation$Graph$Companion",
+            "methods": [{"name": "serializer", "parameterTypes": []}]
+        },
+        {
+            "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$SecondaryNavigation$Settings$Companion",
+            "methods": [{"name": "serializer", "parameterTypes": []}]
+        },
+        {
+            "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$SecondaryNavigation$About$Companion",
+            "methods": [{"name": "serializer", "parameterTypes": []}]
+        },
+        {
+            "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Onboarding$Graph$Companion",
+            "methods": [{"name": "serializer", "parameterTypes": []}]
+        },
+        {
+            "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Onboarding$Welcome$Companion",
+            "methods": [{"name": "serializer", "parameterTypes": []}]
+        },
+        {
+            "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Onboarding$DownloadDir$Companion",
+            "methods": [{"name": "serializer", "parameterTypes": []}]
+        },
+        {
+            "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Onboarding$Cookies$Companion",
+            "methods": [{"name": "serializer", "parameterTypes": []}]
+        },
+        {
+            "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Onboarding$NoCheckCert$Companion",
+            "methods": [{"name": "serializer", "parameterTypes": []}]
+        },
+        {
+            "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Onboarding$GnomeFocus$Companion",
+            "methods": [{"name": "serializer", "parameterTypes": []}]
+        },
+        {
+            "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Onboarding$Clipboard$Companion",
+            "methods": [{"name": "serializer", "parameterTypes": []}]
+        },
+        {
+            "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Onboarding$Autostart$Companion",
+            "methods": [{"name": "serializer", "parameterTypes": []}]
+        },
+        {
+            "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Onboarding$Finish$Companion",
+            "methods": [{"name": "serializer", "parameterTypes": []}]
+        },
+        {
+            "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Download$Graph$Companion",
+            "methods": [{"name": "serializer", "parameterTypes": []}]
+        },
+        {
+            "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Download$Bulk$Companion",
+            "methods": [{"name": "serializer", "parameterTypes": []}]
+        },
+        {
+            "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Download$Single$Companion",
+            "methods": [{"name": "serializer", "parameterTypes": []}]
+        },
+        {
+            "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Converter$Graph$Companion",
+            "methods": [{"name": "serializer", "parameterTypes": []}]
+        },
+        {
+            "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Converter$Input$Companion",
+            "methods": [{"name": "serializer", "parameterTypes": []}]
+        },
+        {
+            "type": "io.github.kdroidfilter.ytdlpgui.core.navigation.Destination$Converter$Options$Companion",
+            "methods": [{"name": "serializer", "parameterTypes": []}]
+        },
+        {
+            "type": "io.ktor.client.plugins.logging.HttpClientCallLogger"
+        },
+        {
+            "type": "java.lang.Object[]"
+        },
+        {
+            "type": "java.lang.UnsatisfiedLinkError",
+            "jniAccessible": true,
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+                        "java.lang.String"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "java.sql.SQLException"
+        },
+        {
+            "type": "org.sqlite.core.NativeDB",
+            "jniAccessible": true,
+            "fields": [
+                {
+                    "name": "busyHandler"
+                },
+                {
+                    "name": "commitListener"
+                },
+                {
+                    "name": "pointer"
+                },
+                {
+                    "name": "progressHandler"
+                },
+                {
+                    "name": "updateListener"
+                }
+            ],
+            "methods": [
+                {
+                    "name": "stringToUtf8ByteArray",
+                    "parameterTypes": [
+                        "java.lang.String"
+                    ]
+                },
+                {
+                    "name": "throwex",
+                    "parameterTypes": [
+                        "java.lang.String"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "sun.awt.windows.WClipboard",
+            "jniAccessible": true,
+            "methods": [
+                {
+                    "name": "lostSelectionOwnershipImpl",
+                    "parameterTypes": [
+
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "sun.security.provider.JavaKeyStore$DualFormatJKS",
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "sun.security.provider.JavaKeyStore$JKS",
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "void"
+        },
+        {
+            "type": "androidx.compose.ui.awt.SwingInteropViewGroup"
+        },
+        {
+            "type": "byte"
+        },
+        {
+            "type": "com.sun.jna.ptr.ByteByReference",
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "double"
+        },
+        {
+            "type": "float"
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.ForeignBytesStruct",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.ForeignBytesStruct$ByValue",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.RustBufferStruct",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.RustBufferStruct$ByValue",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.RustBufferStruct$ByReference",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiCallbackInterfaceFree",
+            "methods": [
+                {
+                    "name": "callback",
+                    "parameterTypes": [
+                        "long"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiCallbackInterfaceJavaScriptCallbackMethod0",
+            "methods": [
+                {
+                    "name": "callback",
+                    "parameterTypes": [
+                        "long",
+                        "io.github.kdroidfilter.webview.wry.RustBufferStruct$ByValue",
+                        "com.sun.jna.Pointer",
+                        "io.github.kdroidfilter.webview.wry.UniffiRustCallStatusStruct$ByReference"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiCallbackInterfaceNativeLoggerMethod0"
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiCallbackInterfaceNavigationHandlerMethod0",
+            "methods": [
+                {
+                    "name": "callback",
+                    "parameterTypes": [
+                        "long",
+                        "io.github.kdroidfilter.webview.wry.RustBufferStruct$ByValue",
+                        "com.sun.jna.ptr.ByteByReference",
+                        "io.github.kdroidfilter.webview.wry.UniffiRustCallStatusStruct$ByReference"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiRustCallStatusStruct",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiRustCallStatusStruct$ByValue",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiRustCallStatusStruct$ByReference",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiForeignFutureStruct",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiForeignFutureStruct$UniffiByValue",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiForeignFutureStructF32Struct",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiForeignFutureStructF32Struct$UniffiByValue",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiForeignFutureStructF64Struct",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiForeignFutureStructF64Struct$UniffiByValue",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiForeignFutureStructI8Struct",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiForeignFutureStructI8Struct$UniffiByValue",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiForeignFutureStructI16Struct",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiForeignFutureStructI16Struct$UniffiByValue",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiForeignFutureStructI32Struct",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiForeignFutureStructI32Struct$UniffiByValue",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiForeignFutureStructI64Struct",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiForeignFutureStructI64Struct$UniffiByValue",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiForeignFutureStructU8Struct",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiForeignFutureStructU8Struct$UniffiByValue",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiForeignFutureStructU16Struct",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiForeignFutureStructU16Struct$UniffiByValue",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiForeignFutureStructU32Struct",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiForeignFutureStructU32Struct$UniffiByValue",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiForeignFutureStructU64Struct",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiForeignFutureStructU64Struct$UniffiByValue",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiForeignFutureStructPointerStruct",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiForeignFutureStructPointerStruct$UniffiByValue",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiForeignFutureStructRustBufferStruct",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiForeignFutureStructRustBufferStruct$UniffiByValue",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiForeignFutureStructVoidStruct",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiForeignFutureStructVoidStruct$UniffiByValue",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiVTableCallbackInterfaceJavaScriptCallbackStruct",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiVTableCallbackInterfaceJavaScriptCallbackStruct$UniffiByValue",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiVTableCallbackInterfaceNativeLoggerStruct",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiVTableCallbackInterfaceNativeLoggerStruct$UniffiByValue",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiVTableCallbackInterfaceNavigationHandlerStruct",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiVTableCallbackInterfaceNavigationHandlerStruct$UniffiByValue",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.WryWebViewPanel"
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.uniffiCallbackInterfaceJavaScriptCallback$onResult"
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.uniffiCallbackInterfaceJavaScriptCallback$uniffiFree"
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.uniffiCallbackInterfaceNativeLogger$handleLog"
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.uniffiCallbackInterfaceNativeLogger$uniffiFree"
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.uniffiCallbackInterfaceNavigationHandler$handleNavigation"
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.uniffiCallbackInterfaceNavigationHandler$uniffiFree"
+        },
+        {
+            "type": "io.github.kdroidfilter.composemediaplayer.windows.MediaFoundationLib",
+            "allDeclaredFields": true,
+            "allDeclaredMethods": true,
+            "allDeclaredConstructors": true,
+            "jniAccessible": true
+        },
+        {
+            "type": "io.github.kdroidfilter.composemediaplayer.windows.MediaFoundationLib$NativeVideoMetadata",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "com.sun.jna.ptr.FloatByReference",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "com.sun.jna.ptr.LongByReference",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "java.io.IOException",
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+                        "java.lang.String"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "kotlinx.atomicfu.AtomicLong"
+        },
+        {
+            "type": "long"
+        },
+        {
+            "type": "short"
+        },
+        {
+            "type": "com.intellij.openapi.editor.impl.EditorCopyPasteHelperImpl$CopyPasteOptionsTransferableData"
+        },
+        {
+            "type": "com.kdroid.composetray.lib.windows.WindowsNativeTray",
+            "fields": [
+                {
+                    "name": "cb"
+                },
+                {
+                    "name": "icon_filepath"
+                },
+                {
+                    "name": "menu"
+                },
+                {
+                    "name": "tooltip"
+                }
+            ],
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": []
+                }
+            ]
+        },
+        {
+            "type": "com.kdroid.composetray.lib.windows.WindowsNativeTray$TrayCallback",
+            "methods": [
+                {
+                    "name": "invoke",
+                    "parameterTypes": [
+                        "com.kdroid.composetray.lib.windows.WindowsNativeTray"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.kdroid.composetray.lib.windows.WindowsNativeTrayLibrary"
+        },
+        {
+            "type": "com.sun.jna.Callback",
+            "jniAccessible": true
+        },
+        {
+            "type": "com.sun.jna.FromNativeConverter",
+            "jniAccessible": true,
+            "methods": [
+                {
+                    "name": "nativeType",
+                    "parameterTypes": [
+
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.Native$ffi_callback",
+            "jniAccessible": true,
+            "methods": [
+                {
+                    "name": "invoke",
+                    "parameterTypes": [
+                        "long",
+                        "long",
+                        "long"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.sun.jna.Pointer",
+            "jniAccessible": true,
+            "fields": [
+                {
+                    "name": "peer"
+                }
+            ],
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+                        "long"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "org.sqlite.BusyHandler",
+            "jniAccessible": true,
+            "methods": [
+                {
+                    "name": "callback",
+                    "parameterTypes": [
+                        "int"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "org.sqlite.Collation",
+            "jniAccessible": true,
+            "methods": [
+                {
+                    "name": "xCompare",
+                    "parameterTypes": [
+                        "java.lang.String",
+                        "java.lang.String"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "org.sqlite.Function",
+            "jniAccessible": true,
+            "fields": [
+                {
+                    "name": "args"
+                },
+                {
+                    "name": "context"
+                },
+                {
+                    "name": "value"
+                }
+            ],
+            "methods": [
+                {
+                    "name": "xFunc",
+                    "parameterTypes": [
+
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "org.sqlite.Function$Aggregate",
+            "jniAccessible": true,
+            "methods": [
+                {
+                    "name": "clone",
+                    "parameterTypes": [
+
+                    ]
+                },
+                {
+                    "name": "xFinal",
+                    "parameterTypes": [
+
+                    ]
+                },
+                {
+                    "name": "xStep",
+                    "parameterTypes": [
+
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "org.sqlite.Function$Window",
+            "jniAccessible": true,
+            "methods": [
+                {
+                    "name": "xInverse",
+                    "parameterTypes": [
+
+                    ]
+                },
+                {
+                    "name": "xValue",
+                    "parameterTypes": [
+
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "org.sqlite.ProgressHandler",
+            "jniAccessible": true,
+            "methods": [
+                {
+                    "name": "progress",
+                    "parameterTypes": [
+
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "org.sqlite.core.DB",
+            "jniAccessible": true,
+            "methods": [
+                {
+                    "name": "onCommit",
+                    "parameterTypes": [
+                        "boolean"
+                    ]
+                },
+                {
+                    "name": "onUpdate",
+                    "parameterTypes": [
+                        "int",
+                        "java.lang.String",
+                        "java.lang.String",
+                        "long"
+                    ]
+                },
+                {
+                    "name": "throwex",
+                    "parameterTypes": [
+
+                    ]
+                },
+                {
+                    "name": "throwex",
+                    "parameterTypes": [
+                        "int"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "org.sqlite.core.DB$ProgressObserver",
+            "jniAccessible": true,
+            "methods": [
+                {
+                    "name": "progress",
+                    "parameterTypes": [
+                        "int",
+                        "int"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": {
+                "proxy": [
+                    "io.github.kdroidfilter.platformtools.clipboardmanager.windows.User32Extended"
+                ]
+            }
+        },
+        {
+            "type": {
+                "proxy": [
+                    "com.sun.jna.platform.win32.Advapi32"
+                ]
+            }
+        },
+        {
+            "type": {
+                "proxy": [
+                    "com.sun.jna.platform.win32.Kernel32"
+                ]
+            }
+        },
+        {
+            "type": {
+                "proxy": [
+                    "com.sun.jna.platform.win32.User32"
+                ]
+            }
+        },
+        {
+            "type": {
+                "proxy": [
+                    "com.sun.jna.platform.win32.Shell32"
+                ]
+            }
+        },
+        {
+            "type": {
+                "proxy": [
+                    "com.kdroid.composetray.lib.windows.WindowsNativeTrayLibrary"
+                ]
+            }
+        }
+    ],
+    "resources": [
+        {
+            "module": "java.base",
+            "glob": "jdk/internal/icu/impl/data/icudt76b/uprops.icu"
+        },
+        {
+            "module": "java.base",
+            "glob": "sun/net/idn/uidna.spp"
+        },
+        {
+            "glob": "com/sun/jna/**"
+        }
+    ]
+}

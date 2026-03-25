@@ -1,0 +1,41 @@
+name: Test GraalVM Native Image
+
+on:
+  pull_request:
+    paths:
+      - 'composeApp/build.gradle.kts'
+      - 'composeApp/graalvm-config/**'
+      - '.github/workflows/test-graalvm.yaml'
+
+jobs:
+  test-graalvm:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: Linux x64
+          - os: macos-latest
+            name: macOS ARM64
+          - os: windows-latest
+            name: Windows x64
+
+    name: GraalVM - ${{ matrix.name }}
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Nucleus
+        uses: kdroidFilter/Nucleus/.github/actions/setup-nucleus@v1.1.3
+        with:
+          packaging-tools: 'true'
+          setup-gradle: 'true'
+
+      - name: Build GraalVM native image
+        shell: bash
+        run: |
+          chmod +x ./gradlew
+          ./gradlew :composeApp:packageGraalvmNative --stacktrace --no-daemon

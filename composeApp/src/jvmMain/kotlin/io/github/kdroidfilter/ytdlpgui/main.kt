@@ -20,6 +20,7 @@ import dev.zacsweers.metrox.viewmodel.metroViewModel
 import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import io.github.kdroidfilter.ytdlpgui.di.rememberWindowViewModelStoreOwner
 import io.github.kdroidfilter.nucleus.aot.runtime.AotRuntime
+import io.github.kdroidfilter.nucleus.graalvm.GraalVmInitializer
 import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsViewModel
 import coil3.SingletonImageLoader
 import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
@@ -61,35 +62,41 @@ import java.io.File
 
 @OptIn(ExperimentalTrayAppApi::class, ExperimentalFluentApi::class)
 fun main() {
-    initializeSentry()
+    try {
+        System.err.println("[native-diag] GraalVmInitializer.initialize()...")
+        GraalVmInitializer.initialize()
+        System.err.println("[native-diag] initializeSentry()... ....")
+        initializeSentry()
 
-    // AOT training: auto-exit so JVM shutdown hooks (which write .aotconf)
-    // run reliably on all platforms. Nucleus AotRuntime handles detection.
-    if (AotRuntime.isTraining()) {
-        Thread({
-            Thread.sleep(30_000)
-            System.exit(0)
-        }, "aot-training-timer").apply { isDaemon = true; start() }
-    }
-
-    // Configure Skiko render API based on platform (respect pre-set -D flag)
-    if (System.getProperty("skiko.renderApi") == null) {
-        when (getOperatingSystem()) {
-            OperatingSystem.WINDOWS -> {
-                if (isWindows10()) {
-                    System.setProperty("skiko.renderApi", "OPENGL")
-                } else {
-                    System.setProperty("skiko.renderApi", "DIRECT3D")
-                }
-            }
-            OperatingSystem.LINUX -> if (isNvidiaGpuPresent()) {
-                System.setProperty("skiko.renderApi", "SOFTWARE")
-            }
-            else -> { /* Use default render API */ }
+        // AOT training: auto-exit so JVM shutdown hooks (which write .aotconf)
+        // run reliably on all platforms. Nucleus AotRuntime handles detection.
+        if (AotRuntime.isTraining()) {
+            Thread({
+                Thread.sleep(30_000)
+                System.exit(0)
+            }, "aot-training-timer").apply { isDaemon = true; start() }
         }
-    }
 
-    application {
+        // Configure Skiko render API based on platform (respect pre-set -D flag)
+        if (System.getProperty("skiko.renderApi") == null) {
+            when (getOperatingSystem()) {
+                OperatingSystem.WINDOWS -> {
+                    if (isWindows10()) {
+                        System.setProperty("skiko.renderApi", "OPENGL")
+                    } else {
+                        System.setProperty("skiko.renderApi", "DIRECT3D")
+                    }
+                }
+                OperatingSystem.LINUX -> if (isNvidiaGpuPresent()) {
+                    System.setProperty("skiko.renderApi", "SOFTWARE")
+                }
+                else -> { /* Use default render API */ }
+            }
+        }
+
+        System.err.println("[native-diag] skiko.renderApi=${System.getProperty("skiko.renderApi")}")
+        System.err.println("[native-diag] entering application {}...")
+        application {
         allowComposeNativeTrayLogging = LoggerConfig.enabled
 
         val cleanInstall = System.getProperty("cleanInstall", "false").toBoolean()
@@ -104,9 +111,11 @@ fun main() {
         }
 
 //    Locale.setDefault(Locale("en"))
-        val appGraph = remember { createGraph<AppGraph>() }
+        System.err.println("[native-diag] creating AppGraph...")
+        val appGraph = remember { createGraph<AppGraph>().also { System.err.println("[native-diag] AppGraph created") } }
         run {
             val windowViewModelOwner = rememberWindowViewModelStoreOwner()
+            System.err.println("[native-diag] CompositionLocalProvider...")
             CompositionLocalProvider(
                 LocalWindowViewModelStoreOwner provides windowViewModelOwner,
                 LocalViewModelStoreOwner provides windowViewModelOwner,
@@ -118,10 +127,13 @@ fun main() {
                     )
                 )
                 val autoLaunch = appGraph.autoLaunch
+                val startedViaAutostart = autoLaunch.isStartedViaAutostart()
+                System.err.println("[native-diag] isStartedViaAutostart=$startedViaAutostart")
                 val trayAppState = rememberTrayAppState(
                     initialWindowSize = DpSize(350.dp, 500.dp),
-                    initiallyVisible = !autoLaunch.isStartedViaAutostart()
+                    initiallyVisible = !startedViaAutostart
                 )
+                System.err.println("[native-diag] trayAppState.isVisible=${trayAppState.isVisible.value}")
                 TrayAppStateHolder.set(trayAppState)
 
                 // Eagerly instantiate clipboard monitoring once, as a side effect
@@ -231,6 +243,11 @@ fun main() {
             }
 
         }
+    }
+    } catch (e: Throwable) {
+        System.err.println("[native-diag] FATAL: ${e::class.qualifiedName}: ${e.message}")
+        e.printStackTrace(System.err)
+        System.exit(1)
     }
 }
 
