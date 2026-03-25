@@ -102,7 +102,17 @@ fun SingleDownloadView(
             onEvent(SingleDownloadEvents.ScreenDisposed)
         }
     }
-    val videoPlayerState = rememberVideoPlayerState()
+    // Check native video player availability (MediaFoundation uses JNA direct mapping,
+    // which is incompatible with GraalVM native image)
+    val videoPlayerAvailable = remember {
+        try {
+            Class.forName("io.github.kdroidfilter.composemediaplayer.windows.MediaFoundationLib")
+            true
+        } catch (_: Throwable) {
+            false
+        }
+    }
+    val videoPlayerState = if (videoPlayerAvailable) rememberVideoPlayerState() else null
     if (state.isLoading) Loader()
     else if (state.errorMessage != null) ErrorBox(state.errorMessage)
     else SingleVideoDownloadView(
@@ -167,7 +177,7 @@ private fun ErrorBox(message: String) {
 
 @Composable
 private fun SingleVideoDownloadView(
-    videoPlayerState: VideoPlayerState,
+    videoPlayerState: VideoPlayerState?,
     videoInfo: VideoInfo?,
     availablePresets: List<YtDlpWrapper.Preset>,
     selectedPreset: YtDlpWrapper.Preset?,
@@ -666,7 +676,7 @@ private fun languageCodeToDisplayName(langCode: String, targetLocale: Locale = L
 private fun VideoPlayer(
     thumbnailUrl: String?,
     duration: Duration?,
-    videoPlayerState: VideoPlayerState,
+    videoPlayerState: VideoPlayerState?,
     videoInfo: VideoInfo?
 ) {
     var isHovered by remember { mutableStateOf(false) }
@@ -678,23 +688,25 @@ private fun VideoPlayer(
             .onPointerEvent(PointerEventType.Exit) { isHovered = false }
     ) {
         Box(contentAlignment = Alignment.Center) {
-            if (!videoPlayerState.hasMedia) {
+            if (videoPlayerState == null || !videoPlayerState.hasMedia) {
                 AsyncImage(
                     model = thumbnailUrl,
                     contentDescription = stringResource(Res.string.thumbnail_content_desc),
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
-                Icon(
-                    imageVector = Icons.Default.Play,
-                    contentDescription = null,
-                    modifier = Modifier.size(48.dp).clickable(
-                        onClick = {
-                            if (videoPlayerState.hasMedia) videoPlayerState.play()
-                            else videoInfo?.directUrl?.let { videoPlayerState.openUri(it) }
-                        }
+                if (videoPlayerState != null) {
+                    Icon(
+                        imageVector = Icons.Default.Play,
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp).clickable(
+                            onClick = {
+                                if (videoPlayerState.hasMedia) videoPlayerState.play()
+                                else videoInfo?.directUrl?.let { videoPlayerState.openUri(it) }
+                            }
+                        )
                     )
-                )
+                }
 
                 Box(
                     modifier = Modifier

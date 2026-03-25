@@ -687,7 +687,6 @@ private fun YouTubeLoginScreen(
             }
         }
 
-        // WebView
         WebView(
             state = state,
             navigator = navigator,
@@ -884,7 +883,7 @@ private fun HiddenExtractionWebView(
     }
 
     // Visible window for WebView (needed for proper rendering)
-   Window(
+    Window(
         onCloseRequest = { closeExtractionWebView() },
         visible = webViewActive,
         title = "WebView Extractor",
@@ -896,11 +895,10 @@ private fun HiddenExtractionWebView(
         alwaysOnTop = false,
         resizable = false,
         focusable = false,
-
     ) {
-       LaunchedEffect(Unit) {
-           window.opacity = 0f
-       }
+        LaunchedEffect(Unit) {
+            window.opacity = 0f
+        }
         WebView(
             state = state,
             navigator = navigator,

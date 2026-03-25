@@ -1014,6 +1014,20 @@
             "type": "float"
         },
         {
+            "type": "io.github.kdroidfilter.webview.wry.IntegrityCheckingUniffiLib",
+            "allDeclaredMethods": true,
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true,
+            "jniAccessible": true
+        },
+        {
+            "type": "io.github.kdroidfilter.webview.wry.UniffiLib",
+            "allDeclaredMethods": true,
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true,
+            "jniAccessible": true
+        },
+        {
             "type": "io.github.kdroidfilter.webview.wry.ForeignBytesStruct",
             "allDeclaredFields": true,
             "allDeclaredConstructors": true
@@ -1835,6 +1849,18 @@
         },
         {
             "glob": "com/sun/jna/**"
+        },
+        {
+            "glob": "win32-x86-64/composewebview_wry.dll"
+        },
+        {
+            "glob": "linux-x86-64/libcomposewebview_wry.so"
+        },
+        {
+            "glob": "darwin-x86-64/libcomposewebview_wry.dylib"
+        },
+        {
+            "glob": "darwin-aarch64/libcomposewebview_wry.dylib"
         }
     ]
 }
