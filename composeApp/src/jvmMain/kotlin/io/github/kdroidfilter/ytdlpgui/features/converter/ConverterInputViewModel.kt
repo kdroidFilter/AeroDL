@@ -79,16 +79,21 @@ class ConverterInputViewModel(
 
     private fun openFilePicker() {
         viewModelScope.launch {
-            val file = FileKit.openFilePicker(
-                type = FileKitType.File(
-                    extensions = listOf(
-                        "mp4", "mkv", "avi", "mov", "webm", "flv", "wmv", "m4v",
-                        "mp3", "wav", "flac", "aac", "ogg", "m4a", "wma", "opus"
+            try {
+                val file = FileKit.openFilePicker(
+                    type = FileKitType.File(
+                        extensions = listOf(
+                            "mp4", "mkv", "avi", "mov", "webm", "flv", "wmv", "m4v",
+                            "mp3", "wav", "flac", "aac", "ogg", "m4a", "wma", "opus"
+                        )
                     )
                 )
-            )
-            file?.path?.let { path ->
-                navigateToOptions(File(path))
+                file?.path?.let { path ->
+                    navigateToOptions(File(path))
+                }
+            } catch (e: Throwable) {
+                System.err.println("[native-diag] FileKit.openFilePicker FAILED: ${e::class.qualifiedName}: ${e.message}")
+                e.printStackTrace(System.err)
             }
         }
     }

@@ -159,13 +159,18 @@ class SettingsViewModel(
             is SettingsEvents.PickDownloadDir -> {
                 viewModelScope.launch {
                     trayAppState.setDismissMode(TrayWindowDismissMode.MANUAL)
-                    val dir = FileKit.openDirectoryPicker(
-                        title = event.title,
-                        directory = null,
-                        dialogSettings = FileKitDialogSettings()
-                    )
-                    dir?.let { handleEvent(SettingsEvents.SetDownloadDir(it.file.absolutePath)) }
-                   trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
+                    try {
+                        val dir = FileKit.openDirectoryPicker(
+                            title = event.title,
+                            directory = null,
+                            dialogSettings = FileKitDialogSettings()
+                        )
+                        dir?.let { handleEvent(SettingsEvents.SetDownloadDir(it.file.absolutePath)) }
+                    } catch (e: Throwable) {
+                        System.err.println("[native-diag] FileKit.openDirectoryPicker FAILED: ${e::class.qualifiedName}: ${e.message}")
+                        e.printStackTrace(System.err)
+                    }
+                    trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
                 }
             }
             SettingsEvents.ResetToDefaults -> {

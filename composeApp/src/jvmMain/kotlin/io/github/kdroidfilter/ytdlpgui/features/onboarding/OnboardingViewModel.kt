@@ -194,13 +194,18 @@ class OnboardingViewModel(
     private fun handlePickDownloadDir(title: String) {
         viewModelScope.launch {
             trayAppState.setDismissMode(TrayWindowDismissMode.MANUAL)
-            val dir = FileKit.openDirectoryPicker(
-                title = title,
-                directory = null,
-                dialogSettings = FileKitDialogSettings()
-            )
-            dir?.let {
-                settingsRepository.setDownloadDir(it.file.absolutePath)
+            try {
+                val dir = FileKit.openDirectoryPicker(
+                    title = title,
+                    directory = null,
+                    dialogSettings = FileKitDialogSettings()
+                )
+                dir?.let {
+                    settingsRepository.setDownloadDir(it.file.absolutePath)
+                }
+            } catch (e: Throwable) {
+                System.err.println("[native-diag] FileKit.openDirectoryPicker FAILED: ${e::class.qualifiedName}: ${e.message}")
+                e.printStackTrace(System.err)
             }
             trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
         }

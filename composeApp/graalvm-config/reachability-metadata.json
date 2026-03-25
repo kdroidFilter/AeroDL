@@ -1301,12 +1301,28 @@
         {
             "type": "com.sun.jna.ptr.FloatByReference",
             "allDeclaredFields": true,
-            "allDeclaredConstructors": true
+            "allDeclaredConstructors": true,
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+                        
+                    ]
+                }
+            ]
         },
         {
             "type": "com.sun.jna.ptr.LongByReference",
             "allDeclaredFields": true,
-            "allDeclaredConstructors": true
+            "allDeclaredConstructors": true,
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+                        
+                    ]
+                }
+            ]
         },
         {
             "type": "java.io.IOException",
@@ -1619,10 +1635,27 @@
             ]
         },
         {
-            "type": "io.github.kdroidfilter.knotify.platform.windows.callbacks.ToastActivatedActionCallback"
+            "type": "io.github.kdroidfilter.knotify.platform.windows.callbacks.ToastActivatedActionCallback",
+            "methods": [
+                {
+                    "name": "invoke",
+                    "parameterTypes": [
+                        "com.sun.jna.Pointer",
+                        "int"
+                    ]
+                }
+            ]
         },
         {
-            "type": "io.github.kdroidfilter.knotify.platform.windows.callbacks.ToastActivatedCallback"
+            "type": "io.github.kdroidfilter.knotify.platform.windows.callbacks.ToastActivatedCallback",
+            "methods": [
+                {
+                    "name": "invoke",
+                    "parameterTypes": [
+                        "com.sun.jna.Pointer"
+                    ]
+                }
+            ]
         },
         {
             "type": "io.github.kdroidfilter.knotify.platform.windows.callbacks.ToastDismissedCallback",
@@ -1650,6 +1683,123 @@
         },
         {
             "type": "io.github.kdroidfilter.knotify.platform.windows.provider.WindowsNotificationProvider$createCallbacks$failedCallback$1"
+        },
+        {
+            "type": "boolean"
+        },
+        {
+            "type": "coil3.compose.internal.DeferredDispatchCoroutineDispatcher"
+        },
+        {
+            "type": "sun.util.resources.LocaleNames"
+        },
+        {
+            "type": "sun.util.resources.cldr.LocaleNames"
+        },
+        {
+            "type": "com.sun.jna.platform.win32.Guid$CLSID",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "com.sun.jna.platform.win32.Guid$GUID",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "com.sun.jna.platform.win32.Guid$GUID$ByReference",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "com.sun.jna.platform.win32.Guid$IID",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "com.sun.jna.platform.win32.Guid$REFIID",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "com.sun.jna.platform.win32.COM.Unknown",
+            "allDeclaredFields": true,
+            "allDeclaredMethods": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.vinceglb.filekit.dialogs.platform.windows.util.GuidFixed$CLSID",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.vinceglb.filekit.dialogs.platform.windows.util.GuidFixed$IID",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "com.sun.jna.platform.win32.Ole32",
+            "allDeclaredMethods": true,
+            "allPublicMethods": true
+        },
+        {
+            "type": {
+                "proxy": [
+                    "com.sun.jna.platform.win32.Ole32"
+                ]
+            }
+        },
+        {
+            "type": "io.github.vinceglb.filekit.dialogs.platform.windows.jna.ModalWindow",
+            "allDeclaredMethods": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.vinceglb.filekit.dialogs.platform.windows.jna.FileDialog",
+            "allDeclaredMethods": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.vinceglb.filekit.dialogs.platform.windows.jna.FileOpenDialog",
+            "allDeclaredMethods": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.vinceglb.filekit.dialogs.platform.windows.jna.FileSaveDialog",
+            "allDeclaredMethods": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.vinceglb.filekit.dialogs.platform.windows.jna.FileOperation",
+            "allDeclaredMethods": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.vinceglb.filekit.dialogs.platform.windows.jna.ShellItem",
+            "allDeclaredMethods": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.vinceglb.filekit.dialogs.platform.windows.jna.ShellItemArray",
+            "allDeclaredMethods": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.vinceglb.filekit.dialogs.platform.windows.jna.ShTypes$COMDLG_FILTERSPEC",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": "io.github.vinceglb.filekit.dialogs.platform.windows.jna.ShTypes$PROPERTYKEY",
+            "allDeclaredFields": true,
+            "allDeclaredConstructors": true
+        },
+        {
+            "type": {
+                "proxy": [
+                    "io.github.vinceglb.filekit.dialogs.platform.windows.jna.Shell32"
+                ]
+            }
         }
     ],
     "resources": [

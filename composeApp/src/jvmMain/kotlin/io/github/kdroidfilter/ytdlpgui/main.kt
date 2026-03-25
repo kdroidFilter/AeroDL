@@ -65,7 +65,7 @@ fun main() {
     try {
         System.err.println("[native-diag] GraalVmInitializer.initialize()...")
         GraalVmInitializer.initialize()
-        System.err.println("[native-diag] initializeSentry()... ....")
+        System.err.println("[native-diag] initializeSentry().............")
         initializeSentry()
 
         // AOT training: auto-exit so JVM shutdown hooks (which write .aotconf)
@@ -104,7 +104,13 @@ fun main() {
             lockIdentifier = "aerodl"
         )
 
-        FileKit.init(appId = "ada57c09-11e1-4d56-9d5d-0c480f6968ec")
+        try {
+            FileKit.init(appId = "ada57c09-11e1-4d56-9d5d-0c480f6968ec")
+            System.err.println("[native-diag] FileKit.init OK, databasesDir=${FileKit.databasesDir.path}")
+        } catch (e: Throwable) {
+            System.err.println("[native-diag] FileKit.init FAILED: ${e::class.qualifiedName}: ${e.message}")
+            e.printStackTrace(System.err)
+        }
 
         if (cleanInstall) {
             clearAppData()
