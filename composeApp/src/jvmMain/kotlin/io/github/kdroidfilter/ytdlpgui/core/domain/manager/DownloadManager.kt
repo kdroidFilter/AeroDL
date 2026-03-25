@@ -775,7 +775,12 @@ class DownloadManager(
         ) {
             button(title = openBtn) { openDirAction() }
         }
-        notif.send()
+        try {
+            notif.send()
+        } catch (e: Throwable) {
+            System.err.println("[native-diag] notification.send() (conversion) FAILED: ${e::class.qualifiedName}: ${e.message}")
+            e.printStackTrace(System.err)
+        }
     }
 
     @OptIn(ExperimentalNotificationsApi::class)
@@ -802,7 +807,12 @@ class DownloadManager(
         ) {
             button(title = openBtn) { openDirAction() }
         }
-        notif.send()
+        try {
+            notif.send()
+        } catch (e: Throwable) {
+            System.err.println("[native-diag] notification.send() (completion) FAILED: ${e::class.qualifiedName}: ${e.message}")
+            e.printStackTrace(System.err)
+        }
     }
 
     private fun update(id: String, transform: (DownloadItem) -> DownloadItem) {
