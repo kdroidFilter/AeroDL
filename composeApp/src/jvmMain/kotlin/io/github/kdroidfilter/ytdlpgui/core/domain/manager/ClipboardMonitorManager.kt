@@ -156,11 +156,6 @@ class ClipboardMonitorManager(
                 // Do nothing, simply dismiss
             }
         }
-        try {
-            notif.send()
-        } catch (e: Throwable) {
-            System.err.println("[native-diag] notification.send() FAILED: ${e::class.qualifiedName}: ${e.message}")
-            e.printStackTrace(System.err)
-        }
+        notif.send()
     }
 }

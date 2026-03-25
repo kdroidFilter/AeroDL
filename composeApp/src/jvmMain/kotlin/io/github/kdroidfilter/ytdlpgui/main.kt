@@ -62,41 +62,36 @@ import java.io.File
 
 @OptIn(ExperimentalTrayAppApi::class, ExperimentalFluentApi::class)
 fun main() {
-    try {
-        System.err.println("[native-diag] GraalVmInitializer.initialize()...")
-        GraalVmInitializer.initialize()
-        System.err.println("[native-diag] initializeSentry().............")
-        initializeSentry()
+    GraalVmInitializer.initialize()
+    initializeSentry()
 
-        // AOT training: auto-exit so JVM shutdown hooks (which write .aotconf)
-        // run reliably on all platforms. Nucleus AotRuntime handles detection.
-        if (AotRuntime.isTraining()) {
-            Thread({
-                Thread.sleep(30_000)
-                System.exit(0)
-            }, "aot-training-timer").apply { isDaemon = true; start() }
-        }
+    // AOT training: auto-exit so JVM shutdown hooks (which write .aotconf)
+    // run reliably on all platforms. Nucleus AotRuntime handles detection.
+    if (AotRuntime.isTraining()) {
+        Thread({
+            Thread.sleep(30_000)
+            System.exit(0)
+        }, "aot-training-timer").apply { isDaemon = true; start() }
+    }
 
-        // Configure Skiko render API based on platform (respect pre-set -D flag)
-        if (System.getProperty("skiko.renderApi") == null) {
-            when (getOperatingSystem()) {
-                OperatingSystem.WINDOWS -> {
-                    if (isWindows10()) {
-                        System.setProperty("skiko.renderApi", "OPENGL")
-                    } else {
-                        System.setProperty("skiko.renderApi", "DIRECT3D")
-                    }
+    // Configure Skiko render API based on platform (respect pre-set -D flag)
+    if (System.getProperty("skiko.renderApi") == null) {
+        when (getOperatingSystem()) {
+            OperatingSystem.WINDOWS -> {
+                if (isWindows10()) {
+                    System.setProperty("skiko.renderApi", "OPENGL")
+                } else {
+                    System.setProperty("skiko.renderApi", "DIRECT3D")
                 }
-                OperatingSystem.LINUX -> if (isNvidiaGpuPresent()) {
-                    System.setProperty("skiko.renderApi", "SOFTWARE")
-                }
-                else -> { /* Use default render API */ }
             }
+            OperatingSystem.LINUX -> if (isNvidiaGpuPresent()) {
+                System.setProperty("skiko.renderApi", "SOFTWARE")
+            }
+            else -> { /* Use default render API */ }
         }
+    }
 
-        System.err.println("[native-diag] skiko.renderApi=${System.getProperty("skiko.renderApi")}")
-        System.err.println("[native-diag] entering application {}...")
-        application {
+    application {
         allowComposeNativeTrayLogging = LoggerConfig.enabled
 
         val cleanInstall = System.getProperty("cleanInstall", "false").toBoolean()
@@ -104,24 +99,16 @@ fun main() {
             lockIdentifier = "aerodl"
         )
 
-        try {
-            FileKit.init(appId = "ada57c09-11e1-4d56-9d5d-0c480f6968ec")
-            System.err.println("[native-diag] FileKit.init OK, databasesDir=${FileKit.databasesDir.path}")
-        } catch (e: Throwable) {
-            System.err.println("[native-diag] FileKit.init FAILED: ${e::class.qualifiedName}: ${e.message}")
-            e.printStackTrace(System.err)
-        }
+        FileKit.init(appId = "ada57c09-11e1-4d56-9d5d-0c480f6968ec")
 
         if (cleanInstall) {
             clearAppData()
         }
 
 //    Locale.setDefault(Locale("en"))
-        System.err.println("[native-diag] creating AppGraph...")
-        val appGraph = remember { createGraph<AppGraph>().also { System.err.println("[native-diag] AppGraph created") } }
+        val appGraph = remember { createGraph<AppGraph>() }
         run {
             val windowViewModelOwner = rememberWindowViewModelStoreOwner()
-            System.err.println("[native-diag] CompositionLocalProvider...")
             CompositionLocalProvider(
                 LocalWindowViewModelStoreOwner provides windowViewModelOwner,
                 LocalViewModelStoreOwner provides windowViewModelOwner,
@@ -132,14 +119,12 @@ fun main() {
                         appName = runBlocking { getString(Res.string.app_name) },
                     )
                 )
+
                 val autoLaunch = appGraph.autoLaunch
-                val startedViaAutostart = autoLaunch.isStartedViaAutostart()
-                System.err.println("[native-diag] isStartedViaAutostart=$startedViaAutostart")
                 val trayAppState = rememberTrayAppState(
                     initialWindowSize = DpSize(350.dp, 500.dp),
-                    initiallyVisible = !startedViaAutostart
+                    initiallyVisible = !autoLaunch.isStartedViaAutostart()
                 )
-                System.err.println("[native-diag] trayAppState.isVisible=${trayAppState.isVisible.value}")
                 TrayAppStateHolder.set(trayAppState)
 
                 // Eagerly instantiate clipboard monitoring once, as a side effect
@@ -249,11 +234,6 @@ fun main() {
             }
 
         }
-    }
-    } catch (e: Throwable) {
-        System.err.println("[native-diag] FATAL: ${e::class.qualifiedName}: ${e.message}")
-        e.printStackTrace(System.err)
-        System.exit(1)
     }
 }
 
