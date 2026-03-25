@@ -28,7 +28,7 @@ composewebview = "1.0.0-beta-01"
 # Network & Tools
 ktor = "3.4.0"
 platformtools = "0.7.5"
-nucleus = "1.7.0"
+nucleus = "1.7.2"
 metro = "0.10.2"
 
 
