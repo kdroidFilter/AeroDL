@@ -29,8 +29,9 @@ jobs:
           submodules: recursive
 
       - name: Setup Nucleus
-        uses: kdroidFilter/Nucleus/.github/actions/setup-nucleus@v1.1.3
+        uses: kdroidFilter/Nucleus/.github/actions/setup-nucleus@v1.7.2
         with:
+          graalvm: 'true'
           packaging-tools: 'true'
           setup-gradle: 'true'
 
