@@ -109,9 +109,7 @@ fun DownloadView(
                 item {
                     if (state.hasAnyHistory) {
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(IntrinsicSize.Max),
+                            modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
@@ -127,9 +125,7 @@ fun DownloadView(
                                     )
                                 },
                                 singleLine = true,
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxHeight(),
+                                modifier = Modifier.weight(1f),
                                 trailing = {
                                     Icon(
                                         icon = Icons.Regular.Search,
@@ -141,16 +137,10 @@ fun DownloadView(
                                 },
                             )
 
-                            TooltipBox(
-                                tooltip = {
-                                    Text(stringResource(Res.string.tooltip_clear_history))
-                                },
-                                modifier = Modifier.fillMaxHeight(),
-                            ) {
-                                Button(
-                                    onClick = { onEvent(DownloadEvents.ClearHistory) },
-                                    modifier = Modifier.fillMaxHeight(),
-                                ) {
+                            TooltipBox(tooltip = {
+                                Text(stringResource(Res.string.tooltip_clear_history))
+                            }) {
+                                Button(onClick = { onEvent(DownloadEvents.ClearHistory) }) {
                                     Text(
                                         stringResource(Res.string.download_clear_history),
                                         style = NativeTheme.typography.bodyStrong,
