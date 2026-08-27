@@ -10,11 +10,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
-import io.github.kdroidfilter.ytdlpgui.ui.component.AccentButton
+import io.github.kdroidfilter.ytdlpgui.core.platform.browser.openUrlInBrowser
 import io.github.kdroidfilter.ytdlpgui.ui.component.HyperlinkButton
 import dev.zacsweers.metrox.viewmodel.metroViewModel
 import io.github.kdroidfilter.ytdlpgui.ui.component.Text
@@ -80,8 +78,6 @@ fun GnomeFocusView(
     currentStepIndex: Int? = null,
     dependencyInfoBarDismissed: Boolean = false,
 ) {
-    val uriHandler = LocalUriHandler.current
-
     Column(Modifier.fillMaxSize().padding(16.dp)) {
         OnboardingProgress(
             step = currentStep,
@@ -97,7 +93,7 @@ fun GnomeFocusView(
             Spacer(Modifier.height(16.dp))
             HyperlinkButton(
                 onClick = {
-                    uriHandler.openUri("https://extensions.gnome.org/extension/6385/steal-my-focus-window/")
+                    openUrlInBrowser("https://extensions.gnome.org/extension/6385/steal-my-focus-window/")
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
