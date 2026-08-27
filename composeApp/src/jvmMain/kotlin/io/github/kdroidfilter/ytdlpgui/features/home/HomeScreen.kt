@@ -109,7 +109,7 @@ fun HomeView(
             )
             Spacer(Modifier.width(8.dp))
             Button(
-                modifier = Modifier.size(36.dp),
+                modifier = Modifier.size(NativeTheme.sizes.control),
                 onClick = { onEvent(HomeEvents.OnClipBoardClicked) },
                 iconOnly = true,
                 disabled = state.isLoading,

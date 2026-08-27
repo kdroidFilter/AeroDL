@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
 import io.github.kdroidfilter.ytdlpgui.ui.component.NativeDrawsWindowChrome
 import io.github.kdroidfilter.ytdlpgui.ui.component.NativeThemeImpl
 
@@ -19,6 +20,10 @@ val LocalNativeTypography = staticCompositionLocalOf<NativeTypography> {
 }
 
 val LocalNativeShapes = staticCompositionLocalOf<NativeShapes> {
+    error("NativeTheme was not applied")
+}
+
+val LocalNativeSizes = staticCompositionLocalOf<NativeSizes> {
     error("NativeTheme was not applied")
 }
 
@@ -50,6 +55,11 @@ object NativeTheme {
         @Composable
         @ReadOnlyComposable
         get() = LocalNativeShapes.current
+
+    val sizes: NativeSizes
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalNativeSizes.current
 }
 
 class NativeColors(
@@ -110,6 +120,10 @@ class NativeTypography(
 
 class NativeShapes(
     val control: Shape,
+)
+
+class NativeSizes(
+    val control: Dp,
 )
 
 internal fun Color.contrastingOnColor(): Color =

@@ -77,9 +77,11 @@ import io.github.kdroidfilter.ytdlpgui.ui.contrastingOnColor
 import io.github.kdroidfilter.ytdlpgui.ui.LocalNativeColors
 import io.github.kdroidfilter.ytdlpgui.ui.LocalNativeContentColor
 import io.github.kdroidfilter.ytdlpgui.ui.LocalNativeShapes
+import io.github.kdroidfilter.ytdlpgui.ui.LocalNativeSizes
 import io.github.kdroidfilter.ytdlpgui.ui.LocalNativeTypography
 import io.github.kdroidfilter.ytdlpgui.ui.NativeColors
 import io.github.kdroidfilter.ytdlpgui.ui.NativeShapes
+import io.github.kdroidfilter.ytdlpgui.ui.NativeSizes
 import io.github.kdroidfilter.ytdlpgui.ui.NativeTypography
 import io.github.kdroidfilter.ytdlpgui.ui.icons.NativeIcon
 
@@ -127,6 +129,7 @@ internal fun NativeThemeImpl(darkTheme: Boolean, content: @Composable () -> Unit
                 LocalNativeColors provides nativeColors,
                 LocalNativeTypography provides nativeTypography,
                 LocalNativeShapes provides nativeShapes,
+                LocalNativeSizes provides NativeSizes(control = 36.dp),
                 LocalNativeContentColor provides scheme.textPrimary,
             ) {
                 content()

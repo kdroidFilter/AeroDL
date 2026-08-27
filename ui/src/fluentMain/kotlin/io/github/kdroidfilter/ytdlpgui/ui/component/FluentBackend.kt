@@ -57,9 +57,11 @@ import io.github.composefluent.component.TopNavItem
 import io.github.kdroidfilter.ytdlpgui.ui.LocalNativeColors
 import io.github.kdroidfilter.ytdlpgui.ui.LocalNativeContentColor
 import io.github.kdroidfilter.ytdlpgui.ui.LocalNativeShapes
+import io.github.kdroidfilter.ytdlpgui.ui.LocalNativeSizes
 import io.github.kdroidfilter.ytdlpgui.ui.LocalNativeTypography
 import io.github.kdroidfilter.ytdlpgui.ui.NativeColors
 import io.github.kdroidfilter.ytdlpgui.ui.NativeShapes
+import io.github.kdroidfilter.ytdlpgui.ui.NativeSizes
 import io.github.kdroidfilter.ytdlpgui.ui.NativeTypography
 import io.github.kdroidfilter.ytdlpgui.ui.icons.NativeIcon
 import io.github.composefluent.component.ContentDialogButton as FluentContentDialogButton
@@ -100,6 +102,7 @@ internal fun NativeThemeImpl(darkTheme: Boolean, content: @Composable () -> Unit
             LocalNativeColors provides nativeColors,
             LocalNativeTypography provides nativeTypography,
             LocalNativeShapes provides NativeShapes(control = FluentTheme.shapes.control),
+            LocalNativeSizes provides NativeSizes(control = 32.dp),
             LocalNativeContentColor provides fluentColors.text.text.primary,
         ) {
             content()
