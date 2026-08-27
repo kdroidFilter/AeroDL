@@ -17,7 +17,6 @@ import ytdlpgui.composeapp.generated.resources.clipboard_ignore
 import ytdlpgui.composeapp.generated.resources.clipboard_link_detected_message
 import ytdlpgui.composeapp.generated.resources.clipboard_link_detected_title
 import ytdlpgui.composeapp.generated.resources.clipboard_open_in_app
-import io.github.kdroidfilter.ytdlpgui.core.platform.notifications.NotificationThumbUtils
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 
 /**
@@ -119,12 +118,9 @@ class ClipboardMonitorManager(
             }
         }
 
-        val thumbUrl = NotificationThumbUtils.resolveThumbnailUrl(null, url)
-
         notification(
             title = title,
             message = message,
-            largeImage = thumbUrl,
             onActivated = { action() },
         ) {
             button(title = openBtn) { action() }
