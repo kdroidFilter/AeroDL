@@ -102,11 +102,30 @@ fun main(args: Array<String>) {
             LocalViewModelStoreOwner provides windowViewModelOwner,
             LocalMetroViewModelFactory provides appGraph.metroViewModelFactory,
         ) {
+            val startedAtLogin = remember { AutoLaunch.wasStartedAtLogin(args) }
             val trayAppState = rememberTrayAppState(
                 initialWindowSize = DpSize(350.dp, 500.dp),
-                initiallyVisible = !AutoLaunch.wasStartedAtLogin(emptyArray())
+                initiallyVisible = !startedAtLogin,
             )
             TrayAppStateHolder.set(trayAppState)
+
+            if (startedAtLogin) {
+                infoln { "Launched from autostart: starting in tray" }
+            }
+
+            // macOS delivers the login AppleEvent after NSApplication.run();
+            // wasStartedAtLogin caches positives, so poll once the Compose loop is up.
+            LaunchedEffect(trayAppState) {
+                if (startedAtLogin || Platform.Current != Platform.MacOS) return@LaunchedEffect
+                repeat(20) {
+                    delay(100)
+                    if (AutoLaunch.wasStartedAtLogin(args)) {
+                        infoln { "Launched from autostart: hiding window" }
+                        trayAppState.hide()
+                        return@LaunchedEffect
+                    }
+                }
+            }
 
             LaunchedEffect(trayAppState) {
                 trayAppState.isVisible.collect { visible ->
