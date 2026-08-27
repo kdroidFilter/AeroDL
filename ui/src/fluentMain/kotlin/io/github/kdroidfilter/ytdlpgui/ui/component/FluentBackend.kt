@@ -21,9 +21,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.unit.dp
+import dev.nucleusframework.systemcolor.systemAccentColor
+import io.github.composefluent.Colors
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.FluentTheme
+import io.github.composefluent.Shades
 import io.github.composefluent.background.Mica
 import io.github.composefluent.component.AccentButton
 import io.github.composefluent.component.Button
@@ -47,8 +51,6 @@ import io.github.composefluent.component.MenuFlyoutScope
 import io.github.composefluent.component.MenuFlyoutSeparator as FluentMenuFlyoutSeparator
 import io.github.composefluent.component.TopNav
 import io.github.composefluent.component.TopNavItem
-import io.github.composefluent.darkColors
-import io.github.composefluent.lightColors
 import io.github.kdroidfilter.ytdlpgui.ui.LocalNativeColors
 import io.github.kdroidfilter.ytdlpgui.ui.LocalNativeContentColor
 import io.github.kdroidfilter.ytdlpgui.ui.LocalNativeShapes
@@ -61,10 +63,25 @@ import io.github.composefluent.component.ContentDialogButton as FluentContentDia
 import io.github.composefluent.component.DialogSize as FluentDialogSize
 import io.github.composefluent.component.SegmentedItemPosition as FluentSegmentedItemPosition
 
+private val DefaultFluentAccent = Color(0xFF0078D4)
+
+private fun shadesFromAccent(accent: Color): Shades = Shades(
+    base = accent,
+    light1 = lerp(accent, Color.White, 0.16f),
+    light2 = lerp(accent, Color.White, 0.36f),
+    light3 = lerp(accent, Color.White, 0.55f),
+    dark1 = lerp(accent, Color.Black, 0.16f),
+    dark2 = lerp(accent, Color.Black, 0.36f),
+    dark3 = lerp(accent, Color.Black, 0.55f),
+)
+
 @OptIn(ExperimentalFluentApi::class)
 @Composable
 internal fun NativeThemeImpl(darkTheme: Boolean, content: @Composable () -> Unit) {
-    val fluentColors = if (darkTheme) darkColors() else lightColors()
+    val accent = systemAccentColor() ?: DefaultFluentAccent
+    val fluentColors = remember(darkTheme, accent) {
+        Colors(shadesFromAccent(accent), darkTheme)
+    }
     FluentTheme(colors = fluentColors) {
         val nativeColors = fluentColors.toNative()
         val nativeTypography = NativeTypography(

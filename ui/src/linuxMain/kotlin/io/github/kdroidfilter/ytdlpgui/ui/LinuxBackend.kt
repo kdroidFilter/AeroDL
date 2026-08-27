@@ -44,11 +44,15 @@ import dev.nucleusframework.yarucompose.icons.YaruIcon
 import dev.nucleusframework.yarucompose.themes.LocalYaruColorScheme
 import dev.nucleusframework.yarucompose.themes.LocalYaruContentColor
 import dev.nucleusframework.yarucompose.themes.LocalYaruTypography
+import dev.nucleusframework.systemcolor.isSystemInHighContrast
+import dev.nucleusframework.systemcolor.systemAccentColor
 import dev.nucleusframework.yarucompose.themes.YaruTheme
 import dev.nucleusframework.yarucompose.themes.YaruVariant
 import dev.nucleusframework.yarucompose.themes.isLight
 import dev.nucleusframework.yarucompose.themes.success
 import dev.nucleusframework.yarucompose.themes.warning
+import dev.nucleusframework.yarucompose.themes.yaruDarkScheme
+import dev.nucleusframework.yarucompose.themes.yaruLightScheme
 import dev.nucleusframework.yarucompose.themes.yaruSystemAccentVariant
 import dev.nucleusframework.yarucompose.widgets.YaruButton
 import dev.nucleusframework.yarucompose.widgets.YaruButtonVariant
@@ -74,9 +78,18 @@ import io.github.kdroidfilter.ytdlpgui.ui.icons.NativeIcon
 
 @Composable
 internal fun NativeThemeImpl(darkTheme: Boolean, content: @Composable () -> Unit) {
+    val accent = systemAccentColor()
     val variant = yaruSystemAccentVariant() ?: YaruVariant.Orange
-    YaruTheme(isDark = darkTheme, variant = variant) {
-        val scheme = LocalYaruColorScheme.current
+    YaruTheme(
+        isDark = darkTheme,
+        highContrast = isSystemInHighContrast(),
+        variant = variant,
+    ) {
+        val scheme = if (accent != null) {
+            if (darkTheme) yaruDarkScheme(primaryColor = accent) else yaruLightScheme(primaryColor = accent)
+        } else {
+            LocalYaruColorScheme.current
+        }
         val typography = LocalYaruTypography.current
         val nativeColors = remember(scheme) { scheme.toNative() }
         val nativeTypography = remember(typography) {
@@ -89,6 +102,8 @@ internal fun NativeThemeImpl(darkTheme: Boolean, content: @Composable () -> Unit
         }
         val nativeShapes = remember { NativeShapes(control = RoundedCornerShape(8.dp)) }
         CompositionLocalProvider(
+            LocalYaruColorScheme provides scheme,
+            LocalYaruContentColor provides scheme.onSurface,
             LocalNativeColors provides nativeColors,
             LocalNativeTypography provides nativeTypography,
             LocalNativeShapes provides nativeShapes,

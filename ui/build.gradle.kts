@@ -30,6 +30,7 @@ kotlin {
         val jvmMain by getting {
             kotlin.srcDir("src/${uiBackend}Main/kotlin")
             dependencies {
+                implementation(libs.nucleus.system.color)
                 when (uiBackend) {
                     "linux" -> implementation(libs.yaru)
                     else -> {
