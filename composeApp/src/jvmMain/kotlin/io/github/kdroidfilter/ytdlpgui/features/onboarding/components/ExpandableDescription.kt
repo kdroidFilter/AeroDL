@@ -12,12 +12,10 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.Icon
-import io.github.composefluent.component.Text
-import io.github.composefluent.icons.Icons
-import io.github.composefluent.icons.regular.ChevronLeft
-import io.github.composefluent.icons.regular.ChevronRight
+import io.github.kdroidfilter.ytdlpgui.ui.NativeTheme
+import io.github.kdroidfilter.ytdlpgui.ui.component.Icon
+import io.github.kdroidfilter.ytdlpgui.ui.component.Text
+import io.github.kdroidfilter.ytdlpgui.ui.icons.Icons
 
 @Composable
 fun ExpandableDescription(
@@ -33,7 +31,7 @@ fun ExpandableDescription(
     Column(modifier = modifier) {
         Row(
             modifier = Modifier
-                .clip(FluentTheme.shapes.control)
+                .clip(NativeTheme.shapes.control)
                 .clickable(
                     enabled = hasOverflow,
                     indication = null,
@@ -45,7 +43,7 @@ fun ExpandableDescription(
         ) {
             Text(
                 text = description,
-                style = FluentTheme.typography.body,
+                style = NativeTheme.typography.body,
                 maxLines = if (expanded) Int.MAX_VALUE else maxLinesCollapsed,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),

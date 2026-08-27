@@ -19,17 +19,14 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.composefluent.ExperimentalFluentApi
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.AccentButton
-import io.github.composefluent.component.Icon
-import io.github.composefluent.component.InfoBar
-import io.github.composefluent.component.InfoBarDefaults
-import io.github.composefluent.component.ProgressBar
-import io.github.composefluent.component.Text
-import io.github.composefluent.icons.Icons
-import io.github.composefluent.icons.regular.ArrowDownload
-import io.github.composefluent.icons.regular.ArrowSync
+import io.github.kdroidfilter.ytdlpgui.ui.NativeTheme
+import io.github.kdroidfilter.ytdlpgui.ui.component.AccentButton
+import io.github.kdroidfilter.ytdlpgui.ui.component.Icon
+import io.github.kdroidfilter.ytdlpgui.ui.component.InfoBar
+import io.github.kdroidfilter.ytdlpgui.ui.component.InfoBarDefaults
+import io.github.kdroidfilter.ytdlpgui.ui.component.ProgressBar
+import io.github.kdroidfilter.ytdlpgui.ui.component.Text
+import io.github.kdroidfilter.ytdlpgui.ui.icons.Icons
 import io.github.kdroidfilter.ytdlpgui.core.platform.browser.openUrlInBrowser
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,7 +35,7 @@ import ytdlpgui.composeapp.generated.resources.download_update
 import ytdlpgui.composeapp.generated.resources.update_available
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalFluentApi::class)
+
 @Composable
 internal fun UpdateInfoBar(
     updateVersion: String,
@@ -61,7 +58,7 @@ internal fun UpdateInfoBar(
             title = {
                 Text(
                     stringResource(Res.string.update_available, updateVersion),
-                    style = FluentTheme.typography.caption
+                    style = NativeTheme.typography.caption
                 )
             },
             message = {
@@ -89,7 +86,7 @@ internal fun UpdateInfoBar(
                             )
                             Text(
                                 "Installer et redémarrer",
-                                style = FluentTheme.typography.body,
+                                style = NativeTheme.typography.body,
                                 fontSize = 12.sp,
                             )
                         }
@@ -101,7 +98,7 @@ internal fun UpdateInfoBar(
                             )
                             Text(
                                 stringResource(Res.string.download_update),
-                                style = FluentTheme.typography.body,
+                                style = NativeTheme.typography.body,
                                 fontSize = 12.sp,
                             )
                         }
@@ -125,7 +122,7 @@ private fun UpdateDownloadProgress(
     ) {
         Text(
             "Téléchargement de la mise à jour…",
-            style = FluentTheme.typography.caption,
+            style = NativeTheme.typography.caption,
         )
         ProgressBar(
             progress = (progress / 100.0).toFloat(),
@@ -133,7 +130,7 @@ private fun UpdateDownloadProgress(
         )
         Text(
             "${progress.roundToInt()}%",
-            style = FluentTheme.typography.caption,
+            style = NativeTheme.typography.caption,
         )
     }
 }
@@ -157,7 +154,7 @@ private fun MarkdownBody(text: String, modifier: Modifier = Modifier, lines: Int
             var textLayoutResult: TextLayoutResult? = null
             Text(
                 text = annotated,
-                style = FluentTheme.typography.caption,
+                style = NativeTheme.typography.caption,
                 fontSize = 10.sp,
                 onTextLayout = { textLayoutResult = it },
                 modifier = Modifier.pointerInput(annotated) {

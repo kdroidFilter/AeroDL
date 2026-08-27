@@ -7,8 +7,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.Text
+import io.github.kdroidfilter.ytdlpgui.ui.NativeTheme
+import io.github.kdroidfilter.ytdlpgui.ui.component.Text
 import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.converter_trim
@@ -30,7 +30,7 @@ fun TrimSlider(
     Column(modifier = modifier) {
         Text(
             text = stringResource(Res.string.converter_trim),
-            style = FluentTheme.typography.bodyStrong,
+            style = NativeTheme.typography.bodyStrong,
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.height(8.dp))
@@ -42,13 +42,13 @@ fun TrimSlider(
         ) {
             Text(
                 text = formatDuration(trimStartMs),
-                style = FluentTheme.typography.caption,
-                color = FluentTheme.colors.text.text.secondary
+                style = NativeTheme.typography.caption,
+                color = NativeTheme.colors.text.text.secondary
             )
             Text(
                 text = formatDuration(trimEndMs),
-                style = FluentTheme.typography.caption,
-                color = FluentTheme.colors.text.text.secondary
+                style = NativeTheme.typography.caption,
+                color = NativeTheme.colors.text.text.secondary
             )
         }
 
@@ -61,9 +61,9 @@ fun TrimSlider(
             valueRange = 0f..totalDurationMs.toFloat(),
             modifier = Modifier.fillMaxWidth(),
             colors = SliderDefaults.colors(
-                thumbColor = FluentTheme.colors.fillAccent.default,
-                activeTrackColor = FluentTheme.colors.fillAccent.default,
-                inactiveTrackColor = FluentTheme.colors.stroke.control.default
+                thumbColor = NativeTheme.colors.fillAccent.default,
+                activeTrackColor = NativeTheme.colors.fillAccent.default,
+                inactiveTrackColor = NativeTheme.colors.stroke.control.default
             )
         )
 
@@ -74,8 +74,8 @@ fun TrimSlider(
                     Res.string.converter_trim_duration,
                     formatDuration(trimEndMs - trimStartMs)
                 ),
-                style = FluentTheme.typography.caption,
-                color = FluentTheme.colors.text.text.secondary,
+                style = NativeTheme.typography.caption,
+                color = NativeTheme.colors.text.text.secondary,
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
             )

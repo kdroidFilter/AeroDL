@@ -21,6 +21,7 @@ cardiologist = "0.8.0"
 
 # UI Libraries
 fluent = "1.1.1"
+yaru = "1.0.1"
 composemediaplayer = "0.11.4"
 composenativetray = "2.1.1"
 
@@ -61,6 +62,7 @@ kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-s
 # UI Libraries
 compose-fluent = { module = "dev.nucleusframework.composefluent:fluent", version.ref = "fluent" }
 compose-fluent-icons-extended = { module = "dev.nucleusframework.composefluent:fluent-icons-extended", version.ref = "fluent" }
+yaru = { module = "dev.nucleusframework.yarucompose:yaru", version.ref = "yaru" }
 composemediaplayer = { module = "io.github.kdroidfilter:composemediaplayer", version.ref = "composemediaplayer" }
 composenativetray = { module = "dev.nucleusframework:composenativetray", version.ref = "composenativetray" }
 composenativetray-app = { module = "dev.nucleusframework:composenativetray-app", version.ref = "composenativetray" }

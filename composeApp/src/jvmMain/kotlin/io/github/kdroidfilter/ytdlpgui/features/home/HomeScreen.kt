@@ -13,12 +13,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.*
-import io.github.composefluent.icons.Icons
-import io.github.composefluent.icons.filled.ClipboardPaste
-import io.github.composefluent.icons.regular.ArrowLeft
-import io.github.composefluent.icons.regular.ArrowRight
+import io.github.kdroidfilter.ytdlpgui.ui.NativeTheme
+import io.github.kdroidfilter.ytdlpgui.ui.component.*
+import io.github.kdroidfilter.ytdlpgui.ui.icons.Icons
 import dev.zacsweers.metrox.viewmodel.metroViewModel
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnly
 import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
@@ -73,7 +70,7 @@ fun HomeView(
                 imageVector = AeroDlLogoOnly,
                 contentDescription = stringResource(Res.string.logo_content_desc),
                 modifier = Modifier.height(150.dp),
-                tint = FluentTheme.colors.system.neutral
+                tint = NativeTheme.colors.system.neutral
             )
         }
         Row(
@@ -89,20 +86,20 @@ fun HomeView(
                 singleLine = true,
                 header = {
                     val (headerText, headerColor) = when {
-                        state.isLoading -> stringResource(Res.string.loading) to FluentTheme.colors.text.text.tertiary
+                        state.isLoading -> stringResource(Res.string.loading) to NativeTheme.colors.text.text.tertiary
                         state.errorMessage != null -> {
                             val msg = when (state.errorMessage) {
                                 HomeError.SingleValidUrl -> stringResource(Res.string.error_single_valid_url)
                                 HomeError.InvalidUrlFormat -> stringResource(Res.string.error_invalid_url_format)
                                 HomeError.UrlRequired -> stringResource(Res.string.error_url_required)
                             }
-                            msg to FluentTheme.colors.system.critical
+                            msg to NativeTheme.colors.system.critical
                         }
-                        else -> stringResource(Res.string.paste_video_link_header) to FluentTheme.colors.text.text.disabled
+                        else -> stringResource(Res.string.paste_video_link_header) to NativeTheme.colors.text.text.disabled
                     }
                     Text(
                         text = headerText,
-                        style = FluentTheme.typography.caption,
+                        style = NativeTheme.typography.caption,
                         textAlign = TextAlign.Center,
                         color = headerColor,
                         modifier = Modifier.fillMaxWidth(0.85f)

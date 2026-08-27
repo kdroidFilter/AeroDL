@@ -1,5 +1,4 @@
 @file:OptIn(ExperimentalFoundationApi::class)
-
 package io.github.kdroidfilter.ytdlpgui.features.onboarding.components
 
 import androidx.compose.ui.tooling.preview.Preview
@@ -14,8 +13,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Icon
 import androidx.compose.material.Surface
+import io.github.kdroidfilter.ytdlpgui.ui.component.Icon
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,15 +27,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.composefluent.ExperimentalFluentApi
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.InfoBar
-import io.github.composefluent.component.InfoBarDefaults
-import io.github.composefluent.component.Text
-import io.github.composefluent.component.TooltipBox
-import io.github.composefluent.icons.Icons
-import io.github.composefluent.icons.regular.Info
-import io.github.kdroidfilter.ytdlpgui.core.design.components.ProgressBar
+import io.github.kdroidfilter.ytdlpgui.ui.NativeTheme
+import io.github.kdroidfilter.ytdlpgui.ui.component.InfoBar
+import io.github.kdroidfilter.ytdlpgui.ui.component.InfoBarDefaults
+import io.github.kdroidfilter.ytdlpgui.ui.component.Text
+import io.github.kdroidfilter.ytdlpgui.ui.component.TooltipBox
+import io.github.kdroidfilter.ytdlpgui.ui.icons.Icons
+import io.github.kdroidfilter.ytdlpgui.ui.component.ProgressBar
 import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.Res
@@ -51,7 +48,7 @@ import ytdlpgui.composeapp.generated.resources.status_installed
 import ytdlpgui.composeapp.generated.resources.status_pending
 import ytdlpgui.composeapp.generated.resources.status_updating
 
-@OptIn(ExperimentalFluentApi::class)
+
 @Composable
 internal fun DependencyInfoBar(
     initState: InitState,
@@ -143,7 +140,7 @@ internal fun DependencyInfoBar(
     }
 }
 
-@OptIn(ExperimentalFluentApi::class)
+
 @Composable
 private fun DependencyInfoTitle(
     text: String
@@ -160,7 +157,7 @@ private fun DependencyInfoTitle(
                     isOverflow = layoutResult.hasVisualOverflow
                 }
             },
-            style = FluentTheme.typography.caption
+            style = NativeTheme.typography.caption
         )
     }
 
@@ -187,7 +184,7 @@ private fun DependencyInfoTitle(
     }
 }
 
-@OptIn(ExperimentalFluentApi::class)
+
 @Composable
 private fun DependencyInfoTooltip(
     tooltipText: String
@@ -208,7 +205,7 @@ private fun DependencyInfoTooltip(
         }
     ) {
         Icon(
-            imageVector = Icons.Default.Info,
+            icon = Icons.Default.Info,
             contentDescription = "Info",
             modifier = Modifier.size(16.dp),
             tint = Color.Gray
@@ -231,7 +228,7 @@ private fun DependencyInfoRow(
         DependencyInfoTooltip(
             tooltipText = tooltipText
         )
-        Text("$label: $status", style = FluentTheme.typography.caption, fontSize = 8.sp)
+        Text("$label: $status", style = NativeTheme.typography.caption, fontSize = 8.sp)
         if (progress != null) {
             ProgressBar(
                 progress = progress,
@@ -244,7 +241,7 @@ private fun DependencyInfoRow(
 @Preview
 @Composable
 private fun DependencyInfoBarPendingPreview() {
-    FluentTheme {
+    NativeTheme {
         Column(Modifier.padding(16.dp)) {
             DependencyInfoBar(
                 initState = InitState(
@@ -258,7 +255,7 @@ private fun DependencyInfoBarPendingPreview() {
 @Preview
 @Composable
 private fun DependencyInfoBarCheckingPreview() {
-    FluentTheme {
+    NativeTheme {
         Column(Modifier.padding(16.dp)) {
             DependencyInfoBar(
                 initState = InitState(
@@ -274,7 +271,7 @@ private fun DependencyInfoBarCheckingPreview() {
 @Preview
 @Composable
 private fun DependencyInfoBarDownloadingPreview() {
-    FluentTheme {
+    NativeTheme {
         Column(Modifier.padding(16.dp)) {
             DependencyInfoBar(
                 initState = InitState(
@@ -292,7 +289,7 @@ private fun DependencyInfoBarDownloadingPreview() {
 @Preview
 @Composable
 private fun DependencyInfoBarUpdatingPreview() {
-    FluentTheme {
+    NativeTheme {
         Column(Modifier.padding(16.dp)) {
             DependencyInfoBar(
                 initState = InitState(
@@ -308,7 +305,7 @@ private fun DependencyInfoBarUpdatingPreview() {
 @Preview
 @Composable
 private fun DependencyInfoBarCompletedPreview() {
-    FluentTheme {
+    NativeTheme {
         Column(Modifier.padding(16.dp)) {
             DependencyInfoBar(
                 initState = InitState(
@@ -322,7 +319,7 @@ private fun DependencyInfoBarCompletedPreview() {
 @Preview
 @Composable
 private fun DependencyInfoBarErrorPreview() {
-    FluentTheme {
+    NativeTheme {
         Column(Modifier.padding(16.dp)) {
             DependencyInfoBar(
                 initState = InitState(

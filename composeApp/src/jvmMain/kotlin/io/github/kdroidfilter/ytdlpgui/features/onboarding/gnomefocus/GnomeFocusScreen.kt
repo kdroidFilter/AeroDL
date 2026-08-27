@@ -14,10 +14,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
-import io.github.composefluent.component.AccentButton
-import io.github.composefluent.component.HyperlinkButton
+import io.github.kdroidfilter.ytdlpgui.ui.component.AccentButton
+import io.github.kdroidfilter.ytdlpgui.ui.component.HyperlinkButton
 import dev.zacsweers.metrox.viewmodel.metroViewModel
-import io.github.composefluent.component.Text
+import io.github.kdroidfilter.ytdlpgui.ui.component.Text
 import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import androidx.navigation.NavHostController
 import io.github.kdroidfilter.ytdlpgui.features.init.InitState

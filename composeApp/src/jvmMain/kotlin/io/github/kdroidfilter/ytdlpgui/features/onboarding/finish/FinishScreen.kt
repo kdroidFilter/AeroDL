@@ -10,11 +10,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.AccentButton
-import io.github.composefluent.component.Text
+import io.github.kdroidfilter.ytdlpgui.ui.NativeTheme
+import io.github.kdroidfilter.ytdlpgui.ui.component.AccentButton
+import io.github.kdroidfilter.ytdlpgui.ui.component.Text
 import dev.zacsweers.metrox.viewmodel.metroViewModel
-import io.github.kdroidfilter.ytdlpgui.core.design.components.ProgressBar
+import io.github.kdroidfilter.ytdlpgui.ui.component.ProgressBar
 import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import androidx.navigation.NavHostController
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
@@ -24,9 +24,9 @@ import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingStep
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingViewModel
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.OnboardingProgress
-import io.github.composefluent.component.ContentDialog
-import io.github.composefluent.component.DialogSize
-import io.github.composefluent.component.SubtleButton
+import io.github.kdroidfilter.ytdlpgui.ui.component.ContentDialog
+import io.github.kdroidfilter.ytdlpgui.ui.component.DialogSize
+import io.github.kdroidfilter.ytdlpgui.ui.component.SubtleButton
 import io.github.kdroidfilter.ytdlpgui.core.design.components.TerminalView
 import io.github.vinceglb.confettikit.compose.ConfettiKit
 import io.github.vinceglb.confettikit.core.Party
@@ -123,28 +123,28 @@ private fun LoadingResourcesScreen(
         if (initState?.errorMessage != null) {
             Text(
                 text = stringResource(Res.string.error_occurred),
-                style = FluentTheme.typography.subtitle,
-                color = FluentTheme.colors.system.critical,
+                style = NativeTheme.typography.subtitle,
+                color = NativeTheme.colors.system.critical,
             )
             Text(
                 text = initState.errorMessage,
-                style = FluentTheme.typography.bodyStrong,
+                style = NativeTheme.typography.bodyStrong,
                 textAlign = TextAlign.Center,
             )
             Text(
                 text = stringResource(Res.string.onboarding_finish_error_hint),
-                style = FluentTheme.typography.body,
+                style = NativeTheme.typography.body,
                 textAlign = TextAlign.Center,
             )
         } else {
             Text(
                 text = stringResource(Res.string.onboarding_finish_loading_title),
-                style = FluentTheme.typography.subtitle
+                style = NativeTheme.typography.subtitle
             )
 
             Text(
                 text = stringResource(Res.string.onboarding_finish_loading_message),
-                style = FluentTheme.typography.bodyStrong
+                style = NativeTheme.typography.bodyStrong
             )
         }
 
@@ -234,12 +234,12 @@ private fun ReadyToGoScreen(
 
             Text(
                 text = stringResource(Res.string.onboarding_finish_ready_title),
-                style = FluentTheme.typography.subtitle
+                style = NativeTheme.typography.subtitle
             )
 
             Text(
                 text = stringResource(Res.string.onboarding_finish_ready_message),
-                style = FluentTheme.typography.bodyStrong,
+                style = NativeTheme.typography.bodyStrong,
                 textAlign = TextAlign.Center
             )
 

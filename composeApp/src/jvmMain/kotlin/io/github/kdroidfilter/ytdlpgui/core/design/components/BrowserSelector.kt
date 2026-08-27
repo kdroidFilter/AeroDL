@@ -5,7 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import io.github.composefluent.component.ComboBox
+import io.github.kdroidfilter.ytdlpgui.ui.component.ComboBox
 import io.github.kdroidfilter.ytdlpgui.core.platform.browser.BrowserDetector
 import io.github.kdroidfilter.ytdlpgui.core.platform.browser.SupportedBrowser
 import org.jetbrains.compose.resources.StringResource

@@ -34,6 +34,7 @@ plugins {
 }
 
 include(":composeApp")
+include(":ui")
 include(":ytdlp")
 include(":ffmpeg")
 include(":network")

@@ -9,13 +9,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.Text
+import io.github.kdroidfilter.ytdlpgui.ui.NativeTheme
+import io.github.kdroidfilter.ytdlpgui.ui.component.Text
 
 @Composable
 internal fun HeaderRow(title: String, subtitle: String? = null) {
     Column(Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
-        Text(title, style = FluentTheme.typography.subtitle)
+        Text(title, style = NativeTheme.typography.subtitle)
         if (subtitle != null) {
             Spacer(Modifier.height(4.dp))
             ExpandableDescription(description = subtitle)
@@ -26,7 +26,7 @@ internal fun HeaderRow(title: String, subtitle: String? = null) {
 @Preview
 @Composable
 private fun HeaderRowPreview() {
-    FluentTheme {
+    NativeTheme {
         Column(Modifier.padding(16.dp)) {
             HeaderRow(
                 title = "Welcome to yt-dlp GUI",
@@ -39,7 +39,7 @@ private fun HeaderRowPreview() {
 @Preview
 @Composable
 private fun HeaderRowWithoutSubtitlePreview() {
-    FluentTheme {
+    NativeTheme {
         Column(Modifier.padding(16.dp)) {
             HeaderRow(title = "Download Directory")
         }

@@ -10,7 +10,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import io.github.composefluent.component.Icon
+import io.github.kdroidfilter.ytdlpgui.ui.component.Icon
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.SettingsGear
 import kotlin.math.max
 import kotlin.math.min

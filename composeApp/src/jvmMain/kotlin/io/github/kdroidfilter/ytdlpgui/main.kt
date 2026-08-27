@@ -32,11 +32,8 @@ import dev.nucleusframework.energymanager.EnergyManager
 import dev.zacsweers.metro.createGraph
 import dev.zacsweers.metrox.viewmodel.LocalMetroViewModelFactory
 import dev.zacsweers.metrox.viewmodel.metroViewModel
-import io.github.composefluent.ExperimentalFluentApi
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.background.Mica
-import io.github.composefluent.darkColors
-import io.github.composefluent.lightColors
+import io.github.kdroidfilter.ytdlpgui.ui.NativeTheme
+import io.github.kdroidfilter.ytdlpgui.ui.component.NativeBackground
 import io.github.kdroidfilter.logging.LoggerConfig
 import io.github.kdroidfilter.logging.errorln
 import io.github.kdroidfilter.logging.infoln
@@ -60,7 +57,7 @@ import ytdlpgui.composeapp.generated.resources.*
 import java.io.File
 import kotlin.time.Duration.Companion.seconds
 
-@OptIn(ExperimentalFluentApi::class)
+
 fun main(args: Array<String>) {
     initializeSentry()
 
@@ -166,9 +163,13 @@ fun main(args: Array<String>) {
                         modifier = Modifier
                             .padding(if (Platform.Current != Platform.Windows) 12.dp else 2.dp)
                             .fillMaxSize(),
-                        tint = if (isDownloading) FluentTheme.colors.system.success else {
-                            if (isMenuBarInDarkMode()) Color.White else Color.Black
-                        }
+                        tint = if (isDownloading) {
+                            Color(0xFF0E8420)
+                        } else if (isMenuBarInDarkMode()) {
+                            Color.White
+                        } else {
+                            Color.Black
+                        },
                     )
                 },
                 tooltip = runBlocking { getString(Res.string.app_name) } + if (isDownloading) runBlocking {
@@ -208,8 +209,8 @@ fun main(args: Array<String>) {
                     )
                 }
             ) {
-                FluentTheme(colors = if (isSystemInDarkMode()) darkColors() else lightColors()) {
-                    Mica(
+                NativeTheme(darkTheme = isSystemInDarkMode()) {
+                    NativeBackground(
                         Modifier
                             .fillMaxSize()
                             .clip(RoundedCornerShape(12.dp))

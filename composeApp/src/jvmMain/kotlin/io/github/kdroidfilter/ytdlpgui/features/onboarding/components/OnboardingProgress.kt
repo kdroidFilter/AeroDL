@@ -10,10 +10,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.github.composefluent.FluentTheme
+import io.github.kdroidfilter.ytdlpgui.ui.NativeTheme
 
-import io.github.composefluent.component.Text
-import io.github.kdroidfilter.ytdlpgui.core.design.components.ProgressBar
+import io.github.kdroidfilter.ytdlpgui.ui.component.Text
+import io.github.kdroidfilter.ytdlpgui.ui.component.ProgressBar
 import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingStep
 import org.jetbrains.compose.resources.stringResource
@@ -40,7 +40,7 @@ internal fun OnboardingProgress(
     ) {
         Text(
             text = stringResource(Res.string.onboarding_progress_label, actualCurrentIndex + 1, actualTotalSteps),
-            style = FluentTheme.typography.caption
+            style = NativeTheme.typography.caption
         )
         Spacer(Modifier.height(6.dp))
         ProgressBar(
@@ -53,7 +53,7 @@ internal fun OnboardingProgress(
 @Preview
 @Composable
 private fun OnboardingProgressFirstStepPreview() {
-    FluentTheme {
+    NativeTheme {
         Column(Modifier.padding(16.dp)) {
             OnboardingProgress(
                 step = OnboardingStep.Welcome,
@@ -67,7 +67,7 @@ private fun OnboardingProgressFirstStepPreview() {
 @Preview
 @Composable
 private fun OnboardingProgressMiddleStepPreview() {
-    FluentTheme {
+    NativeTheme {
         Column(Modifier.padding(16.dp)) {
             OnboardingProgress(
                 step = OnboardingStep.Cookies,
@@ -81,7 +81,7 @@ private fun OnboardingProgressMiddleStepPreview() {
 @Preview
 @Composable
 private fun OnboardingProgressWithInitStateDownloadingPreview() {
-    FluentTheme {
+    NativeTheme {
         Column(Modifier.padding(16.dp)) {
             OnboardingProgress(
                 step = OnboardingStep.Welcome,
@@ -101,7 +101,7 @@ private fun OnboardingProgressWithInitStateDownloadingPreview() {
 @Preview
 @Composable
 private fun OnboardingProgressWithInitStateCompletedPreview() {
-    FluentTheme {
+    NativeTheme {
         Column(Modifier.padding(16.dp)) {
             OnboardingProgress(
                 step = OnboardingStep.Welcome,

@@ -17,15 +17,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.Icon
-import io.github.composefluent.component.Text
-import io.github.composefluent.icons.Icons
-import io.github.composefluent.component.CheckBox
+import io.github.kdroidfilter.ytdlpgui.ui.NativeTheme
+import io.github.kdroidfilter.ytdlpgui.ui.component.Icon
+import io.github.kdroidfilter.ytdlpgui.ui.component.Text
+import io.github.kdroidfilter.ytdlpgui.ui.icons.Icons
+import io.github.kdroidfilter.ytdlpgui.ui.component.CheckBox
 
-import io.github.composefluent.icons.regular.LockShield
 import dev.zacsweers.metrox.viewmodel.metroViewModel
-import io.github.composefluent.icons.regular.Warning
 import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import androidx.navigation.NavHostController
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.NavigationRow
@@ -107,7 +105,7 @@ fun NoCheckCertView(
                 Spacer(Modifier.width(12.dp))
                 Text(
                     text = stringResource(Res.string.onboarding_filtered_network_detected_title),
-                    style = FluentTheme.typography.subtitle
+                    style = NativeTheme.typography.subtitle
                 )
             }
 

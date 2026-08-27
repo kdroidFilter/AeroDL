@@ -9,14 +9,12 @@ import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.github.composefluent.component.*
-import io.github.composefluent.icons.Icons
-import io.github.composefluent.icons.filled.*
-import io.github.composefluent.icons.regular.*
+import io.github.kdroidfilter.ytdlpgui.ui.component.*
+import io.github.kdroidfilter.ytdlpgui.ui.icons.Icons
 import dev.zacsweers.metrox.viewmodel.metroViewModel
 import io.github.kdroidfilter.ytdlpgui.core.design.components.BrowserSelector
 import io.github.kdroidfilter.ytdlpgui.core.design.components.EllipsizedTextWithTooltip
-import io.github.kdroidfilter.ytdlpgui.core.design.components.Switcher
+import io.github.kdroidfilter.ytdlpgui.ui.component.Switcher
 import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.*
@@ -141,19 +139,17 @@ private fun CookiesFromBrowserSetting(
     CardExpanderItem(
         heading = {
             Text(
-                stringResource(Res.string.settings_cookies_from_browser_title),
-                modifier = Modifier.fillMaxWidth(0.50f)
+                stringResource(Res.string.settings_cookies_from_browser_title)
             )
         },
         caption = {
             EllipsizedTextWithTooltip(
-                text = stringResource(Res.string.settings_cookies_from_browser_label),
-                modifier = Modifier.fillMaxWidth(0.50f)
+                text = stringResource(Res.string.settings_cookies_from_browser_label)
             )
         },
         icon = {
             Icon(
-                imageVector = Icons.Regular.Cookies,
+                icon = Icons.Regular.Cookies,
                 contentDescription = stringResource(Res.string.settings_cookies_from_browser_title)
             )
         },
@@ -182,14 +178,12 @@ private fun IncludePresetInFilenameSetting(
     CardExpanderItem(
         heading = {
             Text(
-                stringResource(Res.string.settings_include_preset_in_filename_title),
-                modifier = Modifier.fillMaxWidth(0.8f)
+                stringResource(Res.string.settings_include_preset_in_filename_title)
             )
         },
         caption = {
             EllipsizedTextWithTooltip(
-                text = stringResource(Res.string.settings_include_preset_in_filename_caption),
-                modifier = Modifier.fillMaxWidth(0.8f)
+                text = stringResource(Res.string.settings_include_preset_in_filename_caption)
             )
         },
         icon = { Icon(Icons.Filled.DocumentEdit, null) },
@@ -216,14 +210,12 @@ private fun EmbedThumbnailInMp3Setting(
     CardExpanderItem(
         heading = {
             Text(
-                stringResource(Res.string.settings_embed_thumbnail_mp3_title),
-                modifier = Modifier.fillMaxWidth(0.8f)
+                stringResource(Res.string.settings_embed_thumbnail_mp3_title)
             )
         },
         caption = {
             EllipsizedTextWithTooltip(
-                text = stringResource(Res.string.settings_embed_thumbnail_mp3_caption),
-                modifier = Modifier.fillMaxWidth(0.8f)
+                text = stringResource(Res.string.settings_embed_thumbnail_mp3_caption)
             )
         },
             icon = { Icon(Icons.Filled.MusicNote1, null) },
@@ -255,11 +247,10 @@ private fun ConcurrentFragmentsSetting(
     }
 
     CardExpanderItem(
-        heading = { Text(stringResource(Res.string.settings_concurrent_fragments_title), modifier = Modifier.fillMaxWidth(0.75f)) },
+        heading = { Text(stringResource(Res.string.settings_concurrent_fragments_title)) },
         caption = {
             EllipsizedTextWithTooltip(
-                text = stringResource(Res.string.settings_concurrent_fragments_caption),
-                modifier = Modifier.fillMaxWidth(0.75f)
+                text = stringResource(Res.string.settings_concurrent_fragments_caption)
             )
         },
         icon = { Icon(Icons.Filled.Flash, null) },
@@ -300,8 +291,7 @@ private fun ParallelDownloadsSetting(
         heading = { Text(stringResource(Res.string.settings_parallel_downloads_title)) },
         caption = {
             EllipsizedTextWithTooltip(
-                text = stringResource(Res.string.settings_parallel_downloads_caption),
-                modifier = Modifier.fillMaxWidth(0.8f)
+                text = stringResource(Res.string.settings_parallel_downloads_caption)
             )
         },
         icon = { Icon(Icons.Filled.TopSpeed, null) },
@@ -335,14 +325,12 @@ private fun ValidateBulkUrlsSetting(
     CardExpanderItem(
         heading = {
             Text(
-                stringResource(Res.string.settings_validate_bulk_urls_title),
-                modifier = Modifier.fillMaxWidth(0.8f)
+                stringResource(Res.string.settings_validate_bulk_urls_title)
             )
         },
         caption = {
             EllipsizedTextWithTooltip(
-                text = stringResource(Res.string.settings_validate_bulk_urls_caption),
-                modifier = Modifier.fillMaxWidth(0.8f)
+                text = stringResource(Res.string.settings_validate_bulk_urls_caption)
             )
         },
         icon = { Icon(Icons.Regular.CheckboxChecked, null) },
@@ -371,7 +359,7 @@ private fun DownloadDirectorySetting(
     CardExpanderItem(
         heading = { Text(stringResource(Res.string.settings_download_dir_title)) },
         caption = {
-            Column(Modifier.fillMaxWidth(0.6f)) {
+            Column {
                 Text(stringResource(Res.string.settings_download_dir_caption))
                 Spacer(Modifier.height(8.dp))
                 Text(
@@ -408,12 +396,11 @@ private fun ProxySetting(
     CardExpanderItem(
         heading = {
             Text(
-                stringResource(Res.string.settings_proxy_title),
-                modifier = Modifier.fillMaxWidth(0.50f)
+                stringResource(Res.string.settings_proxy_title)
             )
         },
         caption = {
-            Column(Modifier.fillMaxWidth(0.4f)) {
+            Column {
                 EllipsizedTextWithTooltip(
                     text = stringResource(Res.string.settings_proxy_caption),
                 )
@@ -453,14 +440,12 @@ private fun NoCheckCertificateSetting(
     CardExpanderItem(
         heading = {
             Text(
-                stringResource(Res.string.settings_no_check_certificate_title),
-                modifier = Modifier.fillMaxWidth(0.75f)
+                stringResource(Res.string.settings_no_check_certificate_title)
             )
         },
         caption = {
             EllipsizedTextWithTooltip(
-                text = stringResource(Res.string.settings_no_check_certificate_caption),
-                modifier = Modifier.fillMaxWidth(0.75f)
+                text = stringResource(Res.string.settings_no_check_certificate_caption)
             )
         },
         icon = { Icon(Icons.Default.LockShield, null) },
@@ -487,14 +472,12 @@ private fun ClipboardMonitoringSetting(
     CardExpanderItem(
         heading = {
             Text(
-                stringResource(Res.string.settings_clipboard_monitoring_title),
-                modifier = Modifier.fillMaxWidth(0.75f)
+                stringResource(Res.string.settings_clipboard_monitoring_title)
             )
         },
         caption = {
             EllipsizedTextWithTooltip(
-                text = stringResource(Res.string.settings_clipboard_monitoring_caption),
-                modifier = Modifier.fillMaxWidth(0.75f)
+                text = stringResource(Res.string.settings_clipboard_monitoring_caption)
             )
         },
         icon = { Icon(Icons.Regular.Clipboard, null) },
@@ -521,14 +504,12 @@ private fun NotifyOnCompleteSetting(
     CardExpanderItem(
         heading = {
             Text(
-                stringResource(Res.string.settings_notify_on_complete_title),
-                modifier = Modifier.fillMaxWidth(0.75f)
+                stringResource(Res.string.settings_notify_on_complete_title)
             )
         },
         caption = {
             EllipsizedTextWithTooltip(
-                text = stringResource(Res.string.settings_notify_on_complete_caption),
-                modifier = Modifier.fillMaxWidth(0.75f)
+                text = stringResource(Res.string.settings_notify_on_complete_caption)
             )
         },
         icon = { Icon(Icons.Filled.TopSpeed, null) },
@@ -555,14 +536,12 @@ private fun AutoLaunchSetting(
     CardExpanderItem(
         heading = {
             Text(
-                stringResource(Res.string.settings_auto_launch_title),
-                modifier = Modifier.fillMaxWidth(0.75f)
+                stringResource(Res.string.settings_auto_launch_title)
             )
         },
         caption = {
             EllipsizedTextWithTooltip(
-                text = stringResource(Res.string.settings_auto_launch_caption),
-                modifier = Modifier.fillMaxWidth(0.75f)
+                text = stringResource(Res.string.settings_auto_launch_caption)
             )
         },
         icon = { Icon(Icons.Regular.Power, null) },
@@ -590,14 +569,12 @@ private fun ResetToDefaultsSetting(
     CardExpanderItem(
         heading = {
             Text(
-                stringResource(Res.string.settings_reset_title),
-                modifier = Modifier.fillMaxWidth(0.50f)
+                stringResource(Res.string.settings_reset_title)
             )
         },
         caption = {
             EllipsizedTextWithTooltip(
-                text = stringResource(Res.string.settings_reset_caption),
-                modifier = Modifier.fillMaxWidth(0.50f)
+                text = stringResource(Res.string.settings_reset_caption)
             )
         },
         icon = { Icon(Icons.Regular.Warning, null) },
