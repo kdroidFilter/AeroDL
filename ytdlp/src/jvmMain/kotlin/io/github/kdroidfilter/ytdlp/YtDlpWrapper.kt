@@ -696,9 +696,19 @@ class YtDlpWrapper {
                         val authHint = when {
                             !isAuthDiagnostic -> null
                             finalOptions.cookiesFromBrowser.isNullOrBlank() ->
-                                "Hint: Configure 'Cookies from browser' in AeroDL settings (Firefox recommended) while logged in to YouTube, then retry."
+                                if (getOperatingSystem() == OperatingSystem.WINDOWS) {
+                                    "Hint: Log in to YouTube in Firefox, enable Firefox cookies in AeroDL settings, then retry."
+                                } else {
+                                    "Hint: Log in to YouTube in Chrome or Firefox, enable cookies from that browser in AeroDL settings, then retry."
+                                }
+                            getOperatingSystem() == OperatingSystem.WINDOWS &&
+                                (
+                                    finalOptions.cookiesFromBrowser.equals("chrome", ignoreCase = true) ||
+                                        finalOptions.cookiesFromBrowser.equals("edge", ignoreCase = true)
+                                    ) ->
+                                "Hint: Chrome/Edge cookies are sandboxed on Windows. Switch cookies source to Firefox while logged in to YouTube, then retry."
                             else ->
-                                "Hint: Refresh your login in '${finalOptions.cookiesFromBrowser}' and retry. If it still fails, switch cookies source to Firefox."
+                                "Hint: Refresh your login in '${finalOptions.cookiesFromBrowser}' and retry."
                         }
 
                         // Extract all ERROR lines

@@ -14,6 +14,7 @@ import io.github.kdroidfilter.ytdlp.model.VideoInfo
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
+import dev.nucleusframework.core.runtime.Platform
 import io.github.kdroidfilter.youtubeplaylistextractor.YouTubePlaylistExtractor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -56,7 +57,6 @@ class BulkDownloadViewModel(
     }
 
     private val _isLoading = MutableStateFlow(true)
-    private val _errorMessage = MutableStateFlow<String?>(null)
     private val _playlistInfo = MutableStateFlow<PlaylistInfo?>(null)
     private val _videos = MutableStateFlow<List<BulkVideoItem>>(emptyList())
     private val _availablePresets = MutableStateFlow<List<YtDlpWrapper.Preset>>(emptyList())
@@ -72,7 +72,6 @@ class BulkDownloadViewModel(
 
     override val uiState = combine(
         _isLoading,
-        _errorMessage,
         _playlistInfo,
         _videos,
         _availablePresets,
@@ -87,26 +86,24 @@ class BulkDownloadViewModel(
         _fallbackState,
     ) { values: Array<Any?> ->
         val loading = values[0] as Boolean
-        val error = values[1] as String?
-        val playlist = values[2] as PlaylistInfo?
+        val playlist = values[1] as PlaylistInfo?
         @Suppress("UNCHECKED_CAST")
-        val videos = values[3] as List<BulkVideoItem>
+        val videos = values[2] as List<BulkVideoItem>
         @Suppress("UNCHECKED_CAST")
-        val presets = values[4] as List<YtDlpWrapper.Preset>
-        val preset = values[5] as YtDlpWrapper.Preset?
+        val presets = values[3] as List<YtDlpWrapper.Preset>
+        val preset = values[4] as YtDlpWrapper.Preset?
         @Suppress("UNCHECKED_CAST")
-        val audioPresets = values[6] as List<YtDlpWrapper.AudioQualityPreset>
-        val audioPreset = values[7] as YtDlpWrapper.AudioQualityPreset?
-        val audioMode = values[8] as Boolean
-        val checkingAvail = values[9] as Boolean
-        val checked = values[10] as Int
-        val navState = values[11] as BulkDownloadNavigationState
-        val startingDownloads = values[12] as Boolean
-        val fallback = values[13] as FallbackState
+        val audioPresets = values[5] as List<YtDlpWrapper.AudioQualityPreset>
+        val audioPreset = values[6] as YtDlpWrapper.AudioQualityPreset?
+        val audioMode = values[7] as Boolean
+        val checkingAvail = values[8] as Boolean
+        val checked = values[9] as Int
+        val navState = values[10] as BulkDownloadNavigationState
+        val startingDownloads = values[11] as Boolean
+        val fallback = values[12] as FallbackState
 
         BulkDownloadState(
             isLoading = loading,
-            errorMessage = error,
             playlistInfo = playlist,
             videos = videos,
             availablePresets = presets,
@@ -134,7 +131,6 @@ class BulkDownloadViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             infoln { "[BulkDownloadViewModel] Loading playlist info for $playlistUrl" }
             _isLoading.value = true
-            _errorMessage.value = null
             _fallbackState.value = FallbackState.None
 
             ytDlpWrapper.getVideoInfoList(
@@ -150,12 +146,18 @@ class BulkDownloadViewModel(
                 .onFailure { e ->
                     val detail = e.localizedMessage ?: e.message ?: e.toString()
                     errorln { "[BulkDownloadViewModel] Error getting video list: $detail" }
-                    startFallback()
+                    if (!hasUsableBrowserCookies()) {
+                        infoln { "[BulkDownloadViewModel] No usable browser cookies; skip HTTP fallback" }
+                        _isLoading.value = false
+                        _fallbackState.value = FallbackState.NeedsBrowserCookies
+                    } else {
+                        startFallback()
+                    }
                 }
         }
     }
 
-    private fun handleVideoListSuccess(videoList: List<VideoInfo>, title: String = "Playlist") {
+    private fun handleVideoListSuccess(videoList: List<VideoInfo>, title: String = "") {
         val playlistInfo = PlaylistInfo(
             id = null,
             title = title,
@@ -194,6 +196,16 @@ class BulkDownloadViewModel(
         _selectedAudioQualityPreset.value = YtDlpWrapper.AudioQualityPreset.HIGH
     }
 
+    private fun hasUsableBrowserCookies(): Boolean {
+        val browser = settingsRepository.cookiesFromBrowser.value.trim().lowercase()
+        if (browser.isBlank()) return false
+        // Chrome/Edge cookie DB is sandboxed on Windows; yt-dlp cannot read it.
+        if (Platform.Current == Platform.Windows) {
+            return browser != "chrome" && browser != "edge"
+        }
+        return true
+    }
+
     private fun startFallback() {
         infoln { "[BulkDownloadViewModel] Starting HTTP playlist fallback" }
         _isLoading.value = false
@@ -216,15 +228,10 @@ class BulkDownloadViewModel(
                 handleVideoListSuccess(videoInfoList, playlist.title)
                 _fallbackState.value = FallbackState.Completed
             }.onFailure { e ->
-                onFallbackExtractionError(e.message ?: "Failed to extract playlist")
+                errorln { "[BulkDownloadViewModel] Fallback extraction error: ${e.message}" }
+                _fallbackState.value = FallbackState.Error
             }
         }
-    }
-
-    private fun onFallbackExtractionError(message: String) {
-        errorln { "[BulkDownloadViewModel] Fallback extraction error: $message" }
-        _fallbackState.value = FallbackState.Error(message)
-        _errorMessage.value = message
     }
 
     /**
@@ -269,7 +276,6 @@ class BulkDownloadViewModel(
                         isAvailable = false,
                         isChecking = false,
                         isSelected = false,
-                        errorMessage = "Video unavailable"
                     )
                 } else {
                     item
@@ -331,7 +337,6 @@ class BulkDownloadViewModel(
                 infoln { "[BulkDownloadViewModel] Screen disposed: clearing state" }
                 _playlistInfo.value = null
                 _videos.value = emptyList()
-                _errorMessage.value = null
                 _isLoading.value = false
                 _fallbackState.value = FallbackState.None
             }
@@ -342,8 +347,7 @@ class BulkDownloadViewModel(
 
             BulkDownloadEvents.CancelFallback -> {
                 infoln { "[BulkDownloadViewModel] Fallback cancelled by user" }
-                _fallbackState.value = FallbackState.None
-                _errorMessage.value = "Failed to load playlist"
+                _fallbackState.value = FallbackState.Error
             }
         }
     }

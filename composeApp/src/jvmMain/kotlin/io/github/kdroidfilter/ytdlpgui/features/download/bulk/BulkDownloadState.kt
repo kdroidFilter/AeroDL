@@ -12,7 +12,6 @@ data class BulkVideoItem(
     val isSelected: Boolean = true,
     val isAvailable: Boolean = true,
     val isChecking: Boolean = false,
-    val errorMessage: String? = null
 )
 
 sealed class BulkDownloadNavigationState {
@@ -34,12 +33,14 @@ sealed class FallbackState {
     data object Completed : FallbackState()
 
     /** Fallback extraction failed */
-    data class Error(val message: String) : FallbackState()
+    data object Error : FallbackState()
+
+    /** yt-dlp failed and no usable browser cookies are configured */
+    data object NeedsBrowserCookies : FallbackState()
 }
 
 data class BulkDownloadState(
     val isLoading: Boolean = true,
-    val errorMessage: String? = null,
     val playlistInfo: PlaylistInfo? = null,
     val videos: List<BulkVideoItem> = emptyList(),
     val availablePresets: List<YtDlpWrapper.Preset> = emptyList(),
@@ -73,7 +74,7 @@ data class BulkDownloadState(
         val emptyState = BulkDownloadState(isLoading = false)
         val errorState = BulkDownloadState(
             isLoading = false,
-            errorMessage = "Failed to load playlist information"
+            fallbackState = FallbackState.Error,
         )
     }
 }

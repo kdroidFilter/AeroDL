@@ -29,6 +29,7 @@ import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.*
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.*
+import dev.nucleusframework.core.runtime.Platform
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.platform.browser.openUrlInBrowser
 import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
@@ -76,9 +77,8 @@ fun BulkDownloadView(
     when {
         state.isLoading -> Loader()
         state.fallbackState != FallbackState.None && state.fallbackState != FallbackState.Completed -> {
-            FallbackContent(state)
+            FallbackContent(state, onEvent)
         }
-        state.errorMessage != null -> ErrorBox(state.errorMessage)
         state.videos.isEmpty() -> EmptyPlaylist()
         else -> PlaylistContent(state, onEvent)
     }
@@ -96,7 +96,7 @@ private fun Loader() {
 }
 
 @Composable
-private fun ErrorBox(message: String) {
+private fun ErrorBox() {
     Column(
         Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
@@ -110,7 +110,7 @@ private fun ErrorBox(message: String) {
         )
         Spacer(Modifier.size(16.dp))
         Text(
-            text = stringResource(Res.string.error_fetch_video_info, message),
+            text = stringResource(Res.string.bulk_load_failed),
             color = FluentTheme.colors.system.critical,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 24.dp)
@@ -503,11 +503,51 @@ private fun formatDuration(d: java.time.Duration): String {
 }
 
 @Composable
-private fun FallbackContent(state: BulkDownloadState) {
+private fun FallbackContent(
+    state: BulkDownloadState,
+    onEvent: (BulkDownloadEvents) -> Unit,
+) {
     when (state.fallbackState) {
         is FallbackState.Extracting -> ExtractionProgress(state.fallbackState)
-        is FallbackState.Error -> ErrorBox(state.fallbackState.message)
+        FallbackState.Error -> ErrorBox()
+        FallbackState.NeedsBrowserCookies -> NeedsBrowserCookiesBox(onEvent)
         else -> { }
+    }
+}
+
+@Composable
+private fun NeedsBrowserCookiesBox(onEvent: (BulkDownloadEvents) -> Unit) {
+    val isWindows = remember { Platform.Current == Platform.Windows }
+    Column(
+        Modifier.fillMaxSize().padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            imageVector = Icons.Regular.ErrorCircle,
+            contentDescription = stringResource(Res.string.cd_error_icon),
+            modifier = Modifier.size(96.dp),
+            tint = FluentTheme.colors.system.caution
+        )
+        Spacer(Modifier.height(16.dp))
+        Text(
+            text = stringResource(Res.string.bulk_fallback_enable_cookies_title),
+            style = FluentTheme.typography.subtitle,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = stringResource(
+                if (isWindows) Res.string.bulk_fallback_enable_cookies_firefox
+                else Res.string.bulk_fallback_enable_cookies_chrome_or_firefox
+            ),
+            color = FluentTheme.colors.text.text.secondary,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(Modifier.height(16.dp))
+        AccentButton(onClick = { onEvent(BulkDownloadEvents.Refresh) }) {
+            Text(stringResource(Res.string.init_retry))
+        }
     }
 }
 
