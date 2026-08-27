@@ -489,27 +489,29 @@ private fun InProgressRow(
                             ProgressRing(progress = progressFraction, modifier = Modifier.fillMaxSize())
 
                             if (!hovered) {
-                                // Show percentage text centered in the ring
                                 Text(
                                     "${percent}%",
                                     style = NativeTheme.typography.caption,
-                                    fontSize = 11.sp,
+                                    fontSize = 8.sp,
+                                    lineHeight = 8.sp,
                                     textAlign = TextAlign.Center,
                                     maxLines = 1,
-                                    modifier = Modifier.offset(x = (-1).dp)
                                 )
                             } else {
-                                // On hover, show dismiss icon overlaid on the ring
-                                TooltipBox(tooltip = { Text(stringResource(Res.string.cancel)) }) {
-                                    SubtleButton(
-                                        iconOnly = true,
-                                        onClick = { onCancel(item.id) },
-                                        modifier = Modifier.size(18.dp)
+                                TooltipBox(
+                                    tooltip = { Text(stringResource(Res.string.cancel)) },
+                                    modifier = Modifier.fillMaxSize(),
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clickable { onCancel(item.id) },
+                                        contentAlignment = Alignment.Center,
                                     ) {
                                         Icon(
                                             Icons.Default.Dismiss,
                                             stringResource(Res.string.cancel),
-                                            modifier = Modifier.size(16.dp)
+                                            modifier = Modifier.size(12.dp),
                                         )
                                     }
                                 }

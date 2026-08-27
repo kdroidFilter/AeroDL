@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -32,6 +33,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
@@ -112,12 +114,21 @@ internal fun GlyphIcon(
     val resolved = tint.takeOrElse {
         LocalNativeContentColor.current.takeOrElse { LocalYaruContentColor.current }
     }
-    YaruIcon(
-        glyph = glyph,
-        modifier = modifier,
-        tint = resolved,
-        semanticLabel = contentDescription,
-    )
+    BoxWithConstraints(modifier) {
+        val iconSize = when {
+            maxWidth < Dp.Infinity && maxHeight < Dp.Infinity -> minOf(maxWidth, maxHeight)
+            maxWidth < Dp.Infinity -> maxWidth
+            maxHeight < Dp.Infinity -> maxHeight
+            else -> 20.dp
+        }
+        YaruIcon(
+            glyph = glyph,
+            modifier = Modifier.size(iconSize),
+            size = iconSize,
+            tint = resolved,
+            semanticLabel = contentDescription,
+        )
+    }
 }
 
 @Composable
