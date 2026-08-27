@@ -95,7 +95,7 @@ fun HomeView(
                             }
                             msg to NativeTheme.colors.system.critical
                         }
-                        else -> stringResource(Res.string.paste_video_link_header) to NativeTheme.colors.text.text.disabled
+                        else -> stringResource(Res.string.paste_video_link_header) to NativeTheme.colors.text.text.secondary
                     }
                     Text(
                         text = headerText,

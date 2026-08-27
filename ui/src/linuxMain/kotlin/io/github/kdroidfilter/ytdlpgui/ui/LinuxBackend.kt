@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -29,6 +30,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
@@ -43,6 +46,7 @@ import dev.nucleusframework.yarucompose.themes.LocalYaruContentColor
 import dev.nucleusframework.yarucompose.themes.LocalYaruTypography
 import dev.nucleusframework.yarucompose.themes.YaruTheme
 import dev.nucleusframework.yarucompose.themes.YaruVariant
+import dev.nucleusframework.yarucompose.themes.isLight
 import dev.nucleusframework.yarucompose.themes.success
 import dev.nucleusframework.yarucompose.themes.warning
 import dev.nucleusframework.yarucompose.themes.yaruSystemAccentVariant
@@ -77,10 +81,10 @@ internal fun NativeThemeImpl(darkTheme: Boolean, content: @Composable () -> Unit
         val nativeColors = remember(scheme) { scheme.toNative() }
         val nativeTypography = remember(typography) {
             NativeTypography(
-                subtitle = typography.titleLarge,
-                body = typography.bodyMedium,
-                bodyStrong = typography.titleSmall,
-                caption = typography.bodySmall,
+                subtitle = typography.titleLarge.copy(color = Color.Unspecified),
+                body = typography.bodyMedium.copy(color = Color.Unspecified),
+                bodyStrong = typography.titleSmall.copy(color = Color.Unspecified),
+                caption = typography.bodySmall.copy(color = Color.Unspecified),
             )
         }
         val nativeShapes = remember { NativeShapes(control = RoundedCornerShape(8.dp)) }
@@ -118,7 +122,12 @@ internal fun GlyphIcon(
             constraints.hasFixedWidth && constraints.hasFixedHeight -> minOf(maxWidth, maxHeight)
             constraints.hasFixedWidth -> maxWidth
             constraints.hasFixedHeight -> maxHeight
-            else -> 20.dp
+            else -> {
+                var size = 20.dp
+                if (constraints.hasBoundedWidth) size = minOf(size, maxWidth)
+                if (constraints.hasBoundedHeight) size = minOf(size, maxHeight)
+                size
+            }
         }
         YaruIcon(
             glyph = glyph,
@@ -219,11 +228,14 @@ internal fun HyperlinkButtonImpl(
 
 @Composable
 private fun ButtonContent(content: @Composable RowScope.() -> Unit) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        content = content,
-    )
+    val contentColor = LocalYaruContentColor.current
+    CompositionLocalProvider(LocalNativeContentColor provides contentColor) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            content = content,
+        )
+    }
 }
 
 @Composable
@@ -470,19 +482,39 @@ internal fun TopNavImpl(
 ) {
     val scope = CollectedTopNavScope()
     scope.content()
+    val items = scope.items
+    val leading = items.firstOrNull()
+    val trailing = items.takeIf { it.size > 1 }?.last()
+    val tabs = if (items.size > 2) items.subList(1, items.lastIndex) else emptyList()
+    val scheme = LocalYaruColorScheme.current
+    val trackShape = RoundedCornerShape(8.dp)
+    val trackAlpha = if (scheme.isLight) 0.14f else 0.12f
+
     Row(
         modifier = modifier
             .height(48.dp)
-            .padding(horizontal = 4.dp),
+            .padding(horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        scope.items.forEachIndexed { index, item ->
-            if (index == scope.items.lastIndex && scope.items.size > 1) {
-                Spacer(Modifier.weight(1f))
+        leading?.invoke()
+        Box(
+            modifier = Modifier.weight(1f).fillMaxHeight(),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (tabs.isNotEmpty()) {
+                Row(
+                    modifier = Modifier
+                        .height(34.dp)
+                        .clip(trackShape)
+                        .background(scheme.onSurface.copy(alpha = trackAlpha), trackShape)
+                        .padding(3.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    tabs.forEach { it() }
+                }
             }
-            item()
         }
+        trailing?.invoke()
     }
 }
 
@@ -496,21 +528,42 @@ internal fun TopNavItemImpl(
     badge: (@Composable () -> Unit)?,
 ) {
     val scheme = LocalYaruColorScheme.current
-    YaruButton(
-        onClick = onClick,
-        modifier = modifier.heightIn(min = 40.dp, max = 48.dp),
-        variant = if (selected) YaruButtonVariant.Filled else YaruButtonVariant.Text,
-        backgroundColor = if (selected) scheme.primary.copy(alpha = 0.16f) else null,
-        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+    val shape = RoundedCornerShape(6.dp)
+    val selectedBg = if (scheme.isLight) {
+        scheme.surface
+    } else {
+        scheme.onSurface.copy(alpha = 0.20f)
+    }
+    val contentColor = if (selected) {
+        scheme.onSurface
+    } else {
+        scheme.onSurface.copy(alpha = if (scheme.isLight) 0.72f else 0.68f)
+    }
+    Row(
+        modifier = modifier
+            .height(28.dp)
+            .clip(shape)
+            .background(
+                color = if (selected) selectedBg else Color.Transparent,
+                shape = shape,
+            )
+            .pointerHoverIcon(PointerIcon.Hand)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            icon?.invoke()
-            if (icon != null && text != null) Spacer(Modifier.width(8.dp))
-            text?.invoke()
-            if (badge != null) {
-                Spacer(Modifier.width(6.dp))
-                badge()
+        CompositionLocalProvider(
+            LocalYaruContentColor provides contentColor,
+            LocalNativeContentColor provides contentColor,
+        ) {
+            if (icon != null) {
+                Box(Modifier.size(14.dp), contentAlignment = Alignment.Center) {
+                    icon()
+                }
             }
+            text?.invoke()
+            badge?.invoke()
         }
     }
 }

@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
+import io.github.kdroidfilter.ytdlpgui.ui.NativeTheme
 import io.github.kdroidfilter.ytdlpgui.ui.component.Icon
 import io.github.kdroidfilter.ytdlpgui.ui.component.SubtleButton
 import io.github.kdroidfilter.ytdlpgui.ui.component.Text
@@ -34,7 +35,11 @@ fun Footer(
                 onClick = { openUrlInBrowser("https://github.com/kdroidFilter/ytdlpgui") },
                 modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
             ) {
-                Icon(Github, contentDescription = null)
+                Icon(
+                    Github,
+                    contentDescription = null,
+                    tint = NativeTheme.colors.text.text.primary,
+                )
             }
         }
         Spacer(Modifier.width(8.dp))
@@ -44,7 +49,11 @@ fun Footer(
                 onClick = { openUrlInBrowser("https://ko-fi.com/lomityaesh") },
                 modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
             ) {
-                Icon(Icons.Filled.Heart, contentDescription = null)
+                Icon(
+                    Icons.Filled.Heart,
+                    contentDescription = null,
+                    tint = NativeTheme.colors.text.text.primary,
+                )
             }
         }
     }
