@@ -14,7 +14,7 @@ data class ReleaseManifest(
 data class ReleaseEntries(
     @SerialName("yt-dlp") val ytDlp: ReleaseInfo,
     @SerialName("yt-dlp-script") val ytDlpScript: ReleaseInfo? = null,  // Pure Python script version
-    val python: ReleaseInfo? = null,  // Python standalone for macOS
+    val python: ReleaseInfo? = null,  // Pinned Python standalone (all platforms)
     val ffmpeg: ReleaseInfo,
     @SerialName("ffmpeg-macos") val ffmpegMacos: ReleaseInfo,
     val deno: ReleaseInfo,

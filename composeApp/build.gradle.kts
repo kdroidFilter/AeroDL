@@ -1,7 +1,8 @@
-import io.github.kdroidfilter.nucleus.desktop.application.dsl.CompressionLevel
-import io.github.kdroidfilter.nucleus.desktop.application.dsl.ReleaseChannel
-import io.github.kdroidfilter.nucleus.desktop.application.dsl.ReleaseType
-import io.github.kdroidfilter.nucleus.desktop.application.dsl.TargetFormat
+import dev.nucleusframework.desktop.application.dsl.CompressionLevel
+import dev.nucleusframework.desktop.application.dsl.NativeImageMarch
+import dev.nucleusframework.desktop.application.dsl.ReleaseChannel
+import dev.nucleusframework.desktop.application.dsl.ReleaseType
+import dev.nucleusframework.desktop.application.dsl.TargetFormat
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -15,10 +16,13 @@ plugins {
     alias(libs.plugins.nucleus)
 }
 
-val version: String = System.getenv("GITHUB_REF")
-    ?.takeIf { it.startsWith("refs/tags/") }
-    ?.removePrefix("refs/tags/")?.removePrefix("v")
-    ?: "1.0.0"
+val releaseVersion =
+    System.getenv("RELEASE_VERSION")
+        ?.removePrefix("v")
+        ?.takeIf { it.isNotBlank() && it.first().isDigit() }
+        ?: "1.0.0"
+
+val nativePackageVersion = releaseVersion.substringBefore("-")
 
 sentry {
     includeSourceContext = true
@@ -61,30 +65,28 @@ kotlin {
             implementation(libs.metro.viewmodel)
             implementation(libs.metro.viewmodel.compose)
 
-            // Platform tools
-            implementation(libs.platformtools.core)
-            implementation(libs.platformtools.clipboardmanager)
-            implementation(libs.autolaunch)
             implementation(libs.filekit.core)
             implementation(libs.filekit.dialogs)
             implementation(libs.filekit.dialogs.compose)
 
             // Nucleus
+            implementation(libs.nucleus.application)
             implementation(libs.nucleus.core.runtime)
             implementation(libs.nucleus.aot.runtime)
             implementation(libs.nucleus.darkmode.detector)
             implementation(libs.nucleus.updater.runtime)
             implementation(libs.nucleus.native.http)
             implementation(libs.nucleus.graalvm.runtime)
+            implementation(libs.nucleus.decorated.window.tao)
+            implementation(libs.nucleus.notification.common)
+            implementation(libs.nucleus.autolaunch)
 
             // Serialization
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.serialization.protobuf)
 
-            // Settings & Notifications
+            // Settings
             implementation(libs.multiplatform.settings)
-            implementation(libs.knotify)
-            implementation(libs.knotify.compose)
 
             implementation(libs.confettikit)
 
@@ -98,11 +100,11 @@ kotlin {
             // Desktop specific
             implementation(compose.desktop.currentOs)
             implementation(libs.composenativetray)
+            implementation(libs.composenativetray.app)
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.cardiologist)
             implementation(libs.sentry.core)
 
-            implementation(libs.platformtools.appmanager)
             // no external markdown UI renderer; using lightweight parser
 
             // Project dependencies
@@ -110,7 +112,7 @@ kotlin {
             implementation(project(":ffmpeg"))
             implementation(project(":network"))
             implementation(project(":logging"))
-            implementation(project(":youtube-webview-extractor"))
+            implementation(project(":youtube-playlist-extractor"))
 
             // SQLDelight driver
             implementation(libs.sqlDelight.driver.sqlite)
@@ -123,35 +125,16 @@ nucleus.application {
 
     graalvm {
         isEnabled = true
-        imageName = "aerodl"
-        javaLanguageVersion = 25
-        jvmVendor = JvmVendorSpec.BELLSOFT
-        march = project.findProperty("graalvm.march")?.toString() ?: "native"
-        buildArgs.addAll(
-            "-H:+AddAllCharsets",
-            "-Djava.awt.headless=false",
-            "--enable-native-access=ALL-UNNAMED",
-            "-Os",
-        )
-        nativeImageConfigBaseDir = project.layout.projectDirectory.dir("graalvm-config")
     }
 
     val cleanInstall = project.findProperty("cleanInstall")?.toString()?.toBoolean() ?: false
     val debugLogs = project.findProperty("debugLogs")?.toString()?.toBoolean() ?: false
     jvmArgs += listOf("-DcleanInstall=$cleanInstall", "-DdebugLogs=$debugLogs")
 
-    buildTypes { release { proguard {
-        version.set("7.8.1")
-        isEnabled = true
-        obfuscate.set(false)
-        optimize.set(true)
-        configurationFiles.from(project.file("proguard-rules.pro"))
-    }}}
 
     nativeDistributions {
         vendor = "KDroidFilter"
         targetFormats(
-            TargetFormat.Pkg,
             TargetFormat.Dmg,
             TargetFormat.Nsis,
             TargetFormat.Deb,
@@ -161,19 +144,13 @@ nucleus.application {
             TargetFormat.Zip,
         )
         packageName = "AeroDl"
-        packageVersion = version
+        packageVersion = releaseVersion
         description = "AeroDl"
         homepage = "https://github.com/kdroidFilter/AeroDL"
-        artifactName = $$"${name}-${version}-${os}-${arch}.${ext}"
         cleanupNativeLibs = true
         enableAotCache = true
-        compressionLevel = CompressionLevel.Maximum
+        compressionLevel = CompressionLevel.Ultra
 
-        jvmArgs += listOf(
-            "-XX:+UseCompactObjectHeaders",
-            "-XX:+UseStringDeduplication",
-            "-XX:MaxGCPauseMillis=50"
-        )
         modules("jdk.accessibility", "java.net.http", "java.sql", "jdk.security.auth", "jdk.unsupported")
 
         publish {
@@ -191,7 +168,10 @@ nucleus.application {
             shortcut = true
             upgradeUuid = "ada57c09-11e1-4d56-9d5d-0c480f6968ec"
             perUserInstall = true
-            packageVersion = version
+            packageVersion = nativePackageVersion
+            portable {
+                compressionLevel = CompressionLevel.Normal
+            }
 
             nsis {
                 oneClick = true
@@ -205,13 +185,39 @@ nucleus.application {
             bundleID = "io.github.kdroidfilter.ytdlpgui"
             dockName = "AeroDl"
             iconFile.set(project.file("icons/logo.icns"))
-            packageVersion = version
+            packageVersion = nativePackageVersion
         }
         linux {
             packageName = "aerodl"
             iconFile.set(project.file("icons/logo.png"))
-            packageVersion = version
+            packageVersion = releaseVersion
+            debPackageVersion = releaseVersion
             debMaintainer = "kdroidfilter@gmail.com"
+            appImage {
+                compressionLevel = CompressionLevel.Normal
+            }
+
+            signing {
+                enabled.set(true)
+                silentUpdate.set(true)
+                val localSigning = file("packaging/linux-signing.local.properties")
+                if (localSigning.isFile) {
+                    val props =
+                        localSigning
+                            .readLines()
+                            .map { it.trim() }
+                            .filter { it.isNotEmpty() && !it.startsWith("#") && it.contains("=") }
+                            .associate { line ->
+                                val i = line.indexOf('=')
+                                line.substring(0, i).trim() to line.substring(i + 1).trim()
+                            }
+
+                    fun local(name: String): String? = props[name]?.takeIf { it.isNotEmpty() }
+                    local("compose.desktop.linux.signing.keyId")?.let { keyId.set(it) }
+                    local("compose.desktop.linux.signing.keyFile")?.let { keyFile.set(file(it)) }
+                    local("compose.desktop.linux.signing.passphrase")?.let { passphrase.set(it) }
+                }
+            }
         }
     }
 }

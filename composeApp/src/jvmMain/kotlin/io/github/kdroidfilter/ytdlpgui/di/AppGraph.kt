@@ -1,13 +1,13 @@
-@file:OptIn(ExperimentalTrayAppApi::class)
-
 package io.github.kdroidfilter.ytdlpgui.di
 
 import coil3.ImageLoader
-import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
-import com.kdroid.composetray.tray.api.TrayAppState
 import com.russhwolf.settings.PreferencesSettings
 import com.russhwolf.settings.Settings
 import java.util.prefs.Preferences
+import dev.nucleusframework.composenativetray.trayapp.TrayAppState
+import dev.nucleusframework.nativehttp.NativeHttpClient
+import dev.nucleusframework.updater.NucleusUpdater
+import dev.nucleusframework.updater.provider.GitHubProvider
 import dev.zacsweers.metro.DependencyGraph
 import dev.zacsweers.metro.Provides
 import dev.zacsweers.metro.SingleIn
@@ -15,9 +15,6 @@ import dev.zacsweers.metrox.viewmodel.ViewModelGraph
 import io.github.kdroidfilter.network.CoilConfig
 import io.github.kdroidfilter.ffmpeg.FfmpegWrapper
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
-import io.github.kdroidfilter.nucleus.nativehttp.NativeHttpClient
-import io.github.kdroidfilter.nucleus.updater.NucleusUpdater
-import io.github.kdroidfilter.nucleus.updater.provider.GitHubProvider
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.ClipboardMonitorManager
 import io.github.kdroidfilter.ytdlpgui.core.navigation.NavigationEventBus
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
@@ -25,7 +22,6 @@ import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
 import io.github.kdroidfilter.ytdlpgui.data.ReleaseManifestRepository
 import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
 import io.github.kdroidfilter.ytdlpgui.db.Database
-import io.github.vinceglb.autolaunch.AutoLaunch
 
 @DependencyGraph(AppScope::class)
 abstract class AppGraph : ViewModelGraph {
@@ -38,7 +34,6 @@ abstract class AppGraph : ViewModelGraph {
     abstract val nucleusUpdater: NucleusUpdater
 
     // Core dependencies
-    abstract val autoLaunch: AutoLaunch
     abstract val settings: Settings
     abstract val imageLoader: ImageLoader
     abstract val ytDlpWrapper: YtDlpWrapper
@@ -83,10 +78,6 @@ abstract class AppGraph : ViewModelGraph {
 
     @Provides
     @SingleIn(AppScope::class)
-    fun provideAutoLaunch(): AutoLaunch = AutoLaunch(appPackageName = "AeroDl")
-
-    @Provides
-    @SingleIn(AppScope::class)
     fun provideNavigationEventBus(): NavigationEventBus = NavigationEventBus()
 
     @Provides
@@ -109,11 +100,9 @@ abstract class AppGraph : ViewModelGraph {
     fun provideSettingsRepository(
         settings: Settings,
         ytDlpWrapper: YtDlpWrapper,
-        autoLaunch: AutoLaunch
     ): SettingsRepository = SettingsRepository(
         settings = settings,
         ytDlpWrapper = ytDlpWrapper,
-        autoLaunch = autoLaunch
     )
 
     @Provides
@@ -138,13 +127,11 @@ abstract class AppGraph : ViewModelGraph {
         settingsRepository: SettingsRepository,
         trayAppState: TrayAppState,
         navigationEventBus: NavigationEventBus,
-        ytDlpWrapper: YtDlpWrapper,
     ): ClipboardMonitorManager {
         val manager = ClipboardMonitorManager(
             settingsRepository,
             trayAppState,
             navigationEventBus,
-            ytDlpWrapper,
         )
         // Connect SettingsRepository to ClipboardMonitorManager after creation
         settingsRepository.setClipboardMonitorManager(manager)

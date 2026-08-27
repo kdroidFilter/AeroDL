@@ -34,7 +34,7 @@ import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.Navigation
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.OnboardingProgress
 import io.github.kdroidfilter.ytdlpgui.features.init.InitState
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.common_disabled
 import ytdlpgui.composeapp.generated.resources.common_enabled

@@ -1,9 +1,7 @@
 package io.github.kdroidfilter.ytdlpgui.core.platform.filesystem
 
-import io.github.kdroidfilter.platformtools.LinuxDesktopEnvironment
-import io.github.kdroidfilter.platformtools.OperatingSystem
-import io.github.kdroidfilter.platformtools.detectLinuxDesktopEnvironment
-import io.github.kdroidfilter.platformtools.getOperatingSystem
+import dev.nucleusframework.core.runtime.LinuxDesktopEnvironment
+import dev.nucleusframework.core.runtime.Platform
 import java.io.File
 
 object FileExplorerUtils {
@@ -31,18 +29,18 @@ object FileExplorerUtils {
             var handled = false
             if (fileToSelect != null) {
                 val abs = fileToSelect.absolutePath
-                handled = when (getOperatingSystem()) {
-                    OperatingSystem.MACOS -> runCommand("open", "-R", abs)
-                    OperatingSystem.WINDOWS -> runCommand("cmd", "/c", "explorer /select,\"$abs\"")
+                handled = when (Platform.Current) {
+                    Platform.MacOS -> runCommand("open", "-R", abs)
+                    Platform.Windows -> runCommand("cmd", "/c", "explorer /select,\"$abs\"")
                     else -> {
                         var ok = false
-                        when (detectLinuxDesktopEnvironment()) {
-                            LinuxDesktopEnvironment.GNOME -> { ok = runCommand("nautilus", "--select", abs) }
+                        when (LinuxDesktopEnvironment.Current) {
+                            LinuxDesktopEnvironment.Gnome -> { ok = runCommand("nautilus", "--select", abs) }
                             LinuxDesktopEnvironment.KDE -> { ok = runCommand("dolphin", "--select", abs) }
                             LinuxDesktopEnvironment.XFCE -> { ok = runCommand("thunar", abs) }
-                            LinuxDesktopEnvironment.CINNAMON -> { ok = runCommand("nemo", "--select", abs) }
-                            LinuxDesktopEnvironment.MATE -> { ok = runCommand("caja", "--select", abs) }
-                            LinuxDesktopEnvironment.UNKNOWN, null -> { }
+                            LinuxDesktopEnvironment.Cinnamon -> { ok = runCommand("nemo", "--select", abs) }
+                            LinuxDesktopEnvironment.Mate -> { ok = runCommand("caja", "--select", abs) }
+                            LinuxDesktopEnvironment.Unknown -> { }
                         }
                         if (!ok) {
                             val linuxAttempts: List<Array<String>> = listOf(
@@ -68,16 +66,10 @@ object FileExplorerUtils {
             if (!handled) {
                 val dir = dirToOpen
                 if (dir != null && dir.exists()) {
-                    if (java.awt.Desktop.isDesktopSupported()) {
-                        runCatching { java.awt.Desktop.getDesktop().open(dir) }
-                            .onSuccess { handled = true }
-                    }
-                    if (!handled) {
-                        handled = when (getOperatingSystem()) {
-                            OperatingSystem.WINDOWS -> runCommand("explorer.exe", dir.absolutePath)
-                            OperatingSystem.MACOS -> runCommand("open", dir.absolutePath)
-                            else -> runCommand("xdg-open", dir.absolutePath)
-                        }
+                    handled = when (Platform.Current) {
+                        Platform.Windows -> runCommand("explorer.exe", dir.absolutePath)
+                        Platform.MacOS -> runCommand("open", dir.absolutePath)
+                        else -> runCommand("xdg-open", dir.absolutePath)
                     }
                 }
             }

@@ -25,7 +25,8 @@ import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
 import io.github.kdroidfilter.ytdlpgui.di.AppScope
 
-class SingleDownloadViewModel @AssistedInject constructor(
+@AssistedInject
+class SingleDownloadViewModel(
     @Assisted savedStateHandle: SavedStateHandle,
     private val ytDlpWrapper: YtDlpWrapper,
     private val downloadManager: DownloadManager,

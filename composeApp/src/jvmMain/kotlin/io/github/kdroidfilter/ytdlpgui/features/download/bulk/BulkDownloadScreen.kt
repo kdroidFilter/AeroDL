@@ -21,9 +21,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.WindowPosition
-import androidx.compose.ui.window.WindowState
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import coil3.ImageLoader
@@ -32,17 +29,9 @@ import io.github.composefluent.FluentTheme
 import io.github.composefluent.component.*
 import io.github.composefluent.icons.Icons
 import io.github.composefluent.icons.regular.*
-import io.github.kdroidfilter.logging.infoln
-import io.github.kdroidfilter.webview.web.WebView
-import io.github.kdroidfilter.webview.web.rememberWebViewNavigator
-import io.github.kdroidfilter.webview.web.rememberWebViewState
-import io.github.kdroidfilter.youtubewebviewextractor.YouTubeScrapedVideo
-import io.github.kdroidfilter.youtubewebviewextractor.YouTubeWebViewExtractor
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.platform.browser.openUrlInBrowser
 import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
-import kotlinx.coroutines.delay
-import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.*
 
@@ -69,24 +58,14 @@ fun BulkDownloadScreen(
 
     BulkDownloadView(
         state = state,
-        playlistUrl = viewModel.playlistUrl,
         onEvent = viewModel::handleEvent,
-        onLoginStatusChecked = viewModel::onLoginStatusChecked,
-        onExtractionProgress = viewModel::onExtractionProgress,
-        onFallbackExtractionComplete = { viewModel.handleEvent(BulkDownloadEvents.OnFallbackExtractionComplete) },
-        onFallbackExtractionError = viewModel::onFallbackExtractionError
     )
 }
 
 @Composable
 fun BulkDownloadView(
     state: BulkDownloadState,
-    playlistUrl: String,
     onEvent: (BulkDownloadEvents) -> Unit,
-    onLoginStatusChecked: (Boolean?) -> Unit,
-    onExtractionProgress: (Int) -> Unit,
-    onFallbackExtractionComplete: () -> Unit,
-    onFallbackExtractionError: (String) -> Unit
 ) {
     DisposableEffect(Unit) {
         onDispose {
@@ -97,15 +76,7 @@ fun BulkDownloadView(
     when {
         state.isLoading -> Loader()
         state.fallbackState != FallbackState.None && state.fallbackState != FallbackState.Completed -> {
-            FallbackContent(
-                state = state,
-                playlistUrl = playlistUrl,
-                onEvent = onEvent,
-                onLoginStatusChecked = onLoginStatusChecked,
-                onExtractionProgress = onExtractionProgress,
-                onFallbackExtractionComplete = onFallbackExtractionComplete,
-                onFallbackExtractionError = onFallbackExtractionError
-            )
+            FallbackContent(state)
         }
         state.errorMessage != null -> ErrorBox(state.errorMessage)
         state.videos.isEmpty() -> EmptyPlaylist()
@@ -532,49 +503,10 @@ private fun formatDuration(d: java.time.Duration): String {
 }
 
 @Composable
-private fun FallbackContent(
-    state: BulkDownloadState,
-    playlistUrl: String,
-    onEvent: (BulkDownloadEvents) -> Unit,
-    onLoginStatusChecked: (Boolean?) -> Unit,
-    onExtractionProgress: (Int) -> Unit,
-    onFallbackExtractionComplete: () -> Unit,
-    onFallbackExtractionError: (String) -> Unit
-) {
-    infoln { "[FallbackContent] FallbackState: ${state.fallbackState}" }
-    val extractor = state.webViewExtractor
-    if (extractor == null) {
-        infoln { "[FallbackContent] WebViewExtractor is null, returning" }
-        return
-    }
-
+private fun FallbackContent(state: BulkDownloadState) {
     when (state.fallbackState) {
-        is FallbackState.LoginRequired -> {
-            // Show login WebView
-            YouTubeLoginScreen(
-                extractor = extractor,
-                onBack = { onEvent(BulkDownloadEvents.CancelFallback) },
-                onLoginSuccess = { onEvent(BulkDownloadEvents.OnUserLoggedIn) }
-            )
-        }
-        is FallbackState.CheckingLogin, is FallbackState.Extracting -> {
-            // Show loader with progress
-            ExtractionProgress(state.fallbackState)
-
-            // Hidden WebView in separate invisible window
-            HiddenExtractionWebView(
-                url = playlistUrl,
-                extractor = extractor,
-                fallbackState = state.fallbackState,
-                onLoginStatusChecked = onLoginStatusChecked,
-                onExtractionProgress = onExtractionProgress,
-                onExtractionComplete = onFallbackExtractionComplete,
-                onExtractionError = onFallbackExtractionError
-            )
-        }
-        is FallbackState.Error -> {
-            ErrorBox((state.fallbackState as FallbackState.Error).message)
-        }
+        is FallbackState.Extracting -> ExtractionProgress(state.fallbackState)
+        is FallbackState.Error -> ErrorBox(state.fallbackState.message)
         else -> { }
     }
 }
@@ -595,314 +527,5 @@ private fun ExtractionProgress(fallbackState: FallbackState) {
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun YouTubeLoginScreen(
-    extractor: YouTubeWebViewExtractor,
-    onBack: () -> Unit,
-    onLoginSuccess: () -> Unit
-) {
-    val state = rememberWebViewState("https://www.youtube.com/account_advanced")
-    val navigator = rememberWebViewNavigator()
-
-    var isCheckingLogin by remember { mutableStateOf(false) }
-
-    // Check login status when page loads
-    LaunchedEffect(state.isLoading) {
-        if (!state.isLoading && state.lastLoadedUrl?.contains("youtube.com") == true) {
-            isCheckingLogin = true
-            extractor.checkLoginStatus(navigator) { loggedIn ->
-                isCheckingLogin = false
-                if (loggedIn == true) {
-                    onLoginSuccess()
-                }
-            }
-        }
-    }
-
-    Column(modifier = Modifier.fillMaxSize()) {
-        // Header
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Regular.Person,
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp)
-                )
-
-                Column {
-                    Text(
-                        text = stringResource(Res.string.bulk_login_required_title),
-                        style = FluentTheme.typography.bodyStrong
-                    )
-                    Text(
-                        text = stringResource(Res.string.bulk_login_required_desc),
-                        style = FluentTheme.typography.caption,
-                        color = FluentTheme.colors.text.text.secondary
-                    )
-                }
-            }
-
-            // Login status indicator
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                when {
-                    isCheckingLogin -> {
-                        ProgressRing(modifier = Modifier.size(16.dp))
-                        Text(
-                            text = stringResource(Res.string.bulk_login_check),
-                            style = FluentTheme.typography.caption
-                        )
-                    }
-                    extractor.isLoggedIn == true -> {
-                        Icon(
-                            imageVector = Icons.Regular.Checkmark,
-                            contentDescription = null,
-                            tint = FluentTheme.colors.system.success,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Text(
-                            text = stringResource(Res.string.bulk_login_success),
-                            style = FluentTheme.typography.caption,
-                            color = FluentTheme.colors.system.success
-                        )
-                        AccentButton(onClick = onLoginSuccess) {
-                            Text(stringResource(Res.string.bulk_login_continue))
-                        }
-                    }
-                }
-            }
-        }
-
-        WebView(
-            state = state,
-            navigator = navigator,
-            modifier = Modifier.fillMaxSize()
-        )
-    }
-}
-
-private val json = Json { ignoreUnknownKeys = true }
-
-private val checkLoginStatusJs = """
-    (function() {
-        var avatarBtn = document.querySelector('#avatar-btn');
-        if (avatarBtn) return 'true';
-        var signInBtn = document.querySelector('a[href*="accounts.google.com/ServiceLogin"]');
-        if (signInBtn) return 'false';
-        return 'unknown';
-    })();
-""".trimIndent()
-
-private val extractPlaylistLinksJs = """
-    (function() {
-        var items = [...document.querySelectorAll('ytd-playlist-video-renderer')].map(renderer => {
-            var titleEl = renderer.querySelector('a#video-title');
-            if (!titleEl) return null;
-            var url = new URL(titleEl.href);
-            var videoId = url.searchParams.get('v');
-            if (!videoId) return null;
-            var durationEl = renderer.querySelector('span#text.ytd-thumbnail-overlay-time-status-renderer');
-            var duration = durationEl ? durationEl.textContent.trim() : null;
-            return {
-                url: 'https://www.youtube.com/watch?v=' + videoId,
-                title: titleEl.textContent.trim(),
-                duration: duration,
-                thumbnail: 'https://i.ytimg.com/vi/' + videoId + '/mqdefault.jpg'
-            };
-        }).filter(item => item !== null);
-        return JSON.stringify(items);
-    })();
-""".trimIndent()
-
-private val scrollAndCountJs = """
-    (function() {
-        window.scrollTo(0, document.documentElement.scrollHeight);
-        var playlistItems = document.querySelectorAll('a#video-title, a#video-title-link');
-        return playlistItems.length.toString();
-    })();
-""".trimIndent()
-
-@Composable
-private fun HiddenExtractionWebView(
-    url: String,
-    extractor: YouTubeWebViewExtractor,
-    fallbackState: FallbackState,
-    onLoginStatusChecked: (Boolean?) -> Unit,
-    onExtractionProgress: (Int) -> Unit,
-    onExtractionComplete: () -> Unit,
-    onExtractionError: (String) -> Unit
-) {
-    val isChannelUrl = remember(url) { extractor.isChannelUrl(url) }
-    val initialUrl = remember(url) { extractor.normalizeUrl(url) }
-    infoln { "[HiddenExtractionWebView] Initial URL: $initialUrl, isChannel: $isChannelUrl" }
-
-    val state = rememberWebViewState(initialUrl)
-    val navigator = rememberWebViewNavigator()
-
-    var loginChecked by remember { mutableStateOf(false) }
-    var channelConverted by remember { mutableStateOf(false) }
-    var isScrolling by remember { mutableStateOf(false) }
-    var lastVideoCount by remember { mutableStateOf(0) }
-    var noChangeCount by remember { mutableStateOf(0) }
-    var webViewActive by remember { mutableStateOf(true) }
-
-    fun closeExtractionWebView() {
-        if (!webViewActive) return
-        isScrolling = false
-        webViewActive = false
-    }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            isScrolling = false
-            runCatching { navigator.stopLoading() }
-        }
-    }
-
-    if (!webViewActive) return
-
-    // Check login status when page loads
-    LaunchedEffect(state.isLoading) {
-        if (!state.isLoading && !loginChecked && state.lastLoadedUrl?.contains("youtube.com") == true) {
-            infoln { "[HiddenExtractionWebView] Page loaded, checking login status..." }
-            loginChecked = true
-            navigator.evaluateJavaScript(checkLoginStatusJs) { result ->
-                val status = result.removeSurrounding("\"").trim()
-                val loggedIn = when (status) {
-                    "true" -> true
-                    "false" -> false
-                    else -> null
-                }
-                infoln { "[HiddenExtractionWebView] Login status: $loggedIn" }
-                onLoginStatusChecked(loggedIn)
-            }
-        }
-    }
-
-    // Convert channel to playlist when in Extracting state
-    LaunchedEffect(fallbackState, state.isLoading, channelConverted) {
-        if (fallbackState is FallbackState.Extracting && !state.isLoading && isChannelUrl && !channelConverted) {
-            infoln { "[HiddenExtractionWebView] Channel detected, extracting channel ID..." }
-            delay(1000) // Wait for page to fully load
-
-            extractor.extractChannelId(navigator) { channelId ->
-                if (channelId != null) {
-                    val uploadsPlaylistUrl = extractor.channelIdToUploadsPlaylistUrl(channelId)
-                    infoln { "[HiddenExtractionWebView] Converted to playlist URL: $uploadsPlaylistUrl" }
-                    channelConverted = true
-                    navigator.loadUrl(uploadsPlaylistUrl)
-                } else {
-                    infoln { "[HiddenExtractionWebView] Failed to extract channel ID" }
-                    closeExtractionWebView()
-                    onExtractionError("Failed to extract channel ID")
-                }
-            }
-        }
-    }
-
-    // Start scrolling when in Extracting state and on playlist page
-    LaunchedEffect(fallbackState, state.isLoading, channelConverted) {
-        if (fallbackState is FallbackState.Extracting && !state.isLoading && !isScrolling) {
-            val currentUrl = state.lastLoadedUrl ?: return@LaunchedEffect
-
-            // For channels, wait until we've navigated to the playlist
-            if (isChannelUrl && !channelConverted) return@LaunchedEffect
-
-            // Only start scrolling on playlist pages
-            if (currentUrl.contains("/playlist")) {
-                delay(1500) // Wait for content to load
-                infoln { "[HiddenExtractionWebView] Starting auto-scroll on playlist..." }
-                isScrolling = true
-                lastVideoCount = 0
-                noChangeCount = 0
-            }
-        }
-    }
-
-    // Auto-scroll loop
-    LaunchedEffect(isScrolling) {
-        if (isScrolling) {
-            while (isScrolling) {
-                navigator.evaluateJavaScript(scrollAndCountJs) { result ->
-                    val count = result.removeSurrounding("\"").toIntOrNull() ?: 0
-                    infoln { "[HiddenExtractionWebView] Scrolling... $count videos loaded" }
-                    onExtractionProgress(count)
-
-                    if (count == lastVideoCount) {
-                        noChangeCount++
-                    } else {
-                        noChangeCount = 0
-                        lastVideoCount = count
-                    }
-
-                    // If no change after 3 scrolls, stop and extract
-                    if (noChangeCount >= 3) {
-                        infoln { "[HiddenExtractionWebView] Extracting $count videos..." }
-                        isScrolling = false
-
-                        navigator.evaluateJavaScript(extractPlaylistLinksJs) { extractResult ->
-                            if (extractResult.isBlank()) {
-                                closeExtractionWebView()
-                                onExtractionError("Null result from extraction")
-                                return@evaluateJavaScript
-                            }
-                            try {
-                                val jsonString = json.decodeFromString<String>(extractResult)
-                                val videos = json.decodeFromString<List<YouTubeScrapedVideo>>(jsonString)
-                                    .distinctBy { it.url }
-                                infoln { "[HiddenExtractionWebView] Extracted ${videos.size} videos" }
-                                extractor.updateExtractedVideos(videos)
-                                closeExtractionWebView()
-                                onExtractionComplete()
-                            } catch (e: Exception) {
-                                infoln { "[HiddenExtractionWebView] Parsing error: ${e.message}" }
-                                closeExtractionWebView()
-                                onExtractionError(e.message ?: "Unknown parsing error")
-                            }
-                        }
-                    }
-                }
-
-                delay(1000)
-            }
-        }
-    }
-
-    // Visible window for WebView (needed for proper rendering)
-    Window(
-        onCloseRequest = { closeExtractionWebView() },
-        visible = webViewActive,
-        title = "WebView Extractor",
-        state = WindowState(
-            width = 800.dp,
-            height = 600.dp,
-            position = WindowPosition.Aligned(Alignment.Center)),
-        undecorated = true,
-        alwaysOnTop = false,
-        resizable = false,
-        focusable = false,
-    ) {
-        LaunchedEffect(Unit) {
-            window.opacity = 0f
-        }
-        WebView(
-            state = state,
-            navigator = navigator,
-            modifier = Modifier.fillMaxSize()
-        )
     }
 }

@@ -1,13 +1,8 @@
-@file:OptIn(ExperimentalTrayAppApi::class)
-
 package io.github.kdroidfilter.ytdlpgui.features.download.bulk
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
-import com.kdroid.composetray.tray.api.TrayAppState
-import com.kdroid.composetray.tray.api.TrayWindowDismissMode
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -19,8 +14,7 @@ import io.github.kdroidfilter.ytdlp.model.VideoInfo
 import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
-import io.github.kdroidfilter.youtubewebviewextractor.YouTubeScrapedVideo
-import io.github.kdroidfilter.youtubewebviewextractor.YouTubeWebViewExtractor
+import io.github.kdroidfilter.youtubeplaylistextractor.YouTubePlaylistExtractor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -29,11 +23,11 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.Duration
 
-class BulkDownloadViewModel @AssistedInject constructor(
+@AssistedInject
+class BulkDownloadViewModel(
     @Assisted savedStateHandle: SavedStateHandle,
     private val ytDlpWrapper: YtDlpWrapper,
     private val downloadManager: DownloadManager,
-    private val trayAppState: TrayAppState,
     private val settingsRepository: io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
 ) : MVIViewModel<BulkDownloadState, BulkDownloadEvents>(savedStateHandle) {
 
@@ -51,7 +45,6 @@ class BulkDownloadViewModel @AssistedInject constructor(
      * - Converts watch URLs with list param to playlist URLs
      */
     private fun normalizePlaylistUrl(url: String): String {
-        // If it's a watch URL with a playlist ID, convert to playlist URL
         if (url.contains("/watch") && url.contains("list=")) {
             val regex = Regex("[?&]list=([a-zA-Z0-9_-]+)")
             val listId = regex.find(url)?.groupValues?.get(1)
@@ -76,7 +69,6 @@ class BulkDownloadViewModel @AssistedInject constructor(
     private val _navigationState = MutableStateFlow<BulkDownloadNavigationState>(BulkDownloadNavigationState.None)
     private val _isStartingDownloads = MutableStateFlow(false)
     private val _fallbackState = MutableStateFlow<FallbackState>(FallbackState.None)
-    private val _webViewExtractor = MutableStateFlow<YouTubeWebViewExtractor?>(null)
 
     override val uiState = combine(
         _isLoading,
@@ -93,7 +85,6 @@ class BulkDownloadViewModel @AssistedInject constructor(
         _navigationState,
         _isStartingDownloads,
         _fallbackState,
-        _webViewExtractor,
     ) { values: Array<Any?> ->
         val loading = values[0] as Boolean
         val error = values[1] as String?
@@ -112,7 +103,6 @@ class BulkDownloadViewModel @AssistedInject constructor(
         val navState = values[11] as BulkDownloadNavigationState
         val startingDownloads = values[12] as Boolean
         val fallback = values[13] as FallbackState
-        val extractor = values[14] as YouTubeWebViewExtractor?
 
         BulkDownloadState(
             isLoading = loading,
@@ -129,7 +119,6 @@ class BulkDownloadViewModel @AssistedInject constructor(
             navigationState = navState,
             isStartingDownloads = startingDownloads,
             fallbackState = fallback,
-            webViewExtractor = extractor,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -161,16 +150,15 @@ class BulkDownloadViewModel @AssistedInject constructor(
                 .onFailure { e ->
                     val detail = e.localizedMessage ?: e.message ?: e.toString()
                     errorln { "[BulkDownloadViewModel] Error getting video list: $detail" }
-                    // Trigger fallback instead of showing error
                     startFallback()
                 }
         }
     }
 
-    private fun handleVideoListSuccess(videoList: List<VideoInfo>) {
+    private fun handleVideoListSuccess(videoList: List<VideoInfo>, title: String = "Playlist") {
         val playlistInfo = PlaylistInfo(
             id = null,
-            title = "Playlist",
+            title = title,
             entries = videoList,
             entryCount = videoList.size
         )
@@ -207,87 +195,35 @@ class BulkDownloadViewModel @AssistedInject constructor(
     }
 
     private fun startFallback() {
-        infoln { "[BulkDownloadViewModel] Starting WebView fallback extraction" }
+        infoln { "[BulkDownloadViewModel] Starting HTTP playlist fallback" }
         _isLoading.value = false
-        _fallbackState.value = FallbackState.CheckingLogin
-
-        // Set MANUAL dismiss mode to prevent app from closing when new window is created
-        trayAppState.setDismissMode(TrayWindowDismissMode.MANUAL)
-
-        // Create extractor instance
-        val extractor = YouTubeWebViewExtractor()
-        _webViewExtractor.value = extractor
-    }
-
-    /**
-     * Called by the UI when the WebView has checked login status.
-     * If logged in, extraction will start automatically.
-     * If not logged in, LoginRequired state is set.
-     */
-    fun onLoginStatusChecked(isLoggedIn: Boolean?) {
-        infoln { "[BulkDownloadViewModel] Login status checked: $isLoggedIn" }
-        when (isLoggedIn) {
-            true -> {
-                // User is logged in, start extraction
-                _fallbackState.value = FallbackState.Extracting(0)
-            }
-            else -> {
-                // User needs to log in (treat null/unknown as not logged in)
-                _fallbackState.value = FallbackState.LoginRequired
-            }
-        }
-    }
-
-    /**
-     * Called by the UI when user has logged in via the WebView.
-     */
-    fun onUserLoggedIn() {
-        infoln { "[BulkDownloadViewModel] User logged in, starting extraction" }
         _fallbackState.value = FallbackState.Extracting(0)
-    }
 
-    /**
-     * Called by the UI to update extraction progress.
-     */
-    fun onExtractionProgress(videoCount: Int) {
-        _fallbackState.value = FallbackState.Extracting(videoCount)
-    }
-
-    /**
-     * Called by the UI when fallback extraction is complete.
-     */
-    fun onFallbackExtractionComplete(videos: List<YouTubeScrapedVideo>) {
-        infoln { "[BulkDownloadViewModel] Fallback extraction complete: ${videos.size} videos" }
-
-        // Restore AUTO dismiss mode now that WebView window is no longer needed
-        trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
-
-        // Convert YouTubeScrapedVideo to VideoInfo
-        val videoInfoList = videos.map { scraped ->
-            VideoInfo(
-                id = scraped.videoId ?: scraped.url.hashCode().toString(),
-                title = scraped.title,
-                url = scraped.url,
-                thumbnail = scraped.thumbnail,
-                duration = scraped.duration?.let { parseDuration(it) }
-            )
+        viewModelScope.launch(Dispatchers.IO) {
+            YouTubePlaylistExtractor.extract(playlistUrl) { count ->
+                _fallbackState.value = FallbackState.Extracting(count)
+            }.onSuccess { playlist ->
+                infoln { "[BulkDownloadViewModel] Fallback extraction complete: ${playlist.videos.size} videos" }
+                val videoInfoList = playlist.videos.map { scraped ->
+                    VideoInfo(
+                        id = scraped.videoId ?: scraped.url.hashCode().toString(),
+                        title = scraped.title,
+                        url = scraped.url,
+                        thumbnail = scraped.thumbnail,
+                        duration = scraped.duration?.let { parseDuration(it) }
+                    )
+                }
+                handleVideoListSuccess(videoInfoList, playlist.title)
+                _fallbackState.value = FallbackState.Completed
+            }.onFailure { e ->
+                onFallbackExtractionError(e.message ?: "Failed to extract playlist")
+            }
         }
-
-        handleVideoListSuccess(videoInfoList)
-        _fallbackState.value = FallbackState.Completed
-        _webViewExtractor.value?.reset()
-        _webViewExtractor.value = null
     }
 
-    /**
-     * Called by the UI when fallback extraction fails.
-     */
-    fun onFallbackExtractionError(message: String) {
+    private fun onFallbackExtractionError(message: String) {
         errorln { "[BulkDownloadViewModel] Fallback extraction error: $message" }
-        trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
         _fallbackState.value = FallbackState.Error(message)
-        _webViewExtractor.value?.reset()
-        _webViewExtractor.value = null
         _errorMessage.value = message
     }
 
@@ -317,7 +253,6 @@ class BulkDownloadViewModel @AssistedInject constructor(
                 urls = urls,
                 timeoutSec = 120
             ) { resolvedId ->
-                // Mark this video as available + done checking immediately
                 _videos.value = _videos.value.map { item ->
                     if (item.videoInfo.id == resolvedId) {
                         item.copy(isAvailable = true, isChecking = false)
@@ -328,7 +263,6 @@ class BulkDownloadViewModel @AssistedInject constructor(
                 _checkedCount.value = _checkedCount.value + 1
             }
 
-            // Mark all remaining unchecked videos as unavailable
             _videos.value = _videos.value.map { item ->
                 if (item.isChecking) {
                     item.copy(
@@ -395,37 +329,20 @@ class BulkDownloadViewModel @AssistedInject constructor(
 
             BulkDownloadEvents.ScreenDisposed -> {
                 infoln { "[BulkDownloadViewModel] Screen disposed: clearing state" }
-                trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
                 _playlistInfo.value = null
                 _videos.value = emptyList()
                 _errorMessage.value = null
                 _isLoading.value = false
                 _fallbackState.value = FallbackState.None
-                _webViewExtractor.value?.reset()
-                _webViewExtractor.value = null
             }
 
             BulkDownloadEvents.OnNavigationConsumed -> {
                 _navigationState.value = BulkDownloadNavigationState.None
             }
 
-            BulkDownloadEvents.OnUserLoggedIn -> {
-                onUserLoggedIn()
-            }
-
-            BulkDownloadEvents.OnFallbackExtractionComplete -> {
-                val extractor = _webViewExtractor.value
-                if (extractor != null) {
-                    onFallbackExtractionComplete(extractor.extractedVideos)
-                }
-            }
-
             BulkDownloadEvents.CancelFallback -> {
                 infoln { "[BulkDownloadViewModel] Fallback cancelled by user" }
-                trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
                 _fallbackState.value = FallbackState.None
-                _webViewExtractor.value?.reset()
-                _webViewExtractor.value = null
                 _errorMessage.value = "Failed to load playlist"
             }
         }
@@ -468,10 +385,5 @@ class BulkDownloadViewModel @AssistedInject constructor(
             _isStartingDownloads.value = false
             _navigationState.value = BulkDownloadNavigationState.NavigateToDownloader
         }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
     }
 }

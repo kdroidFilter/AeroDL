@@ -1,12 +1,9 @@
-@file:OptIn(ExperimentalTrayAppApi::class)
-
 package io.github.kdroidfilter.ytdlpgui.features.converter
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
-import com.kdroid.composetray.tray.api.TrayAppState
-import com.kdroid.composetray.tray.api.TrayWindowDismissMode
+import dev.nucleusframework.composenativetray.trayapp.TrayAppState
+import dev.nucleusframework.composenativetray.trayapp.TrayWindowDismissMode
 import dev.zacsweers.metro.ContributesIntoMap
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.binding
@@ -53,7 +50,7 @@ sealed class ConverterInputEvents {
 }
 
 @ContributesIntoMap(AppScope::class, binding = binding<ViewModel>())
-@ViewModelKey(ConverterInputViewModel::class)
+@ViewModelKey
 @Inject
 class ConverterInputViewModel(
     private val trayAppState: TrayAppState

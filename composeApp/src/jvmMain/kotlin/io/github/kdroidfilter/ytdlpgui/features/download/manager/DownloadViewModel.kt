@@ -24,7 +24,7 @@ import dev.zacsweers.metrox.viewmodel.ViewModelKey
 import io.github.kdroidfilter.ytdlpgui.di.AppScope
 
 @ContributesIntoMap(AppScope::class, binding = binding<ViewModel>())
-@ViewModelKey(DownloadViewModel::class)
+@ViewModelKey
 @Inject
 class DownloadViewModel(
     private val downloadManager: DownloadManager,

@@ -1,0 +1,9 @@
+# Copy to linux-signing.local.properties (gitignored) and fill in.
+#
+# Generate a key:
+#   gpg --batch --passphrase '…' --quick-gen-key 'AeroDl Linux Signing <kdroidfilter@gmail.com>' default default 0
+#   gpg --armor --export-secret-keys KEYID > linux-signing-key.asc
+#
+# compose.desktop.linux.signing.keyId=YOUR_KEY_ID
+# compose.desktop.linux.signing.keyFile=/absolute/path/to/linux-signing-key.asc
+# compose.desktop.linux.signing.passphrase=YOUR_PASSPHRASE

@@ -31,7 +31,7 @@ import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingStep
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingViewModel
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.DependencyInfoBar
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.settings_cookies_from_browser_label
 import ytdlpgui.composeapp.generated.resources.settings_cookies_from_browser_title

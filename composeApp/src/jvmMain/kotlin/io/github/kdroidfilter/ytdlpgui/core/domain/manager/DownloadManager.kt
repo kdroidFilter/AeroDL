@@ -1,15 +1,10 @@
-@file:OptIn(ExperimentalTrayAppApi::class)
-
 package io.github.kdroidfilter.ytdlpgui.core.domain.manager
 
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
-import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
-import com.kdroid.composetray.tray.api.TrayAppState
+import dev.nucleusframework.composenativetray.trayapp.TrayAppState
 import dev.zacsweers.metro.Inject
-import io.github.kdroidfilter.knotify.builder.ExperimentalNotificationsApi
-import io.github.kdroidfilter.knotify.compose.builder.notification
 import io.github.kdroidfilter.ffmpeg.FfmpegWrapper
 import io.github.kdroidfilter.ffmpeg.core.ConversionEvent
 import io.github.kdroidfilter.ffmpeg.core.ConversionHandle
@@ -23,6 +18,7 @@ import io.github.kdroidfilter.ytdlp.model.VideoInfo
 import io.github.kdroidfilter.ytdlpgui.core.config.SettingsKeys
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.platform.filesystem.FileExplorerUtils
+import dev.nucleusframework.notification.common.notification
 import io.github.kdroidfilter.ytdlpgui.core.platform.notifications.NotificationThumbUtils
 import io.github.kdroidfilter.logging.errorln
 import io.github.kdroidfilter.logging.infoln
@@ -757,7 +753,6 @@ class DownloadManager(
         )
     }
 
-    @OptIn(ExperimentalNotificationsApi::class)
     private suspend fun sendConversionCompletionNotification(item: DownloadItem, absolutePath: String?) {
         val title = getString(Res.string.conversion_completed_title)
         val fileName = absolutePath?.let { File(it).name } ?: item.inputFile?.name ?: "File"
@@ -766,19 +761,15 @@ class DownloadManager(
 
         fun openDirAction() { absolutePath?.let { FileExplorerUtils.openDirectoryForPath(it) } }
 
-        val notif = notification(
+        notification(
             title = title,
             message = message,
             onActivated = { openDirAction() },
-            onDismissed = { },
-            onFailed = { }
         ) {
             button(title = openBtn) { openDirAction() }
-        }
-        notif.send()
+        }.send()
     }
 
-    @OptIn(ExperimentalNotificationsApi::class)
     private suspend fun sendCompletionNotification(item: DownloadItem, absolutePath: String?) {
         val title = getString(Res.string.download_completed_title)
         val nameOrUrl = item.videoInfo?.title?.ifBlank { null } ?: run {
@@ -790,19 +781,15 @@ class DownloadManager(
         fun openDirAction() { absolutePath?.let { FileExplorerUtils.openDirectoryForPath(it) } }
 
         val thumbUrl = NotificationThumbUtils.resolveThumbnailUrl(item.videoInfo?.thumbnail, item.url)
-        val largeIconContent = NotificationThumbUtils.buildLargeIcon(thumbUrl)
 
-        val notif = notification(
+        notification(
             title = title,
             message = message,
-            largeIcon = largeIconContent,
+            largeImage = thumbUrl,
             onActivated = { openDirAction() },
-            onDismissed = { },
-            onFailed = { }
         ) {
             button(title = openBtn) { openDirAction() }
-        }
-        notif.send()
+        }.send()
     }
 
     private fun update(id: String, transform: (DownloadItem) -> DownloadItem) {

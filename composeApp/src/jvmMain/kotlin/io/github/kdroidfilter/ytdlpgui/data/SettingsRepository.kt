@@ -1,9 +1,9 @@
 package io.github.kdroidfilter.ytdlpgui.data
 
 import com.russhwolf.settings.Settings
+import dev.nucleusframework.autolaunch.AutoLaunch
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlpgui.core.config.SettingsKeys
-import io.github.vinceglb.autolaunch.AutoLaunch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,7 +16,6 @@ import java.io.File
 class SettingsRepository(
     private val settings: Settings,
     private val ytDlpWrapper: YtDlpWrapper,
-    private val autoLaunch: AutoLaunch,
 ) {
     private var clipboardMonitorManager: io.github.kdroidfilter.ytdlpgui.core.domain.manager.ClipboardMonitorManager? = null
     // StateFlows for reactive UI
@@ -163,7 +162,7 @@ class SettingsRepository(
     suspend fun refreshAutoLaunchState() {
         val current = _autoLaunchEnabled.value
         val detected = try {
-            autoLaunch.isEnabled()
+            AutoLaunch.isEnabled()
         } catch (e: Exception) {
             io.github.kdroidfilter.logging.errorln(e) { "Failed to check auto launch state: ${e.message}" }
             current
@@ -177,13 +176,13 @@ class SettingsRepository(
         settings.putBoolean(SettingsKeys.AUTO_LAUNCH_ENABLED, enabled)
 
             if (enabled) {
-                autoLaunch.enable()
+                AutoLaunch.enable()
             } else {
-                autoLaunch.disable()
+                AutoLaunch.disable()
             }
 
         val confirmed = try {
-            autoLaunch.isEnabled()
+            AutoLaunch.isEnabled()
         } catch (_: Exception) {
             enabled
         }

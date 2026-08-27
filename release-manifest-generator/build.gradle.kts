@@ -15,9 +15,6 @@ kotlin {
             // For the ReleaseManifest model
             implementation(project(":ytdlp"))
 
-            // For GitHubReleaseFetcher (used only in the generator)
-            implementation(libs.platformtools.releasefetcher)
-
             // Network module (Ktor HttpClient)
             implementation(project(":network"))
 

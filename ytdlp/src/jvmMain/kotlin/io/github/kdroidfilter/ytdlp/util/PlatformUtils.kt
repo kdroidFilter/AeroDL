@@ -1,8 +1,6 @@
 package io.github.kdroidfilter.ytdlp.util
 
 import io.github.kdroidfilter.network.HttpsConnectionFactory
-import io.github.kdroidfilter.platformtools.OperatingSystem
-import io.github.kdroidfilter.platformtools.getOperatingSystem
 import io.github.kdroidfilter.logging.debugln
 import io.github.kdroidfilter.logging.errorln
 import io.github.vinceglb.filekit.FileKit

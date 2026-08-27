@@ -3,7 +3,6 @@ package io.github.kdroidfilter.ytdlpgui.features.download.bulk
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlp.model.PlaylistInfo
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
-import io.github.kdroidfilter.youtubewebviewextractor.YouTubeWebViewExtractor
 
 /**
  * Represents a single video entry in the bulk download list with its selection and availability state.
@@ -28,13 +27,7 @@ sealed class FallbackState {
     /** No fallback needed, yt-dlp worked */
     data object None : FallbackState()
 
-    /** Checking if user is logged in to YouTube */
-    data object CheckingLogin : FallbackState()
-
-    /** User needs to log in to YouTube */
-    data object LoginRequired : FallbackState()
-
-    /** Extracting videos via WebView */
+    /** Extracting videos via HTTP ytInitialData scrape */
     data class Extracting(val videoCount: Int) : FallbackState()
 
     /** Fallback extraction completed */
@@ -59,7 +52,6 @@ data class BulkDownloadState(
     val navigationState: BulkDownloadNavigationState = BulkDownloadNavigationState.None,
     val isStartingDownloads: Boolean = false,
     val fallbackState: FallbackState = FallbackState.None,
-    val webViewExtractor: YouTubeWebViewExtractor? = null
 ) {
     val selectedCount: Int
         get() = videos.count { it.isSelected && it.isAvailable }

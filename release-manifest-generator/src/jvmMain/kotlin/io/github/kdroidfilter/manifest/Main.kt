@@ -1,14 +1,19 @@
 package io.github.kdroidfilter.manifest
 
 import io.github.kdroidfilter.network.KtorConfig
-import io.github.kdroidfilter.platformtools.releasefetcher.github.GitHubReleaseFetcher
-import io.github.kdroidfilter.platformtools.releasefetcher.github.model.Release
 import io.github.kdroidfilter.ytdlp.model.AssetInfo
 import io.github.kdroidfilter.ytdlp.model.ReleaseEntries
 import io.github.kdroidfilter.ytdlp.model.ReleaseInfo
 import io.github.kdroidfilter.ytdlp.model.ReleaseManifest
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.request.get
+import io.ktor.client.request.header
+import io.ktor.http.HttpHeaders
+import io.ktor.http.isSuccess
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
 import java.io.File
@@ -20,43 +25,48 @@ private val json = Json {
     ignoreUnknownKeys = true
 }
 
+@Serializable
+private data class GitHubRelease(
+    val tag_name: String,
+    val body: String? = null,
+    val assets: List<GitHubAsset> = emptyList(),
+)
+
+@Serializable
+private data class GitHubAsset(
+    val name: String,
+    val browser_download_url: String,
+)
+
 fun main() = runBlocking {
     println("Generating release manifest...")
 
     val httpClient = KtorConfig.createHttpClient()
 
-    // Fetch all releases via GitHubReleaseFetcher
-    val ytdlp = GitHubReleaseFetcher("yt-dlp", "yt-dlp", httpClient).getLatestRelease()
-        ?: error("Failed to fetch yt-dlp release")
+    val ytdlp = httpClient.fetchLatestRelease("yt-dlp", "yt-dlp")
     println("  yt-dlp: ${ytdlp.tag_name}")
 
-    val ffmpeg = GitHubReleaseFetcher("yt-dlp", "FFmpeg-Builds", httpClient).getLatestRelease()
-        ?: error("Failed to fetch FFmpeg release")
+    val ffmpeg = httpClient.fetchLatestRelease("yt-dlp", "FFmpeg-Builds")
     println("  ffmpeg: ${ffmpeg.tag_name}")
 
-    val ffmpegMacos = GitHubReleaseFetcher("kdroidFilter", "FFmpeg-Builds", httpClient).getLatestRelease()
-        ?: error("Failed to fetch FFmpeg macOS release")
+    val ffmpegMacos = httpClient.fetchLatestRelease("kdroidFilter", "FFmpeg-Builds")
     println("  ffmpeg-macos: ${ffmpegMacos.tag_name}")
 
-    val deno = GitHubReleaseFetcher("denoland", "deno", httpClient).getLatestRelease()
-        ?: error("Failed to fetch Deno release")
+    val deno = httpClient.fetchLatestRelease("denoland", "deno")
     println("  deno: ${deno.tag_name}")
 
-    val aerodl = GitHubReleaseFetcher("kdroidFilter", "AeroDL", httpClient).getLatestRelease()
-        ?: error("Failed to fetch AeroDL release")
+    val aerodl = httpClient.fetchLatestRelease("kdroidFilter", "AeroDL")
     println("  aerodl: ${aerodl.tag_name}")
 
-    val python = GitHubReleaseFetcher("indygreg", "python-build-standalone", httpClient).getLatestRelease()
-        ?: error("Failed to fetch Python standalone release")
+    val python = httpClient.fetchLatestRelease("indygreg", "python-build-standalone")
     println("  python: ${python.tag_name}")
 
-    // Build the manifest
     val manifest = ReleaseManifest(
         generatedAt = Instant.now().toString(),
         schemaVersion = 1,
         releases = ReleaseEntries(
             ytDlp = ytdlp.toReleaseInfo(),
-            ytDlpScript = ytdlp.toReleaseInfo(), // Same release, but used for pure Python script
+            ytDlpScript = ytdlp.toReleaseInfo(),
             python = python.toReleaseInfo(),
             ffmpeg = ffmpeg.toReleaseInfo(),
             ffmpegMacos = ffmpegMacos.toReleaseInfo(),
@@ -65,17 +75,13 @@ fun main() = runBlocking {
         )
     )
 
-    // Write to docs/api/ at the project root.
-    // The output path can be overridden via the MANIFEST_OUTPUT env var (directory path).
     val outputDir = File(System.getenv("MANIFEST_OUTPUT") ?: "docs/api")
     outputDir.mkdirs()
 
-    // JSON (for backwards compatibility / human readability)
     val jsonFile = File(outputDir, "releases.json")
     jsonFile.writeText(json.encodeToString(ReleaseManifest.serializer(), manifest))
     println("JSON manifest written to ${jsonFile.absolutePath}")
 
-    // Protobuf (compact binary format for the client)
     @OptIn(ExperimentalSerializationApi::class)
     val pbFile = File(outputDir, "releases.pb")
     pbFile.writeBytes(ProtoBuf.encodeToByteArray(ReleaseManifest.serializer(), manifest))
@@ -84,7 +90,18 @@ fun main() = runBlocking {
     httpClient.close()
 }
 
-private fun Release.toReleaseInfo() = ReleaseInfo(
+private suspend fun HttpClient.fetchLatestRelease(owner: String, repo: String): GitHubRelease {
+    val response = get("https://api.github.com/repos/$owner/$repo/releases/latest") {
+        header(HttpHeaders.UserAgent, "AeroDL-manifest-generator")
+        header(HttpHeaders.Accept, "application/vnd.github+json")
+    }
+    if (!response.status.isSuccess()) {
+        error("Failed to fetch $owner/$repo: ${response.status}")
+    }
+    return response.body()
+}
+
+private fun GitHubRelease.toReleaseInfo() = ReleaseInfo(
     tagName = tag_name,
     body = body,
     assets = assets.map { AssetInfo(it.name, it.browser_download_url) }

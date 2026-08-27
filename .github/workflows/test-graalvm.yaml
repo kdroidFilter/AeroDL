@@ -6,6 +6,7 @@ on:
       - 'composeApp/build.gradle.kts'
       - 'composeApp/graalvm-config/**'
       - '.github/workflows/test-graalvm.yaml'
+      - '.github/workflows/release-desktop.yaml'
 
 jobs:
   test-graalvm:
@@ -14,29 +15,35 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
-            name: Linux x64
-          - os: macos-latest
-            name: macOS ARM64
-          - os: windows-latest
-            name: Windows x64
+          - name: Linux x64
+            os: ubuntu-latest
+          - name: macOS ARM64
+            os: macos-latest
+          - name: Windows x64
+            os: windows-latest
 
     name: GraalVM - ${{ matrix.name }}
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
-      - name: Setup Nucleus
-        uses: kdroidFilter/Nucleus/.github/actions/setup-nucleus@v1.7.2
+      - name: Setup Nucleus (GraalVM)
+        uses: NucleusFramework/Nucleus/.github/actions/setup-nucleus@v2.5.1
         with:
           graalvm: 'true'
           packaging-tools: 'true'
           setup-gradle: 'true'
+          setup-node: 'true'
 
-      - name: Build GraalVM native image
+      - name: Build GraalVM native packages
         shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
-          chmod +x ./gradlew
-          ./gradlew :composeApp:packageGraalvmNative -Pgraalvm.march=compatibility --stacktrace --no-daemon
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            ./gradlew :composeApp:packageGraalvmDeb :composeApp:packageGraalvmRpm :composeApp:packageGraalvmAppImage -PnativeMarch=compatibility --no-daemon --stacktrace
+          elif [ "$RUNNER_OS" = "macOS" ]; then
+            ./gradlew :composeApp:packageGraalvmDmg :composeApp:packageGraalvmZip -PnativeMarch=compatibility --no-daemon --stacktrace
+          elif [ "$RUNNER_OS" = "Windows" ]; then
+            ./gradlew :composeApp:packageGraalvmNsis :composeApp:packageGraalvmPortable -PnativeMarch=compatibility --no-daemon --stacktrace
+          fi
