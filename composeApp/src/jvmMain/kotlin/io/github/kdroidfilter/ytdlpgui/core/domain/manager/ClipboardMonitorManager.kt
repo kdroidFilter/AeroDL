@@ -70,10 +70,7 @@ class ClipboardMonitorManager(
         val listener = ClipboardListener { content ->
             scope.launch { handleContent(content) }
         }
-        monitor = PollingClipboardMonitor(listener).also { m ->
-            m.start()
-            runCatching { m.getCurrentContent().let { scope.launch { handleContent(it) } } }
-        }
+        monitor = PollingClipboardMonitor(listener).also { it.start() }
     }
 
     private fun stop() {

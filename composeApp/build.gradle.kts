@@ -80,6 +80,7 @@ kotlin {
             implementation(libs.nucleus.decorated.window.tao)
             implementation(libs.nucleus.notification.common)
             implementation(libs.nucleus.autolaunch)
+            implementation(libs.nucleus.energy.manager)
 
             // Serialization
             implementation(libs.kotlinx.serialization.json)
@@ -167,7 +168,6 @@ nucleus.application {
             iconFile.set(project.file("icons/logo.ico"))
             shortcut = true
             upgradeUuid = "ada57c09-11e1-4d56-9d5d-0c480f6968ec"
-            perUserInstall = true
             packageVersion = nativePackageVersion
             portable {
                 compressionLevel = CompressionLevel.Normal

@@ -39,9 +39,16 @@
 -keepclasseswithmembers class io.github.kdroidfilter.nucleus.darkmodedetector.** {
     native <methods>;
 }
+# Nucleus EnergyManager JNI bridges (nucleus_energy_manager native lib)
+-keep class dev.nucleusframework.energymanager.** { *; }
+-keepclasseswithmembers class dev.nucleusframework.energymanager.** {
+    native <methods>;
+}
+
 # Suppress warnings for platform-specific native bridges absent on other OSes
 -dontwarn io.github.kdroidfilter.nucleus.nativessl.**
 -dontwarn io.github.kdroidfilter.nucleus.nativehttp.**
+-dontwarn dev.nucleusframework.energymanager.**
 
 -assumenosideeffects public class androidx.compose.runtime.ComposerKt {
     void sourceInformation(androidx.compose.runtime.Composer,java.lang.String);

@@ -28,6 +28,7 @@ import dev.nucleusframework.core.runtime.NucleusApp
 import dev.nucleusframework.core.runtime.Platform
 import dev.nucleusframework.core.runtime.SingleInstanceManager
 import dev.nucleusframework.darkmodedetector.isSystemInDarkMode
+import dev.nucleusframework.energymanager.EnergyManager
 import dev.zacsweers.metro.createGraph
 import dev.zacsweers.metrox.viewmodel.LocalMetroViewModelFactory
 import dev.zacsweers.metrox.viewmodel.metroViewModel
@@ -112,6 +113,7 @@ fun main(args: Array<String>) {
 
             LaunchedEffect(trayAppState) {
                 trayAppState.isVisible.collect { visible ->
+                    applyEnergyEfficiencyForVisibility(visible)
                     if (!visible) {
                         delay(300)
                         infoln { "Window hidden: hinting GC" }
@@ -262,6 +264,30 @@ fun clearAppData() {
 private fun clearSettings(settings: Settings) {
     settings.clear()
     infoln { "Settings cleared" }
+}
+
+/**
+ * Pins the process to efficiency cores (EcoQoS / PRIO_DARWIN_BG / nice)
+ * while the window is hidden, and restores default scheduling when shown.
+ */
+private fun applyEnergyEfficiencyForVisibility(visible: Boolean) {
+    if (!EnergyManager.isAvailable()) return
+    val result = if (visible) {
+        EnergyManager.disableEfficiencyMode()
+    } else {
+        EnergyManager.enableEfficiencyMode()
+    }
+    if (result.success) {
+        infoln {
+            if (visible) {
+                "Window visible: restored default CPU scheduling"
+            } else {
+                "Window hidden: using efficiency cores"
+            }
+        }
+    } else if (result.message.isNotEmpty()) {
+        infoln { "EnergyManager: ${result.message}" }
+    }
 }
 
 private fun isWindows10(): Boolean {
