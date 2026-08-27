@@ -48,11 +48,11 @@ fun Icon(
     modifier: Modifier = Modifier,
     tint: Color = Color.Unspecified,
 ) {
-    val vector = icon.imageVector
-    if (vector != null) {
-        Icon(vector, contentDescription, modifier, tint)
-    } else {
-        GlyphIcon(icon, contentDescription, modifier, tint)
+    when {
+        icon.glyph != null || !icon.sfSymbolName.isNullOrEmpty() ->
+            GlyphIcon(icon, contentDescription, modifier, tint)
+        icon.imageVector != null ->
+            Icon(icon.imageVector, contentDescription, modifier, tint)
     }
 }
 

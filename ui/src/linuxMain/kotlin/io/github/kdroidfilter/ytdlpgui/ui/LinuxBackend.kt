@@ -76,6 +76,8 @@ import io.github.kdroidfilter.ytdlpgui.ui.NativeShapes
 import io.github.kdroidfilter.ytdlpgui.ui.NativeTypography
 import io.github.kdroidfilter.ytdlpgui.ui.icons.NativeIcon
 
+internal const val NativeDrawsWindowChrome = false
+
 @Composable
 internal fun NativeThemeImpl(darkTheme: Boolean, content: @Composable () -> Unit) {
     val accent = systemAccentColor()

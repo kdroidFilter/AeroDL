@@ -5,14 +5,16 @@ plugins {
 }
 
 /**
- * Compile-time UI backend. This is a JVM-only module: both backends live in
+ * Compile-time UI backend. This is a JVM-only module: backends live in
  * extra source directories that are added to `jvmMain`. Override with
- * `-PuiBackend=linux|fluent` (CI / packaging on a non-target OS).
+ * `-PuiBackend=linux|macos|fluent` (CI / packaging on a non-target OS).
  */
+val hostOs = System.getProperty("os.name").lowercase()
 val uiBackend: String =
     (findProperty("uiBackend") as String?)?.lowercase()
         ?: when {
-            System.getProperty("os.name").lowercase().contains("linux") -> "linux"
+            hostOs.contains("linux") -> "linux"
+            hostOs.contains("mac") -> "macos"
             else -> "fluent"
         }
 
@@ -33,6 +35,10 @@ kotlin {
                 implementation(libs.nucleus.system.color)
                 when (uiBackend) {
                     "linux" -> implementation(libs.yaru)
+                    "macos" -> {
+                        implementation(libs.compose.macos.ui)
+                        implementation(libs.compose.macos.ui.icons.extended)
+                    }
                     else -> {
                         implementation(libs.compose.fluent)
                         implementation(libs.compose.fluent.icons.extended)

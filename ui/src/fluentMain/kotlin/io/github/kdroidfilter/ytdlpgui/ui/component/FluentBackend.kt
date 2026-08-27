@@ -63,6 +63,8 @@ import io.github.composefluent.component.ContentDialogButton as FluentContentDia
 import io.github.composefluent.component.DialogSize as FluentDialogSize
 import io.github.composefluent.component.SegmentedItemPosition as FluentSegmentedItemPosition
 
+internal const val NativeDrawsWindowChrome = false
+
 private val DefaultFluentAccent = Color(0xFF0078D4)
 
 private fun shadesFromAccent(accent: Color): Shades = Shades(

@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.TextStyle
+import io.github.kdroidfilter.ytdlpgui.ui.component.NativeDrawsWindowChrome
 import io.github.kdroidfilter.ytdlpgui.ui.component.NativeThemeImpl
 
 val LocalNativeColors = staticCompositionLocalOf<NativeColors> {
@@ -32,6 +33,9 @@ fun NativeTheme(
 }
 
 object NativeTheme {
+    /** True when the backend already paints native window chrome (macOS). */
+    val drawsWindowChrome: Boolean = NativeDrawsWindowChrome
+
     val colors: NativeColors
         @Composable
         @ReadOnlyComposable

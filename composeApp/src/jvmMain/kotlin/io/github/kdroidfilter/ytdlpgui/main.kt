@@ -210,14 +210,22 @@ fun main(args: Array<String>) {
                 }
             ) {
                 NativeTheme(darkTheme = isSystemInDarkMode()) {
+                    val windowShape = RoundedCornerShape(12.dp)
                     NativeBackground(
                         Modifier
                             .fillMaxSize()
-                            .clip(RoundedCornerShape(12.dp))
-                            .border(
-                                1.dp,
-                                if (isSystemInDarkMode()) Color.DarkGray else Color.LightGray,
-                                RoundedCornerShape(12.dp)
+                            .then(
+                                if (NativeTheme.drawsWindowChrome) {
+                                    Modifier
+                                } else {
+                                    Modifier
+                                        .clip(windowShape)
+                                        .border(
+                                            1.dp,
+                                            if (isSystemInDarkMode()) Color.DarkGray else Color.LightGray,
+                                            windowShape,
+                                        )
+                                },
                             )
                     ) {
                         CompositionLocalProvider(LocalAppGraph provides appGraph) {
