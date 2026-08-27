@@ -163,6 +163,10 @@
     <string name="settings_auto_launch_title">הפעל בעת עליית המערכת</string>
     <string name="settings_auto_launch_caption">מומלץ אם אתם משתמשים הרבה ב-AeroDL: הוא יופעל יחד עם המערכת ולא תצטרכו לזכור לפתוח אותו. בשילוב עם ניטור לוח העריכה תוכלו להתחיל הורדות מיד כשאתם מעתיקים קישור.</string>
 
+    <!-- הגדרות: השארת החלון פתוח -->
+    <string name="settings_disable_tray_auto_hide_title">השאר את החלון פתוח</string>
+    <string name="settings_disable_tray_auto_hide_caption">כשמופעל, החלון נשאר גלוי עד שתסתיר אותו מהמגש. לחיצה מחוץ לחלון לא תסגור אותו.</string>
+
     <!-- מגש/תפריט -->
     <string name="menu_show_window">הצג חלון</string>
     <string name="menu_hide_window">הסתר חלון</string>

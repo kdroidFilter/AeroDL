@@ -56,6 +56,9 @@ class SettingsRepository(
     private val _validateBulkUrls = MutableStateFlow(settings.getBoolean(SettingsKeys.VALIDATE_BULK_URLS, false))
     val validateBulkUrls: StateFlow<Boolean> = _validateBulkUrls.asStateFlow()
 
+    private val _disableTrayAutoHide = MutableStateFlow(settings.getBoolean(SettingsKeys.DISABLE_TRAY_AUTO_HIDE, false))
+    val disableTrayAutoHide: StateFlow<Boolean> = _disableTrayAutoHide.asStateFlow()
+
     init {
         // Apply initial settings to dependencies
         applyToYtDlpWrapper()
@@ -129,6 +132,11 @@ class SettingsRepository(
         settings.putBoolean(SettingsKeys.VALIDATE_BULK_URLS, enabled)
     }
 
+    fun setDisableTrayAutoHide(enabled: Boolean) {
+        _disableTrayAutoHide.value = enabled
+        settings.putBoolean(SettingsKeys.DISABLE_TRAY_AUTO_HIDE, enabled)
+    }
+
     fun setOnboardingCompleted(completed: Boolean) {
         settings.putBoolean(SettingsKeys.ONBOARDING_COMPLETED, completed)
     }
@@ -154,6 +162,7 @@ class SettingsRepository(
         _concurrentFragments.value = settings.getInt(SettingsKeys.CONCURRENT_FRAGMENTS, 1).coerceIn(1, 5)
         _proxy.value = settings.getString(SettingsKeys.PROXY, "")
         _validateBulkUrls.value = settings.getBoolean(SettingsKeys.VALIDATE_BULK_URLS, false)
+        _disableTrayAutoHide.value = settings.getBoolean(SettingsKeys.DISABLE_TRAY_AUTO_HIDE, false)
 
         applyToYtDlpWrapper()
         clipboardMonitorManager?.let { applyToClipboardMonitor(it) }
@@ -231,6 +240,7 @@ class SettingsRepository(
         _concurrentFragments.value = 1
         _proxy.value = ""
         _validateBulkUrls.value = false
+        _disableTrayAutoHide.value = false
 
         // Apply defaults to dependencies
         applyToYtDlpWrapper()

@@ -18,6 +18,7 @@ import ytdlpgui.composeapp.generated.resources.clipboard_link_detected_message
 import ytdlpgui.composeapp.generated.resources.clipboard_link_detected_title
 import ytdlpgui.composeapp.generated.resources.clipboard_open_in_app
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
+import io.github.kdroidfilter.ytdlpgui.di.applyDefaultDismissMode
 
 /**
  * Manages clipboard monitoring functionality, allowing detection and handling
@@ -114,7 +115,7 @@ class ClipboardMonitorManager(
                 trayAppState.setDismissMode(TrayWindowDismissMode.MANUAL)
                 runCatching { trayAppState.show() }
                 navigationEventBus.navigateTo(Destination.Download.Single(url))
-                trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
+                trayAppState.applyDefaultDismissMode(settingsRepository.disableTrayAutoHide.value)
             }
         }
 

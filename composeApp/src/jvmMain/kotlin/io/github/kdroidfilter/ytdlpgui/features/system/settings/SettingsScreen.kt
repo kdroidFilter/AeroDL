@@ -117,6 +117,12 @@ fun SettingsView(
                 )
             }
             item {
+                DisableTrayAutoHideSetting(
+                    disableTrayAutoHide = state.disableTrayAutoHide,
+                    onDisableTrayAutoHideChange = { onEvent(SettingsEvents.SetDisableTrayAutoHide(it)) },
+                )
+            }
+            item {
                 ResetToDefaultsSetting(
                     onResetClick = { onEvent(SettingsEvents.ResetToDefaults) }
                 )
@@ -551,6 +557,38 @@ private fun AutoLaunchSetting(
 @Composable
 fun AutoLaunchSettingPreview() {
     AutoLaunchSetting(autoLaunchEnabled = true, onAutoLaunchChange = {})
+}
+
+@Composable
+private fun DisableTrayAutoHideSetting(
+    disableTrayAutoHide: Boolean,
+    onDisableTrayAutoHideChange: (Boolean) -> Unit,
+) {
+    CardExpanderItem(
+        heading = {
+            Text(
+                stringResource(Res.string.settings_disable_tray_auto_hide_title)
+            )
+        },
+        caption = {
+            EllipsizedTextWithTooltip(
+                text = stringResource(Res.string.settings_disable_tray_auto_hide_caption)
+            )
+        },
+        icon = { Icon(Icons.Regular.Dismiss, null) },
+        trailing = {
+            Switcher(
+                checked = disableTrayAutoHide,
+                onCheckStateChange = onDisableTrayAutoHideChange,
+            )
+        }
+    )
+}
+
+@Preview
+@Composable
+fun DisableTrayAutoHideSettingPreview() {
+    DisableTrayAutoHideSetting(disableTrayAutoHide = true, onDisableTrayAutoHideChange = {})
 }
 
 @Composable

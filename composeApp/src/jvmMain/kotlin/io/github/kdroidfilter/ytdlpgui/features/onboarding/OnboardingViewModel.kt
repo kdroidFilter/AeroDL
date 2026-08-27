@@ -24,6 +24,7 @@ import dev.zacsweers.metro.binding
 import dev.zacsweers.metrox.viewmodel.ViewModelKey
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.di.AppScope
+import io.github.kdroidfilter.ytdlpgui.di.applyDefaultDismissMode
 
 @ContributesIntoMap(AppScope::class, binding = binding<ViewModel>())
 @ViewModelKey
@@ -197,7 +198,7 @@ class OnboardingViewModel(
             dir?.let {
                 settingsRepository.setDownloadDir(it.file.absolutePath)
             }
-            trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
+            trayAppState.applyDefaultDismissMode(settingsRepository.disableTrayAutoHide.value)
         }
     }
 

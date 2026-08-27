@@ -21,6 +21,7 @@ import dev.nucleusframework.application.aotTraining
 import dev.nucleusframework.application.nucleusApplication
 import dev.nucleusframework.autolaunch.AutoLaunch
 import dev.nucleusframework.composenativetray.trayapp.TrayApp
+import dev.nucleusframework.composenativetray.trayapp.TrayWindowDismissMode
 import dev.nucleusframework.composenativetray.trayapp.rememberTrayAppState
 import dev.nucleusframework.composenativetray.utils.allowComposeNativeTrayLogging
 import dev.nucleusframework.composenativetray.utils.isMenuBarInDarkMode
@@ -42,6 +43,7 @@ import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnlyRtl
 import io.github.kdroidfilter.ytdlpgui.di.AppGraph
 import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
 import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
+import io.github.kdroidfilter.ytdlpgui.core.config.SettingsKeys
 import io.github.kdroidfilter.ytdlpgui.di.TrayAppStateHolder
 import io.github.kdroidfilter.ytdlpgui.di.rememberWindowViewModelStoreOwner
 import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsEvents
@@ -106,6 +108,11 @@ fun main(args: Array<String>) {
             val trayAppState = rememberTrayAppState(
                 initialWindowSize = DpSize(350.dp, 500.dp),
                 initiallyVisible = !startedAtLogin,
+                initialDismissMode = if (appGraph.settings.getBoolean(SettingsKeys.DISABLE_TRAY_AUTO_HIDE, false)) {
+                    TrayWindowDismissMode.MANUAL
+                } else {
+                    TrayWindowDismissMode.AUTO
+                },
             )
             TrayAppStateHolder.set(trayAppState)
 
