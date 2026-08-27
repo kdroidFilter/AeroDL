@@ -32,9 +32,10 @@ fun Button(
     modifier: Modifier = Modifier,
     disabled: Boolean = false,
     iconOnly: Boolean = false,
+    large: Boolean = false,
     content: @Composable RowScope.() -> Unit,
 ) {
-    ButtonImpl(onClick, modifier, disabled, iconOnly, content)
+    ButtonImpl(onClick, modifier, disabled, iconOnly, large, content)
 }
 
 @Composable
@@ -93,8 +94,9 @@ fun TextField(
     header: (@Composable () -> Unit)? = null,
     trailing: (@Composable RowScope.() -> Unit)? = null,
     placeholder: (@Composable () -> Unit)? = null,
+    large: Boolean = false,
 ) {
-    TextFieldImpl(value, onValueChange, modifier, enabled, singleLine, header, trailing, placeholder)
+    TextFieldImpl(value, onValueChange, modifier, enabled, singleLine, header, trailing, placeholder, large)
 }
 
 @Composable

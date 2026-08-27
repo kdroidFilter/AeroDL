@@ -188,6 +188,7 @@ internal fun ButtonImpl(
     modifier: Modifier,
     disabled: Boolean,
     iconOnly: Boolean,
+    @Suppress("UNUSED_PARAMETER") large: Boolean,
     content: @Composable RowScope.() -> Unit,
 ) {
     YaruButton(
@@ -322,6 +323,7 @@ internal fun TextFieldImpl(
     header: (@Composable () -> Unit)?,
     trailing: (@Composable RowScope.() -> Unit)?,
     placeholder: (@Composable () -> Unit)?,
+    @Suppress("UNUSED_PARAMETER") large: Boolean,
 ) {
     val trailingSlot = trailing?.let { slot ->
         @Composable { Row(verticalAlignment = Alignment.CenterVertically, content = slot) }

@@ -244,9 +244,16 @@ internal fun ButtonImpl(
     modifier: Modifier,
     disabled: Boolean,
     iconOnly: Boolean,
+    large: Boolean,
     content: @Composable RowScope.() -> Unit,
 ) {
-    ControlSize(if (iconOnly) ControlSize.Small else ControlSize.ExtraLarge) {
+    ControlSize(
+        when {
+            large -> ControlSize.ExtraLarge
+            iconOnly -> ControlSize.Small
+            else -> ControlSize.Regular
+        },
+    ) {
         PushButton(
             onClick = onClick,
             modifier = modifier,
@@ -353,11 +360,12 @@ internal fun TextFieldImpl(
     header: (@Composable () -> Unit)?,
     trailing: (@Composable RowScope.() -> Unit)?,
     placeholder: (@Composable () -> Unit)?,
+    large: Boolean,
 ) {
     val trailingSlot = trailing?.let { slot ->
         @Composable { Row(verticalAlignment = Alignment.CenterVertically, content = slot) }
     }
-    ControlSize(ControlSize.ExtraLarge) {
+    ControlSize(if (large) ControlSize.ExtraLarge else ControlSize.Regular) {
         if (header != null) {
             Column(modifier) {
                 header()

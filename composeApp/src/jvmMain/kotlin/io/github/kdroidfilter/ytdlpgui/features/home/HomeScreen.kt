@@ -80,6 +80,7 @@ fun HomeView(
         ) {
             TextField(
                 modifier = Modifier.weight(1f),
+                large = true,
                 value = state.link,
                 enabled = !state.isLoading,
                 onValueChange = { onEvent(HomeEvents.OnLinkChanged(it)) },
@@ -112,6 +113,7 @@ fun HomeView(
                 modifier = Modifier.size(NativeTheme.sizes.control),
                 onClick = { onEvent(HomeEvents.OnClipBoardClicked) },
                 iconOnly = true,
+                large = true,
                 disabled = state.isLoading,
             ) {
                 Icon(

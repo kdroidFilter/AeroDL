@@ -144,6 +144,7 @@ internal fun ButtonImpl(
     modifier: Modifier,
     disabled: Boolean,
     iconOnly: Boolean,
+    @Suppress("UNUSED_PARAMETER") large: Boolean,
     content: @Composable RowScope.() -> Unit,
 ) {
     Button(onClick = onClick, modifier = modifier, disabled = disabled, iconOnly = iconOnly, content = content)
@@ -219,6 +220,7 @@ internal fun TextFieldImpl(
     header: (@Composable () -> Unit)?,
     trailing: (@Composable RowScope.() -> Unit)?,
     placeholder: (@Composable () -> Unit)?,
+    @Suppress("UNUSED_PARAMETER") large: Boolean,
 ) {
     TextField(
         value = value,
