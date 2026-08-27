@@ -1,10 +1,8 @@
 package io.github.kdroidfilter.ytdlpgui.core.design.components
 
-import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -24,8 +22,10 @@ import io.github.kdroidfilter.ytdlpgui.ui.component.AccentButton
 import io.github.kdroidfilter.ytdlpgui.ui.component.Icon
 import io.github.kdroidfilter.ytdlpgui.ui.component.InfoBar
 import io.github.kdroidfilter.ytdlpgui.ui.component.InfoBarDefaults
+import io.github.kdroidfilter.ytdlpgui.ui.component.NativeVerticalScrollbar
 import io.github.kdroidfilter.ytdlpgui.ui.component.ProgressBar
 import io.github.kdroidfilter.ytdlpgui.ui.component.Text
+import io.github.kdroidfilter.ytdlpgui.ui.component.rememberNativeScrollbarAdapter
 import io.github.kdroidfilter.ytdlpgui.ui.icons.Icons
 import io.github.kdroidfilter.ytdlpgui.core.platform.browser.openUrlInBrowser
 import org.jetbrains.compose.resources.stringResource
@@ -169,8 +169,8 @@ private fun MarkdownBody(text: String, modifier: Modifier = Modifier, lines: Int
                 }
             )
         }
-        VerticalScrollbar(
-            adapter = rememberScrollbarAdapter(scrollState),
+        NativeVerticalScrollbar(
+            adapter = rememberNativeScrollbarAdapter(scrollState),
             modifier = Modifier.fillMaxHeight().padding(start = 4.dp)
         )
     }

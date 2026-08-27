@@ -1,11 +1,9 @@
 package io.github.kdroidfilter.ytdlpgui.features.system.settings
 
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -124,8 +122,8 @@ fun SettingsView(
                 )
             }
         }
-        VerticalScrollbar(
-            adapter = rememberScrollbarAdapter(listState),
+        NativeVerticalScrollbar(
+            adapter = rememberNativeScrollbarAdapter(listState),
             modifier = Modifier.fillMaxHeight().padding(top = 2.dp, start = 8.dp)
         )
     }

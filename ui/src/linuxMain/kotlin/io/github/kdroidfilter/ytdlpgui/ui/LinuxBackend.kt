@@ -64,6 +64,7 @@ import dev.nucleusframework.yarucompose.widgets.YaruInfoBox
 import dev.nucleusframework.yarucompose.widgets.YaruInfoType
 import dev.nucleusframework.yarucompose.widgets.YaruLinearProgressIndicator
 import dev.nucleusframework.yarucompose.widgets.YaruPopupMenuButton
+import dev.nucleusframework.yarucompose.widgets.YaruScrollbar
 import dev.nucleusframework.yarucompose.widgets.YaruSwitch
 import dev.nucleusframework.yarucompose.widgets.YaruText
 import dev.nucleusframework.yarucompose.widgets.YaruTextField
@@ -727,6 +728,12 @@ internal fun SegmentedButtonImpl(
             text?.invoke()
         }
     }
+}
+
+@Composable
+internal fun VerticalScrollbarImpl(adapter: NativeScrollbarAdapter, modifier: Modifier) {
+    val state = adapter.scrollState ?: adapter.lazyListState ?: return
+    YaruScrollbar(state = state, modifier = modifier) {}
 }
 
 private fun dev.nucleusframework.yarucompose.themes.YaruColorScheme.toNative(): NativeColors =

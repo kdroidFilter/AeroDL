@@ -1,7 +1,10 @@
 package io.github.kdroidfilter.ytdlpgui.ui.component
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import io.github.kdroidfilter.ytdlpgui.ui.NativeTheme
@@ -310,4 +313,20 @@ fun SegmentedButton(
 object ListItemDefaults {
     @Composable
     fun defaultListItemColors(): Any = Unit
+}
+
+@Composable
+fun rememberNativeScrollbarAdapter(scrollState: ScrollState): NativeScrollbarAdapter =
+    remember(scrollState) { NativeScrollbarAdapter(scrollState = scrollState) }
+
+@Composable
+fun rememberNativeScrollbarAdapter(lazyListState: LazyListState): NativeScrollbarAdapter =
+    remember(lazyListState) { NativeScrollbarAdapter(lazyListState = lazyListState) }
+
+@Composable
+fun NativeVerticalScrollbar(
+    adapter: NativeScrollbarAdapter,
+    modifier: Modifier = Modifier,
+) {
+    VerticalScrollbarImpl(adapter, modifier)
 }

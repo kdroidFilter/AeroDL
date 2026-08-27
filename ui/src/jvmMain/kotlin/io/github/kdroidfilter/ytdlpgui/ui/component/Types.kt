@@ -1,5 +1,7 @@
 package io.github.kdroidfilter.ytdlpgui.ui.component
 
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,6 +49,11 @@ interface TopNavScope {
 interface MenuFlyoutContainerScope {
     var isFlyoutVisible: Boolean
 }
+
+class NativeScrollbarAdapter internal constructor(
+    internal val scrollState: ScrollState? = null,
+    internal val lazyListState: LazyListState? = null,
+)
 
 internal class MenuFlyoutState(initialVisible: Boolean = false) : MenuFlyoutContainerScope {
     override var isFlyoutVisible by mutableStateOf(initialVisible)

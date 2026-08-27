@@ -75,10 +75,11 @@ fun HomeView(
         }
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.Bottom
         ) {
             TextField(
+                modifier = Modifier.weight(1f),
                 value = state.link,
                 enabled = !state.isLoading,
                 onValueChange = { onEvent(HomeEvents.OnLinkChanged(it)) },
@@ -106,8 +107,9 @@ fun HomeView(
                     )
                 }
             )
+            Spacer(Modifier.width(8.dp))
             Button(
-                modifier = Modifier.size(33.dp),
+                modifier = Modifier.size(36.dp),
                 onClick = { onEvent(HomeEvents.OnClipBoardClicked) },
                 iconOnly = true,
                 disabled = state.isLoading,

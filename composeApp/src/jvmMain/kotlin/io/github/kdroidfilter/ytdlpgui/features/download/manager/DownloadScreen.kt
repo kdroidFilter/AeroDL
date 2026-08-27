@@ -1,12 +1,10 @@
 package io.github.kdroidfilter.ytdlpgui.features.download.manager
 
 import androidx.compose.foundation.*
-import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.material.Divider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -34,7 +32,9 @@ import io.github.kdroidfilter.ytdlpgui.ui.component.BadgeStatus
 import io.github.kdroidfilter.ytdlpgui.ui.component.ContentDialog
 import io.github.kdroidfilter.ytdlpgui.ui.component.DialogSize
 import io.github.kdroidfilter.ytdlpgui.ui.component.Icon
+import io.github.kdroidfilter.ytdlpgui.ui.component.NativeVerticalScrollbar
 import io.github.kdroidfilter.ytdlpgui.ui.component.ProgressRing
+import io.github.kdroidfilter.ytdlpgui.ui.component.rememberNativeScrollbarAdapter
 import io.github.kdroidfilter.ytdlpgui.ui.component.SubtleButton
 import io.github.kdroidfilter.ytdlpgui.ui.component.Text
 import io.github.kdroidfilter.ytdlpgui.ui.component.TooltipBox
@@ -221,8 +221,8 @@ fun DownloadView(
             }
         }
 
-        VerticalScrollbar(
-            adapter = rememberScrollbarAdapter(listState),
+        NativeVerticalScrollbar(
+            adapter = rememberNativeScrollbarAdapter(listState),
             modifier = Modifier.fillMaxHeight().padding(top = 2.dp, start = 8.dp)
         )
     }

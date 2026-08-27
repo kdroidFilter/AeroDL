@@ -51,11 +51,18 @@ import dev.nucleusframework.macoscompose.components.PushButtonStyle
 import dev.nucleusframework.macoscompose.components.SmallDialog
 import dev.nucleusframework.macoscompose.components.Spinner
 import dev.nucleusframework.macoscompose.components.Switcher as MacosSwitcher
+import dev.nucleusframework.macoscompose.components.VerticalScrollbar as MacosVerticalScrollbar
+import dev.nucleusframework.macoscompose.components.rememberScrollbarState
 import dev.nucleusframework.macoscompose.components.TextField as MacosTextField
 import dev.nucleusframework.macoscompose.icons.Icon as MacosIcon
 import dev.nucleusframework.macoscompose.icons.SystemIcon
+import dev.nucleusframework.macoscompose.theme.AccentColor
 import dev.nucleusframework.macoscompose.theme.ControlSize
 import dev.nucleusframework.macoscompose.theme.MacosTheme
+import dev.nucleusframework.macoscompose.theme.darkColorScheme
+import dev.nucleusframework.macoscompose.theme.lightColorScheme
+import dev.nucleusframework.systemcolor.systemAccentColor
+import io.github.kdroidfilter.ytdlpgui.ui.contrastingOnColor
 import io.github.kdroidfilter.ytdlpgui.ui.LocalNativeColors
 import io.github.kdroidfilter.ytdlpgui.ui.LocalNativeContentColor
 import io.github.kdroidfilter.ytdlpgui.ui.LocalNativeShapes
@@ -69,7 +76,28 @@ internal const val NativeDrawsWindowChrome = false
 
 @Composable
 internal fun NativeThemeImpl(darkTheme: Boolean, content: @Composable () -> Unit) {
-    MacosTheme(darkTheme = darkTheme, liquidGlass = false) {
+    val systemAccent = systemAccentColor()
+    val namedAccent = systemAccent?.closestAccent() ?: AccentColor.Blue
+    val baseScheme = if (darkTheme) darkColorScheme(namedAccent) else lightColorScheme(namedAccent)
+    val colorScheme = if (systemAccent == null) {
+        baseScheme
+    } else {
+        baseScheme.copy(
+            accent = systemAccent,
+            onAccent = systemAccent.contrastingOnColor(),
+            tertiary = systemAccent,
+            surfaceTint = systemAccent,
+            info = systemAccent,
+            inputFocusBorder = systemAccent,
+            ring = systemAccent,
+        )
+    }
+    MacosTheme(
+        darkTheme = darkTheme,
+        accentColor = namedAccent,
+        colorScheme = colorScheme,
+        liquidGlass = false,
+    ) {
         ControlSize(ControlSize.Small) {
             val scheme = MacosTheme.colorScheme
             val typography = MacosTheme.typography
@@ -139,13 +167,15 @@ internal fun AccentButtonImpl(
     @Suppress("UNUSED_PARAMETER") iconOnly: Boolean,
     content: @Composable RowScope.() -> Unit,
 ) {
-    PushButton(
-        onClick = onClick,
-        modifier = modifier,
-        style = PushButtonStyle.Default,
-        enabled = !disabled,
-        content = content,
-    )
+    ControlSize(ControlSize.ExtraLarge) {
+        PushButton(
+            onClick = onClick,
+            modifier = modifier,
+            style = PushButtonStyle.Default,
+            enabled = !disabled,
+            content = content,
+        )
+    }
 }
 
 @Composable
@@ -255,16 +285,18 @@ internal fun TextFieldImpl(
     trailing: (@Composable RowScope.() -> Unit)?,
     placeholder: (@Composable () -> Unit)?,
 ) {
-    MacosTextField(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = modifier,
-        enabled = enabled,
-        singleLine = singleLine,
-        label = header,
-        trailingIcon = trailing?.let { slot -> { Row(content = slot) } },
-        placeholder = placeholder,
-    )
+    ControlSize(ControlSize.ExtraLarge) {
+        MacosTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = modifier,
+            enabled = enabled,
+            singleLine = singleLine,
+            label = header,
+            trailingIcon = trailing?.let { slot -> { Row(content = slot) } },
+            placeholder = placeholder,
+        )
+    }
 }
 
 @Composable
@@ -661,6 +693,29 @@ internal fun SegmentedButtonImpl(
             if (icon != null && text != null) Spacer(Modifier.width(6.dp))
             text?.invoke()
         }
+    }
+}
+
+@Composable
+internal fun VerticalScrollbarImpl(adapter: NativeScrollbarAdapter, modifier: Modifier) {
+    val state = when {
+        adapter.scrollState != null -> rememberScrollbarState(adapter.scrollState)
+        adapter.lazyListState != null -> rememberScrollbarState(adapter.lazyListState)
+        else -> return
+    }
+    MacosVerticalScrollbar(state = state, modifier = modifier)
+}
+
+private fun Color.closestAccent(): AccentColor {
+    val r = red
+    val g = green
+    val b = blue
+    return AccentColor.entries.minBy { candidate ->
+        val c = candidate.light
+        val dr = r - c.red
+        val dg = g - c.green
+        val db = b - c.blue
+        dr * dr + dg * dg + db * db
     }
 }
 

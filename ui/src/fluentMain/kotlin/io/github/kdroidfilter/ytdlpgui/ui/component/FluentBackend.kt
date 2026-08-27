@@ -39,6 +39,7 @@ import io.github.composefluent.component.HyperlinkButton
 import io.github.composefluent.component.InfoBar
 import io.github.composefluent.component.ProgressBar
 import io.github.composefluent.component.ProgressRing
+import io.github.composefluent.component.Scrollbar
 import io.github.composefluent.component.SegmentedButton
 import io.github.composefluent.component.SegmentedControl
 import io.github.composefluent.component.SubtleButton
@@ -62,6 +63,7 @@ import io.github.kdroidfilter.ytdlpgui.ui.icons.NativeIcon
 import io.github.composefluent.component.ContentDialogButton as FluentContentDialogButton
 import io.github.composefluent.component.DialogSize as FluentDialogSize
 import io.github.composefluent.component.SegmentedItemPosition as FluentSegmentedItemPosition
+import io.github.composefluent.component.rememberScrollbarAdapter as rememberFluentScrollbarAdapter
 
 internal const val NativeDrawsWindowChrome = false
 
@@ -496,6 +498,16 @@ internal fun SegmentedButtonImpl(
         icon = icon,
         text = text,
     )
+}
+
+@Composable
+internal fun VerticalScrollbarImpl(adapter: NativeScrollbarAdapter, modifier: Modifier) {
+    val fluentAdapter = when {
+        adapter.scrollState != null -> rememberFluentScrollbarAdapter(adapter.scrollState)
+        adapter.lazyListState != null -> rememberFluentScrollbarAdapter(adapter.lazyListState)
+        else -> return
+    }
+    Scrollbar(isVertical = true, adapter = fluentAdapter, modifier = modifier)
 }
 
 private fun io.github.composefluent.Colors.toNative(): NativeColors =

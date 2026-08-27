@@ -1,12 +1,10 @@
 package io.github.kdroidfilter.ytdlpgui.features.download.single
 
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.IconButton
@@ -37,7 +35,9 @@ import io.github.kdroidfilter.ytdlpgui.ui.component.ListItemSelectionType
 import io.github.kdroidfilter.ytdlpgui.ui.component.MenuFlyoutContainer
 import io.github.kdroidfilter.ytdlpgui.ui.component.MenuFlyoutItem
 import io.github.kdroidfilter.ytdlpgui.ui.component.MenuFlyoutSeparator
+import io.github.kdroidfilter.ytdlpgui.ui.component.NativeVerticalScrollbar
 import io.github.kdroidfilter.ytdlpgui.ui.component.ProgressRing
+import io.github.kdroidfilter.ytdlpgui.ui.component.rememberNativeScrollbarAdapter
 import io.github.kdroidfilter.ytdlpgui.ui.component.SegmentedButton
 import io.github.kdroidfilter.ytdlpgui.ui.component.SegmentedControl
 import io.github.kdroidfilter.ytdlpgui.ui.component.SegmentedItemPosition
@@ -501,8 +501,8 @@ private fun SingleVideoDownloadView(
             }
         }
 
-        VerticalScrollbar(
-            adapter = rememberScrollbarAdapter(scrollState),
+        NativeVerticalScrollbar(
+            adapter = rememberNativeScrollbarAdapter(scrollState),
             modifier = Modifier.fillMaxHeight().padding(top = 2.dp, start = 8.dp)
         )
     }

@@ -1,6 +1,5 @@
 package io.github.kdroidfilter.ytdlpgui.features.download.bulk
 
-import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -8,7 +7,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Divider
 import androidx.compose.runtime.*
@@ -177,8 +175,8 @@ private fun PlaylistContent(
                 }
             }
 
-            VerticalScrollbar(
-                adapter = rememberScrollbarAdapter(videoListState),
+            NativeVerticalScrollbar(
+                adapter = rememberNativeScrollbarAdapter(videoListState),
                 modifier = Modifier.fillMaxHeight().padding(top = 2.dp, start = 8.dp)
             )
         }
@@ -202,8 +200,8 @@ private fun PlaylistContent(
                 Spacer(Modifier.height(8.dp))
             }
 
-            VerticalScrollbar(
-                adapter = rememberScrollbarAdapter(optionsScrollState),
+            NativeVerticalScrollbar(
+                adapter = rememberNativeScrollbarAdapter(optionsScrollState),
                 modifier = Modifier.fillMaxHeight().padding(start = 8.dp)
             )
         }
