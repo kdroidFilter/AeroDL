@@ -17,6 +17,9 @@ pluginManagement {
 
 dependencyResolutionManagement {
     repositories {
+        mavenLocal {
+            content { includeGroupByRegex("dev\\.nucleusframework.*") }
+        }
         google {
             mavenContent {
                 includeGroupAndSubgroups("androidx")

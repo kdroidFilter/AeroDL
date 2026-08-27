@@ -106,7 +106,8 @@ fun CookiesView(
                 currentBrowser = state.cookiesFromBrowser,
                 onBrowserSelected = { browser ->
                     onEvent(OnboardingEvents.OnSetCookiesFromBrowser(browser))
-                }
+                },
+                modifier = Modifier.fillMaxWidth(),
             )
         }
         if (initState != null) {

@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import io.github.kdroidfilter.ytdlpgui.ui.component.ComboBox
 import io.github.kdroidfilter.ytdlpgui.core.platform.browser.BrowserDetector
 import io.github.kdroidfilter.ytdlpgui.core.platform.browser.SupportedBrowser
@@ -37,6 +38,7 @@ import ytdlpgui.composeapp.generated.resources.settings_cookies_from_browser_tit
 fun BrowserSelector(
     currentBrowser: String,
     onBrowserSelected: (String) -> Unit,
+    modifier: Modifier = Modifier,
     header: String? = stringResource(Res.string.settings_cookies_from_browser_title),
     placeholder: String? = null,
     useDefaultPlaceholder: Boolean = false,
@@ -62,6 +64,7 @@ fun BrowserSelector(
         placeholder = actualPlaceholder,
         selected = selected,
         items = browserLabels,
+        modifier = modifier,
         onSelectionChange = { index, _ ->
             selected = index
             onBrowserSelected(browserValues[index])

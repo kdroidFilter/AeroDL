@@ -300,6 +300,7 @@ internal fun ComboBoxImpl(
             selected = selected?.let { items.getOrNull(it) },
             placeholder = placeholder ?: "",
             enabled = !disabled,
+            modifier = Modifier.fillMaxWidth(),
             onSelected = { value ->
                 val index = items.indexOf(value)
                 if (index >= 0) onSelectionChange(index, value)
