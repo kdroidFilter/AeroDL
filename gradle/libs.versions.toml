@@ -28,7 +28,7 @@ composenativetray = "2.1.1"
 
 # Network & Tools
 ktor = "3.5.2"
-nucleus = "2.5.2"
+nucleus = "2.5.3"
 metro = "1.4.2"
 sqliteJdbc = "3.53.4.0"
 
