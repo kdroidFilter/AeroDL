@@ -18,7 +18,7 @@ import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
 import io.github.kdroidfilter.ytdlpgui.di.AppScope
 
 @ContributesIntoMap(AppScope::class, binding = binding<ViewModel>())
-@ViewModelKey(HomeViewModel::class)
+@ViewModelKey
 @Inject
 class HomeViewModel(
     private val settingsRepository: SettingsRepository

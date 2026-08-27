@@ -33,7 +33,7 @@ import io.github.vinceglb.confettikit.core.Party
 import io.github.vinceglb.confettikit.core.emitter.Emitter
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 import ytdlpgui.composeapp.generated.resources.*
 import io.github.kdroidfilter.ytdlpgui.features.init.InitEvent
 import kotlin.time.Duration.Companion.seconds

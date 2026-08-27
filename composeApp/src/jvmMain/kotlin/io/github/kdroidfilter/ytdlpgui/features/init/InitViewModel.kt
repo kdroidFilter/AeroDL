@@ -9,15 +9,16 @@ import dev.zacsweers.metrox.viewmodel.ViewModelKey
 import io.github.kdroidfilter.logging.errorln
 import io.github.kdroidfilter.logging.infoln
 import io.github.kdroidfilter.logging.warnln
-import io.github.kdroidfilter.nucleus.updater.NucleusUpdater
-import io.github.kdroidfilter.nucleus.updater.UpdateResult
+import dev.nucleusframework.updater.NucleusUpdater
+import dev.nucleusframework.updater.UpdateInfo
+import dev.nucleusframework.updater.UpdateResult
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlp.model.ReleaseManifest
 import io.github.kdroidfilter.ffmpeg.FfmpegWrapper
 import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
 import io.github.kdroidfilter.ytdlpgui.data.ReleaseManifestRepository
 import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
-import io.github.kdroidfilter.nucleus.aot.runtime.AotRuntime
+import dev.nucleusframework.aot.runtime.AotRuntime
 import io.github.kdroidfilter.ytdlpgui.di.AppScope
 import io.github.kevincianfarini.cardiologist.PulseBackpressureStrategy
 import io.github.kevincianfarini.cardiologist.fixedPeriodPulse
@@ -28,7 +29,7 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
 
 @ContributesIntoMap(AppScope::class, binding = binding<ViewModel>())
-@ViewModelKey(InitViewModel::class)
+@ViewModelKey
 @Inject
 class InitViewModel(
     private val ytDlpWrapper: YtDlpWrapper,
@@ -61,6 +62,7 @@ class InitViewModel(
     @Volatile
     private var manifestSourceLabel: String = "unknown"
     private val manifestLoadMutex = Mutex()
+    private var pendingAppUpdate: UpdateInfo? = null
 
     init {
         val isAotTraining = AotRuntime.isTraining()
@@ -123,32 +125,32 @@ class InitViewModel(
         }
     }
 
-    /**
-     * Check if a new app version is available using NucleusUpdater.
-     */
     private suspend fun checkForAppUpdates() {
         if (!nucleusUpdater.isUpdateSupported()) return
         when (val result = nucleusUpdater.checkForUpdates()) {
-            is UpdateResult.Available -> update {
-                copy(
-                    updateAvailable = true,
-                    latestVersion = result.info.version,
-                )
+            is UpdateResult.Available -> {
+                pendingAppUpdate = result.info
+                update {
+                    copy(
+                        updateAvailable = true,
+                        latestVersion = result.info.version,
+                    )
+                }
             }
             is UpdateResult.NotAvailable -> {}
             is UpdateResult.Error -> warnln { "Update check failed: ${result.exception.message}" }
         }
     }
 
-    /** Download the update installer and track progress. */
     fun downloadUpdate() {
         viewModelScope.launch {
             if (uiState.value.updateDownloading) return@launch
-            // Re-check to obtain UpdateInfo for download
-            val result = nucleusUpdater.checkForUpdates()
-            if (result !is UpdateResult.Available) return@launch
+            val info = pendingAppUpdate
+                ?: (nucleusUpdater.checkForUpdates() as? UpdateResult.Available)?.info
+                ?: return@launch
+            pendingAppUpdate = info
             update { copy(updateDownloading = true, updateDownloadProgress = 0.0) }
-            nucleusUpdater.downloadUpdate(result.info).collect { progress ->
+            nucleusUpdater.downloadUpdate(info).collect { progress ->
                 update { copy(updateDownloadProgress = progress.percent) }
                 if (progress.file != null) {
                     update {

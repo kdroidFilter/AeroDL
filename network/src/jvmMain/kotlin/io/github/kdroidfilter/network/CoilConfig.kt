@@ -7,7 +7,7 @@ import coil3.util.DebugLogger
 import coil3.util.Logger
 import coil3.memory.MemoryCache
 import io.github.kdroidfilter.logging.LoggerConfig
-import io.github.kdroidfilter.nucleus.nativehttp.okhttp.NativeOkHttpClient.withNativeSsl
+import dev.nucleusframework.nativehttp.okhttp.NativeOkHttpClient.withNativeSsl
 import okhttp3.OkHttpClient
 import okio.Path.Companion.toPath
 import java.io.File

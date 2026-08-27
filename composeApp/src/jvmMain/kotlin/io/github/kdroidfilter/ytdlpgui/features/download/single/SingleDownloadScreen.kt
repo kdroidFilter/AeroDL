@@ -51,7 +51,7 @@ import io.github.kdroidfilter.composemediaplayer.rememberVideoPlayerState
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.runtime.collectAsState
 import ytdlpgui.composeapp.generated.resources.*
 import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph

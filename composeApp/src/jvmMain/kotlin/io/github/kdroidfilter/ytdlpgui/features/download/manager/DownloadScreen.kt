@@ -50,7 +50,7 @@ import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository.HistoryIte
 import dev.zacsweers.metrox.viewmodel.metroViewModel
 import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 import ytdlpgui.composeapp.generated.resources.*
 import java.time.Instant
 import java.time.ZoneId
@@ -290,12 +290,10 @@ private fun HistoryThumbnail(h: HistoryItem) {
                 }
             } else {
                 // Show YouTube thumbnail for downloads
-                val thumbUrl = h.videoInfo?.let {
-                    YouTubeThumbnailHelper.getThumbnailUrl(
-                        it.id,
-                        YouTubeThumbnailHelper.ThumbnailQuality.MEDIUM
-                    )
-                }
+                val thumbUrl = YouTubeThumbnailHelper.getThumbnailUrl(
+                    h.videoInfo.id,
+                    YouTubeThumbnailHelper.ThumbnailQuality.MEDIUM
+                )
                 AsyncImage(
                     model = ImageRequest.Builder(coil3.PlatformContext.INSTANCE)
                         .data(thumbUrl)

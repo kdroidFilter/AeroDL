@@ -3,52 +3,45 @@
 jvmToolchain = "25"
 
 # Kotlin & Compose
-kotlin = "2.3.10"
-composeMultiplatform = "1.10.0"
-composeHotReload = "1.0.0"
+kotlin = "2.4.10"
+composeMultiplatform = "1.12.0"
+composeHotReload = "1.2.0"
 
 # AndroidX
-androidx-lifecycle = "2.9.6"
-navigation = "2.9.1"
+androidx-lifecycle = "2.11.0"
+navigation = "2.9.2"
 
 # Testing
 junit = "4.13.2"
 
 # Kotlin extensions
-kotlinx-coroutines = "1.10.2"
-serialization = "1.10.0"
+kotlinx-coroutines = "1.11.0"
+serialization = "1.11.0"
 cardiologist = "0.8.0"
 
 # UI Libraries
-fluent = "v0.1.0"
-composemediaplayer = "0.8.7"
-composenativetray = "1.1.0"
-composewebview = "1.0.0-beta-01"
+fluent = "1.1.1"
+composemediaplayer = "0.11.4"
+composenativetray = "2.1.1"
 
 # Network & Tools
-ktor = "3.4.0"
-platformtools = "0.7.5"
-nucleus = "1.7.2"
-metro = "0.10.2"
+ktor = "3.5.2"
+nucleus = "2.5.2"
+metro = "1.4.2"
+sqliteJdbc = "3.53.4.0"
 
 
 # Database
-sqlDelight = "2.2.1"
-sentry = "6.0.0"
-sentrySdk = "8.32.0"
+sqlDelight = "2.3.2"
+sentry = "6.20.0"
+sentrySdk = "8.54.0"
 
 # Additional dependencies
-coil = "3.3.0"
-autolaunch = "0.7.0"
-filekit = "0.12.0"
+coil = "3.6.0"
+filekit = "0.15.0"
 multiplatform-settings = "1.3.0"
-knotify = "0.4.3"
-confettikit = "0.7.0"
 
-
-hydraulicConveyor = "1.12"
-buildConfig = "6.0.7"
-linuxDeps = "0.2.4"
+confettikit = "0.9.0"
 
 
 [libraries]
@@ -66,40 +59,36 @@ androidx-navigation-compose = { module = "org.jetbrains.androidx.navigation:navi
 kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 
 # UI Libraries
-compose-fluent = { module = "io.github.compose-fluent:fluent", version.ref = "fluent" }
-compose-fluent-icons-extended = { module = "io.github.compose-fluent:fluent-icons-extended", version.ref = "fluent" }
+compose-fluent = { module = "dev.nucleusframework.composefluent:fluent", version.ref = "fluent" }
+compose-fluent-icons-extended = { module = "dev.nucleusframework.composefluent:fluent-icons-extended", version.ref = "fluent" }
 composemediaplayer = { module = "io.github.kdroidfilter:composemediaplayer", version.ref = "composemediaplayer" }
-composenativetray = { module = "io.github.kdroidfilter:composenativetray", version.ref = "composenativetray" }
-composewebview = { module = "io.github.kdroidfilter:composewebview", version.ref = "composewebview" }
-
-# Platform Tools
-platformtools-core = { module = "io.github.kdroidfilter:platformtools.core", version.ref = "platformtools" }
-platformtools-clipboardmanager = { module = "io.github.kdroidfilter:platformtools.clipboardmanager", version.ref = "platformtools" }
-platformtools-releasefetcher = { module = "io.github.kdroidfilter:platformtools.releasefetcher", version.ref = "platformtools" }
-platformtools-appmanager = { module = "io.github.kdroidfilter:platformtools.appmanager", version.ref = "platformtools" }
+composenativetray = { module = "dev.nucleusframework:composenativetray", version.ref = "composenativetray" }
+composenativetray-app = { module = "dev.nucleusframework:composenativetray-app", version.ref = "composenativetray" }
 
 # Nucleus
-nucleus-core-runtime = { module = "io.github.kdroidfilter:nucleus.core-runtime", version.ref = "nucleus" }
-nucleus-aot-runtime = { module = "io.github.kdroidfilter:nucleus.aot-runtime", version.ref = "nucleus" }
-nucleus-darkmode-detector = { module = "io.github.kdroidfilter:nucleus.darkmode-detector", version.ref = "nucleus" }
-nucleus-updater-runtime = { module = "io.github.kdroidfilter:nucleus.updater-runtime", version.ref = "nucleus" }
-nucleus-native-ssl = { module = "io.github.kdroidfilter:nucleus.native-ssl", version.ref = "nucleus" }
-nucleus-native-http = { module = "io.github.kdroidfilter:nucleus.native-http", version.ref = "nucleus" }
-nucleus-native-http-okhttp = { module = "io.github.kdroidfilter:nucleus.native-http-okhttp", version.ref = "nucleus" }
-nucleus-native-http-ktor = { module = "io.github.kdroidfilter:nucleus.native-http-ktor", version.ref = "nucleus" }
-nucleus-graalvm-runtime = { module = "io.github.kdroidfilter:nucleus.graalvm-runtime", version.ref = "nucleus" }
+nucleus-application = { module = "dev.nucleusframework:nucleus.nucleus-application", version.ref = "nucleus" }
+nucleus-core-runtime = { module = "dev.nucleusframework:nucleus.core-runtime", version.ref = "nucleus" }
+nucleus-aot-runtime = { module = "dev.nucleusframework:nucleus.aot-runtime", version.ref = "nucleus" }
+nucleus-darkmode-detector = { module = "dev.nucleusframework:nucleus.darkmode-detector", version.ref = "nucleus" }
+nucleus-updater-runtime = { module = "dev.nucleusframework:nucleus.updater-runtime", version.ref = "nucleus" }
+nucleus-native-ssl = { module = "dev.nucleusframework:nucleus.native-ssl", version.ref = "nucleus" }
+nucleus-native-http = { module = "dev.nucleusframework:nucleus.native-http", version.ref = "nucleus" }
+nucleus-native-http-okhttp = { module = "dev.nucleusframework:nucleus.native-http-okhttp", version.ref = "nucleus" }
+nucleus-native-http-ktor = { module = "dev.nucleusframework:nucleus.native-http-ktor", version.ref = "nucleus" }
+nucleus-graalvm-runtime = { module = "dev.nucleusframework:nucleus.graalvm-runtime", version.ref = "nucleus" }
+nucleus-decorated-window-tao = { module = "dev.nucleusframework:nucleus.decorated-window-tao", version.ref = "nucleus" }
+nucleus-notification-common = { module = "dev.nucleusframework:nucleus.notification-common", version.ref = "nucleus" }
+nucleus-autolaunch = { module = "dev.nucleusframework:nucleus.autolaunch", version.ref = "nucleus" }
+nucleus-energy-manager = { module = "dev.nucleusframework:nucleus.energy-manager", version.ref = "nucleus" }
 
 # Additional libraries
 coil = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-network = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
-autolaunch = { module = "io.github.vinceglb:auto-launch", version.ref = "autolaunch" }
 confettikit = { module = "io.github.vinceglb:confettikit", version.ref = "confettikit" }
 filekit-core = { module = "io.github.vinceglb:filekit-core", version.ref = "filekit" }
 filekit-dialogs = { module = "io.github.vinceglb:filekit-dialogs", version.ref = "filekit" }
 filekit-dialogs-compose = { module = "io.github.vinceglb:filekit-dialogs-compose", version.ref = "filekit" }
 multiplatform-settings = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "multiplatform-settings" }
-knotify = { module = "io.github.kdroidfilter:knotify", version.ref = "knotify" }
-knotify-compose = { module = "io.github.kdroidfilter:knotify-compose", version.ref = "knotify" }
 
 cardiologist = { module = "io.github.kevincianfarini.cardiologist:cardiologist", version.ref = "cardiologist" }
 sentry-core = { module = "io.sentry:sentry", version.ref = "sentrySdk" }
@@ -124,6 +113,7 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 kotlinx-serialization-protobuf = { module = "org.jetbrains.kotlinx:kotlinx-serialization-protobuf", version.ref = "serialization" }
 
 sqlDelight-driver-sqlite = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "sqlDelight" }
+sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqliteJdbc" }
 
 
 [plugins]
@@ -134,9 +124,6 @@ kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref =
 metro = { id = "dev.zacsweers.metro", version.ref = "metro" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 sqlDelight = { id = "app.cash.sqldelight", version.ref = "sqlDelight" }
-hydraulicConveyor = { id = "dev.hydraulic.conveyor", version.ref = "hydraulicConveyor" }
-buildConfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildConfig" }
-linuxDeps = { id = "io.github.kdroidfilter.compose.linux.packagedeps", version.ref = "linuxDeps" }
 sentryJvmGradle = { id = "io.sentry.jvm.gradle", version.ref = "sentry" }
-nucleus = { id = "io.github.kdroidfilter.nucleus", version.ref = "nucleus" }
-caupain = "com.deezer.caupain:1.7.1"
+nucleus = { id = "dev.nucleusframework", version.ref = "nucleus" }
+caupain = "com.deezer.caupain:1.10.1"

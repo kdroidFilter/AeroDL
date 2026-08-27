@@ -13,226 +13,218 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.application
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import coil3.SingletonImageLoader
+import com.russhwolf.settings.Settings
+import dev.nucleusframework.application.SingleInstanceRestoreEffect
+import dev.nucleusframework.application.aotTraining
+import dev.nucleusframework.application.nucleusApplication
+import dev.nucleusframework.autolaunch.AutoLaunch
+import dev.nucleusframework.composenativetray.trayapp.TrayApp
+import dev.nucleusframework.composenativetray.trayapp.rememberTrayAppState
+import dev.nucleusframework.composenativetray.utils.allowComposeNativeTrayLogging
+import dev.nucleusframework.composenativetray.utils.isMenuBarInDarkMode
+import dev.nucleusframework.core.runtime.NucleusApp
+import dev.nucleusframework.core.runtime.Platform
+import dev.nucleusframework.core.runtime.SingleInstanceManager
+import dev.nucleusframework.darkmodedetector.isSystemInDarkMode
+import dev.nucleusframework.energymanager.EnergyManager
+import dev.zacsweers.metro.createGraph
 import dev.zacsweers.metrox.viewmodel.LocalMetroViewModelFactory
 import dev.zacsweers.metrox.viewmodel.metroViewModel
-import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
-import io.github.kdroidfilter.ytdlpgui.di.rememberWindowViewModelStoreOwner
-import io.github.kdroidfilter.nucleus.aot.runtime.AotRuntime
-import io.github.kdroidfilter.nucleus.graalvm.GraalVmInitializer
-import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsViewModel
-import coil3.SingletonImageLoader
-import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
-import com.kdroid.composetray.tray.api.TrayApp
-import com.kdroid.composetray.tray.api.rememberTrayAppState
-import io.github.kdroidfilter.nucleus.core.runtime.SingleInstanceManager
-import com.kdroid.composetray.utils.allowComposeNativeTrayLogging
-import com.kdroid.composetray.utils.isMenuBarInDarkMode
-import com.russhwolf.settings.Settings
-import dev.zacsweers.metro.createGraph
 import io.github.composefluent.ExperimentalFluentApi
 import io.github.composefluent.FluentTheme
 import io.github.composefluent.background.Mica
 import io.github.composefluent.darkColors
 import io.github.composefluent.lightColors
-import io.github.kdroidfilter.knotify.builder.AppConfig
-import io.github.kdroidfilter.knotify.builder.NotificationInitializer
 import io.github.kdroidfilter.logging.LoggerConfig
 import io.github.kdroidfilter.logging.errorln
 import io.github.kdroidfilter.logging.infoln
-import io.github.kdroidfilter.platformtools.OperatingSystem
-import io.github.kdroidfilter.nucleus.darkmodedetector.isSystemInDarkMode
-import io.github.kdroidfilter.platformtools.getAppVersion
-import io.github.kdroidfilter.platformtools.getOperatingSystem
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnly
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnlyRtl
 import io.github.kdroidfilter.ytdlpgui.di.AppGraph
 import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
+import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
 import io.github.kdroidfilter.ytdlpgui.di.TrayAppStateHolder
+import io.github.kdroidfilter.ytdlpgui.di.rememberWindowViewModelStoreOwner
 import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsEvents
+import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsViewModel
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.databasesDir
 import io.github.vinceglb.filekit.path
 import io.sentry.Sentry
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.getString
 import ytdlpgui.composeapp.generated.resources.*
 import java.io.File
+import kotlin.time.Duration.Companion.seconds
 
-@OptIn(ExperimentalTrayAppApi::class, ExperimentalFluentApi::class)
-fun main() {
-    GraalVmInitializer.initialize()
+@OptIn(ExperimentalFluentApi::class)
+fun main(args: Array<String>) {
     initializeSentry()
-
-    // AOT training: auto-exit so JVM shutdown hooks (which write .aotconf)
-    // run reliably on all platforms. Nucleus AotRuntime handles detection.
-    if (AotRuntime.isTraining()) {
-        Thread({
-            Thread.sleep(30_000)
-            System.exit(0)
-        }, "aot-training-timer").apply { isDaemon = true; start() }
-    }
 
     // Configure Skiko render API based on platform (respect pre-set -D flag)
     if (System.getProperty("skiko.renderApi") == null) {
-        when (getOperatingSystem()) {
-            OperatingSystem.WINDOWS -> {
+        when (Platform.Current) {
+            Platform.Windows -> {
                 if (isWindows10()) {
                     System.setProperty("skiko.renderApi", "OPENGL")
                 } else {
                     System.setProperty("skiko.renderApi", "DIRECT3D")
                 }
             }
-            OperatingSystem.LINUX -> if (isNvidiaGpuPresent()) {
+            Platform.Linux -> if (isNvidiaGpuPresent()) {
                 System.setProperty("skiko.renderApi", "SOFTWARE")
             }
             else -> { /* Use default render API */ }
         }
     }
 
-    application {
-        allowComposeNativeTrayLogging = LoggerConfig.enabled
+    allowComposeNativeTrayLogging = LoggerConfig.enabled
+    SingleInstanceManager.configuration = SingleInstanceManager.Configuration(
+        lockIdentifier = "aerodl"
+    )
 
-        val cleanInstall = System.getProperty("cleanInstall", "false").toBoolean()
-        SingleInstanceManager.configuration = SingleInstanceManager.Configuration(
-            lockIdentifier = "aerodl"
-        )
+    FileKit.init(appId = "ada57c09-11e1-4d56-9d5d-0c480f6968ec")
 
-        FileKit.init(appId = "ada57c09-11e1-4d56-9d5d-0c480f6968ec")
+    val cleanInstall = System.getProperty("cleanInstall", "false").toBoolean()
+    if (cleanInstall) {
+        clearAppData()
+    }
 
-        if (cleanInstall) {
-            clearAppData()
-        }
+    nucleusApplication(args, dockIconFollowsWindows = true) {
+        aotTraining(duration = 30.seconds)
 
-//    Locale.setDefault(Locale("en"))
+        val nucleusScope = this
+        val windowViewModelOwner = rememberWindowViewModelStoreOwner()
         val appGraph = remember { createGraph<AppGraph>() }
-        run {
-            val windowViewModelOwner = rememberWindowViewModelStoreOwner()
-            CompositionLocalProvider(
-                LocalWindowViewModelStoreOwner provides windowViewModelOwner,
-                LocalViewModelStoreOwner provides windowViewModelOwner,
-                LocalMetroViewModelFactory provides appGraph.metroViewModelFactory,
-            ) {
-                NotificationInitializer.configure(
-                    AppConfig(
-                        appName = runBlocking { getString(Res.string.app_name) },
-                    )
-                )
 
-                val autoLaunch = appGraph.autoLaunch
-                val trayAppState = rememberTrayAppState(
-                    initialWindowSize = DpSize(350.dp, 500.dp),
-                    initiallyVisible = !autoLaunch.isStartedViaAutostart()
-                )
-                TrayAppStateHolder.set(trayAppState)
+        CompositionLocalProvider(
+            LocalWindowViewModelStoreOwner provides windowViewModelOwner,
+            LocalViewModelStoreOwner provides windowViewModelOwner,
+            LocalMetroViewModelFactory provides appGraph.metroViewModelFactory,
+        ) {
+            val trayAppState = rememberTrayAppState(
+                initialWindowSize = DpSize(350.dp, 500.dp),
+                initiallyVisible = !AutoLaunch.wasStartedAtLogin(emptyArray())
+            )
+            TrayAppStateHolder.set(trayAppState)
 
-                // Eagerly instantiate clipboard monitoring once, as a side effect
-                LaunchedEffect(appGraph) {
-                    appGraph.clipboardMonitorManager
-                }
-
-                // Initialize Coil with native trusted roots
-                val imageLoader = appGraph.imageLoader
-                SingletonImageLoader.setSafe { imageLoader }
-
-                if (cleanInstall) {
-                    clearSettings(appGraph.settings)
-                }
-
-
-                val isSingleInstance = SingleInstanceManager.isSingleInstance(
-                    onRestoreRequest = { // Path.() -> Unit; we ignore the Path
-                        trayAppState.show()
-                    }
-                )
-                if (!isSingleInstance) exitApplication()
-
-
-                val downloadManager = appGraph.downloadManager
-                val isDownloading by downloadManager.isDownloading.collectAsState()
-
-                val settingsVm: SettingsViewModel = metroViewModel(
-                    viewModelStoreOwner = LocalWindowViewModelStoreOwner.current
-                )
-                val autoStartEnabled by settingsVm.autoLaunchEnabled.collectAsState()
-                val clipboardEnabled by settingsVm.clipboardMonitoring.collectAsState()
-
-                val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
-
-                TrayApp(
-                    state = trayAppState,
-                    iconContent = {
-
-                        Icon(
-                            if (!isRtl) AeroDlLogoOnly else AeroDlLogoOnlyRtl,
-                            null,
-                            modifier = Modifier
-                                .padding(if (getOperatingSystem() != OperatingSystem.WINDOWS) 12.dp else 2.dp)
-                                .fillMaxSize(),
-                            tint = if (isDownloading) FluentTheme.colors.system.success else {
-                                if (isMenuBarInDarkMode()) Color.White else Color.Black
-                            }
-                        )
-                    },
-                    tooltip = runBlocking { getString(Res.string.app_name) } + if (isDownloading) runBlocking {
-                        getString(
-                            Res.string.tray_downloading_suffix
-                        )
-                    } else "",
-                    menu = {
-                        if (!trayAppState.isVisible.value) Item(
-                            label = runBlocking { getString(Res.string.menu_show_window) },
-                        ) { trayAppState.show() } else Item(
-                            label = runBlocking { getString(Res.string.menu_hide_window) },
-                        ) { trayAppState.hide() }
-                        Divider()
-                        CheckableItem(
-                            label = runBlocking { getString(Res.string.settings_auto_launch_title) },
-                            checked = autoStartEnabled,
-                            onCheckedChange = { checked ->
-                                settingsVm.handleEvent(SettingsEvents.SetAutoLaunchEnabled(checked))
-                            },
-                        )
-                        CheckableItem(
-                            label = runBlocking { getString(Res.string.settings_clipboard_monitoring_title) },
-                            checked = clipboardEnabled,
-                            onCheckedChange = { checked ->
-                                settingsVm.handleEvent(SettingsEvents.SetClipboardMonitoring(checked))
-                            },
-                        )
-                        Divider()
-                        Item(
-                            label = runBlocking { getString(Res.string.quit) },
-                            onClick = { exitApplication() },
-                        )
-                        Item(
-                            label = runBlocking { getString(Res.string.app_version_label, getAppVersion()) },
-                            isEnabled = false,
-                        )
-                    }
-                ) {
-
-                   println(this.window.renderApi)
-                    FluentTheme(colors = if (isSystemInDarkMode()) darkColors() else lightColors()) {
-                        Mica(
-                            Modifier
-                                .fillMaxSize()
-                                .clip(RoundedCornerShape(12.dp))
-                                .border(
-                                    1.dp,
-                                    if (isSystemInDarkMode()) Color.DarkGray else Color.LightGray,
-                                    RoundedCornerShape(12.dp)
-                                )
-                        ) {
-                            CompositionLocalProvider(LocalAppGraph provides appGraph) {
-                                App()
-                            }
+            LaunchedEffect(trayAppState) {
+                trayAppState.isVisible.collect { visible ->
+                    applyEnergyEfficiencyForVisibility(visible)
+                    if (!visible) {
+                        delay(300)
+                        infoln { "Window hidden: hinting GC" }
+                        try {
+                            System.gc()
+                        } catch (_: Throwable) {
+                            // ignore
                         }
                     }
                 }
             }
 
+            SingleInstanceRestoreEffect {
+                trayAppState.show()
+            }
+
+            // Eagerly instantiate clipboard monitoring once, as a side effect
+            LaunchedEffect(appGraph) {
+                appGraph.clipboardMonitorManager
+            }
+
+            // Initialize Coil with native trusted roots
+            val imageLoader = appGraph.imageLoader
+            SingletonImageLoader.setSafe { imageLoader }
+
+            if (cleanInstall) {
+                remember {
+                    clearSettings(appGraph.settings)
+                    true
+                }
+            }
+
+            val downloadManager = appGraph.downloadManager
+            val isDownloading by downloadManager.isDownloading.collectAsState()
+
+            val settingsVm: SettingsViewModel = metroViewModel(
+                viewModelStoreOwner = LocalWindowViewModelStoreOwner.current
+            )
+            val autoStartEnabled by settingsVm.autoLaunchEnabled.collectAsState()
+            val clipboardEnabled by settingsVm.clipboardMonitoring.collectAsState()
+
+            val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+
+            nucleusScope.TrayApp(
+                state = trayAppState,
+                iconContent = {
+                    Icon(
+                        if (!isRtl) AeroDlLogoOnly else AeroDlLogoOnlyRtl,
+                        null,
+                        modifier = Modifier
+                            .padding(if (Platform.Current != Platform.Windows) 12.dp else 2.dp)
+                            .fillMaxSize(),
+                        tint = if (isDownloading) FluentTheme.colors.system.success else {
+                            if (isMenuBarInDarkMode()) Color.White else Color.Black
+                        }
+                    )
+                },
+                tooltip = runBlocking { getString(Res.string.app_name) } + if (isDownloading) runBlocking {
+                    getString(
+                        Res.string.tray_downloading_suffix
+                    )
+                } else "",
+                menu = {
+                    if (!trayAppState.isVisible.value) Item(
+                        label = runBlocking { getString(Res.string.menu_show_window) },
+                    ) { trayAppState.show() } else Item(
+                        label = runBlocking { getString(Res.string.menu_hide_window) },
+                    ) { trayAppState.hide() }
+                    Divider()
+                    CheckableItem(
+                        label = runBlocking { getString(Res.string.settings_auto_launch_title) },
+                        checked = autoStartEnabled,
+                        onCheckedChange = { checked ->
+                            settingsVm.handleEvent(SettingsEvents.SetAutoLaunchEnabled(checked))
+                        },
+                    )
+                    CheckableItem(
+                        label = runBlocking { getString(Res.string.settings_clipboard_monitoring_title) },
+                        checked = clipboardEnabled,
+                        onCheckedChange = { checked ->
+                            settingsVm.handleEvent(SettingsEvents.SetClipboardMonitoring(checked))
+                        },
+                    )
+                    Divider()
+                    Item(
+                        label = runBlocking { getString(Res.string.quit) },
+                        onClick = { exitApplication() },
+                    )
+                    Item(
+                        label = runBlocking { getString(Res.string.app_version_label, NucleusApp.version.orEmpty()) },
+                        isEnabled = false,
+                    )
+                }
+            ) {
+                FluentTheme(colors = if (isSystemInDarkMode()) darkColors() else lightColors()) {
+                    Mica(
+                        Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(12.dp))
+                            .border(
+                                1.dp,
+                                if (isSystemInDarkMode()) Color.DarkGray else Color.LightGray,
+                                RoundedCornerShape(12.dp)
+                            )
+                    ) {
+                        CompositionLocalProvider(LocalAppGraph provides appGraph) {
+                            App()
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -246,7 +238,7 @@ private fun initializeSentry() {
     Sentry.init { options ->
         options.dsn = "https://e77a755df2930d297caf9d6d0fd07deb@o4510855773093888.ingest.de.sentry.io/4510855774797904"
         options.environment = sentryEnvironment
-        options.release = getAppVersion()
+        options.release = NucleusApp.version
         options.isDebug = LoggerConfig.enabled
     }
     infoln { "Sentry initialized for environment '$sentryEnvironment'." }
@@ -272,6 +264,30 @@ fun clearAppData() {
 private fun clearSettings(settings: Settings) {
     settings.clear()
     infoln { "Settings cleared" }
+}
+
+/**
+ * Pins the process to efficiency cores (EcoQoS / PRIO_DARWIN_BG / nice)
+ * while the window is hidden, and restores default scheduling when shown.
+ */
+private fun applyEnergyEfficiencyForVisibility(visible: Boolean) {
+    if (!EnergyManager.isAvailable()) return
+    val result = if (visible) {
+        EnergyManager.disableEfficiencyMode()
+    } else {
+        EnergyManager.enableEfficiencyMode()
+    }
+    if (result.success) {
+        infoln {
+            if (visible) {
+                "Window visible: restored default CPU scheduling"
+            } else {
+                "Window hidden: using efficiency cores"
+            }
+        }
+    } else if (result.message.isNotEmpty()) {
+        infoln { "EnergyManager: ${result.message}" }
+    }
 }
 
 private fun isWindows10(): Boolean {

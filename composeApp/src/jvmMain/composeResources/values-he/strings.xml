@@ -89,6 +89,10 @@
     <string name="bulk_fallback_scrolling">גולל… %1$d סרטונים נטענו</string>
     <string name="bulk_fallback_extracting">מחלץ סרטונים…</string>
     <string name="bulk_analyzing_videos">מנתח %1$d סרטונים</string>
+    <string name="bulk_load_failed">טעינת הפלייליסט נכשלה</string>
+    <string name="bulk_fallback_enable_cookies_title">נדרשות עוגיות מהדפדפן</string>
+    <string name="bulk_fallback_enable_cookies_firefox">התחברו ל-YouTube ב-Firefox, הפעילו עוגיות Firefox בהגדרות, ואז נסו שוב.</string>
+    <string name="bulk_fallback_enable_cookies_chrome_or_firefox">התחברו ל-YouTube ב-Chrome או Firefox, הפעילו עוגיות מהדפדפן בהגדרות, ואז נסו שוב.</string>
 
     <string name="about_credits_title">תודות</string>
     <string name="credits_made_by">נוצר על ידי אלי גמבאש</string>

@@ -2,7 +2,7 @@ package io.github.kdroidfilter.ytdlpgui.features.system.about
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.github.kdroidfilter.platformtools.getAppVersion
+import dev.nucleusframework.core.runtime.NucleusApp
 import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
 import kotlinx.coroutines.launch
@@ -14,7 +14,7 @@ import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
 import io.github.kdroidfilter.ytdlpgui.di.AppScope
 
 @ContributesIntoMap(AppScope::class, binding = binding<ViewModel>())
-@ViewModelKey(AboutViewModel::class)
+@ViewModelKey
 @Inject
 class AboutViewModel(
     private val settingsRepository: SettingsRepository,
@@ -31,7 +31,7 @@ class AboutViewModel(
             val denoVersion = ytDlpWrapper.denoVersion()
             update {
                 copy(
-                    appVersion = getAppVersion(),
+                    appVersion = NucleusApp.version.orEmpty(),
                     ytdlpVersion = ytdlpVersion,
                     ffmpegVersion = ffmpegVersion,
                     denoVersion = denoVersion

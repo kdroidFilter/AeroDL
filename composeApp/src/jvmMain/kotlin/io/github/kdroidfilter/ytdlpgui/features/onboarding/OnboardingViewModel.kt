@@ -1,14 +1,10 @@
-@file:OptIn(ExperimentalTrayAppApi::class)
-
 package io.github.kdroidfilter.ytdlpgui.features.onboarding
 
 import androidx.lifecycle.viewModelScope
-import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
-import com.kdroid.composetray.tray.api.TrayAppState
-import com.kdroid.composetray.tray.api.TrayWindowDismissMode
+import dev.nucleusframework.composenativetray.trayapp.TrayAppState
+import dev.nucleusframework.composenativetray.trayapp.TrayWindowDismissMode
 import io.github.kdroidfilter.network.CertificateValidator
-import io.github.kdroidfilter.platformtools.LinuxDesktopEnvironment
-import io.github.kdroidfilter.platformtools.detectLinuxDesktopEnvironment
+import dev.nucleusframework.core.runtime.LinuxDesktopEnvironment
 import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
 import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
 import io.github.kdroidfilter.ytdlpgui.features.init.InitViewModel
@@ -30,7 +26,7 @@ import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.di.AppScope
 
 @ContributesIntoMap(AppScope::class, binding = binding<ViewModel>())
-@ViewModelKey(OnboardingViewModel::class)
+@ViewModelKey
 @Inject
 class OnboardingViewModel(
     private val settingsRepository: SettingsRepository,
@@ -42,7 +38,7 @@ class OnboardingViewModel(
     val initState = initViewModel.uiState
 
     // Check if user is running GNOME desktop environment
-    private val isGnome = detectLinuxDesktopEnvironment() == LinuxDesktopEnvironment.GNOME
+    private val isGnome = LinuxDesktopEnvironment.Current == LinuxDesktopEnvironment.Gnome
 
     // Check if YouTube certificate is valid (to detect filtered networks/SSL inspection)
     private val _shouldSkipNoCheckCert = MutableStateFlow(true)
@@ -195,9 +191,8 @@ class OnboardingViewModel(
         viewModelScope.launch {
             trayAppState.setDismissMode(TrayWindowDismissMode.MANUAL)
             val dir = FileKit.openDirectoryPicker(
-                title = title,
                 directory = null,
-                dialogSettings = FileKitDialogSettings()
+                dialogSettings = FileKitDialogSettings(title = title)
             )
             dir?.let {
                 settingsRepository.setDownloadDir(it.file.absolutePath)

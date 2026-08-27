@@ -1,13 +1,10 @@
-@file:OptIn(ExperimentalTrayAppApi::class)
-
 package io.github.kdroidfilter.ytdlpgui.features.converter
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
-import com.kdroid.composetray.tray.api.TrayAppState
-import com.kdroid.composetray.tray.api.TrayWindowDismissMode
+import dev.nucleusframework.composenativetray.trayapp.TrayAppState
+import dev.nucleusframework.composenativetray.trayapp.TrayWindowDismissMode
 import dev.zacsweers.metro.Assisted
 import dev.zacsweers.metro.AssistedFactory
 import dev.zacsweers.metro.AssistedInject
@@ -102,7 +99,8 @@ data class ConverterOptionsState(
     }
 }
 
-class ConverterOptionsViewModel @AssistedInject constructor(
+@AssistedInject
+class ConverterOptionsViewModel(
     @Assisted savedStateHandle: SavedStateHandle,
     private val ffmpegWrapper: FfmpegWrapper,
     private val downloadManager: DownloadManager,

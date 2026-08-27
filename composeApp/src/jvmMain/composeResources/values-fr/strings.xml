@@ -74,6 +74,10 @@
     <string name="bulk_fallback_scrolling">Défilement… %1$d vidéos chargées</string>
     <string name="bulk_fallback_extracting">Extraction des vidéos…</string>
     <string name="bulk_analyzing_videos">analyse de %1$d vidéos</string>
+    <string name="bulk_load_failed">Impossible de charger la playlist</string>
+    <string name="bulk_fallback_enable_cookies_title">Cookies du navigateur requis</string>
+    <string name="bulk_fallback_enable_cookies_firefox">Connectez-vous à YouTube dans Firefox, activez les cookies Firefox dans les Paramètres, puis réessayez.</string>
+    <string name="bulk_fallback_enable_cookies_chrome_or_firefox">Connectez-vous à YouTube dans Chrome ou Firefox, activez les cookies de ce navigateur dans les Paramètres, puis réessayez.</string>
 
     <string name="about_credits_title">Crédits</string>
     <string name="credits_made_by">Réalisé par Elie Gambache</string>

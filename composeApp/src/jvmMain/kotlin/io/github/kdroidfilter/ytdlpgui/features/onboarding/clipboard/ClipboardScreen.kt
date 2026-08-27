@@ -26,7 +26,7 @@ import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.HeaderRow
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.NavigationRow
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.OnboardingProgress
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 import ytdlpgui.composeapp.generated.resources.*
 
 @Composable

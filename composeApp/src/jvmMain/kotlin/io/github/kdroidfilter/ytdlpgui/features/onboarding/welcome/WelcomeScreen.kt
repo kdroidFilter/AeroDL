@@ -22,7 +22,7 @@ import io.github.kdroidfilter.ytdlpgui.features.onboarding.OnboardingStep
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.DependencyInfoBar
 import io.github.kdroidfilter.ytdlpgui.features.onboarding.components.OnboardingProgress
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Preview
 import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.onboarding_start
 import ytdlpgui.composeapp.generated.resources.onboarding_welcome_subtitle

@@ -1,9 +1,6 @@
-@file:OptIn(com.kdroid.composetray.tray.api.ExperimentalTrayAppApi::class)
-
 package io.github.kdroidfilter.ytdlpgui.di
 
-import com.kdroid.composetray.tray.api.TrayAppState
-import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
+import dev.nucleusframework.composenativetray.trayapp.TrayAppState
 
 /**
  * Global holder to ensure a single TrayAppState instance is shared across the app.
@@ -12,7 +9,6 @@ import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
  * - The Compose entry point (main.kt) should set(...) the instance created by rememberTrayAppState(...)
  *   so both UI and non-UI consumers (e.g., DownloadManager) use the very same instance.
  */
-@OptIn(ExperimentalTrayAppApi::class)
 object TrayAppStateHolder {
     @Volatile
     private var _instance: TrayAppState? = null

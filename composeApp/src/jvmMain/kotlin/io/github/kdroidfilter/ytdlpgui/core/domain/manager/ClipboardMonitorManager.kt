@@ -1,20 +1,15 @@
-@file:OptIn(ExperimentalTrayAppApi::class)
-
 package io.github.kdroidfilter.ytdlpgui.core.domain.manager
 
-import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
 import dev.zacsweers.metro.Inject
-import io.github.kdroidfilter.platformtools.clipboardmanager.ClipboardContent
-import io.github.kdroidfilter.platformtools.clipboardmanager.ClipboardListener
-import io.github.kdroidfilter.platformtools.clipboardmanager.ClipboardMonitor
-import io.github.kdroidfilter.platformtools.clipboardmanager.ClipboardMonitorFactory
-import io.github.kdroidfilter.knotify.builder.ExperimentalNotificationsApi
-import io.github.kdroidfilter.knotify.compose.builder.notification
+import io.github.kdroidfilter.ytdlpgui.core.platform.clipboard.ClipboardContent
+import io.github.kdroidfilter.ytdlpgui.core.platform.clipboard.ClipboardListener
+import io.github.kdroidfilter.ytdlpgui.core.platform.clipboard.PollingClipboardMonitor
+import dev.nucleusframework.notification.common.notification
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import com.kdroid.composetray.tray.api.TrayAppState
-import com.kdroid.composetray.tray.api.TrayWindowDismissMode
+import dev.nucleusframework.composenativetray.trayapp.TrayAppState
+import dev.nucleusframework.composenativetray.trayapp.TrayWindowDismissMode
 import org.jetbrains.compose.resources.getString
 import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.app_name
@@ -22,9 +17,7 @@ import ytdlpgui.composeapp.generated.resources.clipboard_ignore
 import ytdlpgui.composeapp.generated.resources.clipboard_link_detected_message
 import ytdlpgui.composeapp.generated.resources.clipboard_link_detected_title
 import ytdlpgui.composeapp.generated.resources.clipboard_open_in_app
-import androidx.compose.runtime.*
 import io.github.kdroidfilter.ytdlpgui.core.platform.notifications.NotificationThumbUtils
-import io.github.kdroidfilter.ytdlp.YtDlpWrapper
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 
 /**
@@ -55,12 +48,11 @@ class ClipboardMonitorManager(
     private val settingsRepository: io.github.kdroidfilter.ytdlpgui.data.SettingsRepository,
     private val trayAppState: TrayAppState,
     private val navigationEventBus: io.github.kdroidfilter.ytdlpgui.core.navigation.NavigationEventBus,
-    private val ytDlpWrapper: YtDlpWrapper,
 ) {
 
     private val scope = CoroutineScope(Dispatchers.Default)
 
-    private var monitor: ClipboardMonitor? = null
+    private var monitor: PollingClipboardMonitor? = null
     private var lastHandled: String? = null
 
     init {
@@ -75,16 +67,10 @@ class ClipboardMonitorManager(
 
     private fun start() {
         if (monitor != null) return
-        val listener = object : ClipboardListener {
-            override fun onClipboardChange(content: ClipboardContent) {
-                scope.launch { handleContent(content) }
-            }
+        val listener = ClipboardListener { content ->
+            scope.launch { handleContent(content) }
         }
-        monitor = ClipboardMonitorFactory.create(listener).also { m ->
-            m.start()
-            // Initial check
-            runCatching { m.getCurrentContent().let { scope.launch { handleContent(it) } } }
-        }
+        monitor = PollingClipboardMonitor(listener).also { it.start() }
     }
 
     private fun stop() {
@@ -92,7 +78,6 @@ class ClipboardMonitorManager(
         monitor = null
     }
 
-    @OptIn(ExperimentalNotificationsApi::class)
     private suspend fun handleContent(content: ClipboardContent) {
         val text = content.text?.trim().orEmpty()
         if (text.isEmpty()) return
@@ -115,12 +100,8 @@ class ClipboardMonitorManager(
         // Avoid bulk (playlist/channel) prompts which can be noisy.
         if (isPlaylist || isChannel) return
 
-        // Only send notification if app is configured and initialized
         if (!settingsRepository.isOnboardingCompleted()) return
-        val available = runCatching { ytDlpWrapper.isAvailable() }.getOrDefault(false)
-        if (!available) return
 
-        // Mark as handled to avoid repeated prompts for the same URL once we are actually going to notify
         lastHandled = url
 
         val appName = getString(Res.string.app_name)
@@ -133,29 +114,21 @@ class ClipboardMonitorManager(
             scope.launch(Dispatchers.Main) {
                 trayAppState.setDismissMode(TrayWindowDismissMode.MANUAL)
                 runCatching { trayAppState.show() }
-                // Request navigation to the Single Download screen for this URL
                 navigationEventBus.navigateTo(Destination.Download.Single(url))
                 trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
             }
         }
 
-        // Show a localized notification asking user consent to open in the app
         val thumbUrl = NotificationThumbUtils.resolveThumbnailUrl(null, url)
-        val largeIconContent: (@Composable () -> Unit)? = NotificationThumbUtils.buildLargeIcon(thumbUrl)
 
-        val notif = notification(
+        notification(
             title = title,
             message = message,
-            largeIcon = largeIconContent,
+            largeImage = thumbUrl,
             onActivated = { action() },
-            onDismissed = { /* no-op */ },
-            onFailed = { /* no-op */ }
         ) {
             button(title = openBtn) { action() }
-            button(title = ignoreBtn) {
-                // Do nothing, simply dismiss
-            }
-        }
-        notif.send()
+            button(title = ignoreBtn) { }
+        }.send()
     }
 }

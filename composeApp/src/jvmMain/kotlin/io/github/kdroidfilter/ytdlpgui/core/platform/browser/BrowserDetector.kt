@@ -1,7 +1,6 @@
 package io.github.kdroidfilter.ytdlpgui.core.platform.browser
 
-import io.github.kdroidfilter.platformtools.OperatingSystem
-import io.github.kdroidfilter.platformtools.getOperatingSystem
+import dev.nucleusframework.core.runtime.Platform
 import java.io.File
 
 /**
@@ -40,7 +39,7 @@ object BrowserDetector {
      * On Windows, Chrome and Edge are excluded because they are sandboxed.
      */
     fun getInstalledBrowsers(): List<SupportedBrowser> {
-        val isWindows = getOperatingSystem() == OperatingSystem.WINDOWS
+        val isWindows = Platform.Current == Platform.Windows
         return SupportedBrowser.entries.filter { browser ->
             val isInstalled = isInstalled(browser)
             val isUsable = !isWindows || browser !in windowsSandboxedBrowsers
@@ -53,9 +52,9 @@ object BrowserDetector {
      */
     fun isInstalled(browser: SupportedBrowser): Boolean {
         return detectionCache.getOrPut(browser) {
-            when (getOperatingSystem()) {
-                OperatingSystem.MACOS -> isBrowserInstalledMacOS(browser)
-                OperatingSystem.WINDOWS -> isBrowserInstalledWindows(browser)
+            when (Platform.Current) {
+                Platform.MacOS -> isBrowserInstalledMacOS(browser)
+                Platform.Windows -> isBrowserInstalledWindows(browser)
                 else -> isBrowserInstalledLinux(browser)
             }
         }

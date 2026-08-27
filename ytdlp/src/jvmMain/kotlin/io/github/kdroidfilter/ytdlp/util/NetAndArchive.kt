@@ -1,8 +1,6 @@
 package io.github.kdroidfilter.ytdlp.util
 
 import io.github.kdroidfilter.network.HttpsConnectionFactory
-import io.github.kdroidfilter.platformtools.OperatingSystem
-import io.github.kdroidfilter.platformtools.getOperatingSystem
 import io.github.kdroidfilter.ytdlp.core.Options
 import io.github.kdroidfilter.ytdlp.core.SubtitleOptions
 import io.github.kdroidfilter.logging.infoln
@@ -91,12 +89,7 @@ object NetAndArchive {
     ): List<String> {
         val cmd = mutableListOf<String>()
 
-        // On macOS, prepend Python to run the yt-dlp script
-        if (getOperatingSystem() == OperatingSystem.MACOS) {
-            cmd.add(PythonManager.getPythonExecutable())
-        }
-
-        cmd.add(ytDlpPath)
+        cmd.addAll(PythonManager.command(ytDlpPath))
         cmd.add("--newline")
 
         // Point yt-dlp to the directory that contains ffmpeg AND ffprobe.
@@ -336,18 +329,18 @@ object NetAndArchive {
 
     // --- Small Utilities ---
     fun startNoopProcess(): Process = try {
-        val os = io.github.kdroidfilter.platformtools.getOperatingSystem()
+        val os = getOperatingSystem()
         when (os) {
-            io.github.kdroidfilter.platformtools.OperatingSystem.WINDOWS ->
+            OperatingSystem.WINDOWS ->
                 ProcessBuilder("cmd", "/c", "exit", "0").start()
             else -> ProcessBuilder("sh", "-c", "true").start()
         }
     } catch (_: Exception) {
         // Fallback if the simple commands fail for some reason
         try {
-            val os = io.github.kdroidfilter.platformtools.getOperatingSystem()
+            val os = getOperatingSystem()
             when (os) {
-                io.github.kdroidfilter.platformtools.OperatingSystem.WINDOWS ->
+                OperatingSystem.WINDOWS ->
                     ProcessBuilder("cmd", "/c", "ver").start()
                 else -> ProcessBuilder("sh", "-c", ":").start()
             }

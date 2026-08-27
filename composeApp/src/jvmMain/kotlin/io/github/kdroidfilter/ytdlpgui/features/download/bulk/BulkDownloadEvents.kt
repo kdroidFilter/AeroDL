@@ -13,9 +13,5 @@ sealed class BulkDownloadEvents {
     data object StartDownloads : BulkDownloadEvents()
     data object ScreenDisposed : BulkDownloadEvents()
     data object OnNavigationConsumed : BulkDownloadEvents()
-
-    // Fallback WebView events
-    data object OnUserLoggedIn : BulkDownloadEvents()
-    data object OnFallbackExtractionComplete : BulkDownloadEvents()
     data object CancelFallback : BulkDownloadEvents()
 }

@@ -1,13 +1,10 @@
-@file:OptIn(ExperimentalTrayAppApi::class)
-
 package io.github.kdroidfilter.ytdlpgui.features.system.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kdroid.composetray.tray.api.ExperimentalTrayAppApi
-import com.kdroid.composetray.tray.api.TrayAppState
-import com.kdroid.composetray.tray.api.TrayWindowDismissMode
-import io.github.kdroidfilter.platformtools.appmanager.restartApplication
+import dev.nucleusframework.composenativetray.trayapp.TrayAppState
+import dev.nucleusframework.composenativetray.trayapp.TrayWindowDismissMode
+import dev.nucleusframework.core.runtime.AppRestarter
 import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
 import io.github.kdroidfilter.ytdlpgui.data.DownloadHistoryRepository
 import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
@@ -31,7 +28,7 @@ import io.github.kdroidfilter.ytdlpgui.di.AppScope
 import io.github.vinceglb.filekit.path
 
 @ContributesIntoMap(AppScope::class, binding = binding<ViewModel>())
-@ViewModelKey(SettingsViewModel::class)
+@ViewModelKey
 @Inject
 class SettingsViewModel(
     private val settingsRepository: SettingsRepository,
@@ -160,9 +157,8 @@ class SettingsViewModel(
                 viewModelScope.launch {
                     trayAppState.setDismissMode(TrayWindowDismissMode.MANUAL)
                     val dir = FileKit.openDirectoryPicker(
-                        title = event.title,
                         directory = null,
-                        dialogSettings = FileKitDialogSettings()
+                        dialogSettings = FileKitDialogSettings(title = event.title)
                     )
                     dir?.let { handleEvent(SettingsEvents.SetDownloadDir(it.file.absolutePath)) }
                    trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
@@ -183,7 +179,7 @@ class SettingsViewModel(
                     settingsRepository.refreshAutoLaunchState()
 
                     // 5. Restart the app
-                    restartApplication()
+                    AppRestarter.restartApplication()
                 }
             }
         }

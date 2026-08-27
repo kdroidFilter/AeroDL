@@ -156,15 +156,22 @@ class ReleaseManifestRepository {
             ).map { AssetInfo(it, "$DENO_BASE/$it") },
         )
 
-        // ---- Python standalone for macOS (indygreg/python-build-standalone) ----
+        // ---- Python standalone (indygreg/python-build-standalone), pinned, never auto-updated ----
         private const val PYTHON_TAG = "20260203"
+        private const val PYTHON_VERSION = "3.12.12"
         private const val PYTHON_BASE =
             "https://github.com/indygreg/python-build-standalone/releases/download/$PYTHON_TAG"
         private val PYTHON_RELEASE = ReleaseInfo(
             tagName = PYTHON_TAG,
             assets = listOf(
-                "cpython-3.12.12+$PYTHON_TAG-aarch64-apple-darwin-install_only.tar.gz",
-                "cpython-3.12.12+$PYTHON_TAG-x86_64-apple-darwin-install_only.tar.gz",
+                "cpython-$PYTHON_VERSION+$PYTHON_TAG-aarch64-apple-darwin-install_only.tar.gz",
+                "cpython-$PYTHON_VERSION+$PYTHON_TAG-x86_64-apple-darwin-install_only.tar.gz",
+                "cpython-$PYTHON_VERSION+$PYTHON_TAG-x86_64-pc-windows-msvc-install_only.tar.gz",
+                "cpython-$PYTHON_VERSION+$PYTHON_TAG-aarch64-pc-windows-msvc-install_only.tar.gz",
+                "cpython-$PYTHON_VERSION+$PYTHON_TAG-x86_64-unknown-linux-gnu-install_only.tar.gz",
+                "cpython-$PYTHON_VERSION+$PYTHON_TAG-aarch64-unknown-linux-gnu-install_only.tar.gz",
+                "cpython-$PYTHON_VERSION+$PYTHON_TAG-x86_64-unknown-linux-musl-install_only.tar.gz",
+                "cpython-$PYTHON_VERSION+$PYTHON_TAG-aarch64-unknown-linux-musl-install_only.tar.gz",
             ).map { AssetInfo(it, "$PYTHON_BASE/$it") },
         )
 

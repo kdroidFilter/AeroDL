@@ -1,14 +1,14 @@
 package io.github.kdroidfilter.ytdlp
 
-import io.github.kdroidfilter.platformtools.OperatingSystem
-import io.github.kdroidfilter.platformtools.getOperatingSystem
 import io.github.kdroidfilter.ytdlp.core.*
 import io.github.kdroidfilter.ytdlp.model.PlaylistInfo
 import io.github.kdroidfilter.ytdlp.model.ReleaseManifest
 import io.github.kdroidfilter.ytdlp.model.VideoInfo
 import io.github.kdroidfilter.ytdlp.util.NetAndArchive
+import io.github.kdroidfilter.ytdlp.util.OperatingSystem
 import io.github.kdroidfilter.ytdlp.util.PlatformUtils
 import io.github.kdroidfilter.ytdlp.util.PythonManager
+import io.github.kdroidfilter.ytdlp.util.getOperatingSystem
 import io.github.kdroidfilter.logging.errorln
 import io.github.kdroidfilter.logging.infoln
 import io.github.kdroidfilter.logging.debugln
@@ -49,7 +49,7 @@ class YtDlpWrapper {
     private data class MetaCacheEntry(val json: String)
 
     // --- User Configuration (modifiable externally) ---
-    var ytDlpPath: String = PlatformUtils.getDefaultBinaryPath()
+    var ytDlpPath: String = PythonManager.getYtDlpScriptPath()
         set(value) {
             field = value
             // Invalidate all caches when path changes
@@ -146,35 +146,30 @@ class YtDlpWrapper {
         }
 
         try {
-            // On macOS, we need Python + yt-dlp script instead of PyInstaller binary
-            val isMacOS = getOperatingSystem() == OperatingSystem.MACOS
-
-            if (isMacOS) {
-                // Download Python if needed
-                if (PythonManager.needsPythonDownload()) {
-                    if (manifest == null) {
-                        val availability = probeAvailability()
-                        val msg =
-                            "Cannot install Python because the release manifest is unavailable (source=$resolvedManifestSource). Verify access to api.github.com and github.com, then retry."
-                        warnln {
-                            "[YtDlpWrapper] Missing manifest for Python bootstrap. source=$resolvedManifestSource, ytDlpPath=${availability.path}, exists=${availability.exists}, canExecute=${availability.canExecute}, version=${availability.version ?: "null"}, probeError=${availability.probeError ?: "none"}"
-                        }
-                        errorln { "[YtDlpWrapper] $msg" }
-                        onEvent(
-                            InitEvent.Error(
-                                msg,
-                                null,
-                            ),
-                        )
-                        onEvent(InitEvent.Completed(false)); return false
+            // Python is pinned (downloaded once). Only the yt-dlp script is updated later.
+            if (PythonManager.needsPythonDownload()) {
+                if (manifest == null) {
+                    val availability = probeAvailability()
+                    val msg =
+                        "Cannot install Python because the release manifest is unavailable (source=$resolvedManifestSource). Verify access to api.github.com and github.com, then retry."
+                    warnln {
+                        "[YtDlpWrapper] Missing manifest for Python bootstrap. source=$resolvedManifestSource, ytDlpPath=${availability.path}, exists=${availability.exists}, canExecute=${availability.canExecute}, version=${availability.version ?: "null"}, probeError=${availability.probeError ?: "none"}"
                     }
-                    onEvent(InitEvent.CheckingYtDlp)  // Reuse event for progress
-                    if (!PythonManager.downloadPython(manifest) { r, t -> onEvent(InitEvent.YtDlpProgress(r, t, pct(r, t))) }) {
-                        val msg = "Could not download Python. Check your internet connection and try again."
-                        errorln { "[YtDlpWrapper] $msg" }
-                        onEvent(InitEvent.Error(msg, null))
-                        onEvent(InitEvent.Completed(false)); return false
-                    }
+                    errorln { "[YtDlpWrapper] $msg" }
+                    onEvent(
+                        InitEvent.Error(
+                            msg,
+                            null,
+                        ),
+                    )
+                    onEvent(InitEvent.Completed(false)); return false
+                }
+                onEvent(InitEvent.CheckingYtDlp)
+                if (!PythonManager.downloadPython(manifest) { r, t -> onEvent(InitEvent.YtDlpProgress(r, t, pct(r, t))) }) {
+                    val msg = "Could not download Python. Check your internet connection and try again."
+                    errorln { "[YtDlpWrapper] $msg" }
+                    onEvent(InitEvent.Error(msg, null))
+                    onEvent(InitEvent.Completed(false)); return false
                 }
             }
 
@@ -321,11 +316,7 @@ class YtDlpWrapper {
                 )
             }
 
-            val cmd = if (os == OperatingSystem.MACOS) {
-                listOf(PythonManager.getPythonExecutable(), ytDlpPath, "--version")
-            } else {
-                listOf(ytDlpPath, "--version")
-            }
+            val cmd = PythonManager.command(ytDlpPath, listOf("--version"))
 
             try {
                 val proc = ProcessBuilder(cmd).redirectErrorStream(true).start()
@@ -411,49 +402,20 @@ class YtDlpWrapper {
         manifest: ReleaseManifest,
         onProgress: ((bytesRead: Long, totalBytes: Long?) -> Unit)? = null
     ): Boolean {
-        // On macOS, use Python + yt-dlp script for speed (0.3s vs 10s per call)
-        val isMacOS = getOperatingSystem() == OperatingSystem.MACOS
-
         return try {
-            if (isMacOS) {
-                // Download yt-dlp pure Python script
-                if (!PythonManager.downloadYtDlpScript(manifest, onProgress)) {
-                    return false
-                }
+            if (!PythonManager.downloadYtDlpScript(manifest, onProgress)) {
+                return false
+            }
 
-                val scriptPath = PythonManager.getYtDlpScriptPath()
-                if (File(scriptPath).exists()) {
-                    ytDlpPath = scriptPath
-                    cachedVersion = null
-                    cachedLatestReleaseTag = null
-                    synchronized(metadataCacheLock) { metadataCache.clear() }
-                    isAvailable()
-                } else {
-                    false
-                }
+            val scriptPath = PythonManager.getYtDlpScriptPath()
+            if (File(scriptPath).exists()) {
+                ytDlpPath = scriptPath
+                cachedVersion = null
+                cachedLatestReleaseTag = null
+                synchronized(metadataCacheLock) { metadataCache.clear() }
+                isAvailable()
             } else {
-                // Windows/Linux: Use PyInstaller binary
-                val assetName = PlatformUtils.getYtDlpAssetNameForSystem()
-                val destFile = File(PlatformUtils.getDefaultBinaryPath())
-                destFile.parentFile?.mkdirs()
-
-                val asset = manifest.releases.ytDlp.assets.find { it.name == assetName } ?: return false
-
-                PlatformUtils.downloadFile(asset.browserDownloadUrl, destFile, onProgress)
-                if (getOperatingSystem() != OperatingSystem.WINDOWS) PlatformUtils.makeExecutable(destFile)
-
-                if (destFile.exists() && destFile.canExecute()) {
-                    // Reset caches so subsequent calls re-resolve version and latest tag once.
-                    ytDlpPath = destFile.absolutePath
-                    cachedVersion = null
-                    cachedLatestReleaseTag = null
-                    synchronized(metadataCacheLock) { metadataCache.clear() }
-                    // Verify availability once; cache will be filled by version()
-                    isAvailable()
-                } else {
-                    destFile.delete()
-                    false
-                }
+                false
             }
         } catch (e: Exception) {
             errorln(e) { "Error during yt-dlp download/update: ${e.message}" }
@@ -591,7 +553,7 @@ class YtDlpWrapper {
             batchFile.writeText(urls.joinToString("\n"))
 
             val cmd = buildList {
-                add(ytDlpPath)
+                addAll(PythonManager.command(ytDlpPath))
                 add("--batch-file"); add(batchFile.absolutePath)
                 add("--flat-playlist")
                 add("--simulate")
@@ -734,9 +696,19 @@ class YtDlpWrapper {
                         val authHint = when {
                             !isAuthDiagnostic -> null
                             finalOptions.cookiesFromBrowser.isNullOrBlank() ->
-                                "Hint: Configure 'Cookies from browser' in AeroDL settings (Firefox recommended) while logged in to YouTube, then retry."
+                                if (getOperatingSystem() == OperatingSystem.WINDOWS) {
+                                    "Hint: Log in to YouTube in Firefox, enable Firefox cookies in AeroDL settings, then retry."
+                                } else {
+                                    "Hint: Log in to YouTube in Chrome or Firefox, enable cookies from that browser in AeroDL settings, then retry."
+                                }
+                            getOperatingSystem() == OperatingSystem.WINDOWS &&
+                                (
+                                    finalOptions.cookiesFromBrowser.equals("chrome", ignoreCase = true) ||
+                                        finalOptions.cookiesFromBrowser.equals("edge", ignoreCase = true)
+                                    ) ->
+                                "Hint: Chrome/Edge cookies are sandboxed on Windows. Switch cookies source to Firefox while logged in to YouTube, then retry."
                             else ->
-                                "Hint: Refresh your login in '${finalOptions.cookiesFromBrowser}' and retry. If it still fails, switch cookies source to Firefox."
+                                "Hint: Refresh your login in '${finalOptions.cookiesFromBrowser}' and retry."
                         }
 
                         // Extract all ERROR lines
@@ -1208,12 +1180,7 @@ class YtDlpWrapper {
     private suspend fun executeCommand(args: List<String>, timeoutSec: Long): Result<ProcessResult> =
         withContext(Dispatchers.IO) {
             val cmd = buildList {
-                // On macOS, prepend Python to run the yt-dlp script
-                if (getOperatingSystem() == OperatingSystem.MACOS) {
-                    add(PythonManager.getPythonExecutable())
-                }
-                add(ytDlpPath)
-                addAll(args)
+                addAll(PythonManager.command(ytDlpPath, args))
                 ffmpegPath?.takeIf { it.isNotBlank() }?.let { addAll(listOf("--ffmpeg-location", it)) }
             }
 
@@ -1265,14 +1232,7 @@ class YtDlpWrapper {
         }
 
         return withContext(Dispatchers.IO) {
-            val fullCmd = buildList {
-                // On macOS, prepend Python to run the yt-dlp script
-                if (getOperatingSystem() == OperatingSystem.MACOS) {
-                    add(PythonManager.getPythonExecutable())
-                }
-                add(ytDlpPath)
-                addAll(cmdArgs)
-            }
+            val fullCmd = PythonManager.command(ytDlpPath, cmdArgs)
             val cacheKey = fullCmd.joinToString("\u0001")
 
             synchronized(metadataCacheLock) {
