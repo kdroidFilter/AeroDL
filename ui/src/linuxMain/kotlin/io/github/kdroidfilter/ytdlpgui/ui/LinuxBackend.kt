@@ -706,6 +706,15 @@ internal fun MenuFlyoutSeparatorImpl(modifier: Modifier) {
 }
 
 @Composable
+internal fun TooltipBoxImpl(
+    tooltip: @Composable () -> Unit,
+    modifier: Modifier,
+    content: @Composable () -> Unit,
+) {
+    DefaultTooltipBox(tooltip, modifier, content)
+}
+
+@Composable
 internal fun SegmentedControlImpl(modifier: Modifier, content: @Composable RowScope.() -> Unit) {
     val scheme = LocalYaruColorScheme.current
     val shape = RoundedCornerShape(8.dp)

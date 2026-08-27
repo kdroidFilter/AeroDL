@@ -3,7 +3,6 @@ package io.github.kdroidfilter.ytdlpgui.ui.component
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -22,35 +21,43 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.takeOrElse
+import androidx.compose.ui.layout.IntrinsicMeasurable
+import androidx.compose.ui.layout.IntrinsicMeasureScope
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.Measurable
+import androidx.compose.ui.layout.MeasurePolicy
+import androidx.compose.ui.layout.MeasureResult
+import androidx.compose.ui.layout.MeasureScope
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntRect
-import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Popup
-import androidx.compose.ui.window.PopupPositionProvider
-import androidx.compose.ui.window.PopupProperties
 import dev.nucleusframework.macoscompose.components.Checkbox
 import dev.nucleusframework.macoscompose.components.ComboBox as MacosComboBox
 import dev.nucleusframework.macoscompose.components.DialogSize as MacosDialogSize
+import dev.nucleusframework.macoscompose.components.DropdownMenu
+import dev.nucleusframework.macoscompose.components.DropdownMenuCheckboxItem
+import dev.nucleusframework.macoscompose.components.DropdownMenuItem
+import dev.nucleusframework.macoscompose.components.DropdownMenuSeparator
 import dev.nucleusframework.macoscompose.components.LinearProgress
+import dev.nucleusframework.macoscompose.components.MenuPlacement
 import dev.nucleusframework.macoscompose.components.PushButton
 import dev.nucleusframework.macoscompose.components.PushButtonStyle
 import dev.nucleusframework.macoscompose.components.SmallDialog
 import dev.nucleusframework.macoscompose.components.Spinner
 import dev.nucleusframework.macoscompose.components.Switcher as MacosSwitcher
+import dev.nucleusframework.macoscompose.components.Tooltip as MacosTooltip
 import dev.nucleusframework.macoscompose.components.VerticalScrollbar as MacosVerticalScrollbar
 import dev.nucleusframework.macoscompose.components.rememberScrollbarState
 import dev.nucleusframework.macoscompose.components.TextField as MacosTextField
@@ -58,6 +65,9 @@ import dev.nucleusframework.macoscompose.icons.Icon as MacosIcon
 import dev.nucleusframework.macoscompose.icons.SystemIcon
 import dev.nucleusframework.macoscompose.theme.AccentColor
 import dev.nucleusframework.macoscompose.theme.ControlSize
+import dev.nucleusframework.macoscompose.theme.LocalContentColor
+import dev.nucleusframework.macoscompose.theme.LocalControlSize
+import dev.nucleusframework.macoscompose.theme.LocalTextStyle
 import dev.nucleusframework.macoscompose.theme.MacosTheme
 import dev.nucleusframework.macoscompose.theme.darkColorScheme
 import dev.nucleusframework.macoscompose.theme.lightColorScheme
@@ -143,19 +153,59 @@ internal fun GlyphIcon(
     val resolved = tint.takeOrElse {
         LocalNativeContentColor.current.takeOrElse { MacosTheme.colorScheme.textPrimary }
     }
-    BoxWithConstraints(modifier, contentAlignment = Alignment.Center) {
-        val iconSize = when {
-            constraints.hasFixedWidth && constraints.hasFixedHeight -> minOf(maxWidth, maxHeight)
-            constraints.hasFixedWidth -> maxWidth
-            constraints.hasFixedHeight -> maxHeight
-            else -> 16.dp
-        }
-        MacosIcon(
-            icon = SystemIcon(name, fallback),
-            contentDescription = contentDescription,
-            modifier = Modifier.size(iconSize),
-            tint = resolved,
-        )
+    val defaultPx = with(LocalDensity.current) { 16.dp.roundToPx() }
+    val measurePolicy = remember(defaultPx) { GlyphIconMeasurePolicy(defaultPx) }
+    Layout(
+        modifier = modifier,
+        content = {
+            MacosIcon(
+                icon = SystemIcon(name, fallback),
+                contentDescription = contentDescription,
+                tint = resolved,
+            )
+        },
+        measurePolicy = measurePolicy,
+    )
+}
+
+private class GlyphIconMeasurePolicy(
+    private val defaultPx: Int,
+) : MeasurePolicy {
+    override fun MeasureScope.measure(
+        measurables: List<Measurable>,
+        constraints: Constraints,
+    ): MeasureResult {
+        val size = when {
+            constraints.hasFixedWidth && constraints.hasFixedHeight ->
+                minOf(constraints.maxWidth, constraints.maxHeight)
+            constraints.hasFixedWidth -> constraints.maxWidth
+            constraints.hasFixedHeight -> constraints.maxHeight
+            else -> defaultPx
+        }.coerceAtLeast(0)
+        val placeable = measurables.firstOrNull()?.measure(Constraints.fixed(size, size))
+        return layout(size, size) { placeable?.place(0, 0) }
+    }
+
+    override fun IntrinsicMeasureScope.minIntrinsicWidth(measurables: List<IntrinsicMeasurable>, height: Int) =
+        if (height != Constraints.Infinity) height else defaultPx
+
+    override fun IntrinsicMeasureScope.maxIntrinsicWidth(measurables: List<IntrinsicMeasurable>, height: Int) =
+        if (height != Constraints.Infinity) height else defaultPx
+
+    override fun IntrinsicMeasureScope.minIntrinsicHeight(measurables: List<IntrinsicMeasurable>, width: Int) =
+        if (width != Constraints.Infinity) width else defaultPx
+
+    override fun IntrinsicMeasureScope.maxIntrinsicHeight(measurables: List<IntrinsicMeasurable>, width: Int) =
+        if (width != Constraints.Infinity) width else defaultPx
+}
+
+@Composable
+private fun RowScope.ButtonContent(content: @Composable RowScope.() -> Unit) {
+    val contentColor = LocalContentColor.current.takeOrElse {
+        LocalNativeContentColor.current
+    }
+    CompositionLocalProvider(LocalNativeContentColor provides contentColor) {
+        content()
     }
 }
 
@@ -173,8 +223,9 @@ internal fun AccentButtonImpl(
             modifier = modifier,
             style = PushButtonStyle.Default,
             enabled = !disabled,
-            content = content,
-        )
+        ) {
+            ButtonContent(content)
+        }
     }
 }
 
@@ -191,8 +242,9 @@ internal fun ButtonImpl(
         modifier = modifier,
         style = PushButtonStyle.Neutral,
         enabled = !disabled,
-        content = content,
-    )
+    ) {
+        ButtonContent(content)
+    }
 }
 
 @Composable
@@ -203,13 +255,18 @@ internal fun SubtleButtonImpl(
     @Suppress("UNUSED_PARAMETER") iconOnly: Boolean,
     content: @Composable RowScope.() -> Unit,
 ) {
+    val scheme = MacosTheme.colorScheme
+    val contentColor = if (disabled) scheme.textQuaternary else scheme.textPrimary
     PushButton(
         onClick = onClick,
         modifier = modifier,
-        style = PushButtonStyle.Borderless,
+        style = PushButtonStyle.BorderlessBezel,
         enabled = !disabled,
-        content = content,
-    )
+    ) {
+        CompositionLocalProvider(LocalNativeContentColor provides contentColor) {
+            content()
+        }
+    }
 }
 
 @Composable
@@ -223,10 +280,11 @@ internal fun HyperlinkButtonImpl(
     PushButton(
         onClick = onClick,
         modifier = modifier,
-        style = PushButtonStyle.Borderless,
+        style = PushButtonStyle.BorderlessBezel,
         enabled = !disabled,
-        content = content,
-    )
+    ) {
+        ButtonContent(content)
+    }
 }
 
 @Composable
@@ -332,10 +390,13 @@ internal fun SwitcherImpl(
 @Composable
 internal fun ProgressRingImpl(modifier: Modifier, progress: Float?, color: Color) {
     if (progress == null) {
+        val nativeSize = MacosTheme.componentStyling.progress.metrics
+            .spinnerSizeFor(LocalControlSize.current)
         BoxWithConstraints(modifier, contentAlignment = Alignment.Center) {
             val spinnerSize = when {
-                constraints.hasFixedWidth && constraints.hasFixedHeight -> minOf(maxWidth, maxHeight)
-                else -> 16.dp
+                constraints.hasFixedWidth && constraints.hasFixedHeight ->
+                    minOf(maxWidth, maxHeight, nativeSize)
+                else -> nativeSize
             }
             Spinner(size = spinnerSize, color = color)
         }
@@ -539,7 +600,7 @@ internal fun TopNavItemImpl(
     PushButton(
         onClick = onClick,
         modifier = modifier.heightIn(min = 28.dp),
-        style = if (selected) PushButtonStyle.Secondary else PushButtonStyle.Borderless,
+        style = if (selected) PushButtonStyle.Secondary else PushButtonStyle.BorderlessBezel,
         selected = selected,
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -559,60 +620,30 @@ internal fun MenuFlyoutContainerImpl(
     flyout: @Composable MenuFlyoutContainerScope.() -> Unit,
     modifier: Modifier,
     initialVisible: Boolean,
-    placement: FlyoutPlacement,
+    @Suppress("UNUSED_PARAMETER") placement: FlyoutPlacement,
     @Suppress("UNUSED_PARAMETER") adaptivePlacement: Boolean,
     content: @Composable MenuFlyoutContainerScope.() -> Unit,
 ) {
     val state = remember { MenuFlyoutState(initialVisible) }
-    val scheme = MacosTheme.colorScheme
-    val shape = RoundedCornerShape(13.dp)
-    val alignEnd = placement == FlyoutPlacement.BottomAlignedEnd
     Box(modifier) {
         content(state)
-        if (state.isFlyoutVisible) {
-            Popup(
-                popupPositionProvider = remember(alignEnd) { belowAnchorPositionProvider(alignEnd) },
-                onDismissRequest = { state.isFlyoutVisible = false },
-                properties = PopupProperties(focusable = true),
-            ) {
-                Column(
-                    Modifier
-                        .shadow(12.dp, shape)
-                        .background(scheme.popover, shape)
-                        .border(0.5.dp, scheme.borderSubtle, shape)
-                        .padding(vertical = 6.dp)
-                        .width(220.dp),
-                ) {
-                    flyout(state)
-                }
-            }
+        DropdownMenu(
+            expanded = state.isFlyoutVisible,
+            onDismissRequest = { state.isFlyoutVisible = false },
+            placement = MenuPlacement.Below,
+        ) {
+            flyout(state)
         }
     }
 }
 
-private fun belowAnchorPositionProvider(alignEnd: Boolean): PopupPositionProvider =
-    object : PopupPositionProvider {
-        override fun calculatePosition(
-            anchorBounds: IntRect,
-            windowSize: IntSize,
-            layoutDirection: LayoutDirection,
-            popupContentSize: IntSize,
-        ): IntOffset {
-            val gap = 6
-            val x = if (alignEnd xor (layoutDirection == LayoutDirection.Rtl)) {
-                anchorBounds.right - popupContentSize.width
-            } else {
-                anchorBounds.left
-            }.coerceIn(0, (windowSize.width - popupContentSize.width).coerceAtLeast(0))
-            val yBelow = anchorBounds.bottom + gap
-            val y = if (yBelow + popupContentSize.height <= windowSize.height) {
-                yBelow
-            } else {
-                (anchorBounds.top - gap - popupContentSize.height).coerceAtLeast(0)
-            }
-            return IntOffset(x, y)
-        }
+@Composable
+private fun ProvideMacosMenuContentColor(content: @Composable () -> Unit) {
+    val color = LocalTextStyle.current.color.takeOrElse {
+        LocalContentColor.current.takeOrElse { LocalNativeContentColor.current }
     }
+    CompositionLocalProvider(LocalNativeContentColor provides color, content = content)
+}
 
 @Composable
 internal fun MenuFlyoutItemImpl(
@@ -624,39 +655,55 @@ internal fun MenuFlyoutItemImpl(
     onSelectedChanged: ((Boolean) -> Unit)?,
     selectionType: ListItemSelectionType,
 ) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable {
-                if (onSelectedChanged != null && selected != null) {
-                    onSelectedChanged(!selected)
-                } else {
-                    onClick()
+    val label = @Composable { ProvideMacosMenuContentColor(text) }
+    if (selected != null && onSelectedChanged != null && selectionType == ListItemSelectionType.Check) {
+        DropdownMenuCheckboxItem(
+            checked = selected,
+            onCheckedChange = onSelectedChanged,
+            modifier = modifier,
+            content = label,
+        )
+    } else {
+        DropdownMenuItem(
+            onClick = onClick,
+            modifier = modifier,
+            leadingIcon = icon?.let { slot ->
+                {
+                    Box(Modifier.size(16.dp), contentAlignment = Alignment.Center) {
+                        ProvideMacosMenuContentColor(slot)
+                    }
                 }
-            }
-            .padding(horizontal = 10.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        if (selectionType == ListItemSelectionType.Check && selected != null) {
-            Checkbox(checked = selected, onCheckedChange = null)
-            Spacer(Modifier.width(8.dp))
-        } else if (icon != null) {
-            icon()
-            Spacer(Modifier.width(8.dp))
-        }
-        Box(Modifier.weight(1f)) { text() }
+            },
+            content = label,
+        )
     }
 }
 
 @Composable
 internal fun MenuFlyoutSeparatorImpl(modifier: Modifier) {
-    Box(
-        modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .height(1.dp)
-            .background(MacosTheme.colorScheme.borderSubtle),
-    )
+    DropdownMenuSeparator(modifier)
+}
+
+@Composable
+internal fun TooltipBoxImpl(
+    tooltip: @Composable () -> Unit,
+    modifier: Modifier,
+    content: @Composable () -> Unit,
+) {
+    val sink = remember { mutableStateOf("") }
+    Box {
+        Box(Modifier.size(0.dp)) {
+            CompositionLocalProvider(LocalTooltipTextSink provides sink) {
+                tooltip()
+            }
+        }
+        val text = sink.value
+        if (text.isEmpty()) {
+            Box(modifier) { content() }
+        } else {
+            MacosTooltip(text = text, modifier = modifier, content = content)
+        }
+    }
 }
 
 @Composable
@@ -685,7 +732,7 @@ internal fun SegmentedButtonImpl(
     PushButton(
         onClick = { onCheckedChanged(!checked) },
         modifier = modifier,
-        style = if (checked) PushButtonStyle.Neutral else PushButtonStyle.Borderless,
+        style = if (checked) PushButtonStyle.Neutral else PushButtonStyle.BorderlessBezel,
         selected = checked,
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {

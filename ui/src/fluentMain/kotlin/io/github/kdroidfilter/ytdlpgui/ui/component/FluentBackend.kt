@@ -1,7 +1,8 @@
-@file:OptIn(ExperimentalFluentApi::class)
+@file:OptIn(ExperimentalFluentApi::class, ExperimentalFoundationApi::class)
 
 package io.github.kdroidfilter.ytdlpgui.ui.component
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -44,6 +45,7 @@ import io.github.composefluent.component.SegmentedButton
 import io.github.composefluent.component.SegmentedControl
 import io.github.composefluent.component.SubtleButton
 import io.github.composefluent.component.TextField
+import io.github.composefluent.component.TooltipBox as FluentTooltipBox
 import io.github.composefluent.component.FlyoutPlacement as FluentFlyoutPlacement
 import io.github.composefluent.component.ListItemSelectionType as FluentListItemSelectionType
 import io.github.composefluent.component.MenuFlyoutContainer as FluentMenuFlyoutContainer
@@ -86,7 +88,7 @@ internal fun NativeThemeImpl(darkTheme: Boolean, content: @Composable () -> Unit
     val fluentColors = remember(darkTheme, accent) {
         Colors(shadesFromAccent(accent), darkTheme)
     }
-    FluentTheme(colors = fluentColors) {
+    FluentTheme(colors = fluentColors, useAcrylicPopup = false) {
         val nativeColors = fluentColors.toNative()
         val nativeTypography = NativeTypography(
             subtitle = FluentTheme.typography.subtitle,
@@ -475,6 +477,15 @@ internal fun MenuFlyoutSeparatorImpl(modifier: Modifier) {
 @Composable
 internal fun SegmentedControlImpl(modifier: Modifier, content: @Composable RowScope.() -> Unit) {
     SegmentedControl(modifier = modifier, content = content)
+}
+
+@Composable
+internal fun TooltipBoxImpl(
+    tooltip: @Composable () -> Unit,
+    modifier: Modifier,
+    content: @Composable () -> Unit,
+) {
+    FluentTooltipBox(tooltip = tooltip, modifier = modifier, content = content)
 }
 
 @Composable

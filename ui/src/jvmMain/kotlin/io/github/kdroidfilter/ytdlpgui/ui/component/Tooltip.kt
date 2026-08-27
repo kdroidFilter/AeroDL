@@ -9,8 +9,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalDensity
@@ -25,10 +27,21 @@ import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
 import io.github.kdroidfilter.ytdlpgui.ui.NativeTheme
 
+internal val LocalTooltipTextSink = staticCompositionLocalOf<MutableState<String>?> { null }
+
 @Composable
 fun TooltipBox(
     tooltip: @Composable () -> Unit,
     modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    TooltipBoxImpl(tooltip, modifier, content)
+}
+
+@Composable
+internal fun DefaultTooltipBox(
+    tooltip: @Composable () -> Unit,
+    modifier: Modifier,
     content: @Composable () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }

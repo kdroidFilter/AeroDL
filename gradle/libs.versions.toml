@@ -21,7 +21,7 @@ cardiologist = "0.8.0"
 
 # UI Libraries
 fluent = "1.1.1"
-yaru = "1.0.4"
+yaru = "1.0.1"
 macosui = "1.0.2"
 composemediaplayer = "0.11.4"
 composenativetray = "2.1.1"

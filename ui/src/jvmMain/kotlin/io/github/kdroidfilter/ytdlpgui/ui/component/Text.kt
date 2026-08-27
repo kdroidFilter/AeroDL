@@ -81,6 +81,7 @@ fun Text(
     onTextLayout: (TextLayoutResult) -> Unit = {},
     style: TextStyle = NativeTheme.typography.body,
 ) {
+    LocalTooltipTextSink.current?.value = text.text
     val fallback = LocalNativeContentColor.current.takeOrElse {
         NativeTheme.colors.text.text.primary
     }

@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.dp
+import dev.nucleusframework.core.runtime.Platform
 import io.github.kdroidfilter.ytdlpgui.ui.NativeTheme
 import io.github.kdroidfilter.ytdlpgui.ui.component.Icon
 import io.github.kdroidfilter.ytdlpgui.ui.component.SubtleButton
@@ -24,8 +25,9 @@ import ytdlpgui.composeapp.generated.resources.tooltip_support_kofi
 fun Footer(
     modifier: Modifier = Modifier,
 ) {
+    val bottomPadding = if (Platform.Current == Platform.MacOS) 12.dp else 4.dp
     Row(
-        modifier = modifier.fillMaxWidth().padding(top = 2.dp, bottom = 4.dp),
+        modifier = modifier.fillMaxWidth().padding(top = 2.dp, bottom = bottomPadding),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {

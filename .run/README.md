@@ -5,7 +5,7 @@ This directory contains pre-configured run configurations for IntelliJ IDEA / An
 ## Available Configurations
 
 ### 🚀 Run (Normal)
-- **Purpose**: Normal development mode
+- **Purpose**: Normal development mode (host default UI backend)
 - **Settings**: Preserves all application settings and cache
 - **Use when**: Regular development, testing features with existing data
 - **Logs**: Enabled via `-PdebugLogs=true`
@@ -15,6 +15,21 @@ This directory contains pre-configured run configurations for IntelliJ IDEA / An
 - **Settings**: Clears all settings and cache on startup
 - **Use when**: Testing the onboarding flow from scratch
 - **Logs**: Enabled via `-PcleanInstall=true -PdebugLogs=true`
+
+### 🪟 Run (Fluent)
+- **Purpose**: Force the Fluent UI backend
+- **Use when**: Developing or comparing the Windows/Fluent look on any OS
+- **Logs**: Enabled via `-PuiBackend=fluent -PdebugLogs=true`
+
+### 🍎 Run (macOS UI)
+- **Purpose**: Force the macOS UI backend
+- **Use when**: Developing or comparing the macOS look on any OS
+- **Logs**: Enabled via `-PuiBackend=macos -PdebugLogs=true`
+
+### 🐧 Run (Yaru)
+- **Purpose**: Force the Yaru (Linux) UI backend
+- **Use when**: Developing or comparing the Linux/Yaru look on any OS
+- **Logs**: Enabled via `-PuiBackend=linux -PdebugLogs=true`
 
 ### 🔒 Run (Release, Logs)
 - Purpose: Package and run the release build with ProGuard optimizations enabled
@@ -42,9 +57,10 @@ Notes
 
 ## Technical Details
 
-- **Normal mode**: Runs with default settings (`cleanInstall=false`) and logs enabled (`-PdebugLogs=true`)
+- **Normal mode**: Runs with default settings (`cleanInstall=false`) and logs enabled (`-PdebugLogs=true`). UI backend follows the host OS (`macos` / `linux` / `fluent`).
 - **Clean Install mode**: Runs with `-PcleanInstall=true` and logs enabled (`-PdebugLogs=true`)
   - Clears Java temp directory (`/tmp`)
   - Clears all application settings (forces onboarding)
+- **UI backends**: Override compile-time backend with `-PuiBackend=fluent|macos|linux`. Switching backends may require a Gradle refresh / clean of `:ui` if incremental compile reuses the previous source set.
 
 These configurations are version controlled and shared across the team for consistency.
