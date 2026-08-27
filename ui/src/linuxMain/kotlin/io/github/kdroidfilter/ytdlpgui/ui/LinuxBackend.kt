@@ -33,7 +33,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
@@ -114,11 +113,11 @@ internal fun GlyphIcon(
     val resolved = tint.takeOrElse {
         LocalNativeContentColor.current.takeOrElse { LocalYaruContentColor.current }
     }
-    BoxWithConstraints(modifier) {
+    BoxWithConstraints(modifier, contentAlignment = Alignment.Center) {
         val iconSize = when {
-            maxWidth < Dp.Infinity && maxHeight < Dp.Infinity -> minOf(maxWidth, maxHeight)
-            maxWidth < Dp.Infinity -> maxWidth
-            maxHeight < Dp.Infinity -> maxHeight
+            constraints.hasFixedWidth && constraints.hasFixedHeight -> minOf(maxWidth, maxHeight)
+            constraints.hasFixedWidth -> maxWidth
+            constraints.hasFixedHeight -> maxHeight
             else -> 20.dp
         }
         YaruIcon(
