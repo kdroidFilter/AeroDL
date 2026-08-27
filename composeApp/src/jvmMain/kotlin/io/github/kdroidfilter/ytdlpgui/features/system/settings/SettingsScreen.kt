@@ -403,24 +403,19 @@ private fun ProxySetting(
                     text = stringResource(Res.string.settings_proxy_caption),
                 )
                 Spacer(Modifier.height(8.dp))
-                Text(
-                    proxy.ifBlank { stringResource(Res.string.settings_proxy_not_set) },
+                TextField(
+                    value = currentValue,
+                    onValueChange = {
+                        currentValue = it
+                        onProxyChange(it)
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text(stringResource(Res.string.settings_proxy_placeholder), maxLines = 1) },
+                    singleLine = true,
                 )
             }
         },
         icon = { Icon(Icons.Regular.Globe, null) },
-        trailing = {
-            TextField(
-                value = currentValue,
-                onValueChange = {
-                    currentValue = it
-                    onProxyChange(it)
-                },
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text(stringResource(Res.string.settings_proxy_placeholder), maxLines = 1) },
-                singleLine = true,
-            )
-        }
     )
 }
 
