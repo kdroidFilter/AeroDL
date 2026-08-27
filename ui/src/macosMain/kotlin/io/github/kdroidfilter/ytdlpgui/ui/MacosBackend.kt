@@ -68,6 +68,7 @@ import dev.nucleusframework.macoscompose.theme.ControlSize
 import dev.nucleusframework.macoscompose.theme.LocalContentColor
 import dev.nucleusframework.macoscompose.theme.LocalControlSize
 import dev.nucleusframework.macoscompose.theme.LocalTextStyle
+import dev.nucleusframework.macoscompose.theme.iconGap
 import dev.nucleusframework.macoscompose.theme.MacosTheme
 import dev.nucleusframework.macoscompose.theme.darkColorScheme
 import dev.nucleusframework.macoscompose.theme.lightColorScheme
@@ -204,8 +205,13 @@ private fun RowScope.ButtonContent(content: @Composable RowScope.() -> Unit) {
     val contentColor = LocalContentColor.current.takeOrElse {
         LocalNativeContentColor.current
     }
+    val gap = LocalControlSize.current.iconGap()
     CompositionLocalProvider(LocalNativeContentColor provides contentColor) {
-        content()
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(gap),
+            content = content,
+        )
     }
 }
 
@@ -234,16 +240,18 @@ internal fun ButtonImpl(
     onClick: () -> Unit,
     modifier: Modifier,
     disabled: Boolean,
-    @Suppress("UNUSED_PARAMETER") iconOnly: Boolean,
+    iconOnly: Boolean,
     content: @Composable RowScope.() -> Unit,
 ) {
-    PushButton(
-        onClick = onClick,
-        modifier = modifier,
-        style = PushButtonStyle.Neutral,
-        enabled = !disabled,
-    ) {
-        ButtonContent(content)
+    ControlSize(if (iconOnly) ControlSize.Small else ControlSize.ExtraLarge) {
+        PushButton(
+            onClick = onClick,
+            modifier = modifier,
+            style = PushButtonStyle.Neutral,
+            enabled = !disabled,
+        ) {
+            ButtonContent(content)
+        }
     }
 }
 
@@ -343,17 +351,35 @@ internal fun TextFieldImpl(
     trailing: (@Composable RowScope.() -> Unit)?,
     placeholder: (@Composable () -> Unit)?,
 ) {
+    val trailingSlot = trailing?.let { slot ->
+        @Composable { Row(verticalAlignment = Alignment.CenterVertically, content = slot) }
+    }
     ControlSize(ControlSize.ExtraLarge) {
-        MacosTextField(
-            value = value,
-            onValueChange = onValueChange,
-            modifier = modifier,
-            enabled = enabled,
-            singleLine = singleLine,
-            label = header,
-            trailingIcon = trailing?.let { slot -> { Row(content = slot) } },
-            placeholder = placeholder,
-        )
+        if (header != null) {
+            Column(modifier) {
+                header()
+                Spacer(Modifier.height(8.dp))
+                MacosTextField(
+                    value = value,
+                    onValueChange = onValueChange,
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = enabled,
+                    singleLine = singleLine,
+                    trailingIcon = trailingSlot,
+                    placeholder = placeholder,
+                )
+            }
+        } else {
+            MacosTextField(
+                value = value,
+                onValueChange = onValueChange,
+                modifier = modifier,
+                enabled = enabled,
+                singleLine = singleLine,
+                trailingIcon = trailingSlot,
+                placeholder = placeholder,
+            )
+        }
     }
 }
 

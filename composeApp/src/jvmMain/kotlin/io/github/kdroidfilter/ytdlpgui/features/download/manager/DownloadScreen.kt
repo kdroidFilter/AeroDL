@@ -141,10 +141,7 @@ fun DownloadView(
                                 Text(stringResource(Res.string.tooltip_clear_history))
                             }) {
                                 Button(onClick = { onEvent(DownloadEvents.ClearHistory) }) {
-                                    Text(
-                                        stringResource(Res.string.download_clear_history),
-                                        style = NativeTheme.typography.bodyStrong,
-                                    )
+                                    Text(stringResource(Res.string.download_clear_history))
                                     Icon(
                                         Icons.Default.Delete,
                                         stringResource(Res.string.download_clear_history),
