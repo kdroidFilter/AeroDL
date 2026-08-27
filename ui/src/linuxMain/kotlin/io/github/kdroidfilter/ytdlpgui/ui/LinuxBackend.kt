@@ -320,19 +320,32 @@ internal fun TextFieldImpl(
     trailing: (@Composable RowScope.() -> Unit)?,
     placeholder: (@Composable () -> Unit)?,
 ) {
-    Column(modifier) {
-        if (header != null) {
+    val trailingSlot = trailing?.let { slot ->
+        @Composable { Row(verticalAlignment = Alignment.CenterVertically, content = slot) }
+    }
+    if (header != null) {
+        Column(modifier) {
             header()
             Spacer(Modifier.height(8.dp))
+            YaruTextField(
+                value = value,
+                onValueChange = onValueChange,
+                modifier = Modifier.fillMaxWidth(),
+                enabled = enabled,
+                singleLine = singleLine,
+                placeholder = placeholder,
+                trailing = trailingSlot,
+            )
         }
+    } else {
         YaruTextField(
             value = value,
             onValueChange = onValueChange,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = modifier,
             enabled = enabled,
             singleLine = singleLine,
             placeholder = placeholder,
-            trailing = trailing?.let { slot -> { Row(content = slot) } },
+            trailing = trailingSlot,
         )
     }
 }

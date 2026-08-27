@@ -107,43 +107,58 @@ fun DownloadView(
                 modifier = Modifier.fillMaxSize()
             ) {
                 item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        if (state.hasAnyHistory) {
+                    if (state.hasAnyHistory) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(IntrinsicSize.Max),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
                             TextField(
                                 value = state.searchQuery,
                                 onValueChange = { onEvent(DownloadEvents.UpdateSearchQuery(it)) },
                                 placeholder = {
                                     Text(
                                         stringResource(Res.string.download_search_placeholder),
-                                        maxLines = 1
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        softWrap = false,
                                     )
                                 },
                                 singleLine = true,
-                                modifier = Modifier.weight(1f).padding(bottom = 8.dp),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight(),
                                 trailing = {
                                     Icon(
                                         icon = Icons.Regular.Search,
-                                        contentDescription = "Search"
+                                        contentDescription = stringResource(
+                                            Res.string.download_search_placeholder,
+                                        ),
+                                        modifier = Modifier.size(16.dp),
                                     )
-                                }
+                                },
                             )
 
-                            TooltipBox(tooltip = {
-                                Text(stringResource(Res.string.tooltip_clear_history))
-                            }) {
+                            TooltipBox(
+                                tooltip = {
+                                    Text(stringResource(Res.string.tooltip_clear_history))
+                                },
+                                modifier = Modifier.fillMaxHeight(),
+                            ) {
                                 Button(
                                     onClick = { onEvent(DownloadEvents.ClearHistory) },
-                                    modifier = Modifier.padding(bottom = 8.dp)
+                                    modifier = Modifier.fillMaxHeight(),
                                 ) {
                                     Text(
                                         stringResource(Res.string.download_clear_history),
-                                        style = NativeTheme.typography.bodyStrong
+                                        style = NativeTheme.typography.bodyStrong,
                                     )
-                                    Icon(Icons.Default.Delete, stringResource(Res.string.download_clear_history))
+                                    Icon(
+                                        Icons.Default.Delete,
+                                        stringResource(Res.string.download_clear_history),
+                                    )
                                 }
                             }
                         }
