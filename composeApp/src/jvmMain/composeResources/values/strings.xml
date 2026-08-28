@@ -20,6 +20,7 @@
     <string name="logo_content_desc">Logo</string>
     <string name="placeholder_link_example">https://youtu.be/XXXXXXXXX</string>
     <string name="paste_video_link_header">Paste a Video link</string>
+    <string name="drop_video_link_header">Drop a video link</string>
     <string name="paste_link_content_desc">Paste Link</string>
     <string name="loading">Loading…</string>
     <string name="next">Next</string>

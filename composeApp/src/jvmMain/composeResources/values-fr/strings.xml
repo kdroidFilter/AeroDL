@@ -18,6 +18,7 @@
     <string name="logo_content_desc">Logo</string>
     <string name="placeholder_link_example">https://youtu.be/XXXXXXXXX</string>
     <string name="paste_video_link_header">Collez un lien vidéo</string>
+    <string name="drop_video_link_header">Déposez un lien vidéo</string>
     <string name="paste_link_content_desc">Coller le lien</string>
     <string name="loading">Chargement…</string>
     <string name="next">Suivant</string>
