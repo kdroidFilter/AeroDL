@@ -63,6 +63,7 @@ import io.github.kdroidfilter.ytdlpgui.ui.NativeColors
 import io.github.kdroidfilter.ytdlpgui.ui.NativeShapes
 import io.github.kdroidfilter.ytdlpgui.ui.NativeSizes
 import io.github.kdroidfilter.ytdlpgui.ui.NativeTypography
+import io.github.kdroidfilter.ytdlpgui.ui.icons.Icons
 import io.github.kdroidfilter.ytdlpgui.ui.icons.NativeIcon
 import io.github.composefluent.component.ContentDialogButton as FluentContentDialogButton
 import io.github.composefluent.component.DialogSize as FluentDialogSize
@@ -159,6 +160,13 @@ internal fun SubtleButtonImpl(
     content: @Composable RowScope.() -> Unit,
 ) {
     SubtleButton(onClick = onClick, modifier = modifier, disabled = disabled, iconOnly = iconOnly, content = content)
+}
+
+@Composable
+internal fun CloseActionButtonImpl(onClick: () -> Unit) {
+    SubtleButton(iconOnly = true, onClick = onClick) {
+        Icon(Icons.Regular.Dismiss, contentDescription = null)
+    }
 }
 
 @Composable

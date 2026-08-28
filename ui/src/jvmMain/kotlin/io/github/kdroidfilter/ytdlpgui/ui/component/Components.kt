@@ -197,9 +197,7 @@ object InfoBarDefaults {
 
     @Composable
     fun CloseActionButton(onClick: () -> Unit) {
-        SubtleButton(iconOnly = true, onClick = onClick) {
-            Icon(Icons.Regular.Dismiss, contentDescription = null)
-        }
+        CloseActionButtonImpl(onClick)
     }
 }
 

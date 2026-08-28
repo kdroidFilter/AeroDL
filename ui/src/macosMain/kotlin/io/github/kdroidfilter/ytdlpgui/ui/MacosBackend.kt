@@ -83,6 +83,7 @@ import io.github.kdroidfilter.ytdlpgui.ui.NativeColors
 import io.github.kdroidfilter.ytdlpgui.ui.NativeShapes
 import io.github.kdroidfilter.ytdlpgui.ui.NativeSizes
 import io.github.kdroidfilter.ytdlpgui.ui.NativeTypography
+import io.github.kdroidfilter.ytdlpgui.ui.icons.Icons
 import io.github.kdroidfilter.ytdlpgui.ui.icons.NativeIcon
 
 internal const val NativeDrawsWindowChrome = false
@@ -270,19 +271,37 @@ internal fun SubtleButtonImpl(
     onClick: () -> Unit,
     modifier: Modifier,
     disabled: Boolean,
-    @Suppress("UNUSED_PARAMETER") iconOnly: Boolean,
+    iconOnly: Boolean,
     content: @Composable RowScope.() -> Unit,
 ) {
     val scheme = MacosTheme.colorScheme
     val contentColor = if (disabled) scheme.textQuaternary else scheme.textPrimary
-    PushButton(
-        onClick = onClick,
-        modifier = modifier,
-        style = PushButtonStyle.BorderlessBezel,
-        enabled = !disabled,
-    ) {
-        CompositionLocalProvider(LocalNativeContentColor provides contentColor) {
-            content()
+    ControlSize(if (iconOnly) ControlSize.Mini else LocalControlSize.current) {
+        PushButton(
+            onClick = onClick,
+            modifier = modifier,
+            style = PushButtonStyle.BorderlessBezel,
+            enabled = !disabled,
+        ) {
+            CompositionLocalProvider(LocalNativeContentColor provides contentColor) {
+                content()
+            }
+        }
+    }
+}
+
+@Composable
+internal fun CloseActionButtonImpl(onClick: () -> Unit) {
+    ControlSize(ControlSize.Mini) {
+        PushButton(
+            onClick = onClick,
+            style = PushButtonStyle.BorderlessBezel,
+        ) {
+            Icon(
+                Icons.Regular.Dismiss,
+                contentDescription = null,
+                modifier = Modifier.size(10.dp),
+            )
         }
     }
 }
@@ -529,7 +548,7 @@ internal fun InfoBarImpl(
             .background(colors.backgroundColor, shape)
             .border(0.5.dp, MacosTheme.colorScheme.borderSubtle, shape)
             .padding(horizontal = 12.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.Top,
     ) {
         if (icon != null) {
             Box(Modifier.size(20.dp), contentAlignment = Alignment.Center) {

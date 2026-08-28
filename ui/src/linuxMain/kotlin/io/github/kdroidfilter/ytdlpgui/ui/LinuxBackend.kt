@@ -77,6 +77,7 @@ import io.github.kdroidfilter.ytdlpgui.ui.NativeColors
 import io.github.kdroidfilter.ytdlpgui.ui.NativeShapes
 import io.github.kdroidfilter.ytdlpgui.ui.NativeSizes
 import io.github.kdroidfilter.ytdlpgui.ui.NativeTypography
+import io.github.kdroidfilter.ytdlpgui.ui.icons.Icons
 import io.github.kdroidfilter.ytdlpgui.ui.icons.NativeIcon
 
 internal const val NativeDrawsWindowChrome = false
@@ -226,6 +227,13 @@ internal fun SubtleButtonImpl(
         ) {
             ButtonContent(content)
         }
+    }
+}
+
+@Composable
+internal fun CloseActionButtonImpl(onClick: () -> Unit) {
+    SubtleButton(iconOnly = true, onClick = onClick) {
+        Icon(Icons.Regular.Dismiss, contentDescription = null)
     }
 }
 
