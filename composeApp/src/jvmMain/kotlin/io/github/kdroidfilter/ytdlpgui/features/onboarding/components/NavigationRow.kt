@@ -37,6 +37,7 @@ internal fun NavigationRow(
             if (onPrevious != null) {
                 Button(
                     onClick = onPrevious,
+                    large = true,
                     content = { Text(resolvedPrevious) }
                 )
             }
