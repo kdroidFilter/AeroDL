@@ -1,12 +1,10 @@
 package io.github.kdroidfilter.ytdlpgui.features.download.single
 
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.IconButton
@@ -27,24 +25,24 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.AccentButton
-import io.github.composefluent.component.Button
-import io.github.composefluent.component.CardExpanderItem
-import io.github.composefluent.component.FlyoutPlacement
-import io.github.composefluent.component.Icon
-import io.github.composefluent.component.ListItemDefaults
-import io.github.composefluent.component.ListItemSelectionType
-import io.github.composefluent.component.MenuFlyoutContainer
-import io.github.composefluent.component.MenuFlyoutItem
-import io.github.composefluent.component.MenuFlyoutSeparator
-import io.github.composefluent.component.ProgressRing
-import io.github.composefluent.component.SegmentedButton
-import io.github.composefluent.component.SegmentedControl
-import io.github.composefluent.component.SegmentedItemPosition
-import io.github.composefluent.component.Text
-import io.github.composefluent.icons.Icons
-import io.github.composefluent.icons.regular.*
+import io.github.kdroidfilter.ytdlpgui.ui.NativeTheme
+import io.github.kdroidfilter.ytdlpgui.ui.component.AccentButton
+import io.github.kdroidfilter.ytdlpgui.ui.component.Button
+import io.github.kdroidfilter.ytdlpgui.ui.component.CardExpanderItem
+import io.github.kdroidfilter.ytdlpgui.ui.component.FlyoutPlacement
+import io.github.kdroidfilter.ytdlpgui.ui.component.Icon
+import io.github.kdroidfilter.ytdlpgui.ui.component.ListItemSelectionType
+import io.github.kdroidfilter.ytdlpgui.ui.component.MenuFlyoutContainer
+import io.github.kdroidfilter.ytdlpgui.ui.component.MenuFlyoutItem
+import io.github.kdroidfilter.ytdlpgui.ui.component.MenuFlyoutSeparator
+import io.github.kdroidfilter.ytdlpgui.ui.component.NativeVerticalScrollbar
+import io.github.kdroidfilter.ytdlpgui.ui.component.ProgressRing
+import io.github.kdroidfilter.ytdlpgui.ui.component.rememberNativeScrollbarAdapter
+import io.github.kdroidfilter.ytdlpgui.ui.component.SegmentedButton
+import io.github.kdroidfilter.ytdlpgui.ui.component.SegmentedControl
+import io.github.kdroidfilter.ytdlpgui.ui.component.SegmentedItemPosition
+import io.github.kdroidfilter.ytdlpgui.ui.component.Text
+import io.github.kdroidfilter.ytdlpgui.ui.icons.Icons
 import io.github.kdroidfilter.composemediaplayer.VideoPlayerState
 import io.github.kdroidfilter.composemediaplayer.VideoPlayerSurface
 import io.github.kdroidfilter.composemediaplayer.rememberVideoPlayerState
@@ -56,7 +54,7 @@ import androidx.compose.runtime.collectAsState
 import ytdlpgui.composeapp.generated.resources.*
 import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
 import io.github.kdroidfilter.ytdlpgui.core.design.components.EllipsizedTextWithTooltip
-import io.github.kdroidfilter.ytdlpgui.core.design.components.Switcher
+import io.github.kdroidfilter.ytdlpgui.ui.component.Switcher
 import io.github.kdroidfilter.ytdlpgui.core.design.components.TrimSlider
 import java.time.Duration
 import java.util.*
@@ -161,15 +159,15 @@ private fun ErrorBox(message: String) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
-            imageVector = Icons.Regular.ErrorCircle,
+            icon = Icons.Regular.ErrorCircle,
             contentDescription = stringResource(Res.string.cd_error_icon),
             modifier = Modifier.size(144.dp),
-            tint = FluentTheme.colors.system.critical
+            tint = NativeTheme.colors.system.critical
         )
         Spacer(Modifier.size(16.dp))
         Text(
             text = stringResource(Res.string.error_fetch_video_info, message),
-            color = FluentTheme.colors.system.critical,
+            color = NativeTheme.colors.system.critical,
             textAlign = TextAlign.Center
         )
     }
@@ -286,7 +284,6 @@ private fun SingleVideoDownloadView(
                                             isFlyoutVisible = false
                                         },
                                         text = { Text(stringResource(Res.string.single_no_subtitle)) },
-                                        colors = ListItemDefaults.defaultListItemColors(),
                                         )
                                     MenuFlyoutSeparator()
                                     val autoLabel = stringResource(Res.string.single_auto_generated)
@@ -304,7 +301,6 @@ private fun SingleVideoDownloadView(
                                                 onToggleSubtitle(lang)
                                             },
                                             selectionType = ListItemSelectionType.Check,
-                                            colors = ListItemDefaults.defaultListItemColors(),
                                             text = { Text(fullDisplayName) }
                                         )
                                     }
@@ -505,8 +501,8 @@ private fun SingleVideoDownloadView(
             }
         }
 
-        VerticalScrollbar(
-            adapter = rememberScrollbarAdapter(scrollState),
+        NativeVerticalScrollbar(
+            adapter = rememberNativeScrollbarAdapter(scrollState),
             modifier = Modifier.fillMaxHeight().padding(top = 2.dp, start = 8.dp)
         )
     }
@@ -531,7 +527,7 @@ private fun FormatSelector(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = Icons.Regular.FilmstripPlay,
+                icon = Icons.Regular.FilmstripPlay,
                 contentDescription = stringResource(Res.string.cd_filmstrip_play)
             )
             Text(stringResource(Res.string.single_choose_format))
@@ -581,7 +577,7 @@ private fun VideoDescription(videoInfo: VideoInfo?) {
         Column {
             Row(
                 modifier = Modifier
-                    .clip(FluentTheme.shapes.control)
+                    .clip(NativeTheme.shapes.control)
                     .clickable(
                         enabled = hasOverflow,
                         indication = null,
@@ -595,10 +591,10 @@ private fun VideoDescription(videoInfo: VideoInfo?) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Regular.Textbox,
+                        icon = Icons.Regular.Textbox,
                         contentDescription = stringResource(Res.string.cd_textbox)
                     )
-                    Text(stringResource(Res.string.single_description), style = FluentTheme.typography.body)
+                    Text(stringResource(Res.string.single_description), style = NativeTheme.typography.body)
                 }
                 if (hasOverflow) {
                     Icon(
@@ -612,7 +608,7 @@ private fun VideoDescription(videoInfo: VideoInfo?) {
             Box(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
                 Text(
                     text = videoInfo.description.orEmpty(),
-                    style = FluentTheme.typography.body,
+                    style = NativeTheme.typography.body,
                     maxLines = if (expanded) Int.MAX_VALUE else 3,
                     overflow = TextOverflow.Ellipsis,
                     onTextLayout = { textLayoutResult ->
@@ -697,7 +693,7 @@ private fun VideoPlayer(
                 )
                 if (videoPlayerState != null) {
                     Icon(
-                        imageVector = Icons.Default.Play,
+                        icon = Icons.Default.Play,
                         contentDescription = null,
                         modifier = Modifier.size(48.dp).clickable(
                             onClick = {
@@ -736,7 +732,7 @@ private fun VideoPlayer(
                             if (!videoPlayerState.isPlaying) {
                                 IconButton({ videoPlayerState.play() }) {
                                     Icon(
-                                        imageVector = Icons.Default.Play,
+                                        icon = Icons.Default.Play,
                                         contentDescription = null,
                                         modifier = Modifier.size(48.dp),
                                         tint = Color.White
@@ -745,7 +741,7 @@ private fun VideoPlayer(
                             } else {
                                 IconButton({ videoPlayerState.pause() }) {
                                     Icon(
-                                        imageVector = Icons.Default.Pause,
+                                        icon = Icons.Default.Pause,
                                         contentDescription = null,
                                         modifier = Modifier.size(48.dp),
                                         tint = Color.White

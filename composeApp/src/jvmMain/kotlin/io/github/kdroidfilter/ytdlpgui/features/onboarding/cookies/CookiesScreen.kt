@@ -15,9 +15,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.github.composefluent.component.Icon
-import io.github.composefluent.icons.Icons
-import io.github.composefluent.icons.filled.Cookies
+import io.github.kdroidfilter.ytdlpgui.ui.component.Icon
+import io.github.kdroidfilter.ytdlpgui.ui.icons.Icons
 import dev.zacsweers.metrox.viewmodel.metroViewModel
 import io.github.kdroidfilter.ytdlpgui.core.design.components.BrowserSelector
 import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
@@ -107,7 +106,8 @@ fun CookiesView(
                 currentBrowser = state.cookiesFromBrowser,
                 onBrowserSelected = { browser ->
                     onEvent(OnboardingEvents.OnSetCookiesFromBrowser(browser))
-                }
+                },
+                modifier = Modifier.fillMaxWidth(),
             )
         }
         if (initState != null) {

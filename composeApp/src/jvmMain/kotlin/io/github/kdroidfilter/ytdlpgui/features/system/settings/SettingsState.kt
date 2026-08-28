@@ -18,6 +18,7 @@ data class SettingsState(
     val concurrentFragments: Int = 1,
     val proxy: String = "",
     val validateBulkUrls: Boolean = false,
+    val disableTrayAutoHide: Boolean = false,
 ) {
     companion object {
         val defaultState = SettingsState()

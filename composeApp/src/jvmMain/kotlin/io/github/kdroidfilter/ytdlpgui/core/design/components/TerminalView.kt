@@ -1,4 +1,3 @@
-@file:OptIn(ExperimentalFluentApi::class)
 
 package io.github.kdroidfilter.ytdlpgui.core.design.components
 
@@ -17,13 +16,11 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.composefluent.ExperimentalFluentApi
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.SubtleButton
-import io.github.composefluent.component.Text
-import io.github.composefluent.component.TooltipBox
-import io.github.composefluent.icons.Icons
-import io.github.composefluent.icons.regular.Copy
+import io.github.kdroidfilter.ytdlpgui.ui.NativeTheme
+import io.github.kdroidfilter.ytdlpgui.ui.component.SubtleButton
+import io.github.kdroidfilter.ytdlpgui.ui.component.Text
+import io.github.kdroidfilter.ytdlpgui.ui.component.TooltipBox
+import io.github.kdroidfilter.ytdlpgui.ui.icons.Icons
 import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.copy_error
@@ -65,7 +62,7 @@ fun TerminalView(
             ) {
                 Text(
                     headerText,
-                    style = FluentTheme.typography.caption,
+                    style = NativeTheme.typography.caption,
                     color = Color(0xFFB0B0B0),
                     fontSize = 11.sp
                 )
@@ -78,7 +75,7 @@ fun TerminalView(
                         onClick = { clipboardManager.setText(buildAnnotatedString { append(text) }) },
                         modifier = Modifier.size(24.dp)
                     ) {
-                        io.github.composefluent.component.Icon(
+                        io.github.kdroidfilter.ytdlpgui.ui.component.Icon(
                             Icons.Default.Copy,
                             stringResource(Res.string.copy_error),
                             tint = Color(0xFFB0B0B0),
@@ -98,7 +95,7 @@ fun TerminalView(
             ) {
                 Text(
                     text,
-                    style = FluentTheme.typography.caption.copy(
+                    style = NativeTheme.typography.caption.copy(
                         fontFamily = FontFamily.Monospace,
                         lineHeight = 18.sp
                     ),

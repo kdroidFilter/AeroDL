@@ -1,6 +1,5 @@
 package io.github.kdroidfilter.ytdlpgui.features.system.about
 
-import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
@@ -23,9 +21,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.HyperlinkButton
-import io.github.composefluent.component.Text
+import io.github.kdroidfilter.ytdlpgui.ui.NativeTheme
+import io.github.kdroidfilter.ytdlpgui.ui.component.HyperlinkButton
+import io.github.kdroidfilter.ytdlpgui.ui.component.NativeVerticalScrollbar
+import io.github.kdroidfilter.ytdlpgui.ui.component.Text
+import io.github.kdroidfilter.ytdlpgui.ui.component.rememberNativeScrollbarAdapter
 import dev.zacsweers.metrox.viewmodel.metroViewModel
 import io.github.kdroidfilter.ytdlpgui.core.platform.browser.openUrlInBrowser
 import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
@@ -86,22 +86,22 @@ fun AboutView(
             ) {
                 Text(
                     text = stringResource(Res.string.about_credits_title),
-                    style = FluentTheme.typography.subtitle,
+                    style = NativeTheme.typography.subtitle,
                     textAlign = TextAlign.Center
                 )
                 Text(
                     text = stringResource(Res.string.credits_made_by),
-                    style = FluentTheme.typography.body,
+                    style = NativeTheme.typography.body,
                     textAlign = TextAlign.Center
                 )
                 Text(
                     text = stringResource(Res.string.credits_thank_jetbrains),
-                    style = FluentTheme.typography.body,
+                    style = NativeTheme.typography.body,
                     textAlign = TextAlign.Center
                 )
                 Text(
                     text = stringResource(Res.string.credits_thank_oss),
-                    style = FluentTheme.typography.body,
+                    style = NativeTheme.typography.body,
                     textAlign = TextAlign.Center
                 )
                 HyperlinkButton(
@@ -122,18 +122,18 @@ fun AboutView(
                 Divider()
                 Text(
                     text = stringResource(Res.string.about_versions_title),
-                    style = FluentTheme.typography.bodyStrong,
+                    style = NativeTheme.typography.bodyStrong,
                     textAlign = TextAlign.Center
                 )
-                Text(text = appVersion, style = FluentTheme.typography.body, textAlign = TextAlign.Center)
-                Text(text = ytdlpVersion, style = FluentTheme.typography.body, textAlign = TextAlign.Center)
-                Text(text = ffmpegVersion, style = FluentTheme.typography.body, textAlign = TextAlign.Center)
-                Text(text = denoVersion, style = FluentTheme.typography.body, textAlign = TextAlign.Center)
+                Text(text = appVersion, style = NativeTheme.typography.body, textAlign = TextAlign.Center)
+                Text(text = ytdlpVersion, style = NativeTheme.typography.body, textAlign = TextAlign.Center)
+                Text(text = ffmpegVersion, style = NativeTheme.typography.body, textAlign = TextAlign.Center)
+                Text(text = denoVersion, style = NativeTheme.typography.body, textAlign = TextAlign.Center)
                 Spacer(Modifier.height(8.dp))
             }
         }
-        VerticalScrollbar(
-            adapter = rememberScrollbarAdapter(scrollState),
+        NativeVerticalScrollbar(
+            adapter = rememberNativeScrollbarAdapter(scrollState),
             modifier = Modifier
                 .fillMaxHeight()
                 .padding(top = 2.dp, start = 8.dp)

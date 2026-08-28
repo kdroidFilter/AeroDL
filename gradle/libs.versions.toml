@@ -20,13 +20,15 @@ serialization = "1.11.0"
 cardiologist = "0.8.0"
 
 # UI Libraries
-fluent = "1.1.1"
+fluent = "1.1.2"
+yaru = "1.0.3"
+macosui = "1.0.4"
 composemediaplayer = "0.11.4"
-composenativetray = "2.1.1"
+composenativetray = "2.1.2"
 
 # Network & Tools
 ktor = "3.5.2"
-nucleus = "2.5.2"
+nucleus = "2.5.4"
 metro = "1.4.2"
 sqliteJdbc = "3.53.4.0"
 
@@ -61,6 +63,9 @@ kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-s
 # UI Libraries
 compose-fluent = { module = "dev.nucleusframework.composefluent:fluent", version.ref = "fluent" }
 compose-fluent-icons-extended = { module = "dev.nucleusframework.composefluent:fluent-icons-extended", version.ref = "fluent" }
+yaru = { module = "dev.nucleusframework.yarucompose:yaru", version.ref = "yaru" }
+compose-macos-ui = { module = "dev.nucleusframework:compose-macos-ui", version.ref = "macosui" }
+compose-macos-ui-icons-extended = { module = "dev.nucleusframework:compose-macos-ui-icons-extended", version.ref = "macosui" }
 composemediaplayer = { module = "io.github.kdroidfilter:composemediaplayer", version.ref = "composemediaplayer" }
 composenativetray = { module = "dev.nucleusframework:composenativetray", version.ref = "composenativetray" }
 composenativetray-app = { module = "dev.nucleusframework:composenativetray-app", version.ref = "composenativetray" }
@@ -70,6 +75,7 @@ nucleus-application = { module = "dev.nucleusframework:nucleus.nucleus-applicati
 nucleus-core-runtime = { module = "dev.nucleusframework:nucleus.core-runtime", version.ref = "nucleus" }
 nucleus-aot-runtime = { module = "dev.nucleusframework:nucleus.aot-runtime", version.ref = "nucleus" }
 nucleus-darkmode-detector = { module = "dev.nucleusframework:nucleus.darkmode-detector", version.ref = "nucleus" }
+nucleus-system-color = { module = "dev.nucleusframework:nucleus.system-color", version.ref = "nucleus" }
 nucleus-updater-runtime = { module = "dev.nucleusframework:nucleus.updater-runtime", version.ref = "nucleus" }
 nucleus-native-ssl = { module = "dev.nucleusframework:nucleus.native-ssl", version.ref = "nucleus" }
 nucleus-native-http = { module = "dev.nucleusframework:nucleus.native-http", version.ref = "nucleus" }

@@ -1,6 +1,7 @@
 package io.github.kdroidfilter.ytdlpgui.di
 
 import dev.nucleusframework.composenativetray.trayapp.TrayAppState
+import dev.nucleusframework.composenativetray.trayapp.TrayWindowDismissMode
 
 /**
  * Global holder to ensure a single TrayAppState instance is shared across the app.
@@ -26,4 +27,11 @@ object TrayAppStateHolder {
             return created
         }
     }
+}
+
+fun TrayAppState.applyDefaultDismissMode(disableAutoHide: Boolean) {
+    setDismissMode(
+        if (disableAutoHide) TrayWindowDismissMode.MANUAL
+        else TrayWindowDismissMode.AUTO
+    )
 }

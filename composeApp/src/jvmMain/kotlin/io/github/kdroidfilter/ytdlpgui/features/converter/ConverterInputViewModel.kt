@@ -9,7 +9,9 @@ import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.binding
 import dev.zacsweers.metrox.viewmodel.ViewModelKey
 import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
+import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
 import io.github.kdroidfilter.ytdlpgui.di.AppScope
+import io.github.kdroidfilter.ytdlpgui.di.applyDefaultDismissMode
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.openFilePicker
@@ -53,7 +55,8 @@ sealed class ConverterInputEvents {
 @ViewModelKey
 @Inject
 class ConverterInputViewModel(
-    private val trayAppState: TrayAppState
+    private val trayAppState: TrayAppState,
+    private val settingsRepository: SettingsRepository,
 ) : MVIViewModel<ConverterInputState, ConverterInputEvents>() {
 
     override fun initialState(): ConverterInputState = ConverterInputState()
@@ -70,7 +73,7 @@ class ConverterInputViewModel(
             ConverterInputEvents.OnNavigationConsumed -> update { copy(navigationState = ConverterInputNavigationState.None) }
             ConverterInputEvents.ClearError -> update { copy(errorMessage = null) }
             ConverterInputEvents.ScreenEntered -> trayAppState.setDismissMode(TrayWindowDismissMode.MANUAL)
-            ConverterInputEvents.ScreenExited -> trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
+            ConverterInputEvents.ScreenExited -> trayAppState.applyDefaultDismissMode(settingsRepository.disableTrayAutoHide.value)
         }
     }
 

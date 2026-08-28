@@ -19,11 +19,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.AccentButton
-import io.github.composefluent.component.Icon
-import io.github.composefluent.component.ProgressRing
-import io.github.composefluent.component.Text
+import dev.nucleusframework.core.runtime.Platform
+import io.github.kdroidfilter.ytdlpgui.ui.NativeTheme
+import io.github.kdroidfilter.ytdlpgui.ui.component.AccentButton
+import io.github.kdroidfilter.ytdlpgui.ui.component.Icon
+import io.github.kdroidfilter.ytdlpgui.ui.component.ProgressRing
+import io.github.kdroidfilter.ytdlpgui.ui.component.Text
 import dev.zacsweers.metrox.viewmodel.metroViewModel
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnly
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
@@ -100,7 +101,8 @@ fun InitView(
                     state.checkingDeno || state.downloadingDeno
 
             if (isInProgress) {
-                ProgressRing(modifier = Modifier.size(48.dp))
+                val ringSize = if (Platform.Current == Platform.MacOS) 22.dp else 48.dp
+                ProgressRing(modifier = Modifier.size(ringSize))
                 Spacer(Modifier.height(16.dp))
             }
 
@@ -128,7 +130,7 @@ fun InitView(
                 Text(text = stringResource(Res.string.error_occurred))
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    text = state.errorMessage, color = FluentTheme.colors.system.critical
+                    text = state.errorMessage, color = NativeTheme.colors.system.critical
                 )
             }
             Spacer(Modifier.height(16.dp))

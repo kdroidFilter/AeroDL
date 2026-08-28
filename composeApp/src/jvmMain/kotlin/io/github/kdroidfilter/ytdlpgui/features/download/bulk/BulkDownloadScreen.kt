@@ -1,6 +1,5 @@
 package io.github.kdroidfilter.ytdlpgui.features.download.bulk
 
-import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -8,7 +7,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Divider
 import androidx.compose.runtime.*
@@ -25,10 +23,9 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import coil3.ImageLoader
 import coil3.compose.AsyncImage
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.*
-import io.github.composefluent.icons.Icons
-import io.github.composefluent.icons.regular.*
+import io.github.kdroidfilter.ytdlpgui.ui.NativeTheme
+import io.github.kdroidfilter.ytdlpgui.ui.component.*
+import io.github.kdroidfilter.ytdlpgui.ui.icons.Icons
 import dev.nucleusframework.core.runtime.Platform
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.platform.browser.openUrlInBrowser
@@ -103,15 +100,15 @@ private fun ErrorBox() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
-            imageVector = Icons.Regular.ErrorCircle,
+            icon = Icons.Regular.ErrorCircle,
             contentDescription = stringResource(Res.string.cd_error_icon),
             modifier = Modifier.size(144.dp),
-            tint = FluentTheme.colors.system.critical
+            tint = NativeTheme.colors.system.critical
         )
         Spacer(Modifier.size(16.dp))
         Text(
             text = stringResource(Res.string.bulk_load_failed),
-            color = FluentTheme.colors.system.critical,
+            color = NativeTheme.colors.system.critical,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 24.dp)
         )
@@ -126,15 +123,15 @@ private fun EmptyPlaylist() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
-            imageVector = Icons.Regular.VideoClipMultiple,
+            icon = Icons.Regular.VideoClipMultiple,
             contentDescription = null,
             modifier = Modifier.size(96.dp),
-            tint = FluentTheme.colors.text.text.secondary
+            tint = NativeTheme.colors.text.text.secondary
         )
         Spacer(Modifier.height(16.dp))
         Text(
             text = stringResource(Res.string.bulk_no_videos),
-            color = FluentTheme.colors.text.text.secondary,
+            color = NativeTheme.colors.text.text.secondary,
             textAlign = TextAlign.Center
         )
     }
@@ -171,15 +168,15 @@ private fun PlaylistContent(
                         onToggle = { onEvent(BulkDownloadEvents.ToggleVideoSelection(videoItem.videoInfo.id)) }
                     )
                     Divider(
-                        color = FluentTheme.colors.control.secondary,
+                        color = NativeTheme.colors.control.secondary,
                         thickness = 1.dp,
                         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
                     )
                 }
             }
 
-            VerticalScrollbar(
-                adapter = rememberScrollbarAdapter(videoListState),
+            NativeVerticalScrollbar(
+                adapter = rememberNativeScrollbarAdapter(videoListState),
                 modifier = Modifier.fillMaxHeight().padding(top = 2.dp, start = 8.dp)
             )
         }
@@ -203,8 +200,8 @@ private fun PlaylistContent(
                 Spacer(Modifier.height(8.dp))
             }
 
-            VerticalScrollbar(
-                adapter = rememberScrollbarAdapter(optionsScrollState),
+            NativeVerticalScrollbar(
+                adapter = rememberNativeScrollbarAdapter(optionsScrollState),
                 modifier = Modifier.fillMaxHeight().padding(start = 8.dp)
             )
         }
@@ -227,7 +224,7 @@ private fun PlaylistHeader(
         ) {
             Text(
                 text = stringResource(Res.string.bulk_videos_count, state.totalCount),
-                style = FluentTheme.typography.caption
+                style = NativeTheme.typography.caption
             )
 
             if (state.isCheckingAvailability) {
@@ -236,15 +233,15 @@ private fun PlaylistHeader(
                     Spacer(Modifier.width(4.dp))
                     Text(
                         text = "${state.checkedCount}/${state.totalCount}",
-                        style = FluentTheme.typography.caption
+                        style = NativeTheme.typography.caption
                     )
                 }
             }
 
             Text(
                 text = stringResource(Res.string.bulk_selected_count, state.selectedCount),
-                style = FluentTheme.typography.caption,
-                color = FluentTheme.colors.fillAccent.default,
+                style = NativeTheme.typography.caption,
+                color = NativeTheme.colors.fillAccent.default,
                 fontWeight = FontWeight.Medium
             )
         }
@@ -320,7 +317,7 @@ private fun VideoRow(
                 item.videoInfo.uploader?.let { uploader ->
                     Text(
                         text = uploader,
-                        style = FluentTheme.typography.caption,
+                        style = NativeTheme.typography.caption,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -328,14 +325,14 @@ private fun VideoRow(
                 item.videoInfo.duration?.let { duration ->
                     Text(
                         text = formatDuration(duration),
-                        style = FluentTheme.typography.caption
+                        style = NativeTheme.typography.caption
                     )
                 }
                 if (!item.isAvailable) {
                     Text(
                         text = stringResource(Res.string.bulk_video_unavailable),
-                        style = FluentTheme.typography.caption,
-                        color = FluentTheme.colors.system.critical,
+                        style = NativeTheme.typography.caption,
+                        color = NativeTheme.colors.system.critical,
                         textDecoration = TextDecoration.Underline,
                         modifier = Modifier.clickable { openUrlInBrowser(item.videoInfo.url) }
                     )
@@ -371,7 +368,7 @@ private fun VideoThumbnail(item: BulkVideoItem, imageLoader: ImageLoader) {
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Regular.ErrorCircle,
+                        icon = Icons.Regular.ErrorCircle,
                         contentDescription = null,
                         tint = Color.White,
                         modifier = Modifier.size(24.dp)
@@ -524,15 +521,15 @@ private fun NeedsBrowserCookiesBox(onEvent: (BulkDownloadEvents) -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
-            imageVector = Icons.Regular.ErrorCircle,
+            icon = Icons.Regular.ErrorCircle,
             contentDescription = stringResource(Res.string.cd_error_icon),
             modifier = Modifier.size(96.dp),
-            tint = FluentTheme.colors.system.caution
+            tint = NativeTheme.colors.system.caution
         )
         Spacer(Modifier.height(16.dp))
         Text(
             text = stringResource(Res.string.bulk_fallback_enable_cookies_title),
-            style = FluentTheme.typography.subtitle,
+            style = NativeTheme.typography.subtitle,
             textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(8.dp))
@@ -541,7 +538,7 @@ private fun NeedsBrowserCookiesBox(onEvent: (BulkDownloadEvents) -> Unit) {
                 if (isWindows) Res.string.bulk_fallback_enable_cookies_firefox
                 else Res.string.bulk_fallback_enable_cookies_chrome_or_firefox
             ),
-            color = FluentTheme.colors.text.text.secondary,
+            color = NativeTheme.colors.text.text.secondary,
             textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(16.dp))
@@ -562,8 +559,8 @@ private fun ExtractionProgress(fallbackState: FallbackState) {
                 Spacer(Modifier.height(8.dp))
                 Text(
                     text = "(${stringResource(Res.string.bulk_analyzing_videos, fallbackState.videoCount)})",
-                    style = FluentTheme.typography.caption,
-                    color = FluentTheme.colors.text.text.secondary
+                    style = NativeTheme.typography.caption,
+                    color = NativeTheme.colors.text.text.secondary
                 )
             }
         }

@@ -20,6 +20,7 @@
     <string name="logo_content_desc">Logo</string>
     <string name="placeholder_link_example">https://youtu.be/XXXXXXXXX</string>
     <string name="paste_video_link_header">Paste a Video link</string>
+    <string name="drop_video_link_header">Drop a video link</string>
     <string name="paste_link_content_desc">Paste Link</string>
     <string name="loading">Loading…</string>
     <string name="next">Next</string>
@@ -228,6 +229,10 @@
     <!-- Settings: Auto-launch -->
     <string name="settings_auto_launch_title">Launch at startup</string>
     <string name="settings_auto_launch_caption">Recommended when you use AeroDL often: it launches with your system so you never have to think about starting it. Pair it with clipboard monitoring to begin downloads as soon as you copy a link.</string>
+
+    <!-- Settings: Keep window open -->
+    <string name="settings_disable_tray_auto_hide_title">Keep window open</string>
+    <string name="settings_disable_tray_auto_hide_caption">When enabled, the window stays visible until you hide it from the tray. Clicking outside will not dismiss it.</string>
 
     <!-- Tray / Menu -->
     <string name="menu_show_window">Show window</string>

@@ -25,6 +25,7 @@ import dev.zacsweers.metro.binding
 import dev.zacsweers.metrox.viewmodel.ViewModelKey
 import io.github.kdroidfilter.logging.errorln
 import io.github.kdroidfilter.ytdlpgui.di.AppScope
+import io.github.kdroidfilter.ytdlpgui.di.applyDefaultDismissMode
 import io.github.vinceglb.filekit.path
 
 @ContributesIntoMap(AppScope::class, binding = binding<ViewModel>())
@@ -54,6 +55,7 @@ class SettingsViewModel(
     val concurrentFragments: StateFlow<Int> = settingsRepository.concurrentFragments
     val proxy: StateFlow<String> = settingsRepository.proxy
     val validateBulkUrls: StateFlow<Boolean> = settingsRepository.validateBulkUrls
+    val disableTrayAutoHide: StateFlow<Boolean> = settingsRepository.disableTrayAutoHide
 
     // Note: This ViewModel uses a combined state from multiple sources, so we override uiState
     override val uiState = combine(
@@ -70,6 +72,7 @@ class SettingsViewModel(
         concurrentFragments,
         proxy,
         validateBulkUrls,
+        disableTrayAutoHide,
     ) { values: Array<Any?> ->
         val loading = values[0] as Boolean
         val noCheck = values[1] as Boolean
@@ -84,6 +87,7 @@ class SettingsViewModel(
         val concurrent = values[10] as Int
         val proxyUrl = values[11] as String
         val validateBulk = values[12] as Boolean
+        val disableAutoHide = values[13] as Boolean
         SettingsState(
             isLoading = loading,
             noCheckCertificate = noCheck,
@@ -98,6 +102,7 @@ class SettingsViewModel(
             concurrentFragments = concurrent,
             proxy = proxyUrl,
             validateBulkUrls = validateBulk,
+            disableTrayAutoHide = disableAutoHide,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -153,6 +158,10 @@ class SettingsViewModel(
             is SettingsEvents.SetValidateBulkUrls -> {
                 settingsRepository.setValidateBulkUrls(event.enabled)
             }
+            is SettingsEvents.SetDisableTrayAutoHide -> {
+                settingsRepository.setDisableTrayAutoHide(event.enabled)
+                trayAppState.applyDefaultDismissMode(event.enabled)
+            }
             is SettingsEvents.PickDownloadDir -> {
                 viewModelScope.launch {
                     trayAppState.setDismissMode(TrayWindowDismissMode.MANUAL)
@@ -161,7 +170,7 @@ class SettingsViewModel(
                         dialogSettings = FileKitDialogSettings(title = event.title)
                     )
                     dir?.let { handleEvent(SettingsEvents.SetDownloadDir(it.file.absolutePath)) }
-                   trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
+                    trayAppState.applyDefaultDismissMode(settingsRepository.disableTrayAutoHide.value)
                 }
             }
             SettingsEvents.ResetToDefaults -> {

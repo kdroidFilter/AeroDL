@@ -1,12 +1,10 @@
 package io.github.kdroidfilter.ytdlpgui.features.converter
 
-import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,11 +15,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.*
-import io.github.composefluent.icons.Icons
-import io.github.composefluent.icons.regular.MusicNote1
-import io.github.composefluent.icons.regular.Video
+import io.github.kdroidfilter.ytdlpgui.ui.NativeTheme
+import io.github.kdroidfilter.ytdlpgui.ui.component.*
+import io.github.kdroidfilter.ytdlpgui.ui.icons.Icons
 import io.github.kdroidfilter.ytdlpgui.core.design.components.TrimSlider
 import io.github.kdroidfilter.ytdlpgui.core.design.components.formatDuration
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
@@ -100,7 +96,7 @@ private fun LoadingView() {
             Spacer(Modifier.height(16.dp))
             Text(
                 text = stringResource(Res.string.converter_analyzing),
-                style = FluentTheme.typography.body
+                style = NativeTheme.typography.body
             )
         }
     }
@@ -114,7 +110,7 @@ private fun ErrorView(errorMessage: String) {
     ) {
         Text(
             text = errorMessage,
-            color = FluentTheme.colors.system.critical,
+            color = NativeTheme.colors.system.critical,
             textAlign = TextAlign.Center
         )
     }
@@ -188,7 +184,7 @@ private fun ConversionOptionsContent(
                     item {
                         Text(
                             text = state.errorMessage,
-                            color = FluentTheme.colors.system.critical,
+                            color = NativeTheme.colors.system.critical,
                             textAlign = TextAlign.Center,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -196,8 +192,8 @@ private fun ConversionOptionsContent(
                 }
             }
 
-            VerticalScrollbar(
-                adapter = rememberScrollbarAdapter(listState),
+            NativeVerticalScrollbar(
+                adapter = rememberNativeScrollbarAdapter(listState),
                 modifier = Modifier.fillMaxHeight().padding(start = 8.dp)
             )
         }
@@ -223,15 +219,15 @@ private fun FileInfoCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
-            .background(FluentTheme.colors.background.layer.default)
-            .border(1.dp, FluentTheme.colors.stroke.control.default, RoundedCornerShape(8.dp))
+            .background(NativeTheme.colors.background.layer.default)
+            .border(1.dp, NativeTheme.colors.stroke.control.default, RoundedCornerShape(8.dp))
             .padding(16.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = if (state.mediaType == MediaType.VIDEO) Icons.Regular.Video else Icons.Regular.MusicNote1,
+                icon = if (state.mediaType == MediaType.VIDEO) Icons.Regular.Video else Icons.Regular.MusicNote1,
                 contentDescription = null,
                 modifier = Modifier.size(32.dp)
             )
@@ -239,7 +235,7 @@ private fun FileInfoCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = state.selectedFile?.name ?: "",
-                    style = FluentTheme.typography.bodyStrong,
+                    style = NativeTheme.typography.bodyStrong,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -260,8 +256,8 @@ private fun FileInfoCard(
                 }
                 Text(
                     text = infoText,
-                    style = FluentTheme.typography.caption,
-                    color = FluentTheme.colors.text.text.secondary
+                    style = NativeTheme.typography.caption,
+                    color = NativeTheme.colors.text.text.secondary
                 )
             }
         }
@@ -276,7 +272,7 @@ private fun FormatSelector(
     Column {
         Text(
             text = stringResource(Res.string.converter_output_format),
-            style = FluentTheme.typography.bodyStrong,
+            style = NativeTheme.typography.bodyStrong,
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.height(8.dp))
@@ -311,7 +307,7 @@ private fun VideoQualitySelector(
     Column {
         Text(
             text = stringResource(Res.string.converter_video_quality),
-            style = FluentTheme.typography.bodyStrong,
+            style = NativeTheme.typography.bodyStrong,
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.height(8.dp))
@@ -343,7 +339,7 @@ private fun AudioQualitySelector(
     Column {
         Text(
             text = stringResource(Res.string.converter_audio_quality),
-            style = FluentTheme.typography.bodyStrong,
+            style = NativeTheme.typography.bodyStrong,
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.height(8.dp))

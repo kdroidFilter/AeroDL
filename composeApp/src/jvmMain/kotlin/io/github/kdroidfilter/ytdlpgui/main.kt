@@ -21,6 +21,7 @@ import dev.nucleusframework.application.aotTraining
 import dev.nucleusframework.application.nucleusApplication
 import dev.nucleusframework.autolaunch.AutoLaunch
 import dev.nucleusframework.composenativetray.trayapp.TrayApp
+import dev.nucleusframework.composenativetray.trayapp.TrayWindowDismissMode
 import dev.nucleusframework.composenativetray.trayapp.rememberTrayAppState
 import dev.nucleusframework.composenativetray.utils.allowComposeNativeTrayLogging
 import dev.nucleusframework.composenativetray.utils.isMenuBarInDarkMode
@@ -32,11 +33,8 @@ import dev.nucleusframework.energymanager.EnergyManager
 import dev.zacsweers.metro.createGraph
 import dev.zacsweers.metrox.viewmodel.LocalMetroViewModelFactory
 import dev.zacsweers.metrox.viewmodel.metroViewModel
-import io.github.composefluent.ExperimentalFluentApi
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.background.Mica
-import io.github.composefluent.darkColors
-import io.github.composefluent.lightColors
+import io.github.kdroidfilter.ytdlpgui.ui.NativeTheme
+import io.github.kdroidfilter.ytdlpgui.ui.component.NativeBackground
 import io.github.kdroidfilter.logging.LoggerConfig
 import io.github.kdroidfilter.logging.errorln
 import io.github.kdroidfilter.logging.infoln
@@ -45,6 +43,7 @@ import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnlyRtl
 import io.github.kdroidfilter.ytdlpgui.di.AppGraph
 import io.github.kdroidfilter.ytdlpgui.di.LocalAppGraph
 import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
+import io.github.kdroidfilter.ytdlpgui.core.config.SettingsKeys
 import io.github.kdroidfilter.ytdlpgui.di.TrayAppStateHolder
 import io.github.kdroidfilter.ytdlpgui.di.rememberWindowViewModelStoreOwner
 import io.github.kdroidfilter.ytdlpgui.features.system.settings.SettingsEvents
@@ -60,7 +59,7 @@ import ytdlpgui.composeapp.generated.resources.*
 import java.io.File
 import kotlin.time.Duration.Companion.seconds
 
-@OptIn(ExperimentalFluentApi::class)
+
 fun main(args: Array<String>) {
     initializeSentry()
 
@@ -105,11 +104,35 @@ fun main(args: Array<String>) {
             LocalViewModelStoreOwner provides windowViewModelOwner,
             LocalMetroViewModelFactory provides appGraph.metroViewModelFactory,
         ) {
+            val startedAtLogin = remember { AutoLaunch.wasStartedAtLogin(args) }
             val trayAppState = rememberTrayAppState(
                 initialWindowSize = DpSize(350.dp, 500.dp),
-                initiallyVisible = !AutoLaunch.wasStartedAtLogin(emptyArray())
+                initiallyVisible = !startedAtLogin,
+                initialDismissMode = if (appGraph.settings.getBoolean(SettingsKeys.DISABLE_TRAY_AUTO_HIDE, false)) {
+                    TrayWindowDismissMode.MANUAL
+                } else {
+                    TrayWindowDismissMode.AUTO
+                },
             )
             TrayAppStateHolder.set(trayAppState)
+
+            if (startedAtLogin) {
+                infoln { "Launched from autostart: starting in tray" }
+            }
+
+            // macOS delivers the login AppleEvent after NSApplication.run();
+            // wasStartedAtLogin caches positives, so poll once the Compose loop is up.
+            LaunchedEffect(trayAppState) {
+                if (startedAtLogin || Platform.Current != Platform.MacOS) return@LaunchedEffect
+                repeat(20) {
+                    delay(100)
+                    if (AutoLaunch.wasStartedAtLogin(args)) {
+                        infoln { "Launched from autostart: hiding window" }
+                        trayAppState.hide()
+                        return@LaunchedEffect
+                    }
+                }
+            }
 
             LaunchedEffect(trayAppState) {
                 trayAppState.isVisible.collect { visible ->
@@ -166,9 +189,13 @@ fun main(args: Array<String>) {
                         modifier = Modifier
                             .padding(if (Platform.Current != Platform.Windows) 12.dp else 2.dp)
                             .fillMaxSize(),
-                        tint = if (isDownloading) FluentTheme.colors.system.success else {
-                            if (isMenuBarInDarkMode()) Color.White else Color.Black
-                        }
+                        tint = if (isDownloading) {
+                            Color(0xFF0E8420)
+                        } else if (isMenuBarInDarkMode()) {
+                            Color.White
+                        } else {
+                            Color.Black
+                        },
                     )
                 },
                 tooltip = runBlocking { getString(Res.string.app_name) } + if (isDownloading) runBlocking {
@@ -208,15 +235,23 @@ fun main(args: Array<String>) {
                     )
                 }
             ) {
-                FluentTheme(colors = if (isSystemInDarkMode()) darkColors() else lightColors()) {
-                    Mica(
+                NativeTheme(darkTheme = isSystemInDarkMode()) {
+                    val windowShape = RoundedCornerShape(12.dp)
+                    NativeBackground(
                         Modifier
                             .fillMaxSize()
-                            .clip(RoundedCornerShape(12.dp))
-                            .border(
-                                1.dp,
-                                if (isSystemInDarkMode()) Color.DarkGray else Color.LightGray,
-                                RoundedCornerShape(12.dp)
+                            .then(
+                                if (NativeTheme.drawsWindowChrome) {
+                                    Modifier
+                                } else {
+                                    Modifier
+                                        .clip(windowShape)
+                                        .border(
+                                            1.dp,
+                                            if (isSystemInDarkMode()) Color.DarkGray else Color.LightGray,
+                                            windowShape,
+                                        )
+                                },
                             )
                     ) {
                         CompositionLocalProvider(LocalAppGraph provides appGraph) {

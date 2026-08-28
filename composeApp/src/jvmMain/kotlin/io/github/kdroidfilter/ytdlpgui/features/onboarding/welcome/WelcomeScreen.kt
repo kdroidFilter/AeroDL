@@ -6,10 +6,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.AccentButton
-import io.github.composefluent.component.Icon
-import io.github.composefluent.component.Text
+import io.github.kdroidfilter.ytdlpgui.ui.NativeTheme
+import io.github.kdroidfilter.ytdlpgui.ui.component.AccentButton
+import io.github.kdroidfilter.ytdlpgui.ui.component.Icon
+import io.github.kdroidfilter.ytdlpgui.ui.component.Text
 import dev.zacsweers.metrox.viewmodel.metroViewModel
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnly
 import io.github.kdroidfilter.ytdlpgui.di.LocalWindowViewModelStoreOwner
@@ -83,9 +83,9 @@ fun WelcomeView(
         ) {
             Text(
                 text = stringResource(Res.string.onboarding_welcome_title),
-                style = FluentTheme.typography.subtitle
+                style = NativeTheme.typography.subtitle
             )
-            Icon(AeroDlLogoOnly, null, modifier = Modifier.height(96.dp), tint = FluentTheme.colors.system.neutral)
+            Icon(AeroDlLogoOnly, null, modifier = Modifier.height(96.dp), tint = NativeTheme.colors.system.neutral)
             io.github.kdroidfilter.ytdlpgui.features.onboarding.components.ExpandableDescription(
                 description = stringResource(Res.string.onboarding_welcome_subtitle),
                 modifier = Modifier.padding(horizontal = 16.dp)

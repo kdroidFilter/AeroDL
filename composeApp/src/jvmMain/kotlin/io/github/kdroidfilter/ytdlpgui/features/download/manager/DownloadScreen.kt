@@ -1,12 +1,10 @@
 package io.github.kdroidfilter.ytdlpgui.features.download.manager
 
 import androidx.compose.foundation.*
-import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.material.Divider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,22 +23,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
-import io.github.composefluent.ExperimentalFluentApi
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.Button
-import io.github.composefluent.component.TextField
-import io.github.composefluent.component.Badge
-import io.github.composefluent.component.BadgeDefaults
-import io.github.composefluent.component.BadgeStatus
-import io.github.composefluent.component.ContentDialog
-import io.github.composefluent.component.DialogSize
-import io.github.composefluent.component.Icon
-import io.github.composefluent.component.ProgressRing
-import io.github.composefluent.component.SubtleButton
-import io.github.composefluent.component.Text
-import io.github.composefluent.component.TooltipBox
-import io.github.composefluent.icons.Icons
-import io.github.composefluent.icons.regular.*
+import io.github.kdroidfilter.ytdlpgui.ui.NativeTheme
+import io.github.kdroidfilter.ytdlpgui.ui.component.Button
+import io.github.kdroidfilter.ytdlpgui.ui.component.TextField
+import io.github.kdroidfilter.ytdlpgui.ui.component.Badge
+import io.github.kdroidfilter.ytdlpgui.ui.component.BadgeDefaults
+import io.github.kdroidfilter.ytdlpgui.ui.component.BadgeStatus
+import io.github.kdroidfilter.ytdlpgui.ui.component.ContentDialog
+import io.github.kdroidfilter.ytdlpgui.ui.component.DialogSize
+import io.github.kdroidfilter.ytdlpgui.ui.component.Icon
+import io.github.kdroidfilter.ytdlpgui.ui.component.NativeVerticalScrollbar
+import io.github.kdroidfilter.ytdlpgui.ui.component.ProgressRing
+import io.github.kdroidfilter.ytdlpgui.ui.component.rememberNativeScrollbarAdapter
+import io.github.kdroidfilter.ytdlpgui.ui.component.SubtleButton
+import io.github.kdroidfilter.ytdlpgui.ui.component.Text
+import io.github.kdroidfilter.ytdlpgui.ui.component.TooltipBox
+import io.github.kdroidfilter.ytdlpgui.ui.icons.Icons
 import io.github.kdroidfilter.ytdlp.util.YouTubeThumbnailHelper
 import io.github.kdroidfilter.ytdlpgui.core.design.components.UpdateInfoBar
 import io.github.kdroidfilter.ytdlpgui.core.design.components.TerminalView
@@ -71,7 +69,7 @@ fun DownloaderScreen() {
 }
 
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalFluentApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DownloadView(
     state: DownloadState,
@@ -109,43 +107,47 @@ fun DownloadView(
                 modifier = Modifier.fillMaxSize()
             ) {
                 item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        if (state.hasAnyHistory) {
+                    if (state.hasAnyHistory) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
                             TextField(
                                 value = state.searchQuery,
                                 onValueChange = { onEvent(DownloadEvents.UpdateSearchQuery(it)) },
                                 placeholder = {
                                     Text(
                                         stringResource(Res.string.download_search_placeholder),
-                                        maxLines = 1
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        softWrap = false,
                                     )
                                 },
                                 singleLine = true,
-                                modifier = Modifier.weight(1f).padding(bottom = 8.dp),
+                                modifier = Modifier.weight(1f),
                                 trailing = {
                                     Icon(
-                                        imageVector = Icons.Regular.Search,
-                                        contentDescription = "Search"
+                                        icon = Icons.Regular.Search,
+                                        contentDescription = stringResource(
+                                            Res.string.download_search_placeholder,
+                                        ),
+                                        modifier = Modifier.size(16.dp),
                                     )
-                                }
+                                },
                             )
 
                             TooltipBox(tooltip = {
                                 Text(stringResource(Res.string.tooltip_clear_history))
                             }) {
-                                Button(
-                                    onClick = { onEvent(DownloadEvents.ClearHistory) },
-                                    modifier = Modifier.padding(bottom = 8.dp)
-                                ) {
-                                    Text(
+                                Button(onClick = { onEvent(DownloadEvents.ClearHistory) }) {
+                                    Text(stringResource(Res.string.download_clear_history))
+                                    Icon(
+                                        Icons.Default.Delete,
                                         stringResource(Res.string.download_clear_history),
-                                        style = FluentTheme.typography.bodyStrong
                                     )
-                                    Icon(Icons.Default.Delete, stringResource(Res.string.download_clear_history))
                                 }
                             }
                         }
@@ -169,7 +171,7 @@ fun DownloadView(
                         onDismissFailed = { id -> onEvent(DownloadEvents.DismissFailed(id)) }
                     )
                     Divider(
-                        color = FluentTheme.colors.control.secondary,
+                        color = NativeTheme.colors.control.secondary,
                         thickness = 1.dp,
                         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
                     )
@@ -202,7 +204,7 @@ fun DownloadView(
                                     Icon(
                                         Icons.Default.FolderProhibited,
                                         stringResource(Res.string.directory_unavailable),
-                                        tint = FluentTheme.colors.system.critical
+                                        tint = NativeTheme.colors.system.critical
                                     )
                                 }
                             }
@@ -215,7 +217,7 @@ fun DownloadView(
                         }
                     })
                     Divider(
-                        color = FluentTheme.colors.control.secondary,
+                        color = NativeTheme.colors.control.secondary,
                         thickness = 1.dp,
                         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
                     )
@@ -223,14 +225,14 @@ fun DownloadView(
             }
         }
 
-        VerticalScrollbar(
-            adapter = rememberScrollbarAdapter(listState),
+        NativeVerticalScrollbar(
+            adapter = rememberNativeScrollbarAdapter(listState),
             modifier = Modifier.fillMaxHeight().padding(top = 2.dp, start = 8.dp)
         )
     }
 }
 
-@OptIn(ExperimentalFluentApi::class)
+
 @Composable
 private fun ErrorDialog(
     errorItem: DownloadManager.DownloadItem,
@@ -278,14 +280,14 @@ private fun HistoryThumbnail(h: HistoryItem) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(FluentTheme.colors.background.layer.default),
+                        .background(NativeTheme.colors.background.layer.default),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = if (h.isAudio) Icons.Regular.MusicNote1 else Icons.Regular.Video,
+                        icon = if (h.isAudio) Icons.Regular.MusicNote1 else Icons.Regular.Video,
                         contentDescription = stringResource(Res.string.task_type_conversion),
                         modifier = Modifier.size(36.dp),
-                        tint = FluentTheme.colors.text.text.secondary
+                        tint = NativeTheme.colors.text.text.secondary
                     )
                 }
             } else {
@@ -317,7 +319,7 @@ private fun HistoryThumbnail(h: HistoryItem) {
                 overlay,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.background(Color.Black).padding(horizontal = 4.dp, vertical = 2.dp),
-                style = FluentTheme.typography.caption,
+                style = NativeTheme.typography.caption,
                 color = Color.White,
             )
         }
@@ -341,7 +343,7 @@ private fun HistoryRow(
         Spacer(Modifier.width(8.dp))
         Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.SpaceBetween) {
             Text(h.videoInfo?.title ?: h.url, maxLines = 3, overflow = TextOverflow.Ellipsis)
-            Text(whenStr, style = FluentTheme.typography.caption)
+            Text(whenStr, style = NativeTheme.typography.caption)
         }
         Spacer(Modifier.width(8.dp))
         Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.End) {
@@ -381,14 +383,14 @@ private fun InProgressThumbnail(item: DownloadManager.DownloadItem) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(FluentTheme.colors.background.layer.default),
+                            .background(NativeTheme.colors.background.layer.default),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = if (isAudioConversion) Icons.Regular.MusicNote1 else Icons.Regular.Video,
+                            icon = if (isAudioConversion) Icons.Regular.MusicNote1 else Icons.Regular.Video,
                             contentDescription = stringResource(Res.string.task_type_conversion),
                             modifier = Modifier.size(36.dp),
-                            tint = FluentTheme.colors.text.text.secondary
+                            tint = NativeTheme.colors.text.text.secondary
                         )
                     }
                 }
@@ -401,14 +403,14 @@ private fun InProgressThumbnail(item: DownloadManager.DownloadItem) {
                 overlay,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.background(Color.Black).padding(horizontal = 4.dp, vertical = 2.dp),
-                style = FluentTheme.typography.caption,
+                style = NativeTheme.typography.caption,
                 color = Color.White,
             )
         }
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalFluentApi::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
 private fun InProgressRow(
     item: DownloadManager.DownloadItem,
@@ -438,7 +440,7 @@ private fun InProgressRow(
                 DownloadManager.DownloadItem.Status.Failed -> stringResource(Res.string.status_failed)
                 DownloadManager.DownloadItem.Status.Cancelled -> stringResource(Res.string.status_cancelled)
             }
-            Text(statusText, style = FluentTheme.typography.caption)
+            Text(statusText, style = NativeTheme.typography.caption)
         }
         Spacer(Modifier.width(8.dp))
         Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -454,7 +456,7 @@ private fun InProgressRow(
                             Icon(
                                 Icons.Default.ErrorCircle,
                                 stringResource(Res.string.view_error_details),
-                                tint = FluentTheme.colors.system.critical
+                                tint = NativeTheme.colors.system.critical
                             )
                         }
                     }
@@ -491,27 +493,29 @@ private fun InProgressRow(
                             ProgressRing(progress = progressFraction, modifier = Modifier.fillMaxSize())
 
                             if (!hovered) {
-                                // Show percentage text centered in the ring
                                 Text(
                                     "${percent}%",
-                                    style = FluentTheme.typography.caption,
-                                    fontSize = 11.sp,
+                                    style = NativeTheme.typography.caption,
+                                    fontSize = 8.sp,
+                                    lineHeight = 8.sp,
                                     textAlign = TextAlign.Center,
                                     maxLines = 1,
-                                    modifier = Modifier.offset(x = (-1).dp)
                                 )
                             } else {
-                                // On hover, show dismiss icon overlaid on the ring
-                                TooltipBox(tooltip = { Text(stringResource(Res.string.cancel)) }) {
-                                    SubtleButton(
-                                        iconOnly = true,
-                                        onClick = { onCancel(item.id) },
-                                        modifier = Modifier.size(18.dp)
+                                TooltipBox(
+                                    tooltip = { Text(stringResource(Res.string.cancel)) },
+                                    modifier = Modifier.fillMaxSize(),
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clickable { onCancel(item.id) },
+                                        contentAlignment = Alignment.Center,
                                     ) {
                                         Icon(
                                             Icons.Default.Dismiss,
                                             stringResource(Res.string.cancel),
-                                            modifier = Modifier.size(16.dp)
+                                            modifier = Modifier.size(12.dp),
                                         )
                                     }
                                 }
@@ -525,7 +529,7 @@ private fun InProgressRow(
                                 if (item.status == DownloadManager.DownloadItem.Status.Running) speedText else null
                             Text(
                                 text = speedLine ?: " ",
-                                style = FluentTheme.typography.caption,
+                                style = NativeTheme.typography.caption,
                                 fontSize = 11.sp,
                                 maxLines = 1,
                                 overflow = TextOverflow.Clip,

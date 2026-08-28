@@ -52,8 +52,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
             // UI libraries
-            implementation(libs.compose.fluent)
-            implementation(libs.compose.fluent.icons.extended)
+            implementation(project(":ui"))
             implementation(libs.composemediaplayer)
 
             // Coil

@@ -21,6 +21,8 @@ import io.github.kdroidfilter.ytdlpgui.core.domain.manager.DownloadManager
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
 import io.github.kdroidfilter.ytdlpgui.core.platform.filesystem.FileExplorerUtils
 import io.github.kdroidfilter.ytdlpgui.core.ui.MVIViewModel
+import io.github.kdroidfilter.ytdlpgui.data.SettingsRepository
+import io.github.kdroidfilter.ytdlpgui.di.applyDefaultDismissMode
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -104,7 +106,8 @@ class ConverterOptionsViewModel(
     @Assisted savedStateHandle: SavedStateHandle,
     private val ffmpegWrapper: FfmpegWrapper,
     private val downloadManager: DownloadManager,
-    private val trayAppState: TrayAppState
+    private val trayAppState: TrayAppState,
+    private val settingsRepository: SettingsRepository,
 ) : MVIViewModel<ConverterOptionsState, ConverterOptionsEvents>(savedStateHandle) {
 
     @AssistedFactory
@@ -198,7 +201,7 @@ class ConverterOptionsViewModel(
             ConverterOptionsEvents.ClearError -> _errorMessage.value = null
             ConverterOptionsEvents.OnNavigationConsumed -> _navigationState.value = ConverterOptionsNavigationState.None
             ConverterOptionsEvents.ScreenDisposed -> {
-                trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
+                trayAppState.applyDefaultDismissMode(settingsRepository.disableTrayAutoHide.value)
                 analysisJob?.cancel()
             }
         }
@@ -365,6 +368,6 @@ class ConverterOptionsViewModel(
     override fun onCleared() {
         super.onCleared()
         analysisJob?.cancel()
-        trayAppState.setDismissMode(TrayWindowDismissMode.AUTO)
+        trayAppState.applyDefaultDismissMode(settingsRepository.disableTrayAutoHide.value)
     }
 }

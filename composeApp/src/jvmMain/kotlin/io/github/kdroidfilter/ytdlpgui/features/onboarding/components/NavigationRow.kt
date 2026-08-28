@@ -9,10 +9,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.AccentButton
-import io.github.composefluent.component.Button
-import io.github.composefluent.component.Text
+import io.github.kdroidfilter.ytdlpgui.ui.NativeTheme
+import io.github.kdroidfilter.ytdlpgui.ui.component.AccentButton
+import io.github.kdroidfilter.ytdlpgui.ui.component.Button
+import io.github.kdroidfilter.ytdlpgui.ui.component.Text
 import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.Res
 import ytdlpgui.composeapp.generated.resources.next
@@ -37,6 +37,7 @@ internal fun NavigationRow(
             if (onPrevious != null) {
                 Button(
                     onClick = onPrevious,
+                    large = true,
                     content = { Text(resolvedPrevious) }
                 )
             }
@@ -54,7 +55,7 @@ internal fun NavigationRow(
 @Preview
 @Composable
 private fun NavigationRowFullPreview() {
-    FluentTheme {
+    NativeTheme {
         Column(Modifier.padding(16.dp)) {
             NavigationRow(
                 onNext = {},
@@ -68,7 +69,7 @@ private fun NavigationRowFullPreview() {
 @Preview
 @Composable
 private fun NavigationRowOnlyNextPreview() {
-    FluentTheme {
+    NativeTheme {
         Column(Modifier.padding(16.dp)) {
             NavigationRow(
                 onNext = {},
@@ -81,7 +82,7 @@ private fun NavigationRowOnlyNextPreview() {
 @Preview
 @Composable
 private fun NavigationRowNextDisabledPreview() {
-    FluentTheme {
+    NativeTheme {
         Column(Modifier.padding(16.dp)) {
             NavigationRow(
                 onNext = {},

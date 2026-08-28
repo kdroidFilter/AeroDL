@@ -1,8 +1,5 @@
-@file:OptIn(ExperimentalFluentApi::class, ExperimentalFoundationApi::class)
-
 package io.github.kdroidfilter.ytdlpgui.core.ui
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,12 +15,9 @@ import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import io.github.composefluent.ExperimentalFluentApi
-import io.github.composefluent.FluentTheme
-import io.github.composefluent.component.*
-import io.github.composefluent.icons.Icons
-import io.github.composefluent.icons.filled.MoreVertical
-import io.github.composefluent.icons.regular.*
+import io.github.kdroidfilter.ytdlpgui.ui.NativeTheme
+import io.github.kdroidfilter.ytdlpgui.ui.component.*
+import io.github.kdroidfilter.ytdlpgui.ui.icons.Icons
 import dev.zacsweers.metrox.viewmodel.metroViewModel
 import io.github.kdroidfilter.ytdlpgui.core.design.icons.AeroDlLogoOnly
 import io.github.kdroidfilter.ytdlpgui.core.navigation.Destination
@@ -32,7 +26,6 @@ import io.github.kdroidfilter.ytdlpgui.features.init.InitViewModel
 import org.jetbrains.compose.resources.stringResource
 import ytdlpgui.composeapp.generated.resources.*
 
-@OptIn(ExperimentalFluentApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun MainNavigationHeader(
     navController: NavHostController,
@@ -61,20 +54,20 @@ fun MainNavigationHeader(
             item {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(top = 4.dp, start = 16.dp, end = 4.dp)
+                    modifier = Modifier.padding(top = 4.dp, start = 8.dp, end = 8.dp)
                 ) {
                     Icon(
                         AeroDlLogoOnly,
                         "",
-                        modifier = Modifier.fillMaxHeight(0.6f),
-                        tint = FluentTheme.colors.system.neutral
+                        modifier = Modifier.height(28.dp).aspectRatio(436f / 544f),
+                        tint = NativeTheme.colors.system.neutral
                     )
                     Spacer(Modifier.width(4.dp))
                     Text(
                         text = stringResource(Res.string.app_name),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = FluentTheme.colors.system.neutral
+                        color = NativeTheme.colors.system.neutral
                     )
                 }
             }
@@ -111,7 +104,7 @@ fun MainNavigationHeader(
                                     Text(text = display)
                                 },
                                 icon = {
-                                    Icon(imageVector = icon, contentDescription = null)
+                                    Icon(icon, contentDescription = null)
                                 },
                                 badge = if (showBadge) ({ UpdateNavBadge() }) else null,
                             )
@@ -129,7 +122,7 @@ fun MainNavigationHeader(
                                 Text(text = display)
                             },
                             icon = {
-                                Icon(imageVector = icon, contentDescription = null)
+                                Icon(icon, contentDescription = null)
                             },
                             badge = if (showBadge) ({ UpdateNavBadge() }) else null,
                         )
@@ -295,7 +288,7 @@ fun SecondaryNavigationHeader(
                 currentDestination?.hasRoute(Destination.SecondaryNavigation.Settings::class) == true ->
                     Text(
                         stringResource(Res.string.settings),
-                        style = FluentTheme.typography.subtitle,
+                        style = NativeTheme.typography.subtitle,
                         modifier = Modifier.padding(top = 12.dp),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -303,7 +296,7 @@ fun SecondaryNavigationHeader(
                 currentDestination?.hasRoute(Destination.SecondaryNavigation.About::class) == true ->
                     Text(
                         stringResource(Res.string.about),
-                        style = FluentTheme.typography.subtitle,
+                        style = NativeTheme.typography.subtitle,
                         modifier = Modifier.padding(top = 12.dp),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -314,7 +307,7 @@ fun SecondaryNavigationHeader(
                 } == true ->
                     Text(
                         stringResource(Res.string.converter),
-                        style = FluentTheme.typography.subtitle,
+                        style = NativeTheme.typography.subtitle,
                         modifier = Modifier.padding(top = 12.dp),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis

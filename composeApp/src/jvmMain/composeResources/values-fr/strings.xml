@@ -18,6 +18,7 @@
     <string name="logo_content_desc">Logo</string>
     <string name="placeholder_link_example">https://youtu.be/XXXXXXXXX</string>
     <string name="paste_video_link_header">Collez un lien vidéo</string>
+    <string name="drop_video_link_header">Déposez un lien vidéo</string>
     <string name="paste_link_content_desc">Coller le lien</string>
     <string name="loading">Chargement…</string>
     <string name="next">Suivant</string>
@@ -209,6 +210,10 @@
     <!-- Paramètres : Lancement automatique -->
     <string name="settings_auto_launch_title">Lancer au démarrage</string>
     <string name="settings_auto_launch_caption">Conseillé si vous utilisez souvent AeroDL : il se lance avec votre système et vous n'avez plus à vous en soucier. Couplé à la surveillance du presse-papiers, vous pouvez lancer vos téléchargements dès que vous copiez un lien.</string>
+
+    <!-- Paramètres : Garder la fenêtre ouverte -->
+    <string name="settings_disable_tray_auto_hide_title">Garder la fenêtre ouverte</string>
+    <string name="settings_disable_tray_auto_hide_caption">Lorsque cette option est activée, la fenêtre reste visible jusqu'à ce que vous la masquiez depuis la barre d'état. Un clic à l'extérieur ne la fermera plus.</string>
 
     <!-- Barre d'état / Menu -->
     <string name="menu_show_window">Afficher la fenêtre</string>

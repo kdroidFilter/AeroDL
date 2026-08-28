@@ -8,9 +8,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import io.github.composefluent.ExperimentalFluentApi
-import io.github.composefluent.component.Text
-import io.github.composefluent.component.TooltipBox
+import io.github.kdroidfilter.ytdlpgui.ui.component.Text
+import io.github.kdroidfilter.ytdlpgui.ui.component.TooltipBox
 
 /**
  * Composant qui affiche un texte avec ellipsis après 2 lignes
@@ -20,7 +19,7 @@ import io.github.composefluent.component.TooltipBox
  * @param modifier Modifier à appliquer au composant
  * @param maxLines Nombre maximum de lignes avant ellipsis (défaut: 2)
  */
-@OptIn(ExperimentalFoundationApi::class, ExperimentalFluentApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EllipsizedTextWithTooltip(
     text: String,
