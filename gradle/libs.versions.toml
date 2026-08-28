@@ -20,11 +20,11 @@ serialization = "1.11.0"
 cardiologist = "0.8.0"
 
 # UI Libraries
-fluent = "1.1.1"
+fluent = "1.1.2"
 yaru = "1.0.3"
 macosui = "1.0.4"
 composemediaplayer = "0.11.4"
-composenativetray = "2.1.1"
+composenativetray = "2.1.2"
 
 # Network & Tools
 ktor = "3.5.2"
