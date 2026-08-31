@@ -1,23 +1,23 @@
 package io.github.kdroidfilter.ytdlpgui.core.platform.clipboard
 
 import io.github.kdroidfilter.logging.warnln
-import io.github.kdroidfilter.ytdlpgui.nativeclipboard.WindowsClipboardWatcher
+import io.github.kdroidfilter.ytdlpgui.nativeclipboard.NativeClipboardWatcher
 
 /**
- * Windows clipboard monitor backed by a Kotlin/Native Win32 format listener
- * (`AddClipboardFormatListener` / `WM_CLIPBOARDUPDATE`). Falls back to polling
- * if the native listener cannot be started.
+ * Clipboard monitor backed by a Kotlin/Native OS listener (Win32
+ * `WM_CLIPBOARDUPDATE` or macOS pasteboard cache invalidation). Falls back to
+ * polling if the native listener cannot be started.
  */
-class WindowsEventClipboardMonitor(
+class NativeEventClipboardMonitor(
     private val listener: ClipboardListener,
 ) : ClipboardMonitor {
-    private var watcher: WindowsClipboardWatcher? = null
+    private var watcher: NativeClipboardWatcher? = null
     private var fallback: PollingClipboardMonitor? = null
     private var lastText: String? = null
 
     override fun start() {
         try {
-            val native = WindowsClipboardWatcher()
+            val native = NativeClipboardWatcher()
             watcher = native
             lastText = native.readText().ifEmpty { null }
             native.start { text ->
