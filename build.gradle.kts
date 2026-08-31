@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.composeCompiler) apply false
     alias(libs.plugins.kotlinMultiplatform) apply false
     alias(libs.plugins.nucleus) apply false
+    alias(libs.plugins.nna) apply false
     alias(libs.plugins.sqlDelight).apply(false)
     alias(libs.plugins.caupain)
 }

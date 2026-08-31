@@ -3,7 +3,8 @@ package io.github.kdroidfilter.ytdlpgui.core.domain.manager
 import dev.zacsweers.metro.Inject
 import io.github.kdroidfilter.ytdlpgui.core.platform.clipboard.ClipboardContent
 import io.github.kdroidfilter.ytdlpgui.core.platform.clipboard.ClipboardListener
-import io.github.kdroidfilter.ytdlpgui.core.platform.clipboard.PollingClipboardMonitor
+import io.github.kdroidfilter.ytdlpgui.core.platform.clipboard.ClipboardMonitor
+import io.github.kdroidfilter.ytdlpgui.core.platform.clipboard.createClipboardMonitor
 import dev.nucleusframework.notification.common.notification
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -52,7 +53,7 @@ class ClipboardMonitorManager(
 
     private val scope = CoroutineScope(Dispatchers.Default)
 
-    private var monitor: PollingClipboardMonitor? = null
+    private var monitor: ClipboardMonitor? = null
     private var lastHandled: String? = null
 
     init {
@@ -70,7 +71,7 @@ class ClipboardMonitorManager(
         val listener = ClipboardListener { content ->
             scope.launch { handleContent(content) }
         }
-        monitor = PollingClipboardMonitor(listener).also { it.start() }
+        monitor = createClipboardMonitor(listener).also { it.start() }
     }
 
     private fun stop() {

@@ -113,6 +113,7 @@ kotlin {
             implementation(project(":network"))
             implementation(project(":logging"))
             implementation(project(":youtube-playlist-extractor"))
+            implementation(project(":native-clipboard"))
 
             // SQLDelight driver
             implementation(libs.sqlDelight.driver.sqlite)
@@ -129,7 +130,11 @@ nucleus.application {
 
     val cleanInstall = project.findProperty("cleanInstall")?.toString()?.toBoolean() ?: false
     val debugLogs = project.findProperty("debugLogs")?.toString()?.toBoolean() ?: false
-    jvmArgs += listOf("-DcleanInstall=$cleanInstall", "-DdebugLogs=$debugLogs")
+    jvmArgs += listOf(
+        "-DcleanInstall=$cleanInstall",
+        "-DdebugLogs=$debugLogs",
+        "--enable-native-access=ALL-UNNAMED",
+    )
 
 
     nativeDistributions {

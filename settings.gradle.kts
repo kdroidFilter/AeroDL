@@ -37,6 +37,7 @@ plugins {
 }
 
 include(":composeApp")
+include(":native-clipboard")
 include(":ui")
 include(":ytdlp")
 include(":ffmpeg")
