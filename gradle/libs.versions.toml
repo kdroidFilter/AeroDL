@@ -29,6 +29,7 @@ composenativetray = "2.1.3"
 # Network & Tools
 ktor = "3.5.2"
 nucleus = "2.5.7"
+nna = "0.7.0"
 metro = "1.4.2"
 sqliteJdbc = "3.53.4.0"
 
@@ -132,4 +133,5 @@ kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", versio
 sqlDelight = { id = "app.cash.sqldelight", version.ref = "sqlDelight" }
 sentryJvmGradle = { id = "io.sentry.jvm.gradle", version.ref = "sentry" }
 nucleus = { id = "dev.nucleusframework", version.ref = "nucleus" }
+nna = { id = "dev.nucleusframework.nna", version.ref = "nna" }
 caupain = "com.deezer.caupain:1.10.1"

@@ -12,29 +12,24 @@ import java.awt.Toolkit
 import java.awt.datatransfer.DataFlavor
 import java.util.concurrent.atomic.AtomicBoolean
 
-data class ClipboardContent(val text: String?)
-
-fun interface ClipboardListener {
-    fun onClipboardChange(content: ClipboardContent)
-}
-
 /**
  * Polls the system clipboard for plain text.
  *
- * Uses the same AWT clipboard that Compose Desktop exposes via [androidx.compose.ui.platform.LocalClipboard].
- * The poll loop runs on an efficiency-core thread (EcoQoS / QOS_CLASS_BACKGROUND / nice)
- * so it does not compete with the UI or downloads on performance cores.
+ * Used on non-Windows platforms, and as a fallback if the Win32 clipboard
+ * listener cannot be started. The poll loop runs on an efficiency-core thread
+ * (EcoQoS / QOS_CLASS_BACKGROUND / nice) so it does not compete with the UI
+ * or downloads on performance cores.
  */
 class PollingClipboardMonitor(
     private val listener: ClipboardListener,
     private val intervalMs: Long = 500,
-) {
+) : ClipboardMonitor {
     private val running = AtomicBoolean(false)
     private val scope = CoroutineScope(SupervisorJob())
     private var job: Job? = null
     private var lastText: String? = null
 
-    fun start() {
+    override fun start() {
         if (!running.compareAndSet(false, true)) return
         job = scope.launch {
             EnergyManager.withEfficiencyMode {
@@ -53,7 +48,7 @@ class PollingClipboardMonitor(
         }
     }
 
-    fun stop() {
+    override fun stop() {
         running.set(false)
         job?.cancel()
         job = null
