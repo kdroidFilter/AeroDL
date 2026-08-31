@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 /**
  * Polls the system clipboard for plain text.
  *
- * Used on non-Windows platforms, and as a fallback if the Win32 clipboard
+ * Used on Linux, and as a fallback if the native Win32 / macOS clipboard
  * listener cannot be started. The poll loop runs on an efficiency-core thread
  * (EcoQoS / QOS_CLASS_BACKGROUND / nice) so it does not compete with the UI
  * or downloads on performance cores.

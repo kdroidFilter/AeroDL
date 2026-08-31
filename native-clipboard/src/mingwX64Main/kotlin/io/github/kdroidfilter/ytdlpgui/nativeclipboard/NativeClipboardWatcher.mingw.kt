@@ -60,6 +60,14 @@ import platform.windows.WPARAM
 import platform.windows.WS_OVERLAPPED
 import kotlin.concurrent.Volatile
 
+actual class NativeClipboardWatcher actual constructor() {
+    actual fun start(onChanged: (String) -> Unit) = startClipboardListener(onChanged)
+
+    actual fun stop() = stopClipboardListener()
+
+    actual fun readText(): String = readClipboardTextNative()
+}
+
 private const val WM_CLIPBOARDUPDATE: Int = 0x031D
 private const val READY_TIMEOUT_MS: UInt = 8_000u
 private const val STOP_TIMEOUT_MS: UInt = 5_000u
@@ -73,10 +81,8 @@ private var clipboardCallback: ((String) -> Unit)? = null
 @Volatile
 private var listenerHwnd: HWND? = null
 
-@OptIn(ExperimentalForeignApi::class)
 private var threadHandle: COpaquePointer? = null
 
-@OptIn(ExperimentalForeignApi::class)
 private var readyEvent: COpaquePointer? = null
 
 @Volatile
@@ -85,17 +91,14 @@ private var startSucceeded: Boolean = false
 @Volatile
 private var startError: String? = null
 
-@OptIn(ExperimentalForeignApi::class)
 private typealias ClipboardListenerFn = CFunction<(HWND?) -> Int>
 
-@OptIn(ExperimentalForeignApi::class)
 private val clipboardThreadProc = staticCFunction { _: LPVOID? ->
     runClipboardMessageLoop()
     0u
 }
 
-@OptIn(ExperimentalForeignApi::class)
-internal actual fun startClipboardListener(onChanged: (String) -> Unit) {
+private fun startClipboardListener(onChanged: (String) -> Unit) {
     if (threadHandle != null) return
 
     clipboardCallback = onChanged
@@ -127,8 +130,7 @@ internal actual fun startClipboardListener(onChanged: (String) -> Unit) {
     }
 }
 
-@OptIn(ExperimentalForeignApi::class)
-internal actual fun stopClipboardListener() {
+private fun stopClipboardListener() {
     clipboardCallback = null
     val hwnd = listenerHwnd
     if (hwnd != null) {
@@ -146,10 +148,6 @@ internal actual fun stopClipboardListener() {
     startError = null
 }
 
-@OptIn(ExperimentalForeignApi::class)
-internal actual fun readClipboardText(): String = readClipboardTextNative()
-
-@OptIn(ExperimentalForeignApi::class)
 private fun runClipboardMessageLoop() {
     memScoped {
         val className = "AeroDLClipboardListener"
@@ -222,7 +220,6 @@ private fun runClipboardMessageLoop() {
     }
 }
 
-@OptIn(ExperimentalForeignApi::class)
 private fun clipboardWndProc(
     hwnd: HWND?,
     msg: UINT,
@@ -249,7 +246,6 @@ private fun clipboardWndProc(
     return DefWindowProcW(hwnd, msg, wParam, lParam)
 }
 
-@OptIn(ExperimentalForeignApi::class)
 private fun loadClipboardListenerProc(name: String): CPointer<ClipboardListenerFn>? {
     val user32 = GetModuleHandleW("user32.dll")
         ?: GetModuleHandleW("user32")
@@ -258,7 +254,6 @@ private fun loadClipboardListenerProc(name: String): CPointer<ClipboardListenerF
     return GetProcAddress(user32, name)?.reinterpret()
 }
 
-@OptIn(ExperimentalForeignApi::class)
 private fun readClipboardTextNative(): String {
     for (attempt in 0 until 10) {
         if (OpenClipboard(null) == 0) {
@@ -281,7 +276,6 @@ private fun readClipboardTextNative(): String {
     return ""
 }
 
-@OptIn(ExperimentalForeignApi::class)
 private fun failStart(message: String) {
     startSucceeded = false
     startError = message
